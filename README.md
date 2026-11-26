@@ -20,6 +20,7 @@ neuer Planet. Jede Simulation ist ein Mond ihres Themen-Planeten.
 | `Stoßprozesse/` | `Stoss-Simulation.html` | Elastischer, plastischer (und teilelastischer) Stoß zweier Autos, gerade und schief |
 | `Vektorfelder/` | `Feldlabor.html` | Elektrische, magnetische und Gravitationsfelder als strömende Teilchen, Feldlinien, Pfeile und Äquipotentiallinien; 51 Versuche, Baukasten, eigene Funktionen, 2D- und 3D-Ansicht |
 | `Stromkreise/` | `Stromkreislabor.html` | Stromkreise bauen; Potenzial als Farbe, Höhe oder Elektronendruck; 12 Versuche, Messgeräte und Messspitzen |
+| `Bandstruktur/` | `Bandstrukturlabor.html` | Freies Elektron, reziproker Raum und Brillouin-Zonen, Kronig-Penney, Bragg-Reflexion, Tight-Binding, Bänder füllen, Si und GaAs |
 | `Halbleiter/` | `Halbleiterlabor.html` | Bändermodell, Dotierung, innerer und äußerer Photoeffekt, pn-Übergang, Solarzelle, LED |
 | `Quantenphysik/` | `Quantenlabor.html` | Photoeffekt, Spektren, Doppelspalt mit Einzelobjekten (mit Zeigermodell) und Mach-Zehnder-Interferometer mit Quantenradierer |
 
@@ -148,6 +149,28 @@ Quantenausbeute 90 %, Zellfläche 100 cm², Diodengleichung mit I₀ ∝ e^(−E
 U_oc = 0,63 V hat (Si: η ≈ 19 %, Füllfaktor 0,83, −1,6 mV/K). Eigenleitungsdichte n_i = √(N_C·N_V)·(T/300 K)^1,5·e^(−E_g/2kT).
 Die Zahl der gezeichneten thermischen Ladungsträger ist logarithmisch skaliert.
 
+## Bandstruktur – Bandstrukturlabor.html
+
+Sieben Stationen (auch direkt über `#freies-elektron`, `#reziproker-raum`, `#kristallpotential`, `#bragg`, `#atome-band`,
+`#baender-fuellen`, `#si-gaas`), jeweils mit Aufträgen, Erklärungen und drei Niveaustufen:
+
+- **Freies Elektron:** Parabel E = ħ²k²/(2m) mit den erlaubten Zuständen k = 2πn/(N·a) im Ring aus N Atomen; laufende Welle.
+- **Reziproker Raum:** 2D-Gitter (quadratisch, rechteckig, hexagonal, schiefwinklig, frei einstellbar) neben dem reziproken
+  Gitter; Gitterebenen zu einem angetippten Punkt G (d = 2π/|G|); Brillouin-Zonen 1–4 eingefärbt, Konstruktion über
+  Mittelsenkrechten; Elektronenwelle k zum Ziehen mit Anzeige der Bragg-Bedingung |k| = |k − G|; Beugungsbild.
+- **Kristallpotential:** Kronig-Penney-Modell exakt gelöst; Potential mit den erlaubten Energiebereichen; E(k) im erweiterten,
+  reduzierten und periodischen Zonenschema; Vergleich mit dem freien Elektron; Zustandsdichte.
+- **Bragg:** fast freie Elektronen an der Zonengrenze; Mischung aus hin- und rücklaufender Welle, stehende Wellen mit
+  |ψ|² bei den Rümpfen (unteres Band) bzw. dazwischen (oberes Band); Lücke 2|U|; Gruppengeschwindigkeit.
+- **Atome → Band:** Tight-Binding mit s- und p-Orbitalen, E(k) = E₀ − 2t·cos(ka), Bloch-Summe der Orbitale (bindend/antibindend),
+  Niveauschema 1 Atom → N Atome, Bandbreite über den Atomabstand.
+- **Bänder füllen:** 1–4 Elektronen pro Atom; besetzte Zustände, Fermi-Energie, Zustandsdichte; Metall/Halbleiter/Isolator;
+  angelegte Spannung verschiebt die Besetzung (volles Band → kein Strom); Fermi-Dirac bei Temperatur.
+- **Si & GaAs:** drehbare 1. Brillouin-Zone des fcc-Gitters (Oktaederstumpf) mit Γ, X, L, K; vereinfachte Bandstrukturen
+  entlang L–Γ–X mit Energien nach Messwerten; Photonabsorption direkt (GaAs) bzw. mit Phonon (Si); effektive Masse.
+
+Modell: ħ²/(2m_e) = 0,0381 eV·nm², Gitterkonstante der 1D-Modelle a = 0,4 nm.
+
 ## Navigation
 
-In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“, „Stromkreislabor“, „Quantenlabor“ oder „Halbleiterlabor“) zurück zur Startseite `index.html`.
+In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“, „Stromkreislabor“, „Quantenlabor“, „Halbleiterlabor“ oder „Bandstrukturlabor“) zurück zur Startseite `index.html`.

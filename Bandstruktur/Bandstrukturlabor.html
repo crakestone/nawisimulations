@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bandstrukturlabor – vom freien Elektron zur Bandstruktur</title>
+<style>
+  :root{
+    --ink:#1d2230; --muted:#5b6477; --line:#d9dde6; --bg:#f4f6fa; --panel:#ffffff;
+    --accent:#0f766e; --warn:#b91c1c;
+    font-size:17px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.35}
+  header{display:flex;align-items:center;gap:.7rem 1.1rem;flex-wrap:wrap;padding:.6rem 1rem;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+  header h1{font-size:1.25rem;margin:0;flex:1 1 auto;white-space:nowrap}
+  header h1 a{color:inherit;text-decoration:none}
+  header h1 a:hover{text-decoration:underline;text-underline-offset:4px}
+  header h1 small{font-weight:400;color:var(--muted);font-size:.85rem;margin-left:.4rem}
+  .lvl{display:flex;align-items:center;gap:.5rem}
+  .lvl > span{color:var(--muted);font-size:.9rem}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#eef1f6;flex-wrap:wrap}
+  .seg button{border:0;background:transparent;padding:.42rem .6rem;font:inherit;font-size:.92rem;cursor:pointer;color:var(--ink)}
+  .seg button + button{border-left:1px solid var(--line)}
+  .seg button.on{background:var(--accent);color:#fff;font-weight:600}
+  .seg.small{flex-wrap:nowrap}
+  .seg.small button{padding:.3rem .45rem;font-size:.8rem;white-space:nowrap}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:.42rem .8rem;font:inherit;font-size:.92rem;cursor:pointer;color:var(--ink)}
+  .btn:hover{background:#f0f3f8}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+  .layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:1rem;padding:1rem;align-items:start}
+  aside{display:flex;flex-direction:column;gap:.8rem}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.8rem .9rem}
+  .card h2{font-size:1rem;margin:0 0 .55rem}
+  .field{margin:.4rem 0 .7rem}
+  .field > label{display:flex;justify-content:space-between;gap:.5rem;font-size:.9rem;margin-bottom:.15rem}
+  .field > label b{font-variant-numeric:tabular-nums;font-weight:600;text-align:right}
+  input[type=range]{accent-color:var(--accent);width:100%}
+  input.spectrum{-webkit-appearance:none;appearance:none;height:14px;border-radius:7px;outline:none}
+  input.spectrum::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid #1d2230;cursor:pointer}
+  input.spectrum::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid #1d2230;cursor:pointer}
+  select{font:inherit;font-size:.93rem;padding:.35rem;border-radius:8px;border:1px solid var(--line);width:100%;background:#fff}
+  .check{display:flex;align-items:center;gap:.5rem;margin:.35rem 0;font-size:.92rem;cursor:pointer}
+  .check input{width:1.1rem;height:1.1rem;accent-color:var(--accent)}
+  .btnrow{display:flex;gap:.4rem;flex-wrap:wrap;margin:.4rem 0}
+  .note{font-size:.84rem;color:var(--muted);margin:.35rem 0}
+  .tasks{display:flex;flex-direction:column;gap:.35rem}
+  .tasks button{font:inherit;font-size:.88rem;text-align:left;border:1px solid var(--line);background:#fafbfd;border-radius:9px;padding:.4rem .55rem;cursor:pointer;color:var(--ink)}
+  .tasks button:hover{background:#eef6f5;border-color:#b8dcd7}
+  .tasks button.on{background:#e3f3f1;border-color:var(--accent);font-weight:600}
+  #taskInfo p{margin:.45rem 0;font-size:.92rem}
+  #taskInfo .q{background:#fff8e6;border:1px solid #f4dfa5;border-radius:9px;padding:.45rem .6rem}
+  #taskInfo .a{background:#eef7f2;border:1px solid #c5e4d2;border-radius:9px;padding:.45rem .6rem}
+  .stage{min-width:0}
+  .viewbox{position:relative;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;height:calc(100vh - var(--hh, 100px));min-height:560px}
+  #cv{display:block;width:100%;height:100%;touch-action:none}
+  @media (max-width: 900px){ .layout{grid-template-columns:1fr} aside{order:2} .viewbox{height:75vh;min-height:460px} }
+</style>
+</head>
+<body>
+<header>
+  <h1><a href="../index.html" title="Zur Startseite">Bandstrukturlabor</a> <small>wie Energiebänder entstehen</small></h1>
+  <div class="seg" id="stSeg"><button data-s="0" class="on">Freies Elektron</button><button data-s="1">Reziproker Raum</button><button data-s="2">Kristallpotential</button><button data-s="3">Bragg</button><button data-s="4">Atome → Band</button><button data-s="5">Bänder füllen</button><button data-s="6">Si &amp; GaAs</button></div>
+  <div class="lvl"><span>Niveau:</span>
+    <div class="seg" id="lvlSeg"><button data-v="easy" class="on">Einfach</button><button data-v="mid">Mittel</button><button data-v="hard">Anspruchsvoll</button></div>
+  </div>
+  <button class="btn" id="fsBtn">Vollbild</button>
+</header>
+<div class="layout">
+  <aside>
+    <div class="card"><h2 id="ctrlTitle">Einstellungen</h2><div id="ctrl"></div></div>
+    <div class="card"><h2>Aufträge</h2><div class="tasks" id="tasks"></div><div id="taskInfo"></div></div>
+  </aside>
+  <section class="stage">
+    <div class="viewbox" id="vb"><canvas id="cv"></canvas></div>
+    <p class="note" style="margin:.5rem .2rem">Passt dazu: <a href="../Halbleiter/Halbleiterlabor.html">Halbleiterlabor</a> (Dotierung, Diode, Solarzelle, LED).</p>
+  </section>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   Bandstrukturlabor – sieben Stationen:
+   0 Freies Elektron · 1 Reziproker Raum · 2 Kristallpotential (Kronig-Penney)
+   3 Bragg-Reflexion · 4 Atome → Band (Tight-Binding) · 5 Bänder füllen · 6 Si & GaAs
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const HC = 1239.84193;               /* h·c in eV·nm */
+const KB = 8.617333e-5;              /* Boltzmann-Konstante in eV/K */
+const QE = 1.602176634e-19, C_LIGHT = 2.99792458e8, H_PL = 6.62607015e-34;
+const S = { st:0, level:'easy', task:-1, showAnswer:false };
+const lvlNum = () => ({easy:0, mid:1, hard:2})[S.level];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const rnd = (a, b) => a + Math.random()*(b - a);
+
+/* ---------- Zahlen und Farben ---------- */
+function fmt(v, d){ if (!isFinite(v)) return '–'; return (Math.abs(v) < 0.5*Math.pow(10,-d) ? 0 : v).toFixed(d).replace('.', ','); }
+function sup(n){ const m = {'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'}; return String(n).split('').map(c => m[c]).join(''); }
+function sci(v, d){ if (v === 0) return '0'; const ex = Math.floor(Math.log10(Math.abs(v))); const m = v/Math.pow(10,ex); return fmt(m,d) + '·10' + sup(ex); }
+function fmtI(I){ const a = Math.abs(I), s = I < 0 ? '−' : ''; if (a >= 1) return s + fmt(a, 2) + ' A'; if (a >= 1e-3) return s + fmt(a*1000, a < 0.01 ? 2 : 1) + ' mA'; if (a >= 1e-6) return s + fmt(a*1e6, 1) + ' µA'; if (a >= 1e-9) return s + fmt(a*1e9, 1) + ' nA'; return s + fmt(a*1e12, 1) + ' pA'; }
+function fmtR(R){ if (R >= 1e6) return fmt(R/1e6, 1) + ' MΩ'; if (R >= 1e3) return fmt(R/1e3, 1) + ' kΩ'; return fmt(R, R < 10 ? 2 : 0) + ' Ω'; }
+function nmRGB(nm){
+  if (nm < 380) return [150, 90, 220];
+  if (nm > 780) return [120, 30, 30];
+  let r = 0, g = 0, b = 0;
+  if (nm < 440){ r = -(nm-440)/60; b = 1; }
+  else if (nm < 490){ g = (nm-440)/50; b = 1; }
+  else if (nm < 510){ g = 1; b = -(nm-510)/20; }
+  else if (nm < 580){ r = (nm-510)/70; g = 1; }
+  else if (nm < 645){ r = 1; g = -(nm-645)/65; }
+  else r = 1;
+  const f = nm < 420 ? 0.35 + 0.65*(nm-380)/40 : nm > 700 ? 0.35 + 0.65*(780-nm)/80 : 1;
+  return [r,g,b].map(v => Math.round(255*Math.pow(v*f, 0.8)));
+}
+const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+const spectrumCSS = (a, b) => { const st = []; const step = (b - a)/60; for (let nm = a; nm <= b + 1e-9; nm += step) st.push(`${rgba(nmRGB(nm),1)} ${((nm-a)/(b-a)*100).toFixed(1)}%`); return `linear-gradient(90deg,${st.join(',')})`; };
+const region = nm => nm < 380 ? 'UV' : nm > 750 ? 'Infrarot' : 'sichtbar';
+
+/* ---------- Canvas ---------- */
+const cv = $('#cv'), ctx = cv.getContext('2d'), vb = $('#vb');
+let W = 0, H = 0;
+function resize(){
+  const r = vb.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+  W = r.width; H = r.height; cv.width = W*dpr; cv.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+new ResizeObserver(resize).observe(vb);
+function line(x1,y1,x2,y2,col,w){ ctx.strokeStyle = col; ctx.lineWidth = w || 1; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); }
+function dline(x1,y1,x2,y2,col,w,dash){ ctx.save(); ctx.setLineDash(dash || [5,4]); line(x1,y1,x2,y2,col,w); ctx.restore(); }
+function text(t, x, y, o){
+  o = o || {}; ctx.font = `${o.weight || 500} ${o.size || 13}px ${o.mono ? 'ui-monospace,Menlo,Consolas,monospace' : 'system-ui'}`;
+  ctx.fillStyle = o.col || '#1d2230'; ctx.textAlign = o.align || 'left'; ctx.textBaseline = o.base || 'middle'; ctx.fillText(t, x, y);
+}
+function box(x, y, w, h, fill, stroke, r){ ctx.beginPath(); ctx.roundRect(x, y, w, h, r ?? 8); if (fill){ ctx.fillStyle = fill; ctx.fill(); } if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = 1.2; ctx.stroke(); } }
+function circle(x, y, r, fill, stroke, lw){ ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); if (fill){ ctx.fillStyle = fill; ctx.fill(); } if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = lw || 1.5; ctx.stroke(); } }
+function pill(t, x, y, o){
+  o = o || {}; ctx.font = `${o.weight || 600} ${o.size || 13}px system-ui`;
+  const w = ctx.measureText(t).width + 14, h = (o.size || 13) + 10;
+  const bx = o.align === 'left' ? x : o.align === 'right' ? x - w : x - w/2;
+  box(bx, y - h/2, w, h, o.bg || '#10231f', o.border || null, 8);
+  text(t, bx + w/2, y + 0.5, {col:o.col || '#7ff5d2', align:'center', weight:o.weight || 600, size:o.size || 13});
+}
+function wrapText(t, x, y, maxW, o){
+  o = o || {}; ctx.font = `${o.weight || 500} ${o.size || 13}px system-ui`;
+  const words = t.split(' '); let ln = ''; const lh = (o.size || 13) + 4;
+  for (const w of words){ const test = ln ? ln + ' ' + w : w; if (ctx.measureText(test).width > maxW && ln){ text(ln, x, y, o); y += lh; ln = w; } else ln = test; }
+  if (ln){ text(ln, x, y, o); y += lh; }
+  return y;
+}
+function arrow(x1,y1,x2,y2,col,w){
+  line(x1,y1,x2,y2,col,w || 2);
+  const a = Math.atan2(y2-y1, x2-x1), h = 7 + (w || 2);
+  ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2 - h*Math.cos(a-0.45), y2 - h*Math.sin(a-0.45)); ctx.lineTo(x2 - h*Math.cos(a+0.45), y2 - h*Math.sin(a+0.45)); ctx.fill();
+}
+function wiggle(x, y, ang, len, col, amp, lw){
+  ctx.save(); ctx.translate(x,y); ctx.rotate(ang); ctx.strokeStyle = col; ctx.lineWidth = lw || 2.2; ctx.beginPath();
+  for (let k = 0; k <= 24; k++){ const t = k/24, px = -len/2 + t*len, env = Math.sin(Math.PI*t); ctx.lineTo(px, env*(amp || 4)*Math.sin(t*Math.PI*6)); }
+  ctx.stroke(); ctx.restore();
+}
+function heat(x, y, a){ /* kleine Wärmewellen */
+  ctx.save(); ctx.globalAlpha = a; ctx.strokeStyle = '#ea580c'; ctx.lineWidth = 1.6;
+  for (let k = -1; k <= 1; k++){ ctx.beginPath(); for (let s = 0; s <= 10; s++){ const yy = y - s*1.6, xx = x + k*6 + Math.sin(s*1.2)*2.2; s ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy); } ctx.stroke(); }
+  ctx.restore();
+}
+function hole(x, y, r){ circle(x, y, r, '#fff', '#dc2626', 1.8); text('+', x, y + 0.5, {align:'center', size:Math.round(r*1.5), weight:700, col:'#dc2626'}); }
+function elec(x, y, r){ circle(x, y, r, '#1d4ed8'); }
+/* Diagrammrahmen mit Achsen */
+function plot(r, o){
+  box(r.x, r.y, r.w, r.h, '#f8fafc', '#e2e8f0', 12);
+  if (o.title) text(o.title, r.x + 12, r.y + 16, {weight:700, size:13});
+  const L = r.x + (o.left || 50), R = r.x + r.w - (o.right || 14), T = r.y + (o.title ? 36 : 14), B = r.y + r.h - 30;
+  const X = v => L + (v - o.x0)/(o.x1 - o.x0)*(R - L), Y = v => B - (v - o.y0)/(o.y1 - o.y0)*(B - T);
+  for (const v of o.xt || []){ line(X(v), T, X(v), B, '#e5e9f0', 1); text(o.xf ? o.xf(v) : String(v), X(v), B + 10, {align:'center', size:10, col:'#64748b'}); }
+  for (const v of o.yt || []){ line(L, Y(v), R, Y(v), v === 0 ? '#94a3b8' : '#e5e9f0', 1); text(o.yf ? o.yf(v) : String(v), L - 5, Y(v), {align:'right', size:10, col:'#64748b'}); }
+  line(L, T, L, B, '#64748b', 1.2); line(L, B, R, B, '#64748b', 1.2);
+  if (o.xl) text(o.xl, R, B + 22, {align:'right', size:11, col:'#475569'});
+  if (o.yl) text(o.yl, L + 4, T - 8, {size:11, col:'#475569'});
+  return { X, Y, L, R, T, B };
+}
+function clipTo(p){ ctx.save(); ctx.beginPath(); ctx.rect(p.L, p.T - 2, p.R - p.L, p.B - p.T + 4); ctx.clip(); }
+function linFit(pts){
+  const n = pts.length; if (n < 2) return null;
+  const sx = pts.reduce((a,q) => a + q.f, 0), sy = pts.reduce((a,q) => a + q.e, 0), sxx = pts.reduce((a,q) => a + q.f*q.f, 0), sxy = pts.reduce((a,q) => a + q.f*q.e, 0);
+  const den = n*sxx - sx*sx; if (Math.abs(den) < 1e-12) return null;
+  const m = (n*sxy - sx*sy)/den; return { m, b:(sy - m*sx)/n };
+}
+
+/* ---------- Bedienelemente links ---------- */
+const UI = {
+  el: $('#ctrl'),
+  clear(){ this.el.innerHTML = ''; },
+  slider(label, o){
+    const d = document.createElement('div'); d.className = 'field';
+    d.innerHTML = `<label><span>${label}</span><b></b></label><input type="range" min="${o.min}" max="${o.max}" step="${o.step}">`;
+    const b = d.querySelector('b'), inp = d.querySelector('input');
+    if (o.cls) inp.className = o.cls; if (o.bg) inp.style.background = o.bg;
+    inp.value = o.get(); b.innerHTML = o.fmt(o.get());
+    inp.oninput = () => { o.set(+inp.value); b.innerHTML = o.fmt(+inp.value); };
+    d.refresh = () => { inp.value = o.get(); b.innerHTML = o.fmt(o.get()); };
+    this.el.appendChild(d); return d;
+  },
+  select(label, opts, get, set){
+    const d = document.createElement('div'); d.className = 'field';
+    d.innerHTML = `<label><span>${label}</span></label><select>${opts.map(([v,t]) => `<option value="${v}">${t}</option>`).join('')}</select>`;
+    const s = d.querySelector('select'); s.value = get(); s.onchange = () => set(s.value);
+    this.el.appendChild(d); return d;
+  },
+  seg(label, opts, get, set){
+    const d = document.createElement('div'); d.className = 'field';
+    d.innerHTML = (label ? `<label><span>${label}</span></label>` : '') + `<div class="seg small">${opts.map(([v,t]) => `<button data-v="${v}">${t}</button>`).join('')}</div>`;
+    const btns = [...d.querySelectorAll('button')];
+    const upd = () => btns.forEach(b => b.classList.toggle('on', b.dataset.v === String(get())));
+    btns.forEach(b => b.onclick = () => { set(b.dataset.v); upd(); });
+    upd(); this.el.appendChild(d); return d;
+  },
+  check(label, get, set){
+    const d = document.createElement('label'); d.className = 'check';
+    d.innerHTML = `<input type="checkbox"> ${label}`; const c = d.querySelector('input'); c.checked = get(); c.onchange = () => set(c.checked);
+    this.el.appendChild(d); return d;
+  },
+  buttons(list){
+    const d = document.createElement('div'); d.className = 'btnrow';
+    for (const [t, fn, cls] of list){ const b = document.createElement('button'); b.className = 'btn ' + (cls || ''); b.innerHTML = t; b.onclick = fn; d.appendChild(b); }
+    this.el.appendChild(d); return d;
+  },
+  note(html){ const p = document.createElement('p'); p.className = 'note'; p.innerHTML = html; this.el.appendChild(p); return p; }
+};
+function flash(t){ const n = UI.note('⚠ ' + t); n.style.color = '#b91c1c'; setTimeout(() => n.remove(), 3500); }
+
+/* ---------- gemeinsame Größen ---------- */
+const C0 = 0.0381;          /* ħ²/(2 m_e) in eV·nm² */
+const AL = 0.4;             /* Gitterkonstante der 1D-Modelle in nm */
+const KZ = Math.PI/AL;      /* Zonengrenze π/a in nm⁻¹ */
+const freeE = k => C0*k*k;
+function kTicks(n){ const t = []; for (let m = -n; m <= n; m++) t.push(m*KZ); return t; }
+const kLabel = v => { const m = Math.round(v/KZ); return m === 0 ? '0' : (m === 1 ? 'π/a' : m === -1 ? '−π/a' : (m < 0 ? '−' : '') + Math.abs(m) + 'π/a'); };
+
+/* =====================================================================
+   Station 0: Freies Elektron – Parabel E(k) und erlaubte Zustände
+   ===================================================================== */
+const FE = { N:8, n:2, cont:false, t:0 };
+function feK(n){ return 2*Math.PI*n/(FE.N*AL); }
+function feDraw(dt){
+  FE.t += dt;
+  const lv = lvlNum(), wide = W > 900;
+  const top = { x:W*0.03, y:H*0.03, w:W*0.94, h:H*0.3 };
+  const pr = wide ? { x:W*0.03, y:H*0.36, w:W*0.62, h:H*0.61 } : { x:10, y:H*0.36, w:W - 20, h:H*0.42 };
+  const info = wide ? { x:W*0.67, y:H*0.36, w:W*0.3, h:H*0.61 } : { x:10, y:H*0.8, w:W - 20, h:H*0.19 };
+  const k = feK(FE.n), E = freeE(k);
+  /* Welle im Kristall ohne Potential */
+  box(top.x, top.y, top.w, top.h, '#fbfcfe', '#e2e8f0', 12);
+  text(lv ? `Elektronenwelle: λ = 2π/k = ${Math.abs(k) > 1e-9 ? fmt(2*Math.PI/Math.abs(k),2) + ' nm' : '∞'} · läuft nach ${k > 0 ? 'rechts' : k < 0 ? 'links' : '– (steht)'}` : 'Elektronenwelle im Kristall (ohne Kräfte durch die Atome)', top.x + 12, top.y + 16, {weight:700, size:13});
+  const L = FE.N*AL, x0 = top.x + 30, xw = top.w - 60, yc = top.y + top.h*0.6, amp = top.h*0.28;
+  for (let j = 0; j < FE.N; j++){ const x = x0 + (j + 0.5)/FE.N*xw; circle(x, yc, 5, '#cbd5e1'); }
+  line(x0, yc, x0 + xw, yc, '#e2e8f0', 1);
+  ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2.5; ctx.beginPath();
+  const w = E*2.2;
+  for (let s = 0; s <= 400; s++){ const x = s/400*L, y = Math.cos(k*x - w*FE.t); const px = x0 + s/400*xw; s ? ctx.lineTo(px, yc - amp*y) : ctx.moveTo(px, yc - amp*y); }
+  ctx.stroke();
+  dline(x0, yc - amp - 6, x0 + xw, yc - amp - 6, 'rgba(234,88,12,.6)', 1.5);
+  text(lv ? '|ψ|² überall gleich: das Elektron ist nirgends bevorzugt' : 'Aufenthaltswahrscheinlichkeit überall gleich', x0 + xw, yc - amp - 14, {align:'right', size:11, col:'#ea580c'});
+  text(`${FE.N} Atome im Ring (Ende = Anfang)`, x0, top.y + top.h - 10, {size:11, col:'#64748b'});
+  /* E(k)-Diagramm */
+  const Emax = freeE(3*KZ)*0.62;
+  const p = plot(pr, { title:'Energie E über Wellenzahl k', x0:-2.4*KZ, x1:2.4*KZ, y0:0, y1:Emax, xt: lv ? kTicks(2) : [0], xf:kLabel, yt:[0,2,4,6,8,10,12].filter(v => v <= Emax), yf:v => lv ? v + ' eV' : '', xl:'k', yl:'E', left:46 });
+  clipTo(p);
+  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.beginPath();
+  for (let s = 0; s <= 300; s++){ const kk = -2.4*KZ + s/300*4.8*KZ; s ? ctx.lineTo(p.X(kk), p.Y(freeE(kk))) : ctx.moveTo(p.X(kk), p.Y(freeE(kk))); }
+  ctx.stroke();
+  if (lv) for (const m of [-1, 1]) dline(p.X(m*KZ), p.T, p.X(m*KZ), p.B, '#c084fc', 1.4);
+  if (!FE.cont){
+    const nMax = Math.ceil(2.4*FE.N/2);
+    for (let n = -nMax; n <= nMax; n++){ const kk = feK(n); if (Math.abs(kk) > 2.4*KZ) continue; circle(p.X(kk), p.Y(freeE(kk)), n === FE.n ? 7 : 4.2, n === FE.n ? '#2563eb' : '#334155', n === FE.n ? '#fff' : null, 2); }
+  }
+  ctx.restore();
+  if (lv) text('Zonengrenzen ±π/a – mehr dazu in „Bragg“', p.X(KZ) + 4, p.T + 8, {size:10, col:'#9333ea'});
+  FE.plotGeo = p;
+  /* Info */
+  box(info.x, info.y, info.w, info.h, '#f8fafc', '#e2e8f0', 12);
+  let y = info.y + 18;
+  text('Ausgewählter Zustand', info.x + 12, y, {weight:700, size:13}); y += 24;
+  const rows = lv ? [['Wellenzahl k', `${fmt(k,2)} nm⁻¹`], ['Wellenlänge λ', Math.abs(k) > 1e-9 ? `${fmt(2*Math.PI/Math.abs(k),2)} nm` : '∞'], ['Impuls p = ħk', `${sci(Math.abs(k)*1e9*1.0546e-34,2)} kg·m/s`], ['Energie E', `${fmt(E,2)} eV`]]
+                  : [['Wellenlänge', Math.abs(k) > 1e-9 ? (2*Math.PI/Math.abs(k) < 1 ? 'kurz' : 'lang') : 'unendlich'], ['Energie', E < 0.5 ? 'klein' : E < 3 ? 'mittel' : 'groß']];
+  for (const [a, b] of rows){ text(a, info.x + 12, y, {size:12, col:'#64748b'}); text(b, info.x + info.w - 12, y, {align:'right', size:13, weight:700, mono:lv > 0}); y += 22; }
+  y += 8;
+  const msg = lv === 0 ? 'Kurze Wellen bedeuten viel Energie. Weil der Ring geschlossen ist, passen nur ganz bestimmte Wellen hinein – deshalb gibt es nur einzelne Punkte auf der Parabel.'
+    : lv === 1 ? 'E = ħ²k²/(2m): die Energie wächst mit dem Quadrat der Wellenzahl. Im Ring aus N Atomen muss eine ganze Zahl von Wellenlängen hineinpassen: k = 2πn/(N·a). Mehr Atome → dichtere Punkte.'
+    : `E = ħ²k²/(2m_e) mit ħ²/(2m_e) = 0,0381 eV·nm². Periodische Randbedingung ψ(x + N·a) = ψ(x) ⇒ k_n = 2πn/(N·a). Zwischen −π/a und π/a liegen genau N Zustände – einer pro Atom (ohne Spin). Gitterkonstante a = ${fmt(AL,1)} nm.`;
+  wrapText(msg, info.x + 12, y, info.w - 24, {size:12, col:'#334155'});
+}
+function feClick(x, y){
+  const p = FE.plotGeo; if (!p || FE.cont) return false;
+  let best = null, bd = 16;
+  const nMax = Math.ceil(2.4*FE.N/2);
+  for (let n = -nMax; n <= nMax; n++){ const kk = feK(n); const d = Math.hypot(p.X(kk) - x, p.Y(freeE(kk)) - y); if (d < bd){ bd = d; best = n; } }
+  if (best !== null){ FE.n = best; buildControls(); return true; }
+  return false;
+}
+function feControls(){
+  UI.select('Anzahl der Atome im Ring', [['4','4'],['8','8'],['12','12'],['20','20'],['40','40']], () => String(FE.N), v => { FE.N = +v; FE.n = clamp(FE.n, -Math.ceil(1.2*FE.N), Math.ceil(1.2*FE.N)); buildControls(); });
+  const nMax = Math.ceil(1.2*FE.N);
+  UI.slider('Zustand (Nummer n)', {min:-nMax, max:nMax, step:1, get:() => FE.n, set:v => FE.n = v, fmt:v => `n = ${v}`});
+  UI.check('Nur die Parabel zeigen (unendlich viele Atome)', () => FE.cont, v => FE.cont = v);
+  UI.note('Tipp: Einen Punkt im Diagramm antippen wählt den Zustand aus.');
+}
+
+/* =====================================================================
+   Station 1: Reziproker Raum (2D)
+   ===================================================================== */
+const LATT = { square:['quadratisch',1,90], rect:['rechteckig',1.6,90], hex:['hexagonal',1,120], obl:['schiefwinklig',1.3,72] };
+const RR = { type:'square', ratio:1, gamma:90, sel:[1,0], showBZ:true, zones:4, cons:false, showK:false, k:[0.35, 0.18], diff:false, img:null, key:'', drag:false };
+function rrVecs(){
+  const g = RR.gamma*Math.PI/180;
+  const a1 = [1, 0], a2 = [RR.ratio*Math.cos(g), RR.ratio*Math.sin(g)];
+  const A = a1[0]*a2[1] - a1[1]*a2[0], f = 2*Math.PI/A;
+  return { a1, a2, b1:[f*a2[1], -f*a2[0]], b2:[-f*a1[1], f*a1[0]], A };
+}
+function rrGeo(){
+  const wide = W > 900;
+  const real = wide ? { x:W*0.02, y:H*0.04, w:W*0.47, h:H*0.7 } : { x:10, y:10, w:W - 20, h:H*0.38 };
+  const rec = wide ? { x:W*0.51, y:H*0.04, w:W*0.47, h:H*0.7 } : { x:10, y:H*0.4, w:W - 20, h:H*0.38 };
+  const info = wide ? { x:W*0.02, y:H*0.77, w:W*0.96, h:H*0.21 } : { x:10, y:H*0.8, w:W - 20, h:H*0.19 };
+  return { real, rec, info };
+}
+const rrGs = v => { const G = []; for (let m1 = -6; m1 <= 6; m1++) for (let m2 = -6; m2 <= 6; m2++){ if (!m1 && !m2) continue; G.push([m1, m2, m1*v.b1[0] + m2*v.b2[0], m1*v.b1[1] + m2*v.b2[1]]); } return G; };
+function rrZoneImage(r, v, sc){
+  const key = [RR.ratio, RR.gamma, r.w, r.h, RR.zones, RR.diff].join('|');
+  if (RR.key === key && RR.img) return RR.img;
+  const step = 2, cw = Math.ceil(r.w/step), ch = Math.ceil(r.h/step);
+  const off = document.createElement('canvas'); off.width = cw; off.height = ch;
+  const c2 = off.getContext('2d'), im = c2.createImageData(cw, ch);
+  const G = rrGs(v).filter(g => Math.hypot(g[2], g[3]) < 3.2*Math.max(Math.hypot(...v.b1), Math.hypot(...v.b2)) + 30);
+  const cols = [[204,251,241],[254,243,199],[224,231,255],[252,231,243],[241,245,249]];
+  const zone = new Int16Array(cw*ch);
+  for (let j = 0; j < ch; j++) for (let i = 0; i < cw; i++){
+    const kx = ((i + 0.5)*step - r.w/2)/sc, ky = -((j + 0.5)*step - r.h/2)/sc, k2 = kx*kx + ky*ky;
+    let n = 0; for (const g of G){ const dx = kx - g[2], dy = ky - g[3]; if (dx*dx + dy*dy < k2) n++; }
+    zone[j*cw + i] = n;
+  }
+  for (let j = 0; j < ch; j++) for (let i = 0; i < cw; i++){
+    const n = zone[j*cw + i], c = n < RR.zones ? cols[n] : [255,255,255];
+    const edge = (i > 0 && zone[j*cw + i - 1] !== n) || (j > 0 && zone[(j - 1)*cw + i] !== n);
+    const o = 4*(j*cw + i);
+    if (edge && n < RR.zones + 1){ im.data[o] = 71; im.data[o+1] = 85; im.data[o+2] = 105; im.data[o+3] = 200; }
+    else { im.data[o] = c[0]; im.data[o+1] = c[1]; im.data[o+2] = c[2]; im.data[o+3] = 255; }
+  }
+  c2.putImageData(im, 0, 0);
+  RR.img = off; RR.key = key; return off;
+}
+function rrDraw(dt){
+  const g = rrGeo(), v = rrVecs(), lv = lvlNum();
+  /* ---- Realraum ---- */
+  const r = g.real, scR = Math.min(r.w, r.h)/(5.6*Math.max(1, RR.ratio*0.8));
+  const cxR = r.x + r.w/2, cyR = r.y + r.h/2 + 10;
+  const RX = (x, y) => [cxR + x*scR, cyR - y*scR];
+  box(r.x, r.y, r.w, r.h, '#fbfcfe', '#e2e8f0', 12);
+  ctx.save(); ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, 12); ctx.clip();
+  const sel = RR.sel, Gs = sel ? [sel[0]*v.b1[0] + sel[1]*v.b2[0], sel[0]*v.b1[1] + sel[1]*v.b2[1]] : null;
+  /* Gitterebenen zum gewählten G */
+  if (Gs){
+    const gl = Math.hypot(...Gs), u = [Gs[0]/gl, Gs[1]/gl], d = 2*Math.PI/gl, t = [-u[1], u[0]];
+    const span = Math.hypot(r.w, r.h)/scR;
+    for (let m = -40; m <= 40; m++){
+      const c = [u[0]*m*d, u[1]*m*d]; if (Math.hypot(...c) > span) continue;
+      const p1 = RX(c[0] - t[0]*span, c[1] - t[1]*span), p2 = RX(c[0] + t[0]*span, c[1] + t[1]*span);
+      line(p1[0], p1[1], p2[0], p2[1], m === 0 ? 'rgba(234,88,12,.8)' : 'rgba(234,88,12,.35)', m === 0 ? 2 : 1.4);
+    }
+    /* Abstand d */
+    const q0 = RX(0, 0), q1 = RX(u[0]*d, u[1]*d);
+    arrow(q0[0], q0[1], q1[0], q1[1], '#c2410c', 2);
+    if (lv) text(`d = ${fmt(d,2)} a`, q1[0] + 8, q1[1] + 14, {size:12, weight:700, col:'#c2410c'});
+  }
+  /* Wellenfronten des Elektrons k */
+  if (RR.showK){
+    const kl = Math.hypot(...RR.k);
+    if (kl > 0.05){
+      const u = [RR.k[0]/kl, RR.k[1]/kl], lam = 2*Math.PI/kl, t = [-u[1], u[0]], span = Math.hypot(r.w, r.h)/scR;
+      for (let m = -30; m <= 30; m++){ const c = [u[0]*m*lam, u[1]*m*lam]; if (Math.hypot(...c) > span) continue; const p1 = RX(c[0] - t[0]*span, c[1] - t[1]*span), p2 = RX(c[0] + t[0]*span, c[1] + t[1]*span); dline(p1[0], p1[1], p2[0], p2[1], 'rgba(13,148,136,.55)', 1.3, [3,5]); }
+    }
+  }
+  for (let n1 = -9; n1 <= 9; n1++) for (let n2 = -9; n2 <= 9; n2++){
+    const x = n1*v.a1[0] + n2*v.a2[0], y = n1*v.a1[1] + n2*v.a2[1], p = RX(x, y);
+    if (p[0] < r.x - 10 || p[0] > r.x + r.w + 10 || p[1] < r.y - 10 || p[1] > r.y + r.h + 10) continue;
+    circle(p[0], p[1], 5.5, '#334155');
+  }
+  /* Einheitszelle */
+  const o = RX(0,0), pa1 = RX(...v.a1), pa2 = RX(...v.a2), pa12 = RX(v.a1[0] + v.a2[0], v.a1[1] + v.a2[1]);
+  ctx.fillStyle = 'rgba(59,130,246,.12)'; ctx.beginPath(); ctx.moveTo(o[0], o[1]); ctx.lineTo(pa1[0], pa1[1]); ctx.lineTo(pa12[0], pa12[1]); ctx.lineTo(pa2[0], pa2[1]); ctx.closePath(); ctx.fill();
+  arrow(o[0], o[1], pa1[0], pa1[1], '#2563eb', 2.6); arrow(o[0], o[1], pa2[0], pa2[1], '#2563eb', 2.6);
+  text('a₁', pa1[0] + 4, pa1[1] + 12, {size:13, weight:700, col:'#2563eb'}); text('a₂', pa2[0] - 16, pa2[1] - 6, {size:13, weight:700, col:'#2563eb'});
+  ctx.restore();
+  text('Kristallgitter (Ortsraum)', r.x + 12, r.y + 16, {weight:700, size:13});
+  if (Gs) text(`Gitterebenen (${sel[0]} ${sel[1]})`, r.x + r.w - 12, r.y + 16, {align:'right', size:12, weight:700, col:'#c2410c'});
+  /* ---- reziproker Raum ---- */
+  const q = g.rec, bmax = Math.max(Math.hypot(...v.b1), Math.hypot(...v.b2)), scK = Math.min(q.w, q.h)/(5.2*Math.max(bmax, 2*Math.PI)/(2*Math.PI))/(2*Math.PI);
+  const cxK = q.x + q.w/2, cyK = q.y + q.h/2 + 10;
+  const KX = (x, y) => [cxK + x*scK, cyK - y*scK];
+  box(q.x, q.y, q.w, q.h, RR.diff ? '#0b1020' : '#fbfcfe', '#e2e8f0', 12);
+  ctx.save(); ctx.beginPath(); ctx.roundRect(q.x, q.y, q.w, q.h, 12); ctx.clip();
+  if (RR.showBZ && !RR.diff && lv >= 1){
+    const img = rrZoneImage({ w:q.w, h:q.h }, v, scK);
+    ctx.imageSmoothingEnabled = true; ctx.drawImage(img, q.x, q.y + 10, q.w, q.h);
+  }
+  if (RR.cons && !RR.diff){
+    const Gn = rrGs(v).map(g => [g, Math.hypot(g[2], g[3])]).sort((a, b) => a[1] - b[1]).slice(0, 8);
+    for (const [gg] of Gn){
+      const m = [gg[2]/2, gg[3]/2], gl = Math.hypot(gg[2], gg[3]), t = [-gg[3]/gl, gg[2]/gl], L = 20;
+      const p0 = KX(0,0), pg = KX(gg[2], gg[3]); dline(p0[0], p0[1], pg[0], pg[1], 'rgba(100,116,139,.6)', 1, [2,4]);
+      const p1 = KX(m[0] - t[0]*L, m[1] - t[1]*L), p2 = KX(m[0] + t[0]*L, m[1] + t[1]*L); line(p1[0], p1[1], p2[0], p2[1], 'rgba(147,51,234,.55)', 1.3);
+    }
+  }
+  for (let m1 = -8; m1 <= 8; m1++) for (let m2 = -8; m2 <= 8; m2++){
+    const x = m1*v.b1[0] + m2*v.b2[0], y = m1*v.b1[1] + m2*v.b2[1], p = KX(x, y);
+    if (p[0] < q.x - 10 || p[0] > q.x + q.w + 10 || p[1] < q.y - 10 || p[1] > q.y + q.h + 10) continue;
+    const isSel = sel && m1 === sel[0] && m2 === sel[1];
+    if (RR.diff){
+      const I = Math.exp(-Math.hypot(x, y)/(2.4*2*Math.PI)), rr = 3 + 9*I;
+      const gl = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], rr*2.2); gl.addColorStop(0, `rgba(190,242,100,${0.3 + 0.7*I})`); gl.addColorStop(1, 'rgba(190,242,100,0)');
+      ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(p[0], p[1], rr*2.2, 0, Math.PI*2); ctx.fill();
+      if (!m1 && !m2) circle(p[0], p[1], 7, '#fef9c3');
+    } else circle(p[0], p[1], isSel ? 7.5 : (!m1 && !m2 ? 6.5 : 5), isSel ? '#ea580c' : (!m1 && !m2 ? '#0f172a' : '#7c3aed'), '#fff', 1.5);
+  }
+  if (!RR.diff){
+    const o2 = KX(0,0), pb1 = KX(...v.b1), pb2 = KX(...v.b2);
+    arrow(o2[0], o2[1], pb1[0], pb1[1], '#7c3aed', 2.6); arrow(o2[0], o2[1], pb2[0], pb2[1], '#7c3aed', 2.6);
+    text('b₁', pb1[0] + 5, pb1[1] + 12, {size:13, weight:700, col:'#7c3aed'}); text('b₂', pb2[0] - 18, pb2[1] - 6, {size:13, weight:700, col:'#7c3aed'});
+    if (sel){ const pg = KX(...Gs); arrow(o2[0], o2[1], pg[0], pg[1], '#ea580c', 2.2); text('G', pg[0] + 8, pg[1] - 8, {size:13, weight:800, col:'#ea580c'}); }
+    if (RR.showK){
+      const pk = KX(...RR.k);
+      arrow(o2[0], o2[1], pk[0], pk[1], '#0d9488', 2.6); circle(pk[0], pk[1], 7, 'rgba(13,148,136,.25)', '#0d9488', 1.5); text('k', pk[0] + 9, pk[1] - 9, {size:13, weight:800, col:'#0d9488'});
+      const kl = Math.hypot(...RR.k);
+      let hit = null;
+      for (const gg of rrGs(v)){ const d = Math.hypot(RR.k[0] - gg[2], RR.k[1] - gg[3]); if (Math.abs(d - kl) < 0.035*bmax && (!hit || Math.hypot(gg[2], gg[3]) < Math.hypot(hit[2], hit[3]))) hit = gg; }
+      RR.bragg = hit;
+      if (hit){
+        const pk2 = KX(RR.k[0] - hit[2], RR.k[1] - hit[3]);
+        arrow(o2[0], o2[1], pk2[0], pk2[1], '#dc2626', 2.4); text("k' = k − G", pk2[0] + 8, pk2[1] + 12, {size:12, weight:700, col:'#dc2626'});
+        dline(pk[0], pk[1], pk2[0], pk2[1], 'rgba(220,38,38,.6)', 1.5);
+      }
+    }
+  }
+  ctx.restore();
+  text(RR.diff ? 'Beugungsbild = reziprokes Gitter' : 'Reziprokes Gitter (k-Raum)', q.x + 12, q.y + 16, {weight:700, size:13, col:RR.diff ? '#e2e8f0' : '#1d2230'});
+  if (lv >= 1 && RR.showBZ && !RR.diff) text('1. Brillouin-Zone türkis', q.x + q.w - 12, q.y + 16, {align:'right', size:11, col:'#0f766e', weight:600});
+  RR.geo = { KX, scK, cxK, cyK, q, v };
+  /* ---- Info ---- */
+  const r3 = g.info; box(r3.x, r3.y, r3.w, r3.h, '#f8fafc', '#e2e8f0', 12);
+  let y = r3.y + 18;
+  const b1l = Math.hypot(...v.b1), b2l = Math.hypot(...v.b2);
+  if (lv === 0){
+    y = wrapText('Links das Kristallgitter, rechts das „reziproke“ Gitter. Es gehört fest zum Kristall – man sieht es direkt, wenn man Röntgenstrahlen oder Elektronen am Kristall beugt (Schalter „Beugungsbild“). Liegen die Atome in einer Richtung eng beieinander, liegen die reziproken Punkte in dieser Richtung weit auseinander – und umgekehrt.', r3.x + 12, y, r3.w - 24, {size:13, col:'#334155'});
+    wrapText('Tippe einen violetten Punkt an: Links erscheinen die Gitterebenen, die zu ihm gehören.', r3.x + 12, y + 4, r3.w - 24, {size:13, col:'#c2410c', weight:600});
+  } else {
+    y = wrapText(`Reziproke Basis: a_i · b_j = 2π δ_ij. Hier: |b₁| = ${fmt(b1l/(2*Math.PI),2)}·2π/a, |b₂| = ${fmt(b2l/(2*Math.PI),2)}·2π/a. Jeder Punkt G steht senkrecht auf einer Schar von Gitterebenen mit Abstand d = 2π/|G|.`, r3.x + 12, y, r3.w - 24, {size:12, col:'#334155'});
+    y = wrapText('1. Brillouin-Zone: alle k, die näher am Ursprung liegen als an jedem anderen Gitterpunkt – Grenzen sind die Mittelsenkrechten auf den Verbindungen zu den Nachbarpunkten (Schalter „Konstruktion“). Die n-te Zone erreicht man, indem man n − 1 solcher Grenzen überquert.', r3.x + 12, y + 2, r3.w - 24, {size:12, col:'#334155'});
+    if (RR.showK) wrapText(RR.bragg ? `Bragg-Bedingung erfüllt: |k| = |k − G| für G = (${RR.bragg[0]} ${RR.bragg[1]}). Die Welle wird an den Gitterebenen reflektiert – genau hier entstehen Bandlücken.` : 'k auf eine Zonengrenze ziehen: Dort gilt |k| = |k − G| – die Bragg-Bedingung.', r3.x + 12, y + 4, r3.w - 24, {size:12, weight:700, col: RR.bragg ? '#dc2626' : '#0d9488'});
+  }
+}
+function rrPick(x, y){
+  const G = RR.geo; if (!G) return null;
+  const { KX, v, q } = G;
+  if (x < q.x || x > q.x + q.w || y < q.y || y > q.y + q.h) return null;
+  if (RR.showK){ const pk = KX(...RR.k); if (Math.hypot(pk[0] - x, pk[1] - y) < 16) return { drag:true }; }
+  let best = null, bd = 14;
+  for (let m1 = -8; m1 <= 8; m1++) for (let m2 = -8; m2 <= 8; m2++){ if (!m1 && !m2) continue; const p = KX(m1*v.b1[0] + m2*v.b2[0], m1*v.b1[1] + m2*v.b2[1]); const d = Math.hypot(p[0] - x, p[1] - y); if (d < bd){ bd = d; best = [m1, m2]; } }
+  return best ? { sel:best } : null;
+}
+function rrClick(x, y){
+  const h = rrPick(x, y); if (!h) return false;
+  if (h.drag){ RR.drag = true; return true; }
+  RR.sel = h.sel; return true;
+}
+function rrMove(x, y){ if (!RR.drag) return; const G = RR.geo; RR.k = [(x - G.cxK)/G.scK, -(y - G.cyK)/G.scK]; }
+function rrControls(){
+  const lv = lvlNum();
+  UI.seg('Gitter', Object.entries(LATT).map(([k,[n]]) => [k, n]), () => RR.type, v => { RR.type = v; RR.ratio = LATT[v][1]; RR.gamma = LATT[v][2]; buildControls(); });
+  UI.slider('Länge von a₂ (relativ zu a₁)', {min:0.5, max:2, step:0.05, get:() => RR.ratio, set:v => RR.ratio = v, fmt:v => fmt(v,2)});
+  UI.slider('Winkel zwischen a₁ und a₂', {min:45, max:135, step:1, get:() => RR.gamma, set:v => RR.gamma = v, fmt:v => `${v}°`});
+  UI.check('Beugungsbild zeigen', () => RR.diff, v => RR.diff = v);
+  if (lv >= 1){
+    UI.check('Brillouin-Zonen einfärben', () => RR.showBZ, v => RR.showBZ = v);
+    UI.seg('Wie viele Zonen?', [['1','1'],['2','2'],['3','3'],['4','4']], () => String(RR.zones), v => RR.zones = +v);
+    UI.check('Konstruktion (Mittelsenkrechten)', () => RR.cons, v => RR.cons = v);
+    UI.check('Elektronenwelle k (Pfeilspitze ziehen)', () => RR.showK, v => RR.showK = v);
+  }
+  UI.buttons([['Keine Ebenen', () => { RR.sel = null; }]]);
+  UI.note('Violette Punkte antippen: Die zugehörigen Gitterebenen erscheinen im Kristall.');
+}
+
+/* =====================================================================
+   Station 2: Kristallpotential – Kronig-Penney-Modell
+   ===================================================================== */
+const KP = { V0:6, bf:0.25, scheme:'ext', free:true, dos:false, cacheKey:'', bands:null, sel:0.5 };
+function kpF(E, V0, w, b){
+  const al = Math.sqrt(E/C0);
+  if (E < V0){
+    const be = Math.sqrt((V0 - E)/C0), sh = be*b > 1e-9 ? Math.sinh(be*b)/be : b;
+    return Math.cos(al*w)*Math.cosh(be*b) + (be*be - al*al)/(2*al)*Math.sin(al*w)*sh;
+  }
+  const ga = Math.sqrt((E - V0)/C0), sg = ga*b > 1e-9 ? Math.sin(ga*b)/ga : b;
+  return Math.cos(al*w)*Math.cos(ga*b) - (al*al + ga*ga)/(2*al)*Math.sin(al*w)*sg;
+}
+const KP_EMAX = 15;
+function kpBands(){
+  const key = KP.V0 + '|' + KP.bf;
+  if (KP.cacheKey === key) return KP.bands;
+  const b = KP.bf*AL, w = AL - b, bands = [];
+  let cur = null, prevK = null, dir = 0;
+  for (let E = 0.0004; E <= KP_EMAX; E += 0.0025){
+    const f = kpF(E, KP.V0, w, b);
+    if (Math.abs(f) <= 1){
+      const k = Math.acos(f)/AL;
+      if (!cur){ cur = { pts:[] }; bands.push(cur); dir = 0; }
+      else if (prevK !== null){
+        const d = Math.sign(k - prevK);
+        if (dir !== 0 && d !== 0 && d !== dir && (k < 0.06*KZ || k > 0.94*KZ)){ cur = { pts:[] }; bands.push(cur); dir = 0; }
+        else if (d !== 0) dir = d;
+      }
+      cur.pts.push([E, k]); prevK = k;
+    } else { cur = null; prevK = null; }
+  }
+  bands.forEach((bd, i) => { bd.Emin = bd.pts[0][0]; bd.Emax = bd.pts[bd.pts.length - 1][0]; bd.n = i + 1; });
+  KP.bands = bands.filter(bd => bd.pts.length > 3); KP.cacheKey = key;
+  KP.bands.forEach((bd, i) => bd.n = i + 1);
+  return KP.bands;
+}
+const kExt = (n, k) => n % 2 ? (n - 1)*KZ + k : n*KZ - k;
+function kpDraw(dt){
+  const lv = lvlNum(), wide = W > 900, bands = kpBands();
+  const pot = wide ? { x:W*0.02, y:H*0.03, w:W*0.33, h:H*0.94 } : { x:10, y:10, w:W - 20, h:H*0.3 };
+  const ek = wide ? { x:W*0.37, y:H*0.03, w: KP.dos && lv === 2 ? W*0.42 : W*0.61, h:H*0.94 } : { x:10, y:H*0.33, w:W - 20, h:H*0.65 };
+  const Emax = KP_EMAX;
+  /* ---- Potential mit Bändern ---- */
+  box(pot.x, pot.y, pot.w, pot.h, '#fbfcfe', '#e2e8f0', 12);
+  text('Potential im Kristall und erlaubte Energien', pot.x + 12, pot.y + 16, {weight:700, size:13});
+  const px0 = pot.x + 44, pw = pot.w - 56, pt = pot.y + 36, pb = pot.y + pot.h - 30;
+  const PY = E => pb - E/Emax*(pb - pt);
+  for (const bd of bands){ ctx.fillStyle = 'rgba(37,99,235,.16)'; ctx.fillRect(px0, PY(bd.Emax), pw, PY(bd.Emin) - PY(bd.Emax)); }
+  const nc = 4, cwid = pw/nc, b = KP.bf, Vd = Math.min(KP.V0, Emax*0.98);
+  ctx.save(); ctx.beginPath(); ctx.rect(pot.x, pt - 4, pot.w, pb - pt + 8); ctx.clip();
+  ctx.strokeStyle = '#334155'; ctx.lineWidth = 2.2; ctx.beginPath();
+  for (let c = 0; c < nc; c++){
+    const x0 = px0 + c*cwid;
+    ctx.lineTo(x0, PY(Vd)); ctx.lineTo(x0 + cwid*b, PY(Vd)); ctx.lineTo(x0 + cwid*b, PY(0)); ctx.lineTo(x0 + cwid, PY(0));
+  }
+  ctx.lineTo(px0 + pw, PY(Vd)); ctx.stroke(); ctx.restore();
+  for (let c = 0; c < nc; c++){ const xm = px0 + c*cwid + cwid*(b + (1 - b)/2); circle(xm, pb + 12, 6, '#64748b'); text('+', xm, pb + 12.5, {align:'center', size:10, weight:800, col:'#fff'}); }
+  text(lv ? 'Atomrümpfe' : 'Atome', px0 + pw, pb + 24, {align:'right', size:10, col:'#64748b'});
+  for (let E = 0; E <= Emax; E += 3){ line(px0 - 4, PY(E), px0, PY(E), '#64748b', 1); text(lv ? E + ' eV' : '', px0 - 6, PY(E), {align:'right', size:10, col:'#64748b'}); }
+  bands.forEach((bd, i) => { text(`Band ${bd.n}`, px0 + pw - 4, (PY(bd.Emin) + PY(bd.Emax))/2, {align:'right', size:11, weight:700, col:'#1d4ed8'}); });
+  for (let i = 0; i + 1 < bands.length; i++){ const g1 = bands[i].Emax, g2 = bands[i + 1].Emin; if (g2 - g1 > 0.05 && PY(g1) - PY(g2) > 18) pill(lv ? `Lücke ${fmt(g2 - g1,2)} eV` : 'Lücke', px0 + cwid*(b + (1 - b)/2), (PY(g1) + PY(g2))/2, {size:11, bg:'#fff1f1', col:'#b91c1c'}); }
+  if (lv) pill(KP.V0 > Emax ? `V₀ = ${fmt(KP.V0,1)} eV (oben abgeschnitten)` : `V₀ = ${fmt(KP.V0,1)} eV`, px0 + pw/2, pt + 8, {size:11, bg:'#f1f5f9', col:'#334155'});
+  /* ---- E(k) ---- */
+  const xr = KP.scheme === 'red' ? 1 : KP.scheme === 'per' ? 2 : 3;
+  const p = plot(ek, { title: KP.scheme === 'ext' ? 'Bandstruktur E(k) – erweitertes Zonenschema' : KP.scheme === 'red' ? 'Bandstruktur E(k) – reduziertes Zonenschema' : 'Bandstruktur E(k) – periodisches Zonenschema', x0:-xr*KZ, x1:xr*KZ, y0:0, y1:Emax, xt:kTicks(xr), xf:kLabel, yt:[0,3,6,9,12,15], yf:v => lv ? v + ' eV' : '', xl:'k', yl:'E', left:46 });
+  clipTo(p);
+  for (const bd of bands){ ctx.fillStyle = 'rgba(37,99,235,.07)'; ctx.fillRect(p.L, p.Y(bd.Emax), p.R - p.L, p.Y(bd.Emin) - p.Y(bd.Emax)); }
+  if (KP.free){
+    const avg = KP.V0*KP.bf;
+    ctx.save(); ctx.setLineDash([5,5]); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.6;
+    const shifts = KP.scheme === 'ext' ? [0] : KP.scheme === 'red' ? [-2,-1,0,1,2] : [-3,-2,-1,0,1,2,3];
+    for (const sh of shifts){ ctx.beginPath(); for (let s = 0; s <= 400; s++){ const kk = -4*KZ + s/400*8*KZ; const y = p.Y(freeE(kk) + avg), x = p.X(kk + sh*2*KZ); s ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke(); }
+    ctx.restore();
+  }
+  const colors = ['#2563eb','#ea580c','#16a34a','#9333ea','#db2777','#0891b2','#ca8a04'];
+  bands.forEach((bd, i) => {
+    ctx.strokeStyle = colors[i % colors.length]; ctx.lineWidth = 2.6;
+    const curves = [];
+    if (KP.scheme === 'ext'){ curves.push(bd.pts.map(([E,k]) => [kExt(bd.n, k), E])); curves.push(bd.pts.map(([E,k]) => [-kExt(bd.n, k), E])); }
+    else { const base = [bd.pts.map(([E,k]) => [k, E]), bd.pts.map(([E,k]) => [-k, E])]; const shifts = KP.scheme === 'red' ? [0] : [-1, 0, 1]; for (const sh of shifts) for (const c of base) curves.push(c.map(([k,E]) => [k + sh*2*KZ, E])); }
+    for (const c of curves){ ctx.beginPath(); c.forEach(([k,E], j) => { j ? ctx.lineTo(p.X(k), p.Y(E)) : ctx.moveTo(p.X(k), p.Y(E)); }); ctx.stroke(); }
+  });
+  for (let m = -xr; m <= xr; m++) if (m) dline(p.X(m*KZ), p.T, p.X(m*KZ), p.B, m % 2 && KP.scheme === 'ext' ? 'rgba(147,51,234,.5)' : 'rgba(148,163,184,.5)', 1.2);
+  ctx.restore();
+  if (KP.free) text(lv ? 'gestrichelt: freies Elektron' : 'gestrichelt: ohne Atome', p.L + 6, p.T + 8, {size:11, col:'#64748b'});
+  if (KP.scheme === 'ext' && lv) text('Lücken an k = nπ/a', p.R - 4, p.T + 8, {align:'right', size:11, col:'#9333ea', weight:600});
+  if (lv === 2) text('cos(ka) = cos(αw)·cosh(βb) + (β² − α²)/(2αβ)·sin(αw)·sinh(βb)', p.L + 6, p.B - 12, {size:11, col:'#475569'});
+  /* ---- Zustandsdichte ---- */
+  if (KP.dos && lv === 2 && wide){
+    const d = { x:W*0.81, y:H*0.03, w:W*0.17, h:H*0.94 };
+    const pd = plot(d, { title:'Zustandsdichte D(E)', x0:0, x1:1, y0:0, y1:Emax, xt:[], yt:[0,3,6,9,12,15], left:24 });
+    const nb = 150, hist = new Array(nb).fill(0);
+    for (const bd of bands) for (let j = 1; j < bd.pts.length; j++){ const dk = Math.abs(bd.pts[j][1] - bd.pts[j-1][1]); const bi = Math.floor(bd.pts[j][0]/Emax*nb); if (bi < nb) hist[bi] += dk; }
+    const mx = Math.max(...hist.map((v, i) => i > 2 ? v : 0)) || 1;
+    ctx.fillStyle = 'rgba(37,99,235,.55)';
+    hist.forEach((v, i) => { const w2 = Math.min(1, v/mx)*(pd.R - pd.L); ctx.fillRect(pd.L, pd.Y((i + 1)/nb*Emax), w2, pd.Y(i/nb*Emax) - pd.Y((i + 1)/nb*Emax) + 0.5); });
+    text('Spitzen an den Bandkanten', pd.L + 4, pd.B - 10, {size:10, col:'#475569'});
+  }
+}
+function kpControls(){
+  const lv = lvlNum();
+  UI.slider('Stärke der Atomrümpfe (Potentialhöhe V₀)', {min:0, max:20, step:0.25, get:() => KP.V0, set:v => KP.V0 = v, fmt:v => lv ? `${fmt(v,2)} eV` : (v < 0.5 ? 'keine' : v < 5 ? 'schwach' : v < 12 ? 'mittel' : 'stark')});
+  UI.slider('Breite der Barrieren', {min:0.05, max:0.5, step:0.01, get:() => KP.bf, set:v => KP.bf = v, fmt:v => lv ? `${fmt(v*AL,2)} nm (${fmt(v*100,0)} % von a)` : (v < 0.15 ? 'schmal' : v < 0.35 ? 'mittel' : 'breit')});
+  UI.seg('Zonenschema', [['ext','erweitert'],['red','reduziert'],['per','periodisch']], () => KP.scheme, v => KP.scheme = v);
+  UI.check('Freies Elektron zum Vergleich', () => KP.free, v => KP.free = v);
+  if (lv === 2) UI.check('Zustandsdichte zeigen', () => KP.dos, v => KP.dos = v);
+  UI.note(`Kronig-Penney-Modell: Kastenförmige Potentialwälle im Abstand a = ${fmt(AL,1)} nm, exakt gelöst. Links die erlaubten Energiebereiche (Bänder), rechts E(k).`);
+}
+
+/* =====================================================================
+   Station 3: Bragg-Reflexion und stehende Wellen (fast freie Elektronen)
+   ===================================================================== */
+const BR = { kf:0.7, U:1.2, band:'low', t:0 };
+const GV = 2*Math.PI/AL;
+function brState(k, U, band){
+  const e1 = freeE(k), e2 = freeE(k - GV), Uc = -U;   /* anziehendes Potential an den Rümpfen */
+  const m = (e1 + e2)/2, d = Math.sqrt(((e1 - e2)/2)**2 + Uc*Uc);
+  const E = band === 'low' ? m - d : m + d;
+  let A = Uc, B = E - e1;
+  if (Math.abs(A) < 1e-12 && Math.abs(B) < 1e-12){ A = 1; B = 0; }
+  const n = Math.hypot(A, B); return { E, A:A/n, B:B/n, e1, e2 };
+}
+function brDraw(dt){
+  BR.t += dt;
+  const lv = lvlNum(), wide = W > 900;
+  const k = BR.kf*KZ, st = brState(k, BR.U, BR.band);
+  const ek = wide ? { x:W*0.02, y:H*0.03, w:W*0.4, h:H*0.94 } : { x:10, y:10, w:W - 20, h:H*0.4 };
+  const rs = wide ? { x:W*0.44, y:H*0.03, w:W*0.54, h:H*0.62 } : { x:10, y:H*0.42, w:W - 20, h:H*0.33 };
+  const info = wide ? { x:W*0.44, y:H*0.68, w:W*0.54, h:H*0.29 } : { x:10, y:H*0.77, w:W - 20, h:H*0.22 };
+  /* E(k) in der Nähe der Zonengrenze */
+  const Emax = freeE(1.35*KZ) + BR.U + 0.3;
+  const p = plot(ek, { title:'Bänder an der Zonengrenze', x0:0, x1:1.35*KZ, y0:0, y1:Emax, xt:[0, KZ], xf:kLabel, yt:[0,1,2,3,4,5].filter(v => v <= Emax), yf:v => lv ? v + ' eV' : '', xl:'k', yl:'E', left:44 });
+  clipTo(p);
+  ctx.save(); ctx.setLineDash([5,5]); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5; ctx.beginPath();
+  for (let s = 0; s <= 200; s++){ const kk = s/200*1.35*KZ; s ? ctx.lineTo(p.X(kk), p.Y(freeE(kk))) : ctx.moveTo(p.X(kk), p.Y(freeE(kk))); } ctx.stroke(); ctx.restore();
+  for (const [band, col] of [['low','#2563eb'],['high','#ea580c']]){
+    ctx.strokeStyle = col; ctx.lineWidth = 2.8; ctx.beginPath();
+    for (let s = 0; s <= 200; s++){
+      const kk = s/200*KZ; let E = brState(kk, BR.U, band).E;
+      s ? ctx.lineTo(p.X(kk), p.Y(E)) : ctx.moveTo(p.X(kk), p.Y(E));
+    }
+    ctx.stroke();
+    /* Fortsetzung jenseits der Zonengrenze (erweitertes Schema) */
+    ctx.globalAlpha = 0.35; ctx.strokeStyle = '#ea580c'; ctx.beginPath();
+    for (let s = 0; s <= 100; s++){ const kk = KZ + s/100*0.35*KZ; const kr = 2*KZ - kk; const E = brState(kr, BR.U, band === 'low' ? 'high' : 'low').E; if (band === 'low') { s ? ctx.lineTo(p.X(kk), p.Y(E)) : ctx.moveTo(p.X(kk), p.Y(E)); } }
+    ctx.stroke(); ctx.globalAlpha = 1;
+  }
+  dline(p.X(KZ), p.T, p.X(KZ), p.B, '#9333ea', 1.4);
+  ctx.restore();
+  const Eg = 2*BR.U;
+  const yLo = p.Y(brState(KZ, BR.U, 'low').E), yHi = p.Y(brState(KZ, BR.U, 'high').E);
+  if (BR.U > 0.05){ arrow(p.X(KZ) - 10, yLo, p.X(KZ) - 10, yHi + 2, '#b91c1c', 1.4); text(lv ? `Lücke 2|U| = ${fmt(Eg,2)} eV` : 'Lücke', p.X(KZ) - 14, (yLo + yHi)/2, {align:'right', size:11, weight:700, col:'#b91c1c'}); }
+  circle(p.X(k), p.Y(st.E), 7, BR.band === 'low' ? '#2563eb' : '#ea580c', '#fff', 2);
+  text('Zonengrenze', p.X(KZ) + 4, p.T + 8, {size:10, col:'#9333ea'});
+  /* Ortsraum: Potential, |ψ|², Re ψ */
+  box(rs.x, rs.y, rs.w, rs.h, '#fbfcfe', '#e2e8f0', 12);
+  text('Welle im Kristall', rs.x + 12, rs.y + 16, {weight:700, size:13});
+  const x0 = rs.x + 20, xw = rs.w - 40, cells = 4, L = cells*AL;
+  const yP = rs.y + rs.h*0.3, yW = rs.y + rs.h*0.68, aW = rs.h*0.2;
+  /* Potential V(x) = 2U' cos(Gx) */
+  ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1.6; ctx.beginPath();
+  for (let s = 0; s <= 300; s++){ const x = s/300*L, V = -Math.cos(GV*x); const px = x0 + s/300*xw; s ? ctx.lineTo(px, yP - V*18*Math.min(1, BR.U/1.2 + 0.15)) : ctx.moveTo(px, yP - V*18*Math.min(1, BR.U/1.2 + 0.15)); }
+  ctx.stroke();
+  for (let c = 0; c <= cells; c++){ const px = x0 + c/cells*xw; circle(px, yP + 26, 7, '#475569'); text('+', px, yP + 26.5, {align:'center', size:11, weight:800, col:'#fff'}); }
+  text(lv ? 'Potential (Mulden bei den Rümpfen)' : 'Atomrümpfe ziehen Elektronen an', rs.x + rs.w - 12, yP - 26, {align:'right', size:11, col:'#64748b'});
+  /* |ψ|² */
+  const dens = x => st.A*st.A + st.B*st.B + 2*st.A*st.B*Math.cos(GV*x);
+  ctx.fillStyle = BR.band === 'low' ? 'rgba(37,99,235,.18)' : 'rgba(234,88,12,.18)'; ctx.beginPath(); ctx.moveTo(x0, yW + aW);
+  for (let s = 0; s <= 300; s++){ const x = s/300*L; ctx.lineTo(x0 + s/300*xw, yW + aW - dens(x)*aW); }
+  ctx.lineTo(x0 + xw, yW + aW); ctx.closePath(); ctx.fill();
+  /* Re ψ(x, t) */
+  const w = st.E*3;
+  ctx.strokeStyle = BR.band === 'low' ? '#2563eb' : '#ea580c'; ctx.lineWidth = 2.4; ctx.beginPath();
+  for (let s = 0; s <= 400; s++){ const x = s/400*L; const re = st.A*Math.cos(k*x - w*BR.t) + st.B*Math.cos((k - GV)*x - w*BR.t); const px = x0 + s/400*xw; s ? ctx.lineTo(px, yW - re*aW*0.7) : ctx.moveTo(px, yW - re*aW*0.7); }
+  ctx.stroke();
+  line(x0, yW + aW, x0 + xw, yW + aW, '#cbd5e1', 1);
+  for (let c = 0; c <= cells; c++){ const px = x0 + c/cells*xw; dline(px, yP + 34, px, yW + aW, 'rgba(71,85,105,.25)', 1, [2,4]); }
+  text('Linie: Welle · Fläche: Aufenthaltswahrscheinlichkeit |ψ|²', x0, rs.y + rs.h - 10, {size:11, col:'#475569'});
+  /* Info */
+  box(info.x, info.y, info.w, info.h, '#f8fafc', '#e2e8f0', 12);
+  let y = info.y + 18;
+  const near = BR.kf > 0.97;
+  const msg = near
+    ? (BR.band === 'low' ? 'An der Zonengrenze wird die Welle an den Gitterebenen reflektiert. Hin- und rücklaufende Welle bilden eine stehende Welle. Im unteren Band sitzen die Elektronen bei den positiven Rümpfen – dort ist ihre Energie niedrig.'
+                         : 'Die andere stehende Welle hat ihre Bäuche zwischen den Rümpfen. Dort ist die potentielle Energie höher – deshalb liegt dieser Zustand oberhalb der Lücke.')
+    : 'Weit weg von der Zonengrenze läuft die Welle fast ungestört durch den Kristall (fast wie ein freies Elektron). Je näher k an π/a kommt, desto stärker mischt sich die reflektierte Welle bei.';
+  y = wrapText(msg, info.x + 12, y, info.w - 24, {size:13, col:'#334155'});
+  if (lv >= 1) y = wrapText(`Bragg-Bedingung in 1D: 2a = n·λ ⇔ k = nπ/a. Anteil der reflektierten Welle: ${fmt(st.B*st.B*100,0)} %.`, info.x + 12, y + 4, info.w - 24, {size:12, col:'#475569'});
+  if (lv === 2){
+    const h = 1e-4*KZ, v = (brState(k + h, BR.U, BR.band).E - brState(Math.max(0, k - h), BR.U, BR.band).E)/(k + h - Math.max(0, k - h));
+    wrapText(`Gruppengeschwindigkeit v = (1/ħ)·dE/dk = ${fmt(v*1.602e-19/1.0546e-34*1e-9/1e5, 2)}·10⁵ m/s – an der Zonengrenze null (stehende Welle).`, info.x + 12, y + 4, info.w - 24, {size:12, col:'#475569'});
+  }
+}
+function brControls(){
+  const lv = lvlNum();
+  UI.slider('Wellenzahl k', {min:0.05, max:1, step:0.005, get:() => BR.kf, set:v => BR.kf = v, fmt:v => v > 0.995 ? 'k = π/a (Zonengrenze)' : `k = ${fmt(v,2)}·π/a`});
+  UI.slider('Stärke des Gitterpotentials |U|', {min:0, max:2, step:0.05, get:() => BR.U, set:v => BR.U = v, fmt:v => lv ? `${fmt(v,2)} eV` : (v < 0.1 ? 'keine' : v < 1 ? 'schwach' : 'stark')});
+  UI.seg('Band', [['low','unteres Band'],['high','oberes Band']], () => BR.band, v => BR.band = v);
+  UI.buttons([['zur Zonengrenze', () => { BR.kf = 1; buildControls(); }, 'primary']]);
+}
+
+/* =====================================================================
+   Station 4: Vom Atom zum Band – Tight-Binding (LCAO)
+   E(k) = E₀ − 2t·cos(ka), zwei Orbitale (s und p)
+   ===================================================================== */
+const TB = { N:8, d:0.45, sel:{ band:0, n:0 }, both:true };
+const TBP = [ { name:'s', E0:-8, t0:2.2, sign:1, col:'#2563eb' }, { name:'p', E0:-3, t0:2.6, sign:-1, col:'#ea580c' } ];
+const tbT = (o, d) => o.t0*Math.exp(-(d - 0.25)/0.18);
+const tbE = (o, d, k) => o.E0 - 2*o.sign*tbT(o, d)*Math.cos(k*AL);
+function tbKs(N){ const ks = []; for (let n = 0; n < N; n++){ let m = n; if (m > N/2) m -= N; ks.push(2*Math.PI*m/(N*AL)); } return ks.sort((a, b) => a - b); }
+function tbDraw(dt){
+  const lv = lvlNum(), wide = W > 900;
+  const chain = { x:W*0.02, y:H*0.03, w:W*0.96, h:H*0.3 };
+  const ek = wide ? { x:W*0.02, y:H*0.36, w:W*0.58, h:H*0.61 } : { x:10, y:H*0.36, w:W - 20, h:H*0.4 };
+  const lvl = wide ? { x:W*0.62, y:H*0.36, w:W*0.36, h:H*0.61 } : { x:10, y:H*0.78, w:W - 20, h:H*0.21 };
+  const ks = tbKs(TB.N), orbs = TB.both ? TBP : [TBP[0]];
+  const so = TBP[TB.sel.band], k = ks[clamp(TB.sel.n, 0, TB.N - 1)] ?? 0;
+  /* Kette mit Orbitalen (Realteil der Bloch-Summe) */
+  box(chain.x, chain.y, chain.w, chain.h, '#fbfcfe', '#e2e8f0', 12);
+  const kn = Math.round(k*AL/(2*Math.PI)*TB.N);
+  text(`Zustand im ${so.name}-Band: k = ${lv ? (kn === 0 ? '0' : `${kn}·2π/(${TB.N}a)`) : (Math.abs(k) < 1e-9 ? '0' : fmt(k*AL/Math.PI,2) + '·π/a')}` + (lv ? ` = ${fmt(k*AL/Math.PI,2)}·π/a` : ''), chain.x + 12, chain.y + 16, {weight:700, size:13});
+  const nShow = Math.min(TB.N, 16), sp = (chain.w - 60)/Math.max(1, nShow), yc = chain.y + chain.h*0.58;
+  const size = clamp(sp*0.42*(0.55 + 0.9*(0.6 - Math.min(0.6, TB.d))), 8, 40);
+  for (let j = 0; j < nShow; j++){
+    const x = chain.x + 30 + (j + 0.5)*sp, c = Math.cos(k*j*AL), col = c >= 0 ? '37,99,235' : '220,38,38', a = 0.15 + 0.6*Math.abs(c);
+    if (so.name === 's'){ circle(x, yc, size*Math.max(0.25, Math.abs(c))**0.5, `rgba(${col},${a})`, `rgba(${col},.9)`, 1.5); }
+    else {
+      const s2 = size*0.8*Math.max(0.3, Math.abs(c))**0.5;
+      ctx.fillStyle = `rgba(${col},${a})`; ctx.beginPath(); ctx.ellipse(x + s2*0.75, yc, s2*0.7, s2*0.45, 0, 0, Math.PI*2); ctx.fill();
+      const col2 = c >= 0 ? '220,38,38' : '37,99,235'; ctx.fillStyle = `rgba(${col2},${a})`; ctx.beginPath(); ctx.ellipse(x - s2*0.75, yc, s2*0.7, s2*0.45, 0, 0, Math.PI*2); ctx.fill();
+    }
+    circle(x, yc, 3.2, '#0f172a');
+  }
+  if (TB.N > nShow) text(`… (${TB.N} Atome im Ring)`, chain.x + chain.w - 12, chain.y + chain.h - 10, {align:'right', size:11, col:'#64748b'});
+  const bonding = so.name === 's' ? Math.cos(k*AL) > 0.3 : Math.cos(k*AL) < -0.3;
+  text(lv ? 'blau/rot: Vorzeichen der Wellenfunktion · Größe: Betrag' : 'blau und rot: Welle schwingt nach oben bzw. unten', chain.x + 12, chain.y + chain.h - 10, {size:11, col:'#475569'});
+  text(Math.abs(Math.cos(k*AL)) < 0.3 ? 'teils bindend, teils antibindend' : bonding ? 'bindend → niedrige Energie' : 'antibindend → hohe Energie', chain.x + chain.w - 12, chain.y + 16, {align:'right', size:12, weight:700, col: bonding ? '#16a34a' : '#b91c1c'});
+  /* E(k) */
+  const p = plot(ek, { title:'Bandstruktur E(k)', x0:-KZ, x1:KZ, y0:-14, y1:4, xt:kTicks(1), xf:kLabel, yt:[-12,-8,-4,0,4], yf:v => lv ? v + ' eV' : '', xl:'k', yl:'E', left:46 });
+  clipTo(p);
+  for (const o of orbs){
+    ctx.strokeStyle = o.col; ctx.globalAlpha = 0.35; ctx.lineWidth = 2; ctx.beginPath();
+    for (let s = 0; s <= 200; s++){ const kk = -KZ + s/200*2*KZ; s ? ctx.lineTo(p.X(kk), p.Y(tbE(o, TB.d, kk))) : ctx.moveTo(p.X(kk), p.Y(tbE(o, TB.d, kk))); }
+    ctx.stroke(); ctx.globalAlpha = 1;
+    const bi = TBP.indexOf(o);
+    ks.forEach((kk, n) => { const sel = bi === TB.sel.band && n === TB.sel.n; circle(p.X(kk), p.Y(tbE(o, TB.d, kk)), sel ? 7 : 4.3, sel ? '#fff' : o.col, sel ? o.col : null, 3); });
+    dline(p.L, p.Y(o.E0), p.R, p.Y(o.E0), 'rgba(100,116,139,.35)', 1);
+  }
+  ctx.restore();
+  TB.plotGeo = p; TB.ks = ks;
+  if (lv === 2) text(`E(k) = E₀ − 2t·cos(ka), t_s = ${fmt(tbT(TBP[0], TB.d),2)} eV`, p.L + 6, p.T + 8, {size:11, col:'#475569'});
+  /* Niveauschema: Atom → Band */
+  box(lvl.x, lvl.y, lvl.w, lvl.h, '#f8fafc', '#e2e8f0', 12);
+  text('Energieniveaus', lvl.x + 12, lvl.y + 16, {weight:700, size:13});
+  const ly0 = lvl.y + 36, ly1 = lvl.y + lvl.h - 26, LY = E => ly1 - (E + 14)/18*(ly1 - ly0);
+  const c1 = lvl.x + lvl.w*0.2, c2 = lvl.x + lvl.w*0.62;
+  text('1 Atom', c1, ly1 + 14, {align:'center', size:11, col:'#475569'}); text(`${TB.N} Atome`, c2, ly1 + 14, {align:'center', size:11, col:'#475569'});
+  for (const o of orbs){
+    line(c1 - 26, LY(o.E0), c1 + 26, LY(o.E0), o.col, 3);
+    text(o.name, c1 - 32, LY(o.E0), {align:'right', size:12, weight:700, col:o.col});
+    const Es = ks.map(kk => tbE(o, TB.d, kk));
+    for (const E of Es) line(c2 - 34, LY(E), c2 + 34, LY(E), o.col, 1.6);
+    const lo = Math.min(...Es), hi = Math.max(...Es);
+    dline(c1 + 26, LY(o.E0), c2 - 34, LY(lo), 'rgba(100,116,139,.4)', 1); dline(c1 + 26, LY(o.E0), c2 - 34, LY(hi), 'rgba(100,116,139,.4)', 1);
+    if (lv) text(`Breite ${fmt(hi - lo,2)} eV`, c2 + 40, (LY(lo) + LY(hi))/2, {size:11, col:o.col, weight:600});
+  }
+  const sE = tbE(so, TB.d, k); circle(c2 + 40 + (lv ? 74 : 0), LY(sE), 5, so.col);
+}
+function tbClick(x, y){
+  const p = TB.plotGeo; if (!p) return false;
+  let best = null, bd = 14;
+  (TB.both ? [0,1] : [0]).forEach(bi => TB.ks.forEach((kk, n) => { const d = Math.hypot(p.X(kk) - x, p.Y(tbE(TBP[bi], TB.d, kk)) - y); if (d < bd){ bd = d; best = { band:bi, n }; } }));
+  if (best){ TB.sel = best; return true; }
+  return false;
+}
+function tbControls(){
+  UI.select('Anzahl der Atome', [['1','1'],['2','2'],['3','3'],['4','4'],['6','6'],['8','8'],['12','12'],['24','24']], () => String(TB.N), v => { TB.N = +v; TB.sel.n = Math.floor(TB.N/2); buildControls(); });
+  UI.slider('Abstand der Atome', {min:0.28, max:1, step:0.01, get:() => TB.d, set:v => TB.d = v, fmt:v => lvlNum() ? `${fmt(v,2)} nm` : (v > 0.75 ? 'weit' : v < 0.4 ? 'eng' : 'mittel')});
+  UI.slider('Zustand im Band', {min:0, max:TB.N - 1, step:1, get:() => TB.sel.n, set:v => TB.sel.n = v, fmt:v => `${v + 1} von ${TB.N}`});
+  UI.seg('Band', [['0','s-Band'],['1','p-Band']], () => String(TB.sel.band), v => { TB.sel.band = +v; if (+v === 1) TB.both = true; });
+  UI.check('Zwei Orbitale (s und p)', () => TB.both, v => { TB.both = v; if (!v) TB.sel.band = 0; });
+  UI.note('Tipp: Einen Punkt in E(k) antippen. Bei k = 0 schwingen alle Orbitale gleich (bindend), bei k = π/a abwechselnd (antibindend).');
+}
+
+/* =====================================================================
+   Station 5: Bänder füllen – Metall oder Isolator?
+   ===================================================================== */
+const FL = { ne:1, d:0.45, field:false, T:0, N:24 };
+function flStates(){
+  const ks = tbKs(FL.N), st = [];
+  const dk = FL.field ? 0.55*2*Math.PI/(FL.N*AL) : 0;
+  for (const bi of [0,1]) for (const k of ks) st.push({ bi, k, E:tbE(TBP[bi], FL.d, k), Es:tbE(TBP[bi], FL.d, k - dk) });
+  st.sort((a, b) => a.Es - b.Es);
+  const nOcc = Math.round(FL.ne*FL.N/2);
+  st.forEach((s, i) => s.occ = i < nOcc);
+  return st;
+}
+function flDraw(dt){
+  const lv = lvlNum(), wide = W > 900, st = flStates();
+  const ek = wide ? { x:W*0.02, y:H*0.03, w:W*0.5, h:H*0.7 } : { x:10, y:10, w:W - 20, h:H*0.4 };
+  const dos = wide ? { x:W*0.54, y:H*0.03, w:W*0.2, h:H*0.7 } : { x:10, y:H*0.42, w:W*0.45, h:H*0.35 };
+  const ver = wide ? { x:W*0.76, y:H*0.03, w:W*0.22, h:H*0.7 } : { x:W*0.5, y:H*0.42, w:W*0.48, h:H*0.35 };
+  const info = wide ? { x:W*0.02, y:H*0.76, w:W*0.96, h:H*0.22 } : { x:10, y:H*0.79, w:W - 20, h:H*0.2 };
+  const occ = st.filter(s => s.occ), emp = st.filter(s => !s.occ);
+  const EF = occ.length && emp.length ? (Math.max(...occ.map(s => s.E)) + Math.min(...emp.map(s => s.E)))/2 : (occ.length ? Math.max(...occ.map(s => s.E)) : -14);
+  const sBand = [0,1].map(bi => { const E = Array.from({length:200}, (_, i) => tbE(TBP[bi], FL.d, -KZ + i/199*2*KZ)); return [Math.min(...E), Math.max(...E)]; });
+  const gap = sBand[1][0] - sBand[0][1];
+  const p = plot(ek, { title:'Besetzte Zustände (gefüllte Punkte)', x0:-KZ, x1:KZ, y0:-14, y1:4, xt:kTicks(1), xf:kLabel, yt:[-12,-8,-4,0,4], yf:v => lv ? v + ' eV' : '', xl:'k', yl:'E', left:46 });
+  clipTo(p);
+  for (const bi of [0,1]){ ctx.strokeStyle = TBP[bi].col; ctx.globalAlpha = 0.3; ctx.lineWidth = 2; ctx.beginPath(); for (let s = 0; s <= 200; s++){ const kk = -KZ + s/200*2*KZ; s ? ctx.lineTo(p.X(kk), p.Y(tbE(TBP[bi], FL.d, kk))) : ctx.moveTo(p.X(kk), p.Y(tbE(TBP[bi], FL.d, kk))); } ctx.stroke(); ctx.globalAlpha = 1; }
+  for (const s of st){
+    const kT = KB*FL.T, f = FL.T > 0 && lv === 2 ? 1/(1 + Math.exp((s.E - EF)/Math.max(kT, 1e-6))) : (s.occ ? 1 : 0);
+    const col = TBP[s.bi].col;
+    circle(p.X(s.k), p.Y(s.E), 5, f > 0.5 ? col : '#fff', col, 1.6);
+    if (lv === 2 && FL.T > 0 && f > 0.02 && f < 0.98) circle(p.X(s.k), p.Y(s.E), 5*Math.sqrt(f), col);
+  }
+  dline(p.L, p.Y(EF), p.R, p.Y(EF), '#7c3aed', 1.6);
+  ctx.restore();
+  text(lv ? 'Fermi-Energie' : 'bis hier gefüllt', p.R - 4, p.Y(EF) - 9, {align:'right', size:11, weight:700, col:'#7c3aed'});
+  /* Strom: Summe der Gruppengeschwindigkeiten der besetzten Zustände */
+  let J = 0; for (const s of occ){ const o = TBP[s.bi]; J += 2*o.sign*tbT(o, FL.d)*AL*Math.sin(s.k*AL); }
+  const conducts = Math.abs(J) > 0.05;
+  if (FL.field){ arrow(p.X(0) - 30, p.T + 22, p.X(0) + 30, p.T + 22, '#0f766e', 2); text('Feld verschiebt die Besetzung in k', p.X(0), p.T + 38, {align:'center', size:11, col:'#0f766e', weight:600}); }
+  /* Zustandsdichte */
+  const pd = plot(dos, { title:'Zustandsdichte', x0:0, x1:1, y0:-14, y1:4, xt:[], yt:[-12,-8,-4,0,4], yf:() => '', left:16 });
+  const nb = 90, hist = [[],[]];
+  for (const bi of [0,1]){ hist[bi] = new Array(nb).fill(0); for (let i = 0; i < 2000; i++){ const E = tbE(TBP[bi], FL.d, -KZ + (i + 0.5)/2000*2*KZ); const j = Math.floor((E + 14)/18*nb); if (j >= 0 && j < nb) hist[bi][j]++; } }
+  const mx = Math.max(...hist[0], ...hist[1]) || 1;
+  for (const bi of [0,1]) hist[bi].forEach((v, j) => {
+    if (!v) return; const E0 = -14 + j/nb*18, E1 = -14 + (j + 1)/nb*18, w = Math.min(1, v/mx*2.2)*(pd.R - pd.L);
+    ctx.fillStyle = E1 <= EF + 0.05 ? TBP[bi].col : 'rgba(148,163,184,.35)'; ctx.globalAlpha = 0.75; ctx.fillRect(pd.L, pd.Y(E1), w, pd.Y(E0) - pd.Y(E1) + 0.5); ctx.globalAlpha = 1;
+  });
+  dline(pd.L, pd.Y(EF), pd.R, pd.Y(EF), '#7c3aed', 1.6);
+  /* Urteil */
+  box(ver.x, ver.y, ver.w, ver.h, '#f8fafc', '#e2e8f0', 12);
+  const partial = [0,1].some(bi => { const s = st.filter(q => q.bi === bi), o = s.filter(q => q.occ).length; return o > 0 && o < s.length; });
+  const kind = partial ? 'Metall' : (gap > 3 ? 'Isolator' : 'Halbleiter');
+  text('Ergebnis', ver.x + 12, ver.y + 18, {weight:700, size:13});
+  text(kind, ver.x + 12, ver.y + 52, {size:26, weight:800, col: kind === 'Metall' ? '#b45309' : kind === 'Isolator' ? '#475569' : '#0f766e'});
+  let y = ver.y + 84;
+  y = wrapText(partial ? 'Ein Band ist nur teilweise gefüllt. Direkt über den besetzten Zuständen gibt es freie – die Elektronen können Energie aufnehmen und fließen.'
+                       : `Alle Bänder sind entweder ganz voll oder ganz leer. Bis zum nächsten freien Zustand ist eine Lücke von ${fmt(Math.max(0, gap),2)} eV zu überwinden.`, ver.x + 12, y, ver.w - 24, {size:12, col:'#334155'});
+  if (FL.field) wrapText(conducts ? '➜ Mit Feld: mehr Elektronen laufen nach rechts als nach links – es fließt Strom.' : '➜ Mit Feld: ein volles Band bleibt voll – die Beiträge heben sich auf, kein Strom.', ver.x + 12, y + 6, ver.w - 24, {size:12, weight:700, col: conducts ? '#16a34a' : '#b91c1c'});
+  /* Info */
+  box(info.x, info.y, info.w, info.h, '#f8fafc', '#e2e8f0', 12);
+  wrapText(`Jeder Punkt ist ein Zustand für 2 Elektronen (Spin ↑ und ↓). ${FL.N} Atome → ${FL.N} Zustände pro Band → Platz für ${2*FL.N} Elektronen. Mit ${FL.ne} Elektron${FL.ne > 1 ? 'en' : ''} pro Atom werden ${FL.ne*FL.N} Elektronen eingefüllt.` + (lv ? ' Beispiele: Natrium (1 Elektron pro Atom, halb volles Band) ist ein Metall; Magnesium (2) wäre ein Isolator, wenn sich die Bänder nicht überlappen würden – sie tun es, deshalb ist Magnesium ein Metall.' : ''), info.x + 12, info.y + 18, info.w - 24, {size:12, col:'#334155'});
+}
+function flControls(){
+  const lv = lvlNum();
+  UI.seg('Elektronen pro Atom', [['1','1'],['2','2'],['3','3'],['4','4']], () => String(FL.ne), v => FL.ne = +v);
+  UI.slider('Abstand der Atome', {min:0.28, max:0.8, step:0.01, get:() => FL.d, set:v => FL.d = v, fmt:v => lv ? `${fmt(v,2)} nm` : (v > 0.6 ? 'weit' : v < 0.36 ? 'eng (Bänder überlappen)' : 'mittel')});
+  UI.check('Spannung anlegen', () => FL.field, v => FL.field = v);
+  if (lv === 2) UI.slider('Temperatur', {min:0, max:6000, step:100, get:() => FL.T, set:v => FL.T = v, fmt:v => `${v} K`});
+  UI.note('Vereinfachtes eindimensionales Modell mit zwei Bändern (s und p), 24 Atome im Ring.');
+}
+
+/* =====================================================================
+   Station 6: Echte Bandstrukturen – Silizium und Galliumarsenid
+   Bandverläufe vereinfacht nach Messwerten an Γ, X und L.
+   ===================================================================== */
+const SG = { mat:'GaAs', rotX:-0.45, rotY:0.6, drag:null, abs:0, absT:-1, mass:false };
+const SL = 0.866;   /* |ΓL| relativ zu |ΓX| */
+/* Bänder als Funktionen von s ∈ [−SL, 1]: s < 0 Richtung L, s > 0 Richtung X */
+function sat(E0, endL, endX, cL, cX){ return s => { const end = s < 0 ? endL : endX, c = s < 0 ? cL : cX, D = end - E0; return E0 + D*Math.tanh(c*s*s/Math.abs(D || 1e-9)); }; }
+/* Tal bei Γ mit richtiger Krümmung, Buckel dazwischen, Nebental an L bzw. X */
+function valley(E0, cL, cX, hump, endL, endX){ return s => { const c = s < 0 ? cL : cX, se = s < 0 ? SL : 1, end = s < 0 ? endL : endX, a = Math.abs(s)/se; const E1 = E0 + (hump - E0)*Math.tanh(c*s*s/(hump - E0)); const u = clamp((a - 0.35)/0.65, 0, 1), w = u*u*(3 - 2*u); return E1 + (end - E1)*w; }; }
+function cosPts(pts){ return s => { for (let i = 0; i < pts.length - 1; i++){ const [s0, e0] = pts[i], [s1, e1] = pts[i + 1]; if (s >= s0 && s <= s1){ const u = (s - s0)/(s1 - s0); return e0 + (e1 - e0)*(1 - Math.cos(Math.PI*u))/2; } } return pts[pts.length - 1][1]; }; }
+const SG_MATS = {
+  Si: { name:'Silizium', a:0.543, Eg:1.12, direct:false,
+        vb:[ cosPts([[-SL,-9.6],[0,-12.4],[1,-7.8]]), cosPts([[-SL,-7.0],[0,0],[1,-7.8]]), sat(0,-1.2,-2.9,31.9,31.9), sat(0,-1.2,-2.9,10.4,10.4), sat(-0.044,-1.25,-2.95,21,21) ],
+        cb:[ cosPts([[-SL,2.0],[0,3.4],[0.85,1.12],[1,1.2]]), cosPts([[-SL,4.0],[0,3.4],[1,4.4]]) ],
+        cbMin:[0.85, 1.12], mass:'m*: Elektronen 0,98 m_e (längs) / 0,19 m_e (quer), schwere Löcher 0,49 m_e, leichte Löcher 0,16 m_e' },
+  GaAs: { name:'Galliumarsenid', a:0.565, Eg:1.42, direct:true,
+        vb:[ cosPts([[-SL,-6.7],[0,0],[1,-6.9]]), sat(0,-1.1,-2.9,57,57), sat(0,-1.1,-2.9,9.4,9.4), sat(-0.34,-1.4,-3.1,34,34) ],
+        cb:[ valley(1.42, 70, 70, 2.9, 1.71, 1.98), cosPts([[-SL,5.4],[0,4.5],[1,2.3]]) ],
+        cbMin:[0, 1.42], mass:'m*: Elektronen 0,067 m_e, schwere Löcher 0,5 m_e, leichte Löcher 0,08 m_e' }
+};
+/* fcc-Brillouin-Zone (Oktaederstumpf): Ecken sind Permutationen von (0, ±1, ±2) */
+const BZ = (() => {
+  const V = [];
+  const perms = [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
+  for (const p of perms) for (const s1 of [-1,1]) for (const s2 of [-1,1]){ const base = [0, s1*1, s2*2]; const v = [0,0,0]; v[p[0]] = base[0]; v[p[1]] = base[1]; v[p[2]] = base[2]; if (!V.some(w => w[0] === v[0] && w[1] === v[1] && w[2] === v[2])) V.push(v); }
+  const E = []; for (let i = 0; i < V.length; i++) for (let j = i + 1; j < V.length; j++){ const d = (V[i][0]-V[j][0])**2 + (V[i][1]-V[j][1])**2 + (V[i][2]-V[j][2])**2; if (d === 2) E.push([i, j]); }
+  return { V, E };
+})();
+function sgProj(v, cx, cy, sc){
+  const [x, y, z] = v, cy1 = Math.cos(SG.rotY), sy1 = Math.sin(SG.rotY), cx1 = Math.cos(SG.rotX), sx1 = Math.sin(SG.rotX);
+  const x1 = x*cy1 + z*sy1, z1 = -x*sy1 + z*cy1;
+  const y2 = y*cx1 - z1*sx1, z2 = y*sx1 + z1*cx1;
+  return [cx + x1*sc, cy - y2*sc, z2];
+}
+function sgDraw(dt){
+  const lv = lvlNum(), wide = W > 900, M = SG_MATS[SG.mat];
+  const bz = wide ? { x:W*0.02, y:H*0.03, w:W*0.33, h:H*0.55 } : { x:10, y:10, w:W*0.45, h:H*0.35 };
+  const bs = wide ? { x:W*0.37, y:H*0.03, w:W*0.61, h:H*0.72 } : { x:W*0.48, y:10, w:W*0.5, h:H*0.5 };
+  const info = wide ? { x:W*0.02, y:H*0.61, w:W*0.33, h:H*0.37 } : { x:10, y:H*0.53, w:W - 20, h:H*0.2 };
+  const info2 = wide ? { x:W*0.37, y:H*0.78, w:W*0.61, h:H*0.2 } : { x:10, y:H*0.75, w:W - 20, h:H*0.24 };
+  /* ---- 3D-Brillouin-Zone ---- */
+  box(bz.x, bz.y, bz.w, bz.h, '#fbfcfe', '#e2e8f0', 12);
+  text('1. Brillouin-Zone (fcc-Gitter)', bz.x + 12, bz.y + 16, {weight:700, size:13});
+  text('ziehen zum Drehen', bz.x + bz.w - 12, bz.y + 16, {align:'right', size:11, col:'#64748b'});
+  if (!SG.drag) SG.rotY += dt*0.15;
+  const cx = bz.x + bz.w/2, cy = bz.y + bz.h/2 + 10, sc = Math.min(bz.w, bz.h)*0.17;
+  const P = BZ.V.map(v => sgProj(v, cx, cy, sc));
+  for (const [i, j] of BZ.E){ const back = (P[i][2] + P[j][2])/2 < 0; line(P[i][0], P[i][1], P[j][0], P[j][1], back ? 'rgba(100,116,139,.35)' : '#334155', back ? 1 : 1.8); }
+  const G = sgProj([0,0,0], cx, cy, sc), X = sgProj([0,0,2], cx, cy, sc), Lp = sgProj([1,1,1], cx, cy, sc), K = sgProj([1.5,1.5,0], cx, cy, sc);
+  line(Lp[0], Lp[1], G[0], G[1], '#9333ea', 3); line(G[0], G[1], X[0], X[1], '#0f766e', 3);
+  for (const [pt, name, col] of [[G,'Γ','#0f172a'],[X,'X','#0f766e'],[Lp,'L','#9333ea'],[K,'K','#64748b']]){ circle(pt[0], pt[1], 5, col); text(name, pt[0] + 8, pt[1] - 8, {size:14, weight:800, col}); }
+  /* ---- Bandstruktur ---- */
+  const p = plot(bs, { title:`Bandstruktur von ${M.name} (vereinfacht)`, x0:-SL, x1:1, y0: lv ? -13 : -4, y1:6, xt:[-SL, 0, 1], xf:v => v < -0.5 ? 'L' : v > 0.5 ? 'X' : 'Γ', yt: lv ? [-12,-9,-6,-3,0,3,6] : [-3,0,3,6], yf:v => lv ? v + ' eV' : '', xl:'Wellenvektor k', yl:'E', left:46 });
+  ctx.fillStyle = 'rgba(147,51,234,.06)'; ctx.fillRect(p.L, p.T, p.X(0) - p.L, p.B - p.T);
+  ctx.fillStyle = 'rgba(15,118,110,.06)'; ctx.fillRect(p.X(0), p.T, p.R - p.X(0), p.B - p.T);
+  ctx.fillStyle = 'rgba(148,163,184,.15)'; ctx.fillRect(p.L, p.Y(M.Eg), p.R - p.L, p.Y(0) - p.Y(M.Eg));
+  clipTo(p);
+  const drawBand = (f, col, w) => { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); for (let i = 0; i <= 300; i++){ const s = -SL + i/300*(1 + SL); const y = p.Y(f(s)); i ? ctx.lineTo(p.X(s), y) : ctx.moveTo(p.X(s), y); } ctx.stroke(); };
+  M.vb.forEach(f => drawBand(f, '#2563eb', 2.4));
+  M.cb.forEach(f => drawBand(f, '#ea580c', 2.4));
+  if (SG.mass && lv === 2){
+    const [s0, E0] = M.cbMin, a = M.a, mstar = SG.mat === 'GaAs' ? 0.067 : 0.98, c = C0/mstar*(2*Math.PI/a)**2;
+    ctx.save(); ctx.setLineDash([4,4]); ctx.strokeStyle = '#16a34a'; ctx.lineWidth = 1.8; ctx.beginPath();
+    for (let i = 0; i <= 100; i++){ const s = s0 - 0.25 + i/100*0.5; const y = p.Y(E0 + c*(s - s0)**2); i ? ctx.lineTo(p.X(s), y) : ctx.moveTo(p.X(s), y); } ctx.stroke(); ctx.restore();
+  }
+  ctx.restore();
+  dline(p.X(0), p.T, p.X(0), p.B, '#94a3b8', 1);
+  text('Leitungsbänder', p.R - 6, p.Y(5.4), {align:'right', size:11, weight:700, col:'#c2410c'});
+  text('Valenzbänder', p.R - 6, p.Y(-1.6), {align:'right', size:11, weight:700, col:'#1d4ed8'});
+  /* Bandlücke markieren */
+  const [sm, Em] = M.cbMin;
+  circle(p.X(0), p.Y(0), 5, '#1d4ed8'); circle(p.X(sm), p.Y(Em), 5, '#c2410c');
+  text(lv ? `E_g = ${fmt(M.Eg,2)} eV ${M.direct ? '(direkt)' : '(indirekt)'}` : (M.direct ? 'direkte Bandlücke' : 'indirekte Bandlücke'), p.X(0) + 8, p.Y(M.Eg/2) + 2, {size:12, weight:700, col:'#475569'});
+  /* Absorption eines Photons */
+  if (SG.absT >= 0){
+    SG.absT += dt;
+    const t = SG.absT;
+    if (M.direct){
+      const f = Math.min(1, t/0.8); arrow(p.X(0), p.Y(0), p.X(0), p.Y(0) + (p.Y(M.Eg) - p.Y(0))*f, '#ca8a04', 3);
+      if (t > 0.8) pill(`Photon ${fmt(M.Eg,2)} eV (${fmt(HC/M.Eg,0)} nm) – k bleibt gleich`, p.X(0) + 10, p.Y(M.Eg) - 22, {align:'left', bg:'#fef9c3', col:'#854d0e', size:12});
+    } else {
+      const EG = 3.4, f1 = Math.min(1, t/0.8);
+      arrow(p.X(0), p.Y(0), p.X(0), p.Y(0) + (p.Y(EG) - p.Y(0))*f1, 'rgba(202,138,4,.45)', 2);
+      if (t > 0.3) text(`direkt bräuchte ${fmt(EG,1)} eV`, p.X(0) - 8, p.Y(EG) - 12, {align:'right', size:11, col:'#a16207'});
+      const f2 = clamp((t - 0.9)/0.8, 0, 1), f3 = clamp((t - 1.8)/0.8, 0, 1);
+      if (f2 > 0) arrow(p.X(0), p.Y(0), p.X(0), p.Y(0) + (p.Y(Em) - p.Y(0))*f2, '#ca8a04', 3);
+      if (f3 > 0) arrow(p.X(0), p.Y(Em), p.X(0) + (p.X(sm) - p.X(0))*f3, p.Y(Em), '#7c3aed', 3);
+      if (t > 2.6) pill('Photon (Energie) + Phonon (Impuls) nötig', p.X(sm*0.5), p.Y(Em) - 24, {bg:'#ede9fe', col:'#5b21b6', size:12});
+    }
+    if (SG.absT > 7) SG.absT = -1;
+  }
+  SG.geo = { bz };
+  /* ---- Info ---- */
+  box(info.x, info.y, info.w, info.h, '#f8fafc', '#e2e8f0', 12);
+  let y = info.y + 18;
+  y = wrapText(lv ? 'Silizium und Galliumarsenid haben ein kubisch-flächenzentriertes Gitter. Ihre Brillouin-Zone ist ein Oktaederstumpf. Γ ist die Mitte, X die Mitte der quadratischen Flächen, L die Mitte der Sechsecke.'
+                  : 'Im echten Kristall hängt E(k) von der Richtung ab. Deshalb zeichnet man die Bänder entlang besonderer Wege durch die Brillouin-Zone, hier von L über die Mitte Γ nach X.', info.x + 12, y, info.w - 24, {size:12, col:'#334155'});
+  box(info2.x, info2.y, info2.w, info2.h, '#f8fafc', '#e2e8f0', 12);
+  y = info2.y + 18;
+  y = wrapText(M.direct ? 'Galliumarsenid: Das Maximum des Valenzbandes und das Minimum des Leitungsbandes liegen beide bei Γ (direkte Bandlücke). Ein Photon kann ein Elektron direkt hinaufheben – und beim Zurückfallen wird effizient Licht ausgesandt. Deshalb baut man LEDs und Laser aus GaAs und verwandten Materialien.'
+                        : 'Silizium: Das Minimum des Leitungsbandes liegt nicht bei Γ, sondern nahe bei X (indirekte Bandlücke). Photonen tragen fast keinen Impuls – um das Elektron dorthin zu bringen, muss zusätzlich eine Gitterschwingung (Phonon) mitwirken. Silizium absorbiert deshalb schwächer (dickere Solarzellen nötig) und leuchtet praktisch nicht.', info2.x + 12, y, info2.w - 24, {size:12, col:'#334155'});
+  if (lv === 2) wrapText(`${M.mass}. Die effektive Masse folgt aus der Krümmung: 1/m* = (1/ħ²)·d²E/dk². Photonenimpuls bei 1 µm: k = 2π/λ ≈ 0,006 nm⁻¹ – rund 1/1800 von 2π/a.`, info2.x + 12, y + 4, info2.w - 24, {size:11, col:'#475569'});
+}
+function sgClick(x, y){ const b = SG.geo && SG.geo.bz; if (b && x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h){ SG.drag = [x, y]; return true; } return false; }
+function sgMove(x, y){ if (!SG.drag) return; SG.rotY += (x - SG.drag[0])*0.01; SG.rotX = clamp(SG.rotX + (y - SG.drag[1])*0.01, -1.5, 1.5); SG.drag = [x, y]; }
+function sgControls(){
+  const lv = lvlNum();
+  UI.seg('Material', [['GaAs','Galliumarsenid'],['Si','Silizium']], () => SG.mat, v => { SG.mat = v; SG.absT = -1; });
+  UI.buttons([['Photon absorbieren', () => { SG.absT = 0; }, 'primary']]);
+  if (lv === 2) UI.check('Effektive Masse (Parabel an der Bandkante)', () => SG.mass, v => SG.mass = v);
+  UI.note('Bandverläufe vereinfacht: die Energien an Γ, X und L entsprechen Messwerten, dazwischen geglättet.');
+}
+
+/* =====================================================================
+   Aufträge
+   ===================================================================== */
+const TASKS = [
+  [ /* Freies Elektron */
+    { n:'Energie und Wellenlänge', min:0, setup(){ Object.assign(FE, {N:12, n:1, cont:false}); },
+      q:'Wähle Zustände mit immer größerem n. Wie ändern sich Wellenlänge und Energie?',
+      a:'Je kürzer die Wellenlänge, desto größer die Energie – sie wächst mit dem Quadrat von k. Das ist die Parabel E = ħ²k²/(2m).' },
+    { n:'Nur bestimmte Wellen passen', min:0, setup(){ Object.assign(FE, {N:4, n:1, cont:false}); },
+      q:'Vergleiche einen Ring aus 4 Atomen mit einem aus 40 Atomen. Wie viele Zustände gibt es zwischen −π/a und π/a?',
+      a:'Im Ring muss die Welle nach einem Umlauf wieder zu sich selbst passen. Deshalb sind nur bestimmte k erlaubt, im Abstand 2π/(N·a). Zwischen −π/a und π/a liegen genau N Zustände – bei einem echten Kristall mit 10²³ Atomen so dicht, dass sie eine durchgehende Kurve bilden.' },
+    { n:'Richtung der Welle', min:1, setup(){ Object.assign(FE, {N:12, n:-3, cont:false}); },
+      q:'Was unterscheidet die Zustände n = 3 und n = −3? Haben sie dieselbe Energie?',
+      a:'Beide haben dieselbe Energie, laufen aber in entgegengesetzte Richtungen (Impuls ħk bzw. −ħk). Diese Entartung wird später wichtig: An der Zonengrenze mischen sich hin- und rücklaufende Welle.' }
+  ],
+  [ /* Reziproker Raum */
+    { n:'Eng hier, weit dort', min:0, setup(){ Object.assign(RR, {type:'rect', ratio:1.6, gamma:90, sel:[1,0], diff:false}); },
+      q:'Das Gitter ist rechteckig: in x-Richtung eng, in y-Richtung weit. Wie sieht das reziproke Gitter aus? Verändere die Länge von a₂.',
+      a:'Das reziproke Gitter ist „umgekehrt“: Wo die Atome eng liegen, liegen die reziproken Punkte weit auseinander, und umgekehrt. |b| = 2π/a für ein rechteckiges Gitter.' },
+    { n:'Gitterebenen', min:0, setup(){ Object.assign(RR, {type:'square', ratio:1, gamma:90, sel:[1,1], diff:false}); },
+      q:'Tippe verschiedene reziproke Punkte an. Was haben der Punkt G und die angezeigten Gitterebenen miteinander zu tun?',
+      a:'Jeder reziproke Gitterpunkt gehört zu einer Schar paralleler Gitterebenen: G steht senkrecht auf ihnen, und je weiter G vom Ursprung weg ist, desto enger liegen die Ebenen (d = 2π/|G|).' },
+    { n:'Beugungsbild', min:0, setup(){ Object.assign(RR, {type:'hex', ratio:1, gamma:120, diff:true, sel:null}); },
+      q:'Schalte das Beugungsbild ein und wechsle zwischen den Gittertypen. Was sieht man bei der Beugung von Röntgenstrahlen am Kristall?',
+      a:'Die Beugungsreflexe bilden genau das reziproke Gitter. Aus dem Beugungsbild kann man deshalb auf die Anordnung der Atome zurückschließen (Röntgenstrukturanalyse).' },
+    { n:'Brillouin-Zonen konstruieren', min:1, setup(){ Object.assign(RR, {type:'hex', ratio:1, gamma:120, diff:false, showBZ:true, zones:3, cons:true, sel:null}); },
+      q:'Wie entstehen die Grenzen der 1. Brillouin-Zone? Vergleiche quadratisches und hexagonales Gitter.',
+      a:'Man verbindet den Ursprung mit den nächsten reziproken Punkten und zeichnet die Mittelsenkrechten. Das kleinste umschlossene Gebiet ist die 1. Brillouin-Zone (Quadrat bzw. Sechseck). Die weiteren Zonen sind gleich groß, aber zerstückelt.' },
+    { n:'Bragg-Bedingung', min:1, setup(){ Object.assign(RR, {type:'square', ratio:1, gamma:90, diff:false, showBZ:true, zones:2, showK:true, k:[2.2, 1.1], sel:null}); },
+      q:'Ziehe die Pfeilspitze von k an die Grenze der 1. Brillouin-Zone. Was gilt dort für k und k − G?',
+      a:'Auf der Zonengrenze ist |k| = |k − G|: Die Welle kann an einer Gitterebenenschar reflektiert werden, ohne Energie zu ändern (Bragg-Reflexion). Genau an diesen Grenzen öffnen sich die Bandlücken.' }
+  ],
+  [ /* Kristallpotential */
+    { n:'Atome einschalten', min:0, setup(){ Object.assign(KP, {V0:0, bf:0.25, scheme:'ext', free:true}); },
+      q:'Erhöhe die Stärke der Atomrümpfe langsam von null. Was passiert mit der Parabel – und wo?',
+      a:'Ohne Potential erhält man die Parabel des freien Elektrons. Mit Potential reißt sie an bestimmten Stellen auf: Es entstehen Energiebereiche, in denen es keine Zustände gibt – Bandlücken. Sie liegen bei k = π/a, 2π/a, …' },
+    { n:'Bänder und Lücken', min:0, setup(){ Object.assign(KP, {V0:10, bf:0.25, scheme:'ext', free:true}); },
+      q:'Vergleiche das linke Bild (Bänder im Potential) mit E(k). Wie hängen die beiden zusammen?',
+      a:'Jedes Band links ist der Energiebereich, den eine Kurve E(k) rechts überstreicht. Das bekannte Bändermodell ist also E(k) „von der Seite gesehen“.' },
+    { n:'Zonenschemata', min:1, setup(){ Object.assign(KP, {V0:6, bf:0.25, scheme:'red', free:true}); },
+      q:'Schalte zwischen erweitertem, reduziertem und periodischem Zonenschema um. Geht dabei Information verloren?',
+      a:'Nein. Da k und k + 2π/a im Kristall gleichwertig sind, kann man alle Bänder in die 1. Brillouin-Zone zurückklappen (reduziert) oder periodisch fortsetzen. Das reduzierte Schema ist das übliche Bild in Büchern.' },
+    { n:'Starkes Potential', min:1, setup(){ Object.assign(KP, {V0:20, bf:0.4, scheme:'red', free:false}); },
+      q:'Mache die Barrieren hoch und breit. Was passiert mit der Breite der Bänder? Was bedeutet das physikalisch?',
+      a:'Die Bänder werden sehr schmal, die Lücken groß. Die Elektronen können kaum noch durch die Barrieren tunneln und bleiben fast bei einzelnen Atomen – die Bänder nähern sich den scharfen Energieniveaus einzelner Atome (siehe Station „Atome → Band“).' }
+  ],
+  [ /* Bragg */
+    { n:'Laufende und stehende Welle', min:0, setup(){ Object.assign(BR, {kf:0.4, U:1.2, band:'low'}); },
+      q:'Schiebe k langsam bis zur Zonengrenze. Wie verändert sich die Welle?',
+      a:'Weit weg von der Zonengrenze läuft die Welle durch den Kristall. An der Zonengrenze wird sie an den Gitterebenen reflektiert, hin- und rücklaufende Welle überlagern sich zu einer stehenden Welle.' },
+    { n:'Warum gibt es eine Lücke?', min:0, setup(){ Object.assign(BR, {kf:1, U:1.2, band:'low'}); },
+      q:'An der Zonengrenze gibt es zwei stehende Wellen. Wo sitzen die Elektronen jeweils? Welche Welle hat die niedrigere Energie?',
+      a:'Bei der einen stehenden Welle sitzen die Elektronen bei den positiven Atomrümpfen (niedrige potentielle Energie, unteres Band), bei der anderen zwischen ihnen (höhere Energie, oberes Band). Der Energieunterschied ist die Bandlücke.' },
+    { n:'Größe der Lücke', min:1, setup(){ Object.assign(BR, {kf:1, U:0.5, band:'high'}); },
+      q:'Verändere die Stärke des Gitterpotentials. Wie groß ist die Lücke?',
+      a:'Im Modell fast freier Elektronen ist die Lücke 2|U|, wobei U die Fourier-Komponente des Gitterpotentials zum reziproken Gittervektor G = 2π/a ist.' }
+  ],
+  [ /* Atome → Band */
+    { n:'Aus Niveaus werden Bänder', min:0, setup(){ Object.assign(TB, {N:2, d:0.45, both:false, sel:{band:0, n:0}}); },
+      q:'Erhöhe die Anzahl der Atome von 1 auf 24. Wie viele Energieniveaus gibt es im Band?',
+      a:'N Atome ergeben N Zustände pro Band. Sie liegen auf der Kurve E(k) = E₀ − 2t·cos(ka). Bei sehr vielen Atomen liegen sie so dicht, dass ein Band entsteht.' },
+    { n:'Bindend und antibindend', min:0, setup(){ Object.assign(TB, {N:8, d:0.4, both:false, sel:{band:0, n:4}}); },
+      q:'Wähle den untersten und den obersten Zustand des s-Bandes. Wie unterscheiden sich die Wellenfunktionen?',
+      a:'Ganz unten (k = 0) haben alle Orbitale dasselbe Vorzeichen – sie überlappen konstruktiv (bindend). Ganz oben (k = π/a) wechselt das Vorzeichen von Atom zu Atom (antibindend). Dazwischen liegen alle Übergänge.' },
+    { n:'Abstand und Bandbreite', min:0, setup(){ Object.assign(TB, {N:12, d:0.9, both:true, sel:{band:0, n:6}}); },
+      q:'Verringere den Abstand der Atome. Was passiert mit der Breite der Bänder und mit der Lücke zwischen ihnen?',
+      a:'Je näher die Atome, desto stärker überlappen die Orbitale (größeres t) und desto breiter werden die Bänder (Breite 4t). Die Lücke zwischen s- und p-Band schrumpft und kann ganz verschwinden.' }
+  ],
+  [ /* Bänder füllen */
+    { n:'Natrium: 1 Elektron pro Atom', min:0, setup(){ Object.assign(FL, {ne:1, d:0.45, field:false, T:0}); },
+      q:'Jedes Atom gibt ein Elektron ab. Wie weit wird das Band gefüllt? Lege dann eine Spannung an.',
+      a:'Das s-Band ist genau halb voll. Mit Spannung verschiebt sich die Besetzung: mehr Elektronen laufen in eine Richtung als in die andere – es fließt Strom. Ein halb volles Band macht ein Metall.' },
+    { n:'Volles Band', min:0, setup(){ Object.assign(FL, {ne:2, d:0.6, field:true, T:0}); },
+      q:'Jetzt gibt es 2 Elektronen pro Atom, das s-Band ist voll. Warum fließt trotz Spannung kein Strom?',
+      a:'In einem vollen Band ist jeder Zustand besetzt. Zu jedem Elektron, das nach rechts läuft, gibt es eines, das nach links läuft. Die Spannung kann daran nichts ändern, weil keine freien Zustände da sind – das Material isoliert.' },
+    { n:'Wenn Bänder überlappen', min:1, setup(){ Object.assign(FL, {ne:2, d:0.6, field:true, T:0}); },
+      q:'Verringere bei 2 Elektronen pro Atom den Abstand der Atome. Ab wann wird das Material zum Metall?',
+      a:'Sobald s- und p-Band überlappen, liegen die untersten p-Zustände tiefer als die obersten s-Zustände. Beide Bänder sind dann teilweise gefüllt – das Material leitet. So erklärt man, warum Magnesium (2 Valenzelektronen) ein Metall ist.' },
+    { n:'Temperatur', min:2, setup(){ Object.assign(FL, {ne:2, d:0.5, field:false, T:3000}); },
+      q:'Erhöhe die Temperatur bei voll gefülltem unterem Band. Was zeigen die halb gefüllten Punkte?',
+      a:'Bei Temperatur T sind Zustände nach der Fermi-Dirac-Verteilung besetzt. Ist die Lücke klein, gelangen einige Elektronen ins obere Band und hinterlassen Löcher – so leitet ein Halbleiter bei Wärme.' }
+  ],
+  [ /* Si & GaAs */
+    { n:'Die Brillouin-Zone in 3D', min:0, setup(){ Object.assign(SG, {mat:'GaAs', absT:-1}); },
+      q:'Drehe die Brillouin-Zone. Welche Form hat sie? Wo liegen Γ, X und L?',
+      a:'Die 1. Brillouin-Zone des kubisch-flächenzentrierten Gitters ist ein Oktaederstumpf mit 8 Sechsecken und 6 Quadraten. Γ ist die Mitte, X die Mitte eines Quadrats, L die Mitte eines Sechsecks. Die Bandstruktur zeigt E(k) entlang L → Γ → X.' },
+    { n:'Direkt oder indirekt?', min:0, setup(){ Object.assign(SG, {mat:'GaAs', absT:0}); },
+      q:'Lass bei GaAs und bei Si ein Photon absorbieren. Worin unterscheiden sich die beiden?',
+      a:'Bei GaAs liegen höchster Punkt des Valenzbandes und tiefster des Leitungsbandes beide bei Γ – ein Photon reicht. Bei Si liegt das Leitungsbandminimum nahe X; zusätzlich ist ein Phonon nötig, das den Impuls liefert. Deshalb leuchtet GaAs (LEDs, Laser) und Si kaum.' },
+    { n:'Effektive Masse', min:2, setup(){ Object.assign(SG, {mat:'GaAs', mass:true, absT:-1}); },
+      q:'Vergleiche die Krümmung des Leitungsbandes von GaAs und Si an ihrem Minimum. Was folgt daraus für die Elektronen?',
+      a:'Je stärker gekrümmt das Band, desto kleiner die effektive Masse: m*(GaAs) ≈ 0,067 m_e, in Si (längs) 0,98 m_e. Elektronen in GaAs sind deshalb sehr beweglich – das nutzt man für Hochfrequenz-Transistoren.' }
+  ]
+];
+function renderTasks(){
+  const el = $('#tasks'); el.innerHTML = '';
+  TASKS[S.st].forEach((t, k) => {
+    if (t.min > lvlNum()) return;
+    const b = document.createElement('button'); b.textContent = t.n; b.classList.toggle('on', k === S.task);
+    b.onclick = () => { S.task = k; S.showAnswer = false; t.setup(); buildControls(); renderTasks(); };
+    el.appendChild(b);
+  });
+  const info = $('#taskInfo'), t = TASKS[S.st][S.task];
+  if (!t || t.min > lvlNum()){ info.innerHTML = '<p class="note">Wähle einen Auftrag oder probiere frei aus.</p>'; return; }
+  info.innerHTML = `<p class="q"><b>Auftrag:</b> ${t.q}</p>` + (S.showAnswer ? `<p class="a">${t.a}</p>` : '') + `<button class="btn" id="ansBtn">${S.showAnswer ? 'Erklärung ausblenden' : 'Erklärung zeigen'}</button>`;
+  $('#ansBtn').onclick = () => { S.showAnswer = !S.showAnswer; renderTasks(); };
+}
+
+/* =====================================================================
+   Stationen, Eingaben, Zeichenschleife
+   ===================================================================== */
+const STATIONS = [
+  { name:'Freies Elektron', hash:'freies-elektron', controls:feControls, draw:feDraw, click:feClick },
+  { name:'Reziproker Raum', hash:'reziproker-raum', controls:rrControls, draw:rrDraw, click:rrClick, move:rrMove },
+  { name:'Kristallpotential', hash:'kristallpotential', controls:kpControls, draw:kpDraw },
+  { name:'Bragg-Reflexion', hash:'bragg', controls:brControls, draw:brDraw },
+  { name:'Vom Atom zum Band', hash:'atome-band', controls:tbControls, draw:tbDraw, click:tbClick },
+  { name:'Bänder füllen', hash:'baender-fuellen', controls:flControls, draw:flDraw },
+  { name:'Silizium & Galliumarsenid', hash:'si-gaas', controls:sgControls, draw:sgDraw, click:sgClick, move:sgMove }
+];
+function buildControls(){ UI.clear(); $('#ctrlTitle').textContent = 'Einstellungen: ' + STATIONS[S.st].name; STATIONS[S.st].controls(); }
+function setStation(i){
+  S.st = i; S.task = -1; S.showAnswer = false;
+  for (const b of $('#stSeg').children) b.classList.toggle('on', +b.dataset.s === i);
+  buildControls(); renderTasks();
+  try { history.replaceState(null, '', '#' + STATIONS[i].hash); } catch(_){}
+}
+function setLevel(l){
+  S.level = l; for (const b of $('#lvlSeg').children) b.classList.toggle('on', b.dataset.v === l);
+  if (l !== 'hard'){ KP.dos = false; FL.T = 0; SG.mass = false; }
+  if (l === 'easy'){ RR.showK = false; RR.cons = false; }
+  buildControls(); renderTasks();
+}
+$('#stSeg').onclick = e => { const b = e.target.closest('button'); if (b) setStation(+b.dataset.s); };
+$('#lvlSeg').onclick = e => { const b = e.target.closest('button'); if (b) setLevel(b.dataset.v); };
+$('#fsBtn').onclick = () => { const d = document; try { if (d.fullscreenElement) d.exitFullscreen(); else d.documentElement.requestFullscreen().catch(() => {}); } catch(_){} };
+const xy = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+function fitVB(){ document.documentElement.style.setProperty('--hh', (document.querySelector('header').offsetHeight + 46) + 'px'); }
+window.addEventListener('resize', fitVB); fitVB();
+cv.addEventListener('pointerdown', e => { const st = STATIONS[S.st]; if (st.click && st.click(...xy(e))) cv.setPointerCapture(e.pointerId); });
+cv.addEventListener('pointermove', e => { const st = STATIONS[S.st]; if (st.move) st.move(...xy(e)); });
+cv.addEventListener('pointerup', () => { RR.drag = false; SG.drag = null; });
+cv.addEventListener('pointercancel', () => { RR.drag = false; SG.drag = null; });
+let last = performance.now();
+function frame(ts){
+  const dt = Math.min(0.05, (ts - last)/1000); last = ts;
+  ctx.clearRect(0, 0, W, H);
+  try { STATIONS[S.st].draw(dt); } catch(err){ console.error(err); }
+  requestAnimationFrame(frame);
+}
+resize();
+const startHash = STATIONS.findIndex(s => s.hash === location.hash.slice(1));
+setStation(startHash >= 0 ? startHash : 0);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

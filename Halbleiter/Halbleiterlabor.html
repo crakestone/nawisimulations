@@ -459,6 +459,7 @@ function bdControls(){
     UI.slider('Wellenlänge', {min:300, max:2000, step:10, cls:'spectrum', bg:spectrumCSS(300, 2000), get:() => BD.lam, set:v => BD.lam = v, fmt:v => `${v} nm (${region(v)})` + (lv ? ` · ${fmt(HC/v,2)} eV` : '')});
     UI.slider('Helligkeit', {min:5, max:100, step:5, get:() => BD.inten, set:v => BD.inten = v, fmt:v => v < 30 ? 'schwach' : v < 70 ? 'mittel' : 'hell'});
   }
+  UI.note('Wie Bänder genau entstehen (E(k), Brillouin-Zonen, reziproker Raum): <a href="../Bandstruktur/Bandstrukturlabor.html">Bandstrukturlabor</a>');
   UI.note('Die Zahl der gezeichneten Ladungsträger wächst logarithmisch mit der wirklichen Dichte – sonst wären bei Germanium Millionen Mal mehr zu sehen als bei Galliumarsenid.');
 }
 
