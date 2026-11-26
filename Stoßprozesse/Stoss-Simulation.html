@@ -59,7 +59,6 @@
   .viewbox canvas{display:block;width:100%;height:100%}
   #boxSide{height:230px} #boxTop{height:180px}
   #tableBox{overflow-x:auto}
-  body.d2 #boxTop{height:min(560px,62vh)}
   .msg{background:var(--warnbg);color:var(--warn);border:1px solid #fed7aa;border-radius:12px;padding:.55rem .8rem;font-size:.95rem}
   .note{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;border-radius:12px;padding:.55rem .8rem;font-size:.95rem}
   .results{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:.8rem}
@@ -97,6 +96,33 @@
   body:not(.lvl-hard) .only-hard{display:none!important}
   body.lvl-easy .not-easy{display:none!important}
   footer{color:var(--muted);font-size:.8rem;padding:0 1rem 1rem}
+  #fRange{accent-color:#7c3aed}
+  .fscale{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-top:-.1rem}
+  #gBox{height:270px;position:relative} #gBox canvas{width:100%;height:100%;display:block}
+  .ghead{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.4rem}
+  .ghead h2{margin:0}
+  /* Höhen der Ansichten */
+  body.view-oben #boxTop{height:320px}
+  body.view-seite #boxSide{height:340px}
+  body.d2 #boxTop{height:min(560px,62vh)}
+  /* Großansicht ("Kinomodus") */
+  .cinema-only{display:none!important}
+  body.cinema .cinema-only{display:flex!important}
+  body.cinema header, body.cinema aside, body.cinema .results, body.cinema footer, body.cinema #noteBox{display:none!important}
+  body.cinema .layout{grid-template-columns:1fr;padding:.5rem;gap:.5rem}
+  body.cinema .stage{gap:.5rem}
+  body.cinema #boxSide{height:calc(55vh - 75px)}
+  body.cinema #boxTop{height:calc(45vh - 75px)}
+  body.cinema.view-seite #boxSide, body.cinema.view-oben #boxTop, body.cinema.d2 #boxTop{height:calc(100vh - 160px)}
+  body.cinema.graph-on #boxSide{height:calc(38vh - 60px)}
+  body.cinema.graph-on #boxTop{height:calc(30vh - 60px)}
+  body.cinema.graph-on.view-seite #boxSide, body.cinema.graph-on.view-oben #boxTop, body.cinema.graph-on.d2 #boxTop{height:calc(64vh - 110px)}
+  body.cinema #cinemaGraph{height:calc(32vh - 50px)}
+  #cinemaGraph{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;position:relative}
+  #cinemaGraph canvas{width:100%;height:100%;display:block}
+  body.cinema:not(.graph-on) #cinemaGraph{display:none!important}
+  #cinemaInfo{gap:.4rem 1.6rem;flex-wrap:wrap;align-items:center;font-size:1.05rem;padding:.45rem .9rem;background:#fff;border:1px solid var(--line);border-radius:12px;font-variant-numeric:tabular-nums}
+  #cinemaInfo b.c1{color:var(--c1d)} #cinemaInfo b.c2{color:var(--c2d)}
   @media (max-width: 980px){
     .layout{grid-template-columns:1fr}
     .results{grid-template-columns:1fr}
@@ -133,11 +159,13 @@
       </div>
       <div class="field">
         <label>Stoßart</label>
-        <div class="seg wide" id="segType"><button data-v="elastisch">elastisch</button><button data-v="teil" class="only-hard">teilelastisch</button><button data-v="plastisch">plastisch</button></div>
+        <div class="seg wide" id="segType"><button data-v="elastisch">elastisch</button><button data-v="teil">teilelastisch</button><button data-v="plastisch">plastisch</button></div>
       </div>
-      <div class="field only-hard" id="kField">
-        <label for="kRange">Stoßzahl k <span class="hint">0 = plastisch … 1 = elastisch</span></label>
-        <div class="row"><input type="range" id="kRange" min="0" max="1" step="0.01"><input class="num" id="kNum" type="number" min="0" max="1" step="0.01"><span class="unit"></span></div>
+      <div class="field">
+        <label for="fRange">Umgewandelte Energie <span class="hint">Verformung, Wärme, Schall</span></label>
+        <div class="row"><input type="range" id="fRange" min="0" max="100" step="1"><input class="num" id="fNum" type="number" min="0" max="100" step="1"><span class="unit">%</span></div>
+        <div class="fscale"><span>← elastisch</span><span>plastisch →</span></div>
+        <p class="small" id="fHint"></p>
       </div>
     </div>
 
@@ -199,10 +227,14 @@
       </select>
       <input type="range" id="tRange" min="0" max="1" step="0.001" title="Zeit">
       <span class="time" id="tLabel">t = 0 s</span>
+      <button class="btn" id="btnCinema" title="Nur die Animation groß anzeigen (Taste G)">⛶ Großansicht</button>
+      <label class="check cinema-only" style="margin:0"><input type="checkbox" id="chkCinemaGraph"> Diagramm einblenden</label>
     </div>
+    <div id="cinemaInfo" class="cinema-only"></div>
     <div id="msgBox" class="msg" hidden></div>
     <div class="viewbox only-1d" id="boxSide"><span class="tag">Ansicht von der Seite</span><canvas id="cSide"></canvas></div>
     <div class="viewbox" id="boxTop"><span class="tag">Ansicht von oben</span><canvas id="cTop"></canvas></div>
+    <div id="cinemaGraph" class="cinema-only"><canvas id="cG2"></canvas></div>
     <div id="noteBox" class="note" hidden></div>
 
     <div class="results">
@@ -213,6 +245,13 @@
         <h2>Werte vor und nach dem Stoß</h2>
         <div id="tableBox"></div>
         <p class="small" id="tableHint"></p>
+      </div>
+      <div class="card full" id="graphCard">
+        <div class="ghead"><h2>Diagramm</h2>
+          <div class="seg" id="segGraph"><button data-v="v">v‑t</button><button data-v="p">p‑t</button><button data-v="E" class="not-easy">E‑t</button><button data-v="x">x‑t</button></div>
+        </div>
+        <div id="gBox"><canvas id="cG"></canvas></div>
+        <p class="small" id="gHint"></p>
       </div>
       <div class="card">
         <h2>Impulsdiagramm</h2>
@@ -234,7 +273,7 @@
     </div>
   </section>
 </div>
-<footer>Tasten: Leertaste = Start/Pause, R = zurück. Modell: Die Fahrzeuge werden wie Massepunkte behandelt (zentraler Stoß, keine Reibung, keine Drehung).</footer>
+<footer>Tasten: Leertaste = Start/Pause, R = zurück, G = Großansicht. Modell: Die Fahrzeuge werden wie Massepunkte behandelt (zentraler Stoß, keine Reibung, keine Drehung).</footer>
 
 <script>
 "use strict";
@@ -247,7 +286,7 @@ const RANGES = {
 };
 
 const S = {
-  level:'mid', range:'labor', dim:'1d', type:'elastisch', k:0.5,
+  level:'mid', range:'labor', dim:'1d', type:'elastisch', f:0, graph:'v', cinema:false, cinemaGraph:false,
   m1:1, m2:1, v1:0.8, v2:0, alpha:90,
   view:'beide', arrows:'v', pauseAtHit:false, hide:false, revealed:false,
   showCM:false, cmFrame:false,
@@ -355,7 +394,8 @@ function compute(){
   const a = S.alpha * Math.PI/180;
   const v1 = [S.v1, 0];
   const v2 = S.dim === '1d' ? [S.v2, 0] : [S.v2*Math.cos(a), S.v2*Math.sin(a)];
-  const e = S.type === 'elastisch' ? 1 : S.type === 'plastisch' ? 0 : S.k;
+  /* f = Anteil der umwandelbaren Energie, der tatsächlich umgewandelt wird; Stoßzahl k = √(1 − f) */
+  const e = Math.sqrt(clamp(1 - S.f, 0, 1));
   const vS = mul(add(mul(v1,m1), mul(v2,m2)), 1/M);
   const u = sub(v1, v2);
   const collide = S.dim === '1d' ? (S.v1 - S.v2 > 1e-9) : (len(u) > 1e-9);
@@ -436,7 +476,7 @@ function setupSeg(id, key, after, resetsTime = true){
   });
 }
 function markSegs(){
-  const map = { segLevel:'level', segRange:'range', segDim:'dim', segType:'type', segView:'view', segArrows:'arrows' };
+  const map = { segLevel:'level', segRange:'range', segDim:'dim', segType:'type', segView:'view', segArrows:'arrows', segGraph:'graph' };
   for (const id in map) for (const b of $(id).querySelectorAll('button')) b.classList.toggle('on', b.dataset.v === S[map[id]]);
 }
 
@@ -464,7 +504,7 @@ function syncInputs(){
   }
   for (const el of document.querySelectorAll('.vunit')) el.textContent = r.vUnit;
   $('aRange').value = S.alpha; $('aNum').value = S.alpha;
-  $('kRange').value = S.k; $('kNum').value = S.k;
+  $('fRange').value = Math.round(S.f*100); $('fNum').value = Math.round(S.f*100);
   $('chkPause').checked = S.pauseAtHit; $('chkHide').checked = S.hide;
   $('chkCM').checked = S.showCM; $('chkCMFrame').checked = S.cmFrame;
 }
@@ -490,18 +530,19 @@ function bindNumber(i, kind){
 
 function refreshAll(paramsChanged){
   if (paramsChanged){ S.revealed = false; S.playing = false; S.pausedAtHit = false; }
-  if (S.level !== 'hard' && S.type === 'teil') S.type = 'elastisch';
+  S.f = clamp(S.f, 0, 1);
+  S.type = S.f <= 0 ? 'elastisch' : S.f >= 1 ? 'plastisch' : 'teil';
+  if (S.level === 'easy' && S.graph === 'E') S.graph = 'v';
   if (S.level !== 'hard'){ S.cmFrame = false; S.showCM = false; }
   document.body.classList.toggle('d2', S.dim === '2d');
   document.body.classList.remove('lvl-easy','lvl-mid','lvl-hard');
   document.body.classList.add('lvl-' + S.level);
-  $('kField').style.display = (S.level==='hard' && S.type==='teil') ? '' : 'none';
   const showSide = S.dim==='1d' && S.view !== 'oben', showTop = S.dim==='2d' || S.view !== 'seite';
   $('boxSide').style.display = showSide ? '' : 'none';
   $('boxTop').style.display = showTop ? '' : 'none';
-  if (S.dim==='1d') $('boxTop').style.height = S.view==='oben' ? '300px' : '';
-  else $('boxTop').style.height = '';
-  if (S.dim==='1d') $('boxSide').style.height = S.view==='seite' ? '330px' : '';
+  document.body.classList.remove('view-beide','view-seite','view-oben');
+  if (S.dim==='1d') document.body.classList.add('view-' + S.view);
+  document.body.classList.toggle('graph-on', S.cinemaGraph);
   markSegs();
   syncInputs();
   compute();
@@ -606,6 +647,7 @@ function renderObservations(){
     out.push('Der Gesamtimpuls ist vor und nach dem Stoß gleich groß (Impulserhaltung).');
     if (r.e === 1) out.push('Beim elastischen Stoß bleibt auch die gesamte Bewegungsenergie erhalten.');
     if (r.e === 0) out.push('Beim plastischen Stoß bleiben die Autos zusammen und fahren mit gemeinsamer Geschwindigkeit weiter.');
+    if (r.e > 0 && r.e < 1) out.push('Teilelastischer Stoß: Die Autos prallen voneinander ab, aber weniger stark als beim elastischen Stoß.');
     if (r.e < 1 && S.level !== 'easy') out.push(`${fmt(100*r.dE/(r.E1+r.E2),0)} % der Bewegungsenergie werden in Verformung, Wärme und Schall umgewandelt.`);
     if (r.e < 1 && S.level === 'easy') out.push('Ein Teil der Bewegungsenergie steckt danach in der Verformung (Blech, Knete) und in Wärme.');
     if (len(r.vS) < 1e-9 && r.e === 0) out.push('Der Gesamtimpuls ist null – deshalb bleiben beide Autos nach dem Stoß stehen.');
@@ -645,7 +687,9 @@ function renderFormulas(){
         h += `<p><strong>Plastischer Stoß:</strong> Beide Autos fahren gemeinsam weiter. Gesamtimpuls und Gesamtmasse bleiben gleich:</p>`;
         h += `<p class="eq">v' = ${frac('Gesamtimpuls','Gesamtmasse')} = ${frac(pd(r.p1[0]+r.p2[0])+' kg·m/s', M+' kg')} = <span class="res">${fmt(r.w1[0],d)} m/s</span></p>`;
       } else {
-        h += `<p><strong>Elastischer Stoß:</strong> Die Autos prallen voneinander ab. Der Gesamtimpuls bleibt gleich und es geht keine Bewegungsenergie verloren.</p>`;
+        h += r.e === 1
+          ? `<p><strong>Elastischer Stoß:</strong> Die Autos prallen voneinander ab. Der Gesamtimpuls bleibt gleich und es geht keine Bewegungsenergie verloren.</p>`
+          : `<p><strong>Teilelastischer Stoß:</strong> Die Autos prallen ab, aber ein Teil der Bewegungsenergie wird umgewandelt. Der Gesamtimpuls bleibt trotzdem gleich.</p>`;
         h += `<p class="eq">Nachher: p₁' + p₂' = ${pd(r.q1[0])} + ${fz(r.q2[0],autoDigits(r.q2[0]))} = <span class="res">${pd(r.q1[0]+r.q2[0])} kg·m/s</span></p>`;
       }
     } else {
@@ -664,6 +708,12 @@ function renderFormulas(){
         h += `<p><strong>Elastischer Stoß</strong> (Impuls- und Energieerhaltung):</p>`;
         h += `<p class="eq">v₁' = ${frac('(m₁ − m₂) · v₁ + 2 · m₂ · v₂','m₁ + m₂')} = ${frac(`(${m1} − ${m2}) · ${v1} + 2 · ${m2} · ${v2}`, M)} = <span class="res">${fmt(r.w1[0],d)} m/s</span></p>`;
         h += `<p class="eq">v₂' = ${frac('(m₂ − m₁) · v₂ + 2 · m₁ · v₁','m₁ + m₂')} = ${frac(`(${m2} − ${m1}) · ${v2} + 2 · ${m1} · ${v1}`, M)} = <span class="res">${fmt(r.w2[0],d)} m/s</span></p>`;
+      } else if (r.e > 0) {
+        h += `<p><strong>Teilelastischer Stoß</strong>: Man rechnet am einfachsten über die Geschwindigkeit des Schwerpunkts v<sub>S</sub> und die Stoßzahl k = √(1 − ${fmt(S.f,2)}) = ${fmt(r.e,2)}:</p>`;
+        h += `<p class="eq">v<sub>S</sub> = ${frac('m₁ · v₁ + m₂ · v₂','m₁ + m₂')} = ${frac(`${m1} · ${v1} + ${m2} · ${v2}`, M)} = ${fmt(r.vS[0],d)} m/s</p>`;
+        h += `<p class="eq">v₁' = v<sub>S</sub> − k · (v₁ − v<sub>S</sub>) = ${fmt(r.vS[0],d)} − ${fmt(r.e,2)} · (${v1} − ${fz(r.vS[0],d)}) = <span class="res">${fmt(r.w1[0],d)} m/s</span></p>`;
+        h += `<p class="eq">v₂' = v<sub>S</sub> − k · (v₂ − v<sub>S</sub>) = ${fmt(r.vS[0],d)} − ${fmt(r.e,2)} · (${v2} − ${fz(r.vS[0],d)}) = <span class="res">${fmt(r.w2[0],d)} m/s</span></p>`;
+        h += `<p class="eq">ΔE = E<sub>vorher</sub> − E<sub>nachher</sub> = ${fmtA((r.E1+r.E2)*eu.f)} ${eu.u} − ${fmtA((r.F1+r.F2)*eu.f)} ${eu.u} = <span class="res">${fmtA(r.dE*eu.f)} ${eu.u}</span></p>`;
       } else {
         h += `<p><strong>Plastischer Stoß</strong> (nur Impulserhaltung, gemeinsame Geschwindigkeit):</p>`;
         h += `<p class="eq">v' = ${frac('m₁ · v₁ + m₂ · v₂','m₁ + m₂')} = ${frac(`${m1} · ${v1} + ${m2} · ${v2}`, M)} = <span class="res">${fmt(r.w1[0],d)} m/s</span></p>`;
@@ -679,8 +729,12 @@ function renderFormulas(){
         h += `<p class="eq">|v'| = √(vₓ'² + vᵧ'²) = <span class="res">${fmt(len(r.w1),d)} m/s</span>, &nbsp; Richtung: tan φ = ${frac("vᵧ'","vₓ'")} → φ = <span class="res">${fmt(vecAngle(r.w1),0)}°</span></p>`;
         h += `<p class="eq">ΔE = E<sub>vorher</sub> − E<sub>nachher</sub> = <span class="res">${fmtA(r.dE*eu.f)} ${eu.u}</span></p>`;
       } else {
-        h += `<p>Für den elastischen schiefen Stoß braucht man ein Modell, wie die Autos sich berühren. Hier: <strong>zentraler Stoß</strong>. Mit der Schwerpunktgeschwindigkeit v<sub>S</sub> gilt (als Vektoren):</p>`;
-        h += `<p class="eq">v<sub>S</sub> = ${frac('m₁ · v₁ + m₂ · v₂','m₁ + m₂')} = (${fmt(r.vS[0],d)} | ${fmt(r.vS[1],d)}) m/s, &nbsp; v₁' = 2 · v<sub>S</sub> − v₁, &nbsp; v₂' = 2 · v<sub>S</sub> − v₂</p>`;
+        const kk = fmt(r.e,2);
+        h += `<p>Für den ${r.e===1?'elastischen':'teilelastischen'} schiefen Stoß braucht man ein Modell, wie die Autos sich berühren. Hier: <strong>zentraler Stoß</strong>. Mit der Schwerpunktgeschwindigkeit v<sub>S</sub> gilt (als Vektoren)${r.e<1 ? `, Stoßzahl k = √(1 − ${fmt(S.f,2)}) = ${kk}` : ''}:</p>`;
+        h += `<p class="eq">v<sub>S</sub> = ${frac('m₁ · v₁ + m₂ · v₂','m₁ + m₂')} = (${fmt(r.vS[0],d)} | ${fmt(r.vS[1],d)}) m/s, &nbsp; ` + (r.e===1
+              ? `v₁' = 2 · v<sub>S</sub> − v₁, &nbsp; v₂' = 2 · v<sub>S</sub> − v₂</p>`
+              : `v₁' = v<sub>S</sub> − k · (v₁ − v<sub>S</sub>), &nbsp; v₂' = v<sub>S</sub> − k · (v₂ − v<sub>S</sub>)</p>`);
+        if (r.e < 1) h += `<p class="eq">ΔE = E<sub>vorher</sub> − E<sub>nachher</sub> = <span class="res">${fmtA(r.dE*eu.f)} ${eu.u}</span></p>`;
         h += `<p class="eq">v₁' = (${fmt(r.w1[0],d)} | ${fmt(r.w1[1],d)}) m/s → <span class="res">${fmt(len(r.w1),d)} m/s</span>, &nbsp; v₂' = (${fmt(r.w2[0],d)} | ${fmt(r.w2[1],d)}) m/s → <span class="res">${fmt(len(r.w2),d)} m/s</span></p>`;
       }
     }
@@ -691,7 +745,7 @@ function renderFormulas(){
   const k = fmt(r.e, 2);
   const kName = r.e===1 ? 'elastisch' : r.e===0 ? 'plastisch' : 'teilelastisch';
   const vecS = v => S.dim==='1d' ? fmt(v[0],d) : `(${fmt(v[0],d)} | ${fmt(v[1],d)})`;
-  h += `<p><strong>Allgemeiner gerader/zentraler Stoß</strong> mit Stoßzahl k (k = 1: elastisch, k = 0: plastisch). Hier: k = ${k} (${kName}).</p>`;
+  h += `<p><strong>Allgemeiner gerader/zentraler Stoß</strong> mit Stoßzahl k (k = 1: elastisch, k = 0: plastisch). Umgewandelt wird der Anteil f = 1 − k² der umwandelbaren Energie. Hier: f = ${fmt(S.f*100,0)} % → k = ${k} (${kName}).</p>`;
   h += `<p class="eq">Schwerpunktgeschwindigkeit: v<sub>S</sub> = ${frac('m₁ · v₁ + m₂ · v₂','m₁ + m₂')} = ${frac(`${m1} · ${S.dim==='1d'?v1:vecS(r.v1)} + ${m2} · ${S.dim==='1d'?v2:vecS(r.v2)}`, M)} = <span class="res">${vecS(r.vS)} m/s</span></p>`;
   h += `<p class="eq">v₁' = (1 + k) · v<sub>S</sub> − k · v₁ = <span class="res">${vecS(r.w1)} m/s</span>, &nbsp; v₂' = (1 + k) · v<sub>S</sub> − k · v₂ = <span class="res">${vecS(r.w2)} m/s</span></p>`;
   h += `<p class="eq">Relativgeschwindigkeit: v₁' − v₂' = −k · (v₁ − v₂) &nbsp; (Newtonsche Stoßhypothese)</p>`;
@@ -705,10 +759,24 @@ function givenLine(){
   return `<p class="small">Gegeben: m₁ = ${fmtM(r.m1)} kg, m₂ = ${fmtM(r.m2)} kg, v₁ = ${fmtV(S.v1)} ${R().vUnit}, v₂ = ${fmtV(S.v2)} ${R().vUnit}${S.dim==='2d' ? ', α = '+fmt(S.alpha,0)+'°' : ''}</p>`;
 }
 
+function renderFHint(){
+  const r = RES, eu = energyUnit(r.E1 + r.E2);
+  const maxLoss = 0.5*r.mu*dot(r.u,r.u);
+  let t = '';
+  if (S.level === 'easy') t = '0 % = elastisch (die Autos federn ab), 100 % = plastisch (die Autos bleiben zusammen).';
+  else {
+    t = 'Anteil der Energie, die beim Stoß höchstens umgewandelt werden kann (beim plastischen Stoß: 100 %).';
+    if (r.collide && !hiddenNow()) t += ` Hier: ${fmtA(r.dE*eu.f)} ${eu.u} von maximal ${fmtA(maxLoss*eu.f)} ${eu.u}.`;
+  }
+  if (S.level === 'hard') t += ` Stoßzahl k = √(1 − ${fmt(S.f,2)}) = ${fmt(r.e,2)}.`;
+  $('fHint').textContent = t;
+}
+
 function renderResults(){
+  renderFHint();
   const hideMode = S.hide && RES.collide;
   $('revealCard').hidden = !(hideMode && !S.revealed);
-  renderTable(); renderEnergy(); renderObservations(); renderFormulas();
+  renderTable(); renderEnergy(); renderObservations(); renderFormulas(); graphHint();
   const msg = $('msgBox');
   if (!RES.collide){ msg.hidden = false; msg.textContent = S.dim==='1d'
       ? 'So gibt es keinen Zusammenstoß: Auto 1 startet links und muss schneller nach rechts fahren als Auto 2.'
@@ -1119,6 +1187,7 @@ function drawSide(){
 
 /* ===================== Impulsdiagramm ===================== */
 function drawP(){
+  if (!cP.offsetParent) return;
   const {ctx,w,h} = fitCanvas(cP);
   ctx.clearRect(0,0,w,h);
   const r = RES, hide = hiddenNow();
@@ -1165,7 +1234,141 @@ function drawP(){
   }
 }
 
-function draw(){ drawSide(); drawTop(); drawP(); updateTimeLabel(); }
+/* ===================== Zeit-Diagramme (v-t, p-t, E-t, x-t) ===================== */
+function graphSeries(){
+  const r = RES, is1 = S.dim === '1d', kind = S.graph;
+  const eu = energyUnit(Math.max(r.E1+r.E2, r.F1+r.F2));
+  const st = (b,a) => t => (t < 0 || !r.collide) ? b : a;
+  const col1 = '#e8741e', col2 = '#2a6fdb', colS = '#111827';
+  if (kind === 'v'){
+    const f = v => (is1 ? v[0] : len(v)) * R().vFac;
+    const sym = is1 ? 'v' : '|v|';
+    return { unit: R().vUnit, title: is1 ? 'Geschwindigkeit v' : 'Betrag der Geschwindigkeit |v|', step:true,
+      series:[ {name: sym+'₁', col:col1, f: st(f(r.v1), f(r.w1))}, {name: sym+'₂', col:col2, f: st(f(r.v2), f(r.w2))} ].concat(
+        S.level==='hard' ? [{name:'v_S', col:'#6b7280', dash:true, f: () => (is1 ? r.vS[0] : len(r.vS))*R().vFac}] : []) };
+  }
+  if (kind === 'p'){
+    const f = v => is1 ? v[0] : len(v);
+    const sym = is1 ? 'p' : '|p|';
+    return { unit:'kg·m/s', title: is1 ? 'Impuls p' : 'Betrag des Impulses |p|', step:true, series:[
+      {name: sym+'₁', col:col1, f: st(f(r.p1), f(r.q1))}, {name: sym+'₂', col:col2, f: st(f(r.p2), f(r.q2))},
+      {name: is1 ? 'p₁ + p₂' : '|p₁ + p₂|', col:colS, dash:true, f: st(f(add(r.p1,r.p2)), f(add(r.q1,r.q2)))} ] };
+  }
+  if (kind === 'E'){
+    return { unit: eu.u, title:'Bewegungsenergie E', step:true, series:[
+      {name:'E₁', col:col1, f: st(r.E1*eu.f, r.F1*eu.f)}, {name:'E₂', col:col2, f: st(r.E2*eu.f, r.F2*eu.f)},
+      {name:'E₁ + E₂', col:colS, dash:true, f: st((r.E1+r.E2)*eu.f, (r.F1+r.F2)*eu.f)} ] };
+  }
+  /* x-t: Ort (1D: x-Koordinate, 2D: zurückgelegter Weg) */
+  if (is1) return { unit:'m', title:'Ort x', step:false, series:[
+    {name:'x₁', col:col1, f: t => posAt(1,t)[0]}, {name:'x₂', col:col2, f: t => posAt(2,t)[0]} ].concat(
+      S.level==='hard' ? [{name:'x_S', col:'#6b7280', dash:true, f: t => cmAt(t)[0]}] : []) };
+  const path = i => t => { const a = posAt(i, RES.tStart); return t < 0 || !r.collide ? len(sub(posAt(i,t), a)) : len(sub(posAt(i,0), a)) + len(sub(posAt(i,t), posAt(i,0))); };
+  return { unit:'m', title:'zurückgelegter Weg s', step:false, series:[ {name:'s₁', col:col1, f:path(1)}, {name:'s₂', col:col2, f:path(2)} ] };
+}
+function drawGraph(canvas){
+  if (!canvas.offsetParent) return;
+  const {ctx,w,h} = fitCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  const G = graphSeries(), r = RES, hide = hiddenNow();
+  const t0 = r.tStart, t1 = r.tEnd, tHideEnd = hide ? 0 : t1;
+  /* Wertebereich */
+  let ymin = 0, ymax = 0;
+  const N = 200;
+  for (const s of G.series) for (let i=0;i<=N;i++){ const t = t0 + (t1-t0)*i/N; if (hide && t > 0) break; const y = s.f(t); ymin = Math.min(ymin,y); ymax = Math.max(ymax,y); }
+  if (ymax - ymin < 1e-9){ ymax += 1; ymin -= 1; }
+  const pad = (ymax-ymin)*0.12; ymax += pad; if (ymin < 0) ymin -= pad;
+  const L = 64, Rm = 16, T = 30, B = 34, pw = w-L-Rm, ph = h-T-B;
+  const X = t => L + (t-t0)/(t1-t0)*pw, Y = y => T + (ymax-y)/(ymax-ymin)*ph;
+  /* Gitter und Achsen */
+  ctx.font = '12px system-ui,sans-serif'; ctx.fillStyle = '#5b6477'; ctx.strokeStyle = '#eceff4'; ctx.lineWidth = 1;
+  const ys = niceStep((ymax-ymin)/5), ts = niceStep((t1-t0)/8);
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for (let y = Math.ceil(ymin/ys)*ys; y <= ymax+1e-9; y += ys){ ctx.beginPath(); ctx.moveTo(L, Y(y)); ctx.lineTo(L+pw, Y(y)); ctx.stroke(); ctx.fillText(fmt(y, ys < 1 ? (ys < 0.1 ? 2 : 1) : 0), L-6, Y(y)); }
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (let t = Math.ceil(t0/ts)*ts; t <= t1+1e-9; t += ts){ ctx.beginPath(); ctx.moveTo(X(t), T); ctx.lineTo(X(t), T+ph); ctx.stroke(); ctx.fillText(fmt(t, ts < 1 ? 1 : 0), X(t), T+ph+5); }
+  ctx.strokeStyle = '#1d2230'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(L, T); ctx.lineTo(L, T+ph); ctx.stroke();
+  if (ymin < 0 && ymax > 0){ ctx.beginPath(); ctx.moveTo(L, Y(0)); ctx.lineTo(L+pw, Y(0)); ctx.stroke(); }
+  else { ctx.beginPath(); ctx.moveTo(L, T+ph); ctx.lineTo(L+pw, T+ph); ctx.stroke(); }
+  ctx.fillStyle = '#1d2230'; ctx.textAlign = 'right'; ctx.fillText('t in s', L+pw, T+ph+19);
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.font = '600 13px system-ui,sans-serif';
+  ctx.fillText(`${G.title} in ${G.unit}`, L, T-12);
+  /* Stoßzeitpunkt */
+  if (r.collide){ ctx.save(); ctx.strokeStyle = '#f59e0b'; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(X(0), T); ctx.lineTo(X(0), T+ph); ctx.stroke(); ctx.restore();
+    ctx.fillStyle = '#b45309'; ctx.font = '600 12px system-ui'; ctx.textAlign = 'center'; ctx.fillText('Stoß', X(0), T+ph-6); }
+  if (hide){ ctx.fillStyle = 'rgba(240,242,246,.9)'; ctx.fillRect(X(0)+1, T, L+pw-X(0)-1, ph); ctx.fillStyle = '#aab'; ctx.font = '700 34px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('?', (X(0)+L+pw)/2, T+ph/2); }
+  /* Kurven: blass vollständig, kräftig bis zum aktuellen Zeitpunkt */
+  const tNow = clamp(S.t, t0, t1);
+  const plot = (s, tA, tB, alpha, width) => {
+    if (tB <= tA) return;
+    ctx.save(); ctx.globalAlpha = alpha; ctx.strokeStyle = s.col; ctx.lineWidth = width; ctx.lineJoin = 'round';
+    if (s.dash) ctx.setLineDash([7,5]);
+    ctx.beginPath();
+    if (G.step){
+      const jump = r.collide && tA < 0 && tB > 0;
+      ctx.moveTo(X(tA), Y(s.f(tA)));
+      if (jump){ ctx.lineTo(X(0), Y(s.f(-1e-9))); ctx.lineTo(X(0), Y(s.f(0))); }
+      ctx.lineTo(X(tB), Y(s.f(tB)));
+    } else {
+      const n = 120;
+      for (let i=0;i<=n;i++){ const t = tA + (tB-tA)*i/n; i ? ctx.lineTo(X(t), Y(s.f(t))) : ctx.moveTo(X(t), Y(s.f(t))); }
+    }
+    ctx.stroke(); ctx.restore();
+  };
+  for (const s of G.series){ plot(s, t0, tHideEnd, 0.22, 3); plot(s, t0, Math.min(tNow, tHideEnd), 1, 3); }
+  /* Zeitcursor */
+  ctx.save(); ctx.strokeStyle = '#0f766e'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X(tNow), T); ctx.lineTo(X(tNow), T+ph); ctx.stroke(); ctx.restore();
+  /* Legende */
+  ctx.font = '600 13px system-ui,sans-serif'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+  let lx = L + pw; const items = G.series.slice().reverse();
+  for (const s of items){
+    const tw = ctx.measureText(s.name).width; lx -= tw + 34;
+    ctx.save(); ctx.strokeStyle = s.col; ctx.lineWidth = 3; if (s.dash) ctx.setLineDash([5,3]);
+    ctx.beginPath(); ctx.moveTo(lx, T-14); ctx.lineTo(lx+20, T-14); ctx.stroke(); ctx.restore();
+    ctx.fillStyle = s.col; ctx.fillText(s.name.replace('_S','ₛ'), lx+24, T-14);
+  }
+}
+function graphHint(){
+  const parts = [];
+  if (S.graph !== 'x') parts.push('Vereinfachung: Der Stoß dauert hier unendlich kurz, deshalb springen die Werte bei t = 0. In Wirklichkeit dauert er einige Millisekunden.');
+  if (S.graph === 'p') parts.push('Die gestrichelte Linie (Gesamtimpuls) springt nicht – Impulserhaltung!');
+  if (S.graph === 'E') parts.push('Die gestrichelte Linie (Gesamtenergie) sinkt beim Stoß um die umgewandelte Energie.');
+  if (S.graph === 'x' && S.dim === '1d') parts.push('Die Steigung im x‑t‑Diagramm ist die Geschwindigkeit. Der Stoß ist der Knick in den Kurven.');
+  if (S.graph === 'x' && S.dim === '2d') parts.push('Beim schiefen Stoß wird der zurückgelegte Weg gezeigt.');
+  if (S.dim === '2d' && (S.graph === 'v' || S.graph === 'p')) parts.push('Beim schiefen Stoß werden die Beträge gezeigt; der Betrag des Gesamtimpulses bleibt gleich.');
+  if (S.level === 'hard' && (S.graph === 'v' || S.graph === 'x')) parts.push('Grau gestrichelt: Schwerpunkt.');
+  $('gHint').textContent = parts.join(' ');
+}
+let cinemaUsedFS = false;
+function setCinema(on){
+  S.cinema = on;
+  document.body.classList.toggle('cinema', on);
+  $('btnCinema').textContent = on ? '✕ Großansicht beenden' : '⛶ Großansicht';
+  $('chkCinemaGraph').checked = S.cinemaGraph;
+  if (on){
+    cinemaUsedFS = false;
+    const el = document.documentElement;
+    if (el.requestFullscreen && !document.fullscreenElement){ el.requestFullscreen().then(() => { cinemaUsedFS = true; }).catch(() => {}); }
+    window.scrollTo(0,0);
+  } else if (document.fullscreenElement && cinemaUsedFS){ cinemaUsedFS = false; document.exitFullscreen().catch(() => {}); }
+  requestAnimationFrame(draw);
+}
+let lastInfo = '';
+function updateCinemaInfo(){
+  if (!S.cinema) return;
+  const r = RES, u = R().vUnit;
+  const v = vec => S.dim==='1d' ? fmtV(vec[0]) : fmtV(len(vec));
+  const typ = r.e===1 ? 'elastisch' : r.e===0 ? 'plastisch' : `teilelastisch (${fmt(S.f*100,0)} % Energie umgewandelt)`;
+  let s = `<span><b class="c1">Auto 1:</b> m₁ = ${fmtM(r.m1)} kg, v₁ = ${v(r.v1)} ${u}</span><span><b class="c2">Auto 2:</b> m₂ = ${fmtM(r.m2)} kg, v₂ = ${v(r.v2)} ${u}${S.dim==='2d' ? ', α = '+fmt(S.alpha,0)+'°' : ''}</span><span>Stoß: <b>${typ}</b></span>`;
+  if (r.collide && S.t >= 0 && !hiddenNow()) s += `<span>nachher: <b class="c1">v₁' = ${v(r.w1)} ${u}</b>, <b class="c2">v₂' = ${v(r.w2)} ${u}</b></span>`;
+  if (s !== lastInfo){ $('cinemaInfo').innerHTML = s; lastInfo = s; }
+}
+function draw(){
+  drawSide(); drawTop(); drawP(); drawGraph($('cG'));
+  if (S.cinema && S.cinemaGraph) drawGraph($('cG2'));
+  updateCinemaInfo(); updateTimeLabel();
+}
 
 /* =====================================================================
    Animation
@@ -1206,7 +1409,7 @@ function resetTime(){ S.playing = false; S.t = RES.tStart; S.pausedAtHit = false
    Start
    ===================================================================== */
 function applyPreset(p){
-  S.range = p.range; S.dim = p.dim; S.type = p.type;
+  S.range = p.range; S.dim = p.dim; S.f = p.type==='plastisch' ? 1 : p.type==='elastisch' ? 0 : p.f;
   S.m1 = p.m1; S.m2 = p.m2; S.v1 = p.v1; S.v2 = p.v2;
   if (p.alpha !== undefined) S.alpha = p.alpha;
   refreshAll(true);
@@ -1230,15 +1433,24 @@ function init(){
     if (S.dim === '2d'){ S.v1 = Math.abs(S.v1); S.v2 = Math.abs(S.v2); if (S.v2 < 1e-9) S.v2 = S.v1 || R().vMax/4; }
     else { S.v1 = Math.abs(S.v1); S.v2 = S.alpha > 90 ? -Math.abs(S.v2) : Math.abs(S.v2); if (S.v1 <= S.v2) S.v2 = 0; }
   });
-  setupSeg('segType','type', clearPreset);
+  setupSeg('segType','type', () => {
+    clearPreset();
+    S.f = S.type==='elastisch' ? 0 : S.type==='plastisch' ? 1 : (S.f > 0 && S.f < 1 ? S.f : 0.5);
+  });
   setupSeg('segView','view', null, false);
   setupSeg('segArrows','arrows', null, false);
   for (const i of [1,2]){ bindNumber(i,'m'); bindNumber(i,'v'); }
   for (const id of ['m1Range','m2Range','v1Range','v2Range','m1Num','m2Num','v1Num','v2Num']) $(id).addEventListener('input', clearPreset);
   $('aRange').addEventListener('input', () => { S.alpha = +$('aRange').value; clearPreset(); refreshAll(true); });
   $('aNum').addEventListener('change', () => { S.alpha = clamp(+$('aNum').value || 0, 0, 180); clearPreset(); refreshAll(true); });
-  $('kRange').addEventListener('input', () => { S.k = +$('kRange').value; refreshAll(true); });
-  $('kNum').addEventListener('change', () => { S.k = clamp(+$('kNum').value || 0, 0, 1); refreshAll(true); });
+  $('fRange').addEventListener('input', () => { S.f = +$('fRange').value/100; clearPreset(); refreshAll(true); });
+  $('fNum').addEventListener('change', () => { S.f = clamp((+$('fNum').value || 0)/100, 0, 1); clearPreset(); refreshAll(true); });
+  setupSeg('segGraph','graph', null, false);
+  $('btnCinema').addEventListener('click', () => setCinema(!S.cinema));
+  $('chkCinemaGraph').addEventListener('change', e => { S.cinemaGraph = e.target.checked; refreshAll(false); });
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && S.cinema && cinemaUsedFS) setCinema(false); else requestAnimationFrame(draw);
+  });
   $('chkPause').addEventListener('change', e => { S.pauseAtHit = e.target.checked; });
   $('chkHide').addEventListener('change', e => { S.hide = e.target.checked; S.revealed = false; renderResults(); draw(); });
   $('chkCM').addEventListener('change', e => { S.showCM = e.target.checked; draw(); });
@@ -1255,6 +1467,7 @@ function init(){
     if (e.target.matches('input[type=number], select')) return;
     if (e.code === 'Space'){ e.preventDefault(); togglePlay(); }
     else if (e.key === 'r' || e.key === 'R') resetTime();
+    else if (e.key === 'g' || e.key === 'G') setCinema(!S.cinema);
   });
   window.addEventListener('resize', draw);
   refreshAll(true);
