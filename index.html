@@ -98,7 +98,8 @@
   .hero-inner{pointer-events:none}
   .hero-inner > *{pointer-events:auto;width:fit-content;max-width:100%}
   .hero-inner > .lead{width:auto;max-width:36rem}
-  @media (max-width: 819px){ body.theme-paper .hero-inner{padding-bottom:270px} }
+  .hero-inner > .facts{max-width:31rem}
+  @media (max-width: 819px){ body.theme-paper .hero-inner{padding-bottom:300px} }
   .chalk{font-family:"Chalkboard SE","Segoe Print","Bradley Hand","Comic Sans MS",cursive}
 
 </style>
@@ -344,22 +345,39 @@ list.querySelector('.filters').addEventListener('click', e => {
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const mix = (hex, f) => { const n = parseInt(hex.slice(1),16); const c = [n>>16,(n>>8)&255,n&255].map(v => Math.round(v + (255-v)*f)); return `rgb(${c})`; };
+  let ecc = 0.5;                         /* Neigung der Bahnen: Höhe/Breite der Ellipse, passt sich dem freien Platz an */
+  const ECC = () => ecc;
   const planets = usedTopics.map((t,i) => ({
     t, sims: SIMS.filter(s => s.topic === t.id), R: 0.72 + 0.34*i, speed: 0.16/(1 + 0.55*i), ph: 0.7 + i*2.3,
-    col: mix(t.color, 0.35), pos:[0,0], r:0
+    col: mix(t.color, 0.35), pos:[0,0], r:0, cand:-1, off:null, boxes:[]
   }));
-  let w = 0, h = 0, dust = [], hover = -1;
+  let w = 0, h = 0, dust = [], hover = -1, textRects = [], free = {x0:0,y0:0,x1:0,y1:0}, narrow = false;
+  /* Freien Bereich neben bzw. unter dem Text bestimmen, damit Bahnen und Beschriftungen nichts verdecken */
+  function measureText(){
+    const cr = cv.getBoundingClientRect();
+    textRects = [...document.querySelectorAll('.hero-inner > *')].map(el => {
+      const r = el.getBoundingClientRect();
+      return { x0: r.left - cr.left - 8, y0: r.top - cr.top - 6, x1: r.right - cr.left + 8, y1: r.bottom - cr.top + 6 };
+    }).filter(r => r.x1 > r.x0 && r.y1 > r.y0);
+    narrow = w < 820;
+    const right = Math.max(0, ...textRects.map(r => r.x1)), bottom = Math.max(0, ...textRects.map(r => r.y1));
+    free = narrow ? { x0: 6, y0: bottom + 4, x1: w - 6, y1: h - 22 }
+                  : { x0: Math.min(right + 16, w*0.62), y0: 6, x1: w - 6, y1: h - 22 };
+  }
   function resize(){
     const r = cv.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
     w = r.width; h = r.height; cv.width = w*dpr; cv.height = h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
     dust = Array.from({length: Math.round(w*h/1800)}, () => [Math.random()*w, Math.random()*h, Math.random()*1.6+0.3, Math.random()*0.18+0.04]);
+    measureText();
   }
   function geo(){
-    const narrow = w < 820, n = planets.length;
-    const Rmax = (n ? planets[n-1].R : 0.6) + 0.12;
-    const cx = narrow ? w*0.5 : w*0.79, cy = narrow ? h - 128 : h*0.5;
-    const S = narrow ? Math.min(w*0.44/Rmax, 100/(Rmax*0.5)) : Math.min(w*0.19/Rmax, (h*0.38)/(Rmax*0.5));
-    return { narrow, cx, cy, S };
+    const n = planets.length, Rn = n ? planets[n-1].R : 0.6;
+    const mx = narrow ? 30 : clamp((free.x1 - free.x0)*0.12, 30, 64), myT = 44, myB = 38;      /* Platz für Planeten und Beschriftungen außen */
+    const A = Math.max(60, (free.x1 - free.x0)/2 - mx), B = Math.max(40, (free.y1 - free.y0 - myT - myB)/2);
+    ecc = clamp(B/A, 0.5, 0.7);           /* viel Höhe frei → Bahnen steiler, Planeten stehen weiter auseinander */
+    const S = Math.min(A/Rn, B/(Rn*ecc), 230/Rn);
+    const cx = (free.x0 + free.x1)/2, cy = (free.y0 + myT + free.y1 - myB)/2;
+    return { cx, cy, S };
   }
   /* Kreidestrich: Linie zweimal leicht versetzt zeichnen */
   function chalkEllipse(cx, cy, rx, ry, alpha){
@@ -367,8 +385,67 @@ list.querySelector('.filters').addEventListener('click', e => {
       ctx.strokeStyle = `rgba(255,255,255,${a})`; ctx.beginPath(); ctx.ellipse(cx+dx, cy+dy, rx, ry, 0, 0, Math.PI*2); ctx.stroke();
     }
   }
-  function frame(t){
-    const { narrow, cx, cy, S } = geo();
+  /* ---- Beschriftungen: Position wählen, die möglichst nichts überdeckt ---- */
+  const NAME_H = 18, SUB_H = 15;
+  const ovl = (a, b) => Math.max(0, Math.min(a.x1,b.x1) - Math.max(a.x0,b.x0)) * Math.max(0, Math.min(a.y1,b.y1) - Math.max(a.y0,b.y0));
+  const box = (cx, cy, bw, bh) => ({ x0: cx - bw/2, y0: cy - bh/2, x1: cx + bw/2, y1: cy + bh/2 });
+  /* Kandidaten: Versatz (Mitte) von Name und Anzahl relativ zum Planeten, dazu eine kleine Vorliebe */
+  function candidates(pr, nw, sw){
+    const g = pr + 11, bw = Math.max(nw, sw), d = g*0.72;
+    return [
+      { pref: 0,  n: [0, -g - NAME_H/2],               s: [0, g + SUB_H/2] },                 /* Name oben, Anzahl unten */
+      { pref: 8,  n: [0, -g - SUB_H - NAME_H/2],       s: [0, -g - SUB_H/2] },                /* beides oben */
+      { pref: 12, n: [0, g + NAME_H/2],                s: [0, g + NAME_H + SUB_H/2] },        /* beides unten */
+      { pref: 10, n: [g + bw/2, -SUB_H/2],             s: [g + bw/2, NAME_H/2] },             /* rechts */
+      { pref: 10, n: [-g - bw/2, -SUB_H/2],            s: [-g - bw/2, NAME_H/2] },            /* links */
+      { pref: 16, n: [d + bw/2, -d - SUB_H - NAME_H/2], s: [d + bw/2, -d - SUB_H/2] },        /* rechts oben */
+      { pref: 16, n: [-d - bw/2, -d - SUB_H - NAME_H/2], s: [-d - bw/2, -d - SUB_H/2] },      /* links oben */
+      { pref: 18, n: [d + bw/2, d + NAME_H/2],          s: [d + bw/2, d + NAME_H + SUB_H/2] },/* rechts unten */
+      { pref: 18, n: [-d - bw/2, d + NAME_H/2],         s: [-d - bw/2, d + NAME_H + SUB_H/2] } /* links unten */
+    ];
+  }
+  let bounds = { x0: 0, y0: 0, x1: 0, y1: 0 };
+  /* Kasten in die Zeichenfläche schieben; liefert Kasten und Verschiebung */
+  function fit(b){
+    const dx = Math.max(0, bounds.x0 - b.x0) - Math.max(0, b.x1 - bounds.x1);
+    const dy = Math.max(0, bounds.y0 - b.y0) - Math.max(0, b.y1 - bounds.y1);
+    return { x0: b.x0+dx, y0: b.y0+dy, x1: b.x1+dx, y1: b.y1+dy, dx, dy };
+  }
+  function labelBoxes(x, y, off, nw, sw){
+    return [ fit(box(x + off[0], y + off[1], nw + 8, NAME_H)), fit(box(x + off[2], y + off[3], sw + 8, SUB_H)) ];
+  }
+  function placeLabels(cx, cy, sr, smooth){
+    const sun = box(cx, cy, sr*4.2, sr*4.2);
+    const discs = planets.map(p => box(p.pos[0], p.pos[1], 2*(p.r + 12), 2*(p.r*0.8 + 12)));
+    bounds = { x0: 3, y0: 3, x1: w - 3, y1: h - 20 };
+    const placed = [];
+    const order = planets.map((p,i) => i).sort((a,b) => (b === hover) - (a === hover) || a - b);
+    for (const i of order){
+      const p = planets[i], [x, y] = p.pos;
+      const cs = candidates(p.r, p.nw, p.sw);
+      let best = -1, bestC = Infinity;
+      cs.forEach((c, k) => {
+        const bx = labelBoxes(x, y, [c.n[0], c.n[1], c.s[0], c.s[1]], p.nw, p.sw);
+        let cost = c.pref*25 + (k === p.cand ? 0 : 120);
+        for (const b of bx){
+          for (const q of placed) cost += 4*ovl(b, q);
+          discs.forEach((q, j) => { if (j !== i) cost += 3*ovl(b, q); });
+          cost += 6*ovl(b, sun);
+          for (const q of textRects) cost += 6*ovl(b, q);
+          cost += 8*(Math.abs(b.dx) + Math.abs(b.dy));   /* lieber nicht an den Rand geschoben */
+        }
+        if (cost < bestC){ bestC = cost; best = k; }
+      });
+      p.cand = best;
+      const c = cs[best], tgt = [c.n[0], c.n[1], c.s[0], c.s[1]];
+      if (!p.off || !smooth) p.off = tgt.slice();
+      else p.off = p.off.map((v, k) => v + (tgt[k] - v)*0.18);
+      p.boxes = labelBoxes(x, y, p.off, p.nw, p.sw);
+      placed.push(...p.boxes);
+    }
+  }
+  function frame(t, smooth = true){
+    const { cx, cy, S } = geo();
     ctx.clearRect(0,0,w,h);
     for (const d of dust){ ctx.fillStyle = `rgba(255,255,255,${d[3]})`; ctx.fillRect(d[0], d[1], d[2], d[2]); }
     ctx.save();
@@ -380,17 +457,26 @@ list.querySelector('.filters').addEventListener('click', e => {
     ctx.restore();
     ctx.fillStyle = 'rgba(253,230,138,0.88)'; ctx.beginPath(); ctx.arc(cx, cy, sr, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx+0.8, cy-0.6, sr, 0, Math.PI*2); ctx.stroke();
-    ctx.fillStyle = '#26483a'; ctx.font = `700 ${Math.max(12, sr*0.42)}px ${CHALK}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('Physik', cx, cy+1);
-    /* Bahnen und Planeten (Themengebiete) */
+    {  /* Schrift so groß, dass „Physik“ in die Sonne passt */
+      ctx.font = `700 20px ${CHALK}`; const fs = Math.min(sr*0.42, 20*1.7*sr/ctx.measureText('Physik').width);
+      if (fs >= 7){ ctx.fillStyle = '#26483a'; ctx.font = `700 ${fs}px ${CHALK}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('Physik', cx, cy+1); }
+    }
+    /* Bahnen */
     ctx.lineWidth = 1.6; ctx.setLineDash([7,6]);
-    for (const p of planets) chalkEllipse(cx, cy, S*p.R, S*p.R*0.5, 0.38);
+    for (const p of planets) chalkEllipse(cx, cy, S*p.R, S*p.R*ECC(), 0.38);
     ctx.setLineDash([]);
+    /* Positionen und Größen */
     planets.forEach((p, i) => {
       const a = p.ph + t*p.speed*(hover === i ? 0.12 : 1);
-      const x = cx + S*p.R*Math.cos(a), y = cy + S*p.R*0.5*Math.sin(a);
-      const pr = (S*0.07 + 2.5*p.sims.length) * (hover === i ? 1.25 : 1);
-      p.pos = [x, y]; p.r = pr;
+      p.pos = [cx + S*p.R*Math.cos(a), cy + S*p.R*ECC()*Math.sin(a)];
+      p.r = (Math.min(S*0.065, 11) + 2.5*p.sims.length) * (hover === i ? 1.25 : 1);
+      ctx.font = `700 ${hover === i ? 17 : 15}px ${CHALK}`; p.nw = ctx.measureText(p.t.name).width;
+      p.sub = p.sims.length === 1 ? '1 Simulation' : p.sims.length + ' Simulationen';
+      ctx.font = `13px ${CHALK}`; p.sw = ctx.measureText(p.sub).width;
+    });
+    /* Planeten von hinten nach vorne zeichnen (wer weiter unten steht, ist näher) */
+    [...planets].sort((a,b) => a.pos[1] - b.pos[1]).forEach(p => {
+      const [x, y] = p.pos, pr = p.r;
       ctx.fillStyle = p.col; ctx.beginPath(); ctx.arc(x, y, pr, 0, Math.PI*2); ctx.fill();
       ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x+0.7, y-0.5, pr, 0, Math.PI*2); ctx.stroke();
       /* Monde = Simulationen dieses Themengebiets */
@@ -398,37 +484,52 @@ list.querySelector('.filters').addEventListener('click', e => {
         const ma = t*1.1 + k*Math.PI*2/p.sims.length, mr = pr + 9;
         ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.beginPath(); ctx.arc(x + Math.cos(ma)*mr, y + Math.sin(ma)*mr*0.8, 3.2, 0, Math.PI*2); ctx.fill();
       });
-      ctx.font = `700 ${hover === i ? 17 : 15}px ${CHALK}`; ctx.fillStyle = hover === i ? '#fde68a' : 'rgba(255,255,255,0.92)';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-      const n = p.sims.length;
-      const lx = tw => clamp(x, tw/2 + 6, w - tw/2 - 6);
-      ctx.fillText(p.t.name, lx(ctx.measureText(p.t.name).width), y - pr - 12);
-      ctx.font = `13px ${CHALK}`; ctx.fillStyle = 'rgba(255,255,255,0.7)';
-      const sub = n === 1 ? '1 Simulation' : n + ' Simulationen';
-      ctx.textBaseline = 'top'; ctx.fillText(sub, lx(ctx.measureText(sub).width), y + pr + 12);
+    });
+    /* Beschriftungen zuletzt, damit sie über allem liegen */
+    placeLabels(cx, cy, sr, smooth);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+    planets.forEach((p, i) => {
+      const mid = b => [(b.x0 + b.x1)/2, (b.y0 + b.y1)/2 + 1], [nx, ny] = mid(p.boxes[0]), [sx, sy] = mid(p.boxes[1]);
+      ctx.font = `700 ${hover === i ? 17 : 15}px ${CHALK}`;
+      ctx.strokeStyle = 'rgba(38,72,58,0.85)'; ctx.lineWidth = 4; ctx.strokeText(p.t.name, nx, ny);
+      ctx.fillStyle = hover === i ? '#fde68a' : 'rgba(255,255,255,0.95)'; ctx.fillText(p.t.name, nx, ny);
+      ctx.font = `13px ${CHALK}`;
+      ctx.strokeText(p.sub, sx, sy);
+      ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.fillText(p.sub, sx, sy);
     });
     {
       ctx.font = `13px ${CHALK}`; ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-      ctx.fillText('Planet anklicken → Themengebiet anzeigen', cx, h - 8);
+      ctx.fillText('Planet anklicken → Themengebiet anzeigen', cx, h - 6);
     }
     ctx.restore();
   }
+  /* Für Tests: Wie stark überdecken sich Beschriftungen, fremde Planeten und Text? (Fläche in px²) */
+  window.__labelOverlap = (detail) => {
+    const s = { labels: 0, planets: 0, text: 0 };
+    planets.forEach((p, i) => p.boxes.forEach(b => {
+      planets.forEach((q, j) => { if (j > i) q.boxes.forEach(c => s.labels += ovl(b, c)); if (j !== i) s.planets += ovl(b, box(q.pos[0], q.pos[1], 2*q.r, 2*q.r)); });
+      textRects.forEach(r => s.text += ovl(b, { x0: r.x0+8, y0: r.y0+6, x1: r.x1-8, y1: r.y1-6 }));
+    }));
+    return detail ? s : Math.round(s.labels + s.planets + s.text);
+  };
+  const hitPlanet = (x, y) => planets.findIndex(p => Math.hypot(p.pos[0]-x, p.pos[1]-y) < p.r + 14 || p.boxes.some(b => x > b.x0 && x < b.x1 && y > b.y0 && y < b.y1));
   cv.addEventListener('mousemove', e => {
     const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-    hover = planets.findIndex(p => Math.hypot(p.pos[0]-x, p.pos[1]-y) < p.r + 14);
+    hover = hitPlanet(x, y);
     cv.style.cursor = hover >= 0 ? 'pointer' : 'default';
-    if (reduce) frame(0);
+    if (reduce) frame(0, false);
   });
   cv.addEventListener('mouseleave', () => { hover = -1; });
   cv.addEventListener('click', e => {
     const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-    const i = planets.findIndex(p => Math.hypot(p.pos[0]-x, p.pos[1]-y) < p.r + 14);
+    const i = hitPlanet(x, y);
     if (i < 0) return;
     setFilter(planets[i].t.id);
     document.getElementById('list').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
   });
-  resize(); window.addEventListener('resize', () => { resize(); if (reduce) frame(0); });
-  if (reduce){ frame(0); return; }
+  resize(); window.addEventListener('resize', () => { resize(); if (reduce) frame(0, false); });
+  if (document.fonts) document.fonts.ready.then(() => { measureText(); if (reduce) frame(0, false); });
+  if (reduce){ frame(0, false); return; }
   let visible = true;
   new IntersectionObserver(en => { visible = en[0].isIntersecting; }).observe(cv);
   const t0 = performance.now();
