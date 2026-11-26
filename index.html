@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Physik-Simulationen</title>
+<meta name="description" content="Interaktive Simulationen für den Physikunterricht – direkt im Browser, ohne Installation.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%230f766e'/%3E%3Cpath d='M12 38c10-18 30-18 40 0' stroke='white' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='26' r='6' fill='%23fbbf24'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --ink:#16202e; --muted:#5b6477; --line:#e2e6ee; --bg:#f6f7fb; --card:#ffffff;
+    --accent:#0f766e; --accent2:#e8741e; --blue:#2a6fdb;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.45}
+  a{color:inherit}
+
+  /* ---------- Kopfbereich mit strömendem Feld ---------- */
+  .hero{position:relative;overflow:hidden;min-height:340px;display:flex;align-items:center;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff 0%,#f3f6fa 100%)}
+  #flow{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .hero-inner{position:relative;max-width:1100px;margin:0 auto;padding:3.2rem 1.5rem;width:100%}
+  .kicker{display:inline-flex;align-items:center;gap:.5rem;font-size:.85rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);background:rgba(255,255,255,.85);padding:.25rem .7rem;border-radius:999px;border:1px solid #cde7e3}
+  h1{font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.05;margin:.8rem 0 .7rem;letter-spacing:-.02em}
+  h1 span{background:linear-gradient(90deg,var(--accent),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{font-size:1.15rem;color:var(--muted);max-width:36rem;margin:0;background:rgba(255,255,255,.7);border-radius:10px}
+  .facts{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.4rem}
+  .facts span{font-size:.88rem;background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:999px;padding:.3rem .75rem}
+
+  /* ---------- Inhalt ---------- */
+  main{max-width:1100px;margin:0 auto;padding:2.2rem 1.5rem 1rem}
+  .filters{display:flex;gap:.5rem;flex-wrap:wrap;margin:0 0 1.4rem}
+  .filters button{font:inherit;font-size:.92rem;border:1px solid var(--line);background:#fff;border-radius:999px;padding:.4rem .95rem;cursor:pointer;display:inline-flex;align-items:center;gap:.45rem;color:var(--ink)}
+  .filters button i{width:.6rem;height:.6rem;border-radius:50%;display:inline-block}
+  .filters button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip{position:absolute;left:.7rem;top:.7rem;font-size:.75rem;font-weight:600;color:#fff;padding:.18rem .6rem;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+  .topic{margin:0 0 2.4rem}
+  .topic h2{display:flex;align-items:center;gap:.6rem;font-size:1.05rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 0 1rem}
+  .topic h2::after{content:"";flex:1;height:1px;background:var(--line)}
+  .topic h2 i{width:.7rem;height:.7rem;border-radius:3px;display:inline-block}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.2rem}
+  .card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;text-decoration:none;transition:transform .18s ease, box-shadow .18s ease, border-color .18s}
+  .card[hidden]{display:none}
+  .card:hover{transform:translateY(-4px);box-shadow:0 14px 30px -14px rgba(22,32,46,.28);border-color:#cfd5e1}
+  .card:focus-within{outline:3px solid #99d5cd;outline-offset:2px}
+  .thumb{height:170px;display:block;position:relative;overflow:hidden}
+  .thumb svg{width:100%;height:100%;display:block}
+  .body{padding:1rem 1.15rem 1.1rem;display:flex;flex-direction:column;gap:.55rem;flex:1}
+  .body h3{margin:0;font-size:1.25rem}
+  .body p{margin:0;color:var(--muted);font-size:.97rem}
+  .tags{display:flex;gap:.35rem;flex-wrap:wrap}
+  .tags span{font-size:.78rem;background:#f0f3f8;border-radius:6px;padding:.15rem .5rem;color:#3d4657}
+  .actions{display:flex;gap:.6rem;align-items:center;margin-top:auto;padding-top:.4rem}
+  .start{display:inline-flex;align-items:center;gap:.45rem;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;padding:.55rem 1.05rem;border-radius:11px}
+  .start:hover{filter:brightness(1.1)}
+  .dl{font-size:.88rem;color:var(--muted);text-decoration:none;border-bottom:1px dashed #b8c0cd}
+  .dl:hover{color:var(--ink)}
+  .soon{border-style:dashed;background:transparent;justify-content:center;align-items:center;text-align:center;padding:2rem;color:var(--muted);min-height:160px}
+  .soon:hover{transform:none;box-shadow:none}
+
+  /* Animationen in den Vorschaubildern */
+  @keyframes carL{0%{transform:translateX(-70px)}45%,55%{transform:translateX(0)}100%{transform:translateX(-46px)}}
+  @keyframes carR{0%{transform:translateX(70px)}45%,55%{transform:translateX(0)}100%{transform:translateX(46px)}}
+  @keyframes bang{0%,42%{opacity:0;transform:scale(.3)}50%{opacity:1;transform:scale(1)}62%,100%{opacity:0;transform:scale(1.3)}}
+  .car1{animation:carL 3.2s ease-in-out infinite alternate}
+  .car2{animation:carR 3.2s ease-in-out infinite alternate}
+  .bang{transform-origin:200px 96px;animation:bang 3.2s ease-in-out infinite alternate}
+  @keyframes dash{to{stroke-dashoffset:-40}}
+  .fl{stroke-dasharray:6 14;animation:dash 1.6s linear infinite}
+  @media (prefers-reduced-motion: reduce){ .car1,.car2,.bang,.fl{animation:none} .bang{opacity:0} }
+
+  footer{max-width:1100px;margin:0 auto;padding:1rem 1.5rem 2.5rem;color:var(--muted);font-size:.88rem;display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:space-between;border-top:1px solid var(--line)}
+
+  /* ================= Variante C: Tafel & Heft ================= */
+  body.theme-paper{--ink:#1f2a24;--muted:#4f5b55;--line:#d6dbe3;--bg:#fbfaf5;--card:#ffffff;--accent:#2f6f4f;
+    background-image:linear-gradient(#e3e9f2 1px,transparent 1px),linear-gradient(90deg,#e3e9f2 1px,transparent 1px);background-size:22px 22px}
+  body.theme-paper .hero{background:#26483a;border-bottom:14px solid #8b5e34;box-shadow:inset 0 0 80px rgba(0,0,0,.35);min-height:430px}
+  body.theme-paper .hero-inner{color:#f4f1e6}
+  body.theme-paper h1{font-family:"Chalkboard SE","Segoe Print","Bradley Hand","Comic Sans MS",cursive;font-weight:700;color:#f8f5ea;text-shadow:0 0 1px rgba(255,255,255,.6)}
+  body.theme-paper h1 span{background:none;color:#fde68a;-webkit-text-fill-color:#fde68a}
+  body.theme-paper .kicker{background:transparent;border-color:rgba(255,255,255,.5);color:#f8f5ea}
+  body.theme-paper .lead{background:transparent;color:#dfe8e1}
+  body.theme-paper .facts span{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.35);color:#f4f1e6}
+  body.theme-paper .filters button{border-color:#c9cfd8}
+  body.theme-paper .filters button.on{background:#2f6f4f;border-color:#2f6f4f}
+  body.theme-paper .card{border-radius:6px;box-shadow:2px 3px 0 rgba(31,42,36,.12);overflow:visible;position:relative}
+  body.theme-paper .card .thumb{border-radius:6px 6px 0 0}
+  body.theme-paper article.card::before{content:"";position:absolute;top:-10px;left:50%;width:84px;height:22px;margin-left:-42px;background:rgba(253,230,138,.75);transform:rotate(-3deg);z-index:2;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+  body.theme-paper article.card:nth-child(odd){transform:rotate(-.6deg)}
+  body.theme-paper article.card:nth-child(even){transform:rotate(.5deg)}
+  body.theme-paper article.card:hover{transform:rotate(0) translateY(-4px)}
+  body.theme-paper .body h3{font-family:"Chalkboard SE","Segoe Print","Bradley Hand","Comic Sans MS",cursive}
+  body.theme-paper .start{background:#2f6f4f;border-radius:6px}
+  body.theme-paper .soon{background:rgba(255,255,255,.5)}
+  /* Sonnensystem auf der Tafel: Canvas über dem Text, Klicks nur auf Planeten */
+  #flow{z-index:1}
+  .hero-inner{pointer-events:none}
+  .hero-inner > *{pointer-events:auto;width:fit-content;max-width:100%}
+  .hero-inner > .lead{width:auto;max-width:36rem}
+  @media (max-width: 819px){ body.theme-paper .hero-inner{padding-bottom:270px} }
+  .chalk{font-family:"Chalkboard SE","Segoe Print","Bradley Hand","Comic Sans MS",cursive}
+
+</style>
+</head>
+<body class="theme-paper">
+
+<section class="hero">
+  <canvas id="flow" aria-hidden="true"></canvas>
+  <div class="hero-inner">
+    <span class="kicker">● Physikunterricht</span>
+    <h1>Physik zum <span>Ausprobieren</span></h1>
+    <p class="lead">Interaktive Simulationen für den Unterricht: Werte verändern, zuschauen, verstehen.</p>
+    <div class="facts"><span>🖥️ läuft direkt im Browser</span><span>📽️ beamertauglich</span><span>📱 auch auf dem Tablet</span><span>💾 auch offline nutzbar</span></div>
+  </div>
+</section>
+
+<main id="list"></main>
+
+<footer>
+  <span>Tipp: Mit „Herunterladen“ bekommst du die Simulation als einzelne Datei, die auch ohne Internet per Doppelklick startet.</span>
+  <span>Simulationen für den Physikunterricht</span>
+</footer>
+
+<script>
+"use strict";
+/* =====================================================================
+   Liste der Simulationen – neue Simulationen hier eintragen.
+   Bereich (topic) bestimmt die Gruppe auf der Startseite.
+   ===================================================================== */
+const TOPICS = [
+  { id:'mechanik', name:'Mechanik',            color:'#e8741e' },
+  { id:'felder',   name:'Felder & Elektrizität', color:'#2a6fdb' }
+];
+const SIMS = [
+  {
+    topic:'mechanik',
+    title:'Stoßprozesse',
+    file:'Stoßprozesse/Stoss-Simulation.html',
+    text:'Zwei Autos stoßen zusammen – elastisch, plastisch oder irgendwo dazwischen. Mit Impuls, Energie und v‑t‑Diagrammen.',
+    tags:['Impulserhaltung','Energie','gerader & schiefer Stoß','3 Niveaustufen'],
+    thumb:'stoss'
+  },
+  {
+    topic:'felder',
+    title:'Feldlabor',
+    file:'Vektorfelder/Feldlabor.html',
+    text:'Elektrische, magnetische und Gravitationsfelder als strömende Teilchen und Feldlinien – in 2D und 3D, mit Baukasten.',
+    tags:['Feldlinien','Potential','Magnetfeld','2D & 3D'],
+    thumb:'feld'
+  }
+];
+
+/* --- Vorschaubilder als SVG --- */
+const THUMBS = {
+  stoss: `<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice">
+    <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e4f0fb"/><stop offset="1" stop-color="#f8fbfe"/></linearGradient></defs>
+    <rect width="400" height="170" fill="url(#sky)"/>
+    <rect y="124" width="400" height="14" fill="#6b7280"/><rect y="138" width="400" height="32" fill="#b7d99f"/>
+    <g stroke="#f8fafc" stroke-width="2.5" stroke-dasharray="18 14"><line x1="0" y1="131" x2="400" y2="131"/></g>
+    <g class="car1">
+      <path d="M86 122 h108 v-20 q-4 -8 -16 -10 l-18 -2 l-16 -16 h-40 l-16 14 l-6 4 q-8 2 -8 12 z" fill="#e8741e" stroke="#b5530b" stroke-width="2"/>
+      <path d="M130 90 h28 l14 14 h-42 z M104 104 l12 -14 h10 v14 z" fill="#26303d"/>
+      <circle cx="110" cy="122" r="11" fill="#1f2937"/><circle cx="110" cy="122" r="5" fill="#cbd5e1"/>
+      <circle cx="172" cy="122" r="11" fill="#1f2937"/><circle cx="172" cy="122" r="5" fill="#cbd5e1"/>
+      <path d="M90 70 h56" stroke="#9a3f05" stroke-width="4" stroke-linecap="round"/><path d="M146 62 l14 8 l-14 8 z" fill="#9a3f05"/>
+    </g>
+    <g class="car2">
+      <path d="M314 122 h-108 v-20 q4 -8 16 -10 l18 -2 l16 -16 h40 l16 14 l6 4 q8 2 8 12 z" fill="#2a6fdb" stroke="#1a4c9e" stroke-width="2"/>
+      <path d="M270 90 h-28 l-14 14 h42 z M296 104 l-12 -14 h-10 v14 z" fill="#26303d"/>
+      <circle cx="290" cy="122" r="11" fill="#1f2937"/><circle cx="290" cy="122" r="5" fill="#cbd5e1"/>
+      <circle cx="228" cy="122" r="11" fill="#1f2937"/><circle cx="228" cy="122" r="5" fill="#cbd5e1"/>
+      <path d="M310 70 h-56" stroke="#123a7a" stroke-width="4" stroke-linecap="round"/><path d="M254 62 l-14 8 l14 8 z" fill="#123a7a"/>
+    </g>
+    <path class="bang" d="M200 66 l7 18 l18 -8 l-8 17 l18 7 l-18 7 l8 17 l-18 -8 l-7 18 l-7 -18 l-18 8 l8 -17 l-18 -7 l18 -7 l-8 -17 l18 8 z" fill="#fde047" stroke="#f59e0b" stroke-width="2"/>
+  </svg>`,
+  feld: (() => {
+    /* Feldlinien eines Dipols numerisch erzeugen */
+    const q = [{x:130,y:85,s:1},{x:270,y:85,s:-1}];
+    const E = (x,y) => { let ex=0, ey=0; for (const c of q){ const dx=x-c.x, dy=y-c.y, r2=dx*dx+dy*dy+30, r3=r2*Math.sqrt(r2); ex+=c.s*dx/r3; ey+=c.s*dy/r3; } return [ex,ey]; };
+    let paths = '';
+    const n = 14;
+    for (let i=0;i<n;i++){
+      const a = (i+0.5)/n*Math.PI*2;
+      let x = q[0].x + 10*Math.cos(a), y = q[0].y + 10*Math.sin(a), d = `M${x.toFixed(1)} ${y.toFixed(1)}`;
+      for (let k=0;k<600;k++){
+        const [ex,ey] = E(x,y), l = Math.hypot(ex,ey) || 1;
+        x += 2.5*ex/l; y += 2.5*ey/l;
+        if (Math.hypot(x-q[1].x, y-q[1].y) < 9 || x < -40 || x > 440 || y < -40 || y > 210) break;
+        if (k%2===0) d += ` L${x.toFixed(1)} ${y.toFixed(1)}`;
+      }
+      paths += `<path d="${d}" fill="none" stroke="#7aa7e8" stroke-width="1.6" opacity=".55"/><path class="fl" d="${d}" fill="none" stroke="#2a6fdb" stroke-width="2.2" stroke-linecap="round"/>`;
+    }
+    return `<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice">
+      <rect width="400" height="170" fill="#f4f7fc"/>
+      <g stroke="#e3e9f3" stroke-width="1">${Array.from({length:21},(_,i)=>`<line x1="${i*20}" y1="0" x2="${i*20}" y2="170"/>`).join('')}${Array.from({length:9},(_,i)=>`<line x1="0" y1="${i*20+5}" x2="400" y2="${i*20+5}"/>`).join('')}</g>
+      ${paths}
+      <circle cx="130" cy="85" r="15" fill="#dc2626"/><text x="130" y="91" text-anchor="middle" font-size="20" font-weight="700" fill="#fff" font-family="system-ui">+</text>
+      <circle cx="270" cy="85" r="15" fill="#2563eb"/><text x="270" y="91" text-anchor="middle" font-size="22" font-weight="700" fill="#fff" font-family="system-ui">−</text>
+    </svg>`;
+  })()
+};
+
+/* --- Seite aufbauen --- */
+function esc(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+const list = document.getElementById('list');
+const usedTopics = TOPICS.filter(t => SIMS.some(s => s.topic === t.id));
+let html = `<div class="filters" role="group" aria-label="Themenbereich"><button class="on" data-t="">Alle</button>` +
+  usedTopics.map(t => `<button data-t="${t.id}"><i style="background:${t.color}"></i>${esc(t.name)}</button>`).join('') + `</div><div class="grid">`;
+{
+  for (const s of SIMS){
+    const t = TOPICS.find(x => x.id === s.topic) || {name:'', color:'#5b6477'};
+    const href = encodeURI(s.file);
+    const fname = s.file.split('/').pop();
+    html += `<article class="card" data-topic="${s.topic}">
+      <a class="thumb" href="${href}" aria-label="${esc(s.title)} starten" tabindex="-1">${THUMBS[s.thumb] || ''}<span class="chip" style="background:${t.color}">${esc(t.name)}</span></a>
+      <div class="body">
+        <h3>${esc(s.title)}</h3>
+        <p>${esc(s.text)}</p>
+        <div class="tags">${s.tags.map(x => `<span>${esc(x)}</span>`).join('')}</div>
+        <div class="actions"><a class="start" href="${href}">▶ Starten</a><a class="dl" href="${href}" download="${esc(fname)}">Herunterladen</a></div>
+      </div>
+    </article>`;
+  }
+}
+html += `<div class="card soon">Weitere Simulationen folgen …</div></div>`;
+list.innerHTML = html;
+function setFilter(topic){
+  for (const x of list.querySelectorAll('.filters button')) x.classList.toggle('on', x.dataset.t === topic);
+  for (const c of list.querySelectorAll('article.card')) c.hidden = !!topic && c.dataset.topic !== topic;
+}
+list.querySelector('.filters').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (b) setFilter(b.dataset.t);
+});
+
+/* =====================================================================
+   Tafel: Sonnensystem der Themengebiete (mit Kreide gezeichnet)
+   Jedes Themengebiet ist ein Planet, jede Simulation ein Mond.
+   Neue Simulationen bzw. Themen erscheinen automatisch.
+   Klick auf einen Planeten filtert die Liste darunter.
+   ===================================================================== */
+(() => {
+  const cv = document.getElementById('flow'), ctx = cv.getContext('2d');
+  const CHALK = '"Chalkboard SE","Segoe Print","Bradley Hand","Comic Sans MS",cursive';
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const mix = (hex, f) => { const n = parseInt(hex.slice(1),16); const c = [n>>16,(n>>8)&255,n&255].map(v => Math.round(v + (255-v)*f)); return `rgb(${c})`; };
+  const planets = usedTopics.map((t,i) => ({
+    t, sims: SIMS.filter(s => s.topic === t.id), R: 0.72 + 0.34*i, speed: 0.16/(1 + 0.55*i), ph: 0.7 + i*2.3,
+    col: mix(t.color, 0.35), pos:[0,0], r:0
+  }));
+  let w = 0, h = 0, dust = [], hover = -1;
+  function resize(){
+    const r = cv.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+    w = r.width; h = r.height; cv.width = w*dpr; cv.height = h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    dust = Array.from({length: Math.round(w*h/1800)}, () => [Math.random()*w, Math.random()*h, Math.random()*1.6+0.3, Math.random()*0.18+0.04]);
+  }
+  function geo(){
+    const narrow = w < 820, n = planets.length;
+    const Rmax = (n ? planets[n-1].R : 0.6) + 0.12;
+    const cx = narrow ? w*0.5 : w*0.79, cy = narrow ? h - 128 : h*0.5;
+    const S = narrow ? Math.min(w*0.44/Rmax, 100/(Rmax*0.5)) : Math.min(w*0.19/Rmax, (h*0.38)/(Rmax*0.5));
+    return { narrow, cx, cy, S };
+  }
+  /* Kreidestrich: Linie zweimal leicht versetzt zeichnen */
+  function chalkEllipse(cx, cy, rx, ry, alpha){
+    for (const [dx,dy,a] of [[0,0,alpha],[0.8,-0.6,alpha*0.45]]){
+      ctx.strokeStyle = `rgba(255,255,255,${a})`; ctx.beginPath(); ctx.ellipse(cx+dx, cy+dy, rx, ry, 0, 0, Math.PI*2); ctx.stroke();
+    }
+  }
+  function frame(t){
+    const { narrow, cx, cy, S } = geo();
+    ctx.clearRect(0,0,w,h);
+    for (const d of dust){ ctx.fillStyle = `rgba(255,255,255,${d[3]})`; ctx.fillRect(d[0], d[1], d[2], d[2]); }
+    ctx.save();
+    /* Sonne mit Strahlen */
+    const sr = S*0.17;
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(t*0.08);
+    ctx.strokeStyle = 'rgba(253,230,138,0.8)'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+    for (let k=0;k<12;k++){ const a = k/12*Math.PI*2, l = k%2 ? 0.45 : 0.75; ctx.beginPath(); ctx.moveTo(Math.cos(a)*sr*1.25, Math.sin(a)*sr*1.25); ctx.lineTo(Math.cos(a)*sr*(1.25+l), Math.sin(a)*sr*(1.25+l)); ctx.stroke(); }
+    ctx.restore();
+    ctx.fillStyle = 'rgba(253,230,138,0.88)'; ctx.beginPath(); ctx.arc(cx, cy, sr, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx+0.8, cy-0.6, sr, 0, Math.PI*2); ctx.stroke();
+    ctx.fillStyle = '#26483a'; ctx.font = `700 ${Math.max(12, sr*0.42)}px ${CHALK}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('Physik', cx, cy+1);
+    /* Bahnen und Planeten (Themengebiete) */
+    ctx.lineWidth = 1.6; ctx.setLineDash([7,6]);
+    for (const p of planets) chalkEllipse(cx, cy, S*p.R, S*p.R*0.5, 0.38);
+    ctx.setLineDash([]);
+    planets.forEach((p, i) => {
+      const a = p.ph + t*p.speed*(hover === i ? 0.12 : 1);
+      const x = cx + S*p.R*Math.cos(a), y = cy + S*p.R*0.5*Math.sin(a);
+      const pr = (S*0.07 + 2.5*p.sims.length) * (hover === i ? 1.25 : 1);
+      p.pos = [x, y]; p.r = pr;
+      ctx.fillStyle = p.col; ctx.beginPath(); ctx.arc(x, y, pr, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x+0.7, y-0.5, pr, 0, Math.PI*2); ctx.stroke();
+      /* Monde = Simulationen dieses Themengebiets */
+      p.sims.forEach((s, k) => {
+        const ma = t*1.1 + k*Math.PI*2/p.sims.length, mr = pr + 9;
+        ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.beginPath(); ctx.arc(x + Math.cos(ma)*mr, y + Math.sin(ma)*mr*0.8, 3.2, 0, Math.PI*2); ctx.fill();
+      });
+      ctx.font = `700 ${hover === i ? 17 : 15}px ${CHALK}`; ctx.fillStyle = hover === i ? '#fde68a' : 'rgba(255,255,255,0.92)';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      const n = p.sims.length;
+      const lx = tw => clamp(x, tw/2 + 6, w - tw/2 - 6);
+      ctx.fillText(p.t.name, lx(ctx.measureText(p.t.name).width), y - pr - 12);
+      ctx.font = `13px ${CHALK}`; ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      const sub = n === 1 ? '1 Simulation' : n + ' Simulationen';
+      ctx.textBaseline = 'top'; ctx.fillText(sub, lx(ctx.measureText(sub).width), y + pr + 12);
+    });
+    {
+      ctx.font = `13px ${CHALK}`; ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText('Planet anklicken → Themengebiet anzeigen', cx, h - 8);
+    }
+    ctx.restore();
+  }
+  cv.addEventListener('mousemove', e => {
+    const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    hover = planets.findIndex(p => Math.hypot(p.pos[0]-x, p.pos[1]-y) < p.r + 14);
+    cv.style.cursor = hover >= 0 ? 'pointer' : 'default';
+    if (reduce) frame(0);
+  });
+  cv.addEventListener('mouseleave', () => { hover = -1; });
+  cv.addEventListener('click', e => {
+    const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    const i = planets.findIndex(p => Math.hypot(p.pos[0]-x, p.pos[1]-y) < p.r + 14);
+    if (i < 0) return;
+    setFilter(planets[i].t.id);
+    document.getElementById('list').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+  });
+  resize(); window.addEventListener('resize', () => { resize(); if (reduce) frame(0); });
+  if (reduce){ frame(0); return; }
+  let visible = true;
+  new IntersectionObserver(en => { visible = en[0].isIntersecting; }).observe(cv);
+  const t0 = performance.now();
+  (function loop(ts){ if (visible && !document.hidden) frame((ts - t0)/1000); requestAnimationFrame(loop); })(t0);
+})();
+
+</script>
+</body>
+</html>

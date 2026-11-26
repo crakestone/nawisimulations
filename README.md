@@ -4,6 +4,15 @@ Browserbasierte Simulationen für den Physikunterricht. Jede Simulation ist **ei
 herunterladen (z. B. aus Teams oder Moodle) und per Doppelklick im Browser öffnen. Es ist keine Installation
 und keine Internetverbindung nötig.
 
+## Startseite
+
+`index.html` ist die Startseite (Tafel & Heft mit einem Sonnensystem der Themengebiete). Mit GitHub Pages ist sie unter
+`https://crakestone.github.io/physicssimulations/` erreichbar.
+
+**Neue Simulation eintragen:** In `index.html` in der Liste `SIMS` einen Eintrag ergänzen (Themengebiet, Titel,
+Dateipfad, Kurztext, Schlagwörter). Ein neues Themengebiet kommt in die Liste `TOPICS` und erscheint automatisch als
+neuer Planet. Jede Simulation ist ein Mond ihres Themen-Planeten.
+
 ## Übersicht
 
 | Ordner | Simulation | Inhalt |
