@@ -9,6 +9,7 @@ und keine Internetverbindung nötig.
 | Ordner | Simulation | Inhalt |
 |---|---|---|
 | `Stoßprozesse/` | `Stoss-Simulation.html` | Elastischer, plastischer (und teilelastischer) Stoß zweier Autos, gerade und schief |
+| `Vektorfelder/` | `Feldlabor.html` | Elektrische, magnetische und Gravitationsfelder als strömende Teilchen, Feldlinien, Pfeile und Äquipotentiallinien; 45 Versuche, Baukasten und eigene Funktionen |
 
 ## Stoßprozesse – Stoss-Simulation.html
 
@@ -33,3 +34,21 @@ und keine Internetverbindung nötig.
 
 Modell: Die Fahrzeuge werden wie Massepunkte behandelt (zentraler Stoß, keine Reibung, keine Drehung).
 Gerechnet wird exakt mit Impulserhaltung und der Stoßzahl k: v' = (1 + k)·v_S − k·v.
+
+## Vektorfelder – Feldlabor.html
+
+- Darstellung wie bei *Fieldplay*: Tausende Teilchen strömen mit dem Feld. Dazu lassen sich **Feldlinien**,
+  **Pfeile**, **Äquipotentiallinien** und **Achsen** zuschalten.
+- **45 fertige Versuche** mit Vorschaubild, Erklärung und Frage für den Unterricht: Elektrisch, Magnetisch,
+  Gravitation und Mathe & Strömung (Phasenraum, Räuber-Beute, Zylinderumströmung …).
+  Antippen lädt einen Versuch. Zieht man die Kachel ins Feld, wird er zum bestehenden Feld **hinzugefügt** (Superposition).
+- **Baukasten:** Ladungen, Stab- und Hufeisenmagnet, Stromleiter, Spule, Kondensator, Metallkugel, Planeten,
+  Hohlkugel, Kompass und Messsonde per Drag & Drop. Ein angetipptes Objekt zeigt Regler für Stärke, Größe und Drehung.
+- **Probekörper** (Testladung, Elektron, Satellit) bewegen sich im Feld und zeichnen ihre Bahn.
+  Die Startgeschwindigkeit stellt man über die Pfeilspitze ein.
+- **Eigene Funktion** in Schulschreibweise: `Fx = -y`, `Fy = x` oder ein Potential `φ = x^2 + y^2`.
+  Dazu kommen homogene Zusatzfelder (E, g, B senkrecht zur Ebene) und ein mitrotierendes Bezugssystem (Lagrange-Punkte).
+- Heller Hintergrund für den Beamer, Vollbild. Tasten: Leertaste = Pause, Entf = Objekt löschen.
+
+Modell: relative Einheiten (k = G = 1). Magnete werden als zwei Pole berechnet. Kondensatorplatten und
+Stromleiter werden im Querschnitt gerechnet (senkrecht zur Bildebene ausgedehnt).
