@@ -9,7 +9,7 @@ und keine Internetverbindung nötig.
 | Ordner | Simulation | Inhalt |
 |---|---|---|
 | `Stoßprozesse/` | `Stoss-Simulation.html` | Elastischer, plastischer (und teilelastischer) Stoß zweier Autos, gerade und schief |
-| `Vektorfelder/` | `Feldlabor.html` | Elektrische, magnetische und Gravitationsfelder als strömende Teilchen, Feldlinien, Pfeile und Äquipotentiallinien; 48 Versuche, Baukasten, eigene Funktionen, 2D- und 3D-Ansicht |
+| `Vektorfelder/` | `Feldlabor.html` | Elektrische, magnetische und Gravitationsfelder als strömende Teilchen, Feldlinien, Pfeile und Äquipotentiallinien; 51 Versuche, Baukasten, eigene Funktionen, 2D- und 3D-Ansicht |
 
 ## Stoßprozesse – Stoss-Simulation.html
 
@@ -39,8 +39,8 @@ Gerechnet wird exakt mit Impulserhaltung und der Stoßzahl k: v' = (1 + k)·v_S 
 
 - Darstellung wie bei *Fieldplay*: Tausende Teilchen strömen mit dem Feld. Dazu lassen sich **Feldlinien**,
   **Pfeile**, **Äquipotentiallinien** und **Achsen** zuschalten.
-- **48 fertige Versuche** mit Vorschaubild, Erklärung und Frage für den Unterricht: Elektrisch, Magnetisch,
-  Gravitation und Mathe & Strömung (Phasenraum, Räuber-Beute, Zylinderumströmung …), dazu drei Versuche speziell für 3D.
+- **51 fertige Versuche** mit Vorschaubild, Erklärung und Frage für den Unterricht: Elektrisch, Magnetisch,
+  Gravitation und Mathe & Strömung (Phasenraum, Räuber-Beute, Zylinderumströmung …), dazu Versuche speziell für 3D (Dipol im Raum, Potentialgebirge, Gravitationstrichter, Elektron in der Spule).
   Antippen lädt einen Versuch. Zieht man die Kachel ins Feld, wird er zum bestehenden Feld **hinzugefügt** (Superposition).
 - **Baukasten:** Ladungen, Stab- und Hufeisenmagnet, Stromleiter, Spule, Kondensator, Metallkugel, Planeten,
   Hohlkugel, Kompass und Messsonde per Drag & Drop. Ein angetipptes Objekt zeigt Regler für Stärke, Größe und Drehung.
@@ -48,6 +48,9 @@ Gerechnet wird exakt mit Impulserhaltung und der Stoßzahl k: v' = (1 + k)·v_S 
   Die Startgeschwindigkeit stellt man über die Pfeilspitze ein.
 - **Eigene Funktion** in Schulschreibweise: `Fx = -y`, `Fy = x` oder ein Potential `φ = x^2 + y^2`.
   Dazu kommen homogene Zusatzfelder (E, g, B senkrecht zur Ebene) und ein mitrotierendes Bezugssystem (Lagrange-Punkte).
+- **Spule, Leiterschleife und Helmholtz-Spulenpaar** werden räumlich nach Biot-Savart berechnet.
+  In 2D sieht man den Schnitt durch die Achse, in 3D die Windungen bzw. den Ring
+  und z. B. die Schraubenbahn eines Elektrons in der Spule.
 - **2D / 3D umschaltbar** (oben rechts):
   - *Raumfeld:* Ladungen, Magnete und Planeten liegen im Raum; Feldlinien und Teilchen laufen in alle Richtungen.
     Objekte lassen sich auch in die Höhe verschieben (Regler „Höhe z“ oder Alt + Ziehen).
@@ -59,4 +62,4 @@ Gerechnet wird exakt mit Impulserhaltung und der Stoßzahl k: v' = (1 + k)·v_S 
 - Heller Hintergrund für den Beamer, Vollbild. Tasten: Leertaste = Pause, Entf = Objekt löschen.
 
 Modell: relative Einheiten (k = G = 1). Magnete werden als zwei Pole berechnet. Kondensatorplatten und
-Stromleiter werden im Querschnitt gerechnet (senkrecht zur Bildebene ausgedehnt, im 3D-Raumfeld daher als lange senkrechte Leiter bzw. Platten dargestellt).
+gerade Stromleiter werden im Querschnitt gerechnet (senkrecht zur Bildebene unendlich lang, im 3D-Raumfeld daher als lange senkrechte Leiter bzw. Platten dargestellt).

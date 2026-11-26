@@ -245,8 +245,10 @@ function makeCustom(def){
 
 /* ---------- Feld-Engine (3D; die 2D-Ansicht ist der Schnitt z = 0) ---------- */
 function build(objs,bg,c){
-  const P=[],W=[],S=[],O=[],FS=[];
+  const P=[],W=[],S=[],O=[],FS=[],SG=[],CUT=[],SEED2=[],SEED3=[];
   let g=0, has2=false;
+  const addRing=(cx,cy,cz,tx,ty,R,I,N)=>{const nx=-ty, ny=tx; let px=cx+R*nx, py=cy+R*ny, pz=cz; for(let k=1;k<=N;k++){const f=TAU*k/N, qx=cx+R*Math.cos(f)*nx, qy=cy+R*Math.cos(f)*ny, qz=cz+R*Math.sin(f); SG.push(px,py,pz,qx-px,qy-py,qz-pz,I); px=qx; py=qy; pz=qz} if(Math.abs(cz)<1e-9) CUT.push([cx+R*nx,cy+R*ny],[cx-R*nx,cy-R*ny])};
+  const addSeeds=(cx,cy,cz,tx,ty,R)=>{const nx=-ty, ny=tx; for(const r of [-0.6,-0.3,0,0.3,0.6]) SEED2.push([cx+r*R*nx,cy+r*R*ny]); SEED3.push([cx,cy,cz]); for(const r of [0.35,0.7]) for(let k=0;k<6;k++){const f=TAU*k/6; SEED3.push([cx+r*R*Math.cos(f)*nx,cy+r*R*Math.cos(f)*ny,cz+r*R*Math.sin(f)])}};
   const pt=(x,y,z,f,cat,gid,law=3)=>{P.push(x,y,z,f,cat,law); FS.push({x,y,z,f,R:0,g:gid,law}); if(law===2) has2=true};
   for(const o of objs){
     g++;
@@ -256,6 +258,8 @@ function build(objs,bg,c){
       case 'magnet': {const h=o.L*0.42; pt(o.x+tx*h,o.y+ty*h,z,o.p,1,g); pt(o.x-tx*h,o.y-ty*h,z,-o.p,1,g+'s'); break}
       case 'horse': pt(o.x+tx*0.75+nx*0.6,o.y+ty*0.75+ny*0.6,z,o.p,1,g); pt(o.x+tx*0.75-nx*0.6,o.y+ty*0.75-ny*0.6,z,-o.p,1,g+'s'); break;
       case 'wire': W.push([o.x,o.y,o.I]); break;
+      case 'loop3': addRing(o.x,o.y,z,tx,ty,o.R,o.I,20); addSeeds(o.x,o.y,z,tx,ty,o.R); break;
+      case 'coil3': {for(let i=0;i<o.n;i++){const s=-o.L/2+o.L*(i+0.5)/o.n; addRing(o.x+tx*s,o.y+ty*s,z,tx,ty,o.R,o.I,16)} addSeeds(o.x,o.y,z,tx,ty,o.R); break}
       case 'coil': for(let i=0;i<o.n;i++){const s=-o.L/2+o.L*(i+0.5)/o.n; W.push([o.x+tx*s+nx*0.55,o.y+ty*s+ny*0.55,o.I],[o.x+tx*s-nx*0.55,o.y+ty*s-ny*0.55,-o.I])} break;
       case 'plates': {const n=24,q=o.q/n; for(let i=0;i<n;i++){const s=-o.L/2+o.L*(i+0.5)/n; pt(o.x+tx*s+nx*o.d/2,o.y+ty*s+ny*o.d/2,0,q,0,g,2); pt(o.x+tx*s-nx*o.d/2,o.y+ty*s-ny*o.d/2,0,-q,0,g+'s',2)} break}
       case 'rod': {const n=20,q=o.q/n; for(let i=0;i<n;i++){const s=-o.L/2+o.L*(i+0.5)/n; pt(o.x+tx*s,o.y+ty*s,z,q,0,g)} break}
@@ -274,7 +278,7 @@ function build(objs,bg,c){
       w=Math.sqrt((s[0].M+s[1].M)/Math.pow(d,3));
     }
   }
-  const ex=bg.ex||0, ey=bg.ey||0, gx=bg.gx||0, gy=bg.gy||0, w2=w*w, Pf=Float64Array.from(P), T=[0,0,0];
+  const ex=bg.ex||0, ey=bg.ey||0, gx=bg.gx||0, gy=bg.gy||0, w2=w*w, Pf=Float64Array.from(P), Sg=Float64Array.from(SG), T=[0,0,0];
   const field3=(x,y,z,o,mask)=>{
     let fx=0,fy=0,fz=0;
     for(let j=0;j<Pf.length;j+=6){
@@ -284,6 +288,12 @@ function build(objs,bg,c){
       else {const inv=Pf[j+3]/(dx*dx+dy*dy+EPS); fx+=dx*inv; fy+=dy*inv}
     }
     if(mask&2) for(const q of W){const dx=x-q[0], dy=y-q[1], k=q[2]/(dx*dx+dy*dy+EPS); fx-=dy*k; fy+=dx*k}
+    if(mask&2) for(let j=0;j<Sg.length;j+=7){
+      const ax=x-Sg[j], ay=y-Sg[j+1], az=z-Sg[j+2], Lx=Sg[j+3], Ly=Sg[j+4], Lz=Sg[j+5], bx=ax-Lx, by=ay-Ly, bz=az-Lz;
+      const cx=Ly*az-Lz*ay, cy=Lz*ax-Lx*az, cz=Lx*ay-Ly*ax, c2=cx*cx+cy*cy+cz*cz+EPS*(Lx*Lx+Ly*Ly+Lz*Lz);
+      const f=0.5*Sg[j+6]*((Lx*ax+Ly*ay+Lz*az)/Math.sqrt(ax*ax+ay*ay+az*az+EPS)-(Lx*bx+Ly*by+Lz*bz)/Math.sqrt(bx*bx+by*by+bz*bz+EPS))/c2;
+      fx+=cx*f; fy+=cy*f; fz+=cz*f;
+    }
     for(const s of S){
       if(!(mask&(1<<s[5]))) continue;
       const dx=x-s[0], dy=y-s[1], dz=z-s[2], r2=dx*dx+dy*dy+dz*dz, r=Math.sqrt(r2), R=s[3];
@@ -312,8 +322,8 @@ function build(objs,bg,c){
   };
   const hole=c?c.hole:0;
   const inside=(x,y,z=0)=>{for(const q of O){if((x-q[0])**2+(y-q[1])**2+(z-q[2])**2<q[3]*q[3]) return true} return hole>0&&x*x+y*y<hole*hole};
-  return {field,field3,pot,inside,FS,W,hole,w,has2,hasPot:!W.length&&!(c&&c.mode==='F'),customF:!!(c&&c.mode==='F'),fill:!!(ex||ey||gx||gy||w2||(c&&c.mode==='P')),
-    inplane:!!(P.length||W.length||S.length||ex||ey||gx||gy||w2||c)};
+  return {field,field3,pot,inside,FS,W,hole,w,has2,CUT,SEED2,SEED3,hasSeg:SG.length>0,hasPot:!W.length&&!SG.length&&!(c&&c.mode==='F'),customF:!!(c&&c.mode==='F'),fill:!!(ex||ey||gx||gy||w2||(c&&c.mode==='P')),
+    inplane:!!(P.length||W.length||SG.length||S.length||ex||ey||gx||gy||w2||c)};
 }
 
 /* ---------- Feldlinien ---------- */
@@ -325,6 +335,7 @@ function traceAll(F,v,Wpx,Hpx,density){
   const hitSrc=(x,y,skip)=>{
     for(let i=0;i<FS.length;i++){if(i===skip) continue; const s=FS[i], rr=s.R||r0*0.8; if((x-s.x)**2+(y-s.y)**2<rr*rr) return i}
     for(const w of F.W){if((x-w[0])**2+(y-w[1])**2<(r0*0.8)**2) return -2}
+    if(F.CUT) for(const w of F.CUT){if((x-w[0])**2+(y-w[1])**2<(r0*0.8)**2) return -2}
     if(F.hole&&x*x+y*y<F.hole*F.hole) return -3;
     return -1;
   };
@@ -343,7 +354,7 @@ function traceAll(F,v,Wpx,Hpx,density){
     }
     return {p,end};
   };
-  const useSrc=FS.length>0&&!F.W.length&&!F.customF;
+  const useSrc=FS.length>0&&!F.W.length&&!F.hasSeg&&!F.customF;
   if(useSrc){
     const carry={}, need=FS.map(s=>{const c=(carry[s.g]||0)+Math.abs(s.f)*density, n=Math.floor(c+1e-6); carry[s.g]=c-n; return n});
     const arr=FS.map(()=>[]);
@@ -388,6 +399,7 @@ function traceAll(F,v,Wpx,Hpx,density){
     const seeds=[];
     for(let y=v.cy-hh+dsep/2;y<v.cy+hh;y+=dsep) for(let x=v.cx-hw+dsep/2;x<v.cx+hw;x+=dsep) seeds.push([x+(rnd()-.5)*dsep*.4,y+(rnd()-.5)*dsep*.4,rnd()]);
     seeds.sort((a,b)=>a[2]-b[2]);
+    if(F.SEED2) for(const q of F.SEED2) seeds.unshift([q[0],q[1],-1]);
     for(const [sx,sy] of seeds){
       if(near(sx,sy,-1)||hitSrc(sx,sy,-1)!==-1) continue;
       let closed=false;
@@ -441,8 +453,10 @@ const SCN=[
  {cat:'m',name:'Gerader Stromleiter',objs:[WI(0,0,1),...ring(8,1.8,(x,y)=>CP(x,y))],d:'Um einen geraden Leiter bilden die Feldlinien konzentrische Kreise. Rechte-Hand-Regel: Daumen in Stromrichtung, die gekrümmten Finger zeigen die Feldrichtung. ⊙ heißt: Der Strom fließt aus der Bildebene heraus.',q:'Kehre die Stromrichtung um (Leiter antippen). Was machen die Kompassnadeln?'},
  {cat:'m',name:'Zwei Leiter, gleiche Richtung',objs:[WI(-1.5,0,1),WI(1.5,0,1)],d:'Bei gleicher Stromrichtung schwächen sich die Felder zwischen den Leitern. Die Leiter ziehen einander an.',q:'Wo ist das Magnetfeld null?'},
  {cat:'m',name:'Zwei Leiter, Gegenrichtung',objs:[WI(-1.5,0,1),WI(1.5,0,-1)],d:'Bei entgegengesetzter Stromrichtung verstärken sich die Felder zwischen den Leitern. Die Leiter stoßen einander ab.',q:'Vergleiche die Feldliniendichte zwischen den Leitern mit dem anderen Versuch.'},
- {cat:'m',name:'Leiterschleife im Schnitt',objs:[WI(-1,0,1),WI(1,0,-1),CP(0,0)],d:'Eine Drahtschleife, quer zur Bildebene geschnitten: Links fließt der Strom heraus, rechts hinein. Im Inneren der Schleife zeigen alle Feldlinien in dieselbe Richtung.',q:'Wie sieht das Feld aus, wenn du viele solche Schleifen nebeneinanderlegst? (Siehe Spule.)'},
- {cat:'m',name:'Spule',objs:[CO(0,0,0,4,10,0.6),CP(0,0),CP(0,2.2),CP(3.3,0)],d:'Im Inneren einer langen Spule ist das Magnetfeld nahezu homogen. Außen ähnelt es dem Feld eines Stabmagneten.',q:'Wo liegt der Nordpol der Spule? Prüfe mit dem Kompass und kehre dann den Strom um.'},
+ {cat:'m',name:'Leiterschleife (Kreisstrom)',objs:[{t:'loop3',x:0,y:0,a:0,R:1.3,I:1},CP(0,0),CP(2.4,0.9)],d:'Ein kreisförmiger Strom, räumlich berechnet. Die 2D-Ansicht schneidet die Schleife: Oben fließt der Strom heraus (⊙), unten hinein (⊗). Im Inneren zeigen alle Feldlinien in dieselbe Richtung. In 3D sieht man den ganzen Ring.',q:'Wie sieht das Feld aus, wenn man viele Schleifen hintereinander legt? (Siehe Spule.)'},
+ {cat:'m',name:'Helmholtz-Spulenpaar',objs:[{t:'loop3',x:-0.75,y:0,a:0,R:1.5,I:1},{t:'loop3',x:0.75,y:0,a:0,R:1.5,I:1},SO(0,0.3)],d:'Zwei gleiche Ringe im Abstand ihres Radius erzeugen dazwischen ein sehr homogenes Magnetfeld. So erzeugt man im Labor z. B. das Feld für das Fadenstrahlrohr.',q:'Ändere den Abstand der Ringe. Wann ist das Feld in der Mitte am gleichmäßigsten?'},
+ {cat:'m',name:'Spule',objs:[{t:'coil3',x:0,y:0,a:0,L:4,n:8,R:1,I:0.5},CP(0,0),CP(0,2.2),CP(3.4,0)],d:'Im Inneren einer langen Spule ist das Magnetfeld nahezu homogen. Außen ähnelt es dem Feld eines Stabmagneten. Die Spule ist räumlich berechnet: In 2D sieht man den Schnitt durch die Achse, in 3D die Windungen.',q:'Wo liegt der Nordpol der Spule? Prüfe mit dem Kompass und kehre dann den Strom um.'},
+ {cat:'m',name:'Elektron in der Spule (3D)',objs:[{t:'coil3',x:0,y:0,a:0,L:6,n:12,R:1.4,I:0.15},{t:'probe',kind:'e-',x:-2.6,y:0,z:0,vx:0.5,vy:0.6,vz:0.2}],mode:'3d',m3:'space',run:true,show:{particles:false},d:'Ein Elektron fliegt schräg zur Achse in die Spule. Die Lorentzkraft zwingt es auf eine Schraubenbahn um die Feldlinien.',q:'Was passiert, wenn das Elektron genau entlang der Achse fliegt?'},
  {cat:'m',name:'Erdmagnetfeld',objs:[EM(0,0,1.6,1.5,101),CP(0,2.6),CP(2.7,0.4),CP(-2.7,0.4)],d:'Die Erde verhält sich wie ein riesiger Stabmagnet, dessen Achse um etwa 11° geneigt ist. Am geografischen Nordpol liegt ein magnetischer Südpol: Deshalb zeigt der Nordpol der Kompassnadel nach Norden.',q:'In welche Richtung zeigt ein Kompass am Äquator, in welche nahe den Polen?'},
  {cat:'m',name:'Lorentzkraft: Kreisbahnen',objs:[PR('e-',0,-1.3,2,0),PR('q+',-2.5,1.6,1.4,0)],bg:{bz:1.5},run:true,show:{particles:false,lines:false},d:'Das Magnetfeld zeigt hier aus der Bildebene heraus (⊙). Die Lorentzkraft steht immer senkrecht zur Geschwindigkeit, deshalb fliegen geladene Teilchen auf Kreisbahnen. Elektron und positive Ladung kreisen in entgegengesetzte Richtungen.',q:'Wie hängt der Bahnradius von der Geschwindigkeit ab? Unter „Eigene“ kannst du B verändern.'},
  {cat:'m',name:'Kompassnadel-Bild',objs:[MG(0,0,0,1.2,3),...cgrid()],show:{particles:false,lines:false},d:'Viele kleine Kompassnadeln machen das Magnetfeld sichtbar, ganz ähnlich wie Eisenfeilspäne.',q:'Verschiebe den Magneten. Schalte danach die Feldlinien ein und vergleiche.'},
@@ -478,7 +492,8 @@ const TOOLS=[
  {k:'hs',l:'Hufeisen',s:ic('<path d="M10 30V16a8 8 0 0 1 16 0v14" fill="none" stroke="#7b8190" stroke-width="6"/><path d="M10 30v-7M26 30v-7" stroke-width="6" stroke="#e8433a"/><path d="M26 30v-7" stroke-width="6" stroke="#2fa36b"/>'),m:{t:'horse',a:90,p:1}},
  {k:'wo',l:'Strom heraus',s:ic('<circle cx="18" cy="18" r="11" fill="#c77d3a"/><circle cx="18" cy="18" r="3.5" fill="#fff"/>'),m:{t:'wire',I:1}},
  {k:'wx',l:'Strom hinein',s:ic('<circle cx="18" cy="18" r="11" fill="#c77d3a"/><path d="M13 13l10 10M23 13l-10 10" stroke="#fff" stroke-width="2.5"/>'),m:{t:'wire',I:-1}},
- {k:'coil',l:'Spule',s:ic('<rect x="4" y="11" width="28" height="14" fill="none" stroke="#c77d3a" stroke-width="1.5"/>'+[8,14,20,26].map(x=>`<circle cx="${x+1}" cy="11" r="3" fill="#c77d3a"/><circle cx="${x+1}" cy="25" r="3" fill="#c77d3a"/>`).join('')),m:{t:'coil',a:0,L:4,n:10,I:0.6}},
+ {k:'coil',l:'Spule',s:ic('<path d="M5 18'+[0,1,2,3,4].map(i=>` c2-12 5-12 5 0 s3 12 1 0`).join('')+'" fill="none" stroke="#c77d3a" stroke-width="2.2"/>'),m:{t:'coil3',a:0,L:4,n:8,R:1,I:0.5}},
+ {k:'loop',l:'Leiter­schleife',s:ic('<ellipse cx="18" cy="18" rx="7" ry="13" fill="none" stroke="#c77d3a" stroke-width="3"/><path d="M25 17l-2 4l-2-4z" fill="#f0b27a"/>'),m:{t:'loop3',a:0,R:1.2,I:1}},
  {k:'pl',l:'Konden­sator',s:ic('<rect x="8" y="5" width="4" height="26" fill="#e8392e"/><rect x="24" y="5" width="4" height="26" fill="#2f74e6"/><path d="M14 18h8" stroke="#999" stroke-width="1.5"/>'),m:{t:'plates',a:90,L:5,d:3,q:3}},
  {k:'rod',l:'Geladener Stab',s:ic('<rect x="4" y="15" width="28" height="6" rx="3" fill="#e8392e"/>'),m:{t:'rod',a:0,L:4,q:2}},
  {k:'ball',l:'Metall­kugel',s:ic('<circle cx="18" cy="18" r="12" fill="#b9bfcc"/><circle cx="14" cy="14" r="4" fill="#eef0f5"/>'),m:{t:'ball',R:1,q:1.5}},
@@ -498,6 +513,8 @@ const SPEC={
  horse:{n:'Hufeisenmagnet',sl:[['p','Polstärke',0.2,3,0.1],['a','Drehung in °',0,360,5]],flip:'a'},
  wire:{n:'Stromleiter (Querschnitt)',sl:[['I','Stromstärke I',-3,3,0.1]],flip:'I',t:'Positiv (⊙): Strom fließt aus der Bildebene heraus.'},
  coil:{n:'Spule (Querschnitt)',sl:[['I','Stromstärke I',-2,2,0.05],['n','Windungen',2,20,1],['L','Länge',1.5,7,0.1],['a','Drehung in °',0,360,5]],flip:'I'},
+ coil3:{n:'Spule',sl:[['I','Stromstärke I',-2,2,0.05],['n','Windungen',2,16,1],['L','Länge',1,7,0.1],['R','Radius',0.4,2.5,0.05],['a','Drehung in °',0,360,5]],flip:'I',t:'Räumlich berechnet (Biot-Savart). In 2D sieht man den Schnitt durch die Spulenachse.'},
+ loop3:{n:'Leiterschleife',sl:[['I','Stromstärke I',-3,3,0.1],['R','Radius',0.3,3,0.05],['a','Drehung in °',0,360,5]],flip:'I',t:'Kreisstrom, räumlich berechnet. In 2D: Schnitt durch die Schleife (⊙ oben, ⊗ unten bei positivem Strom).'},
  plates:{n:'Plattenkondensator',sl:[['q','Ladung je Platte',-6,6,0.25],['d','Plattenabstand',0.6,5,0.1],['L','Plattenlänge',1,8,0.1],['a','Drehung in °',0,360,5]],flip:'q'},
  rod:{n:'Geladener Stab',sl:[['q','Ladung',-5,5,0.25],['L','Länge',1,8,0.1],['a','Drehung in °',0,360,5]],flip:'q'},
  ball:{n:'Geladene Metallkugel',sl:[['q','Ladung',-5,5,0.25],['R','Radius',0.3,3,0.05]],flip:'q'},
@@ -724,6 +741,7 @@ function hitR(o,sc){
     case 'wire': return 13; case 'probe': return 9; case 'compass': return 18; case 'sonde': return 12;
     case 'ball': case 'planet': case 'shell': case 'earthmag': return o.R*sc;
     case 'plates': return Math.max(o.L,o.d)*sc/2; case 'horse': return sc;
+    case 'loop3': return o.R*sc; case 'coil3': return Math.max(o.L,2*o.R)*sc/2;
     default: return (o.L||2)*sc/2;
   }
 }
@@ -750,6 +768,15 @@ function drawObj(c,k,o,s=1){
       c.translate(X,Y); c.rotate(ra); const L=o.L*sc, h=0.55*sc;
       c.fillStyle='rgba(208,138,74,.13)'; c.strokeStyle='rgba(208,138,74,.75)'; c.lineWidth=1.5; c.fillRect(-L/2,-h,L,2*h); c.strokeRect(-L/2,-h,L,2*h);
       for(let i=0;i<o.n;i++){const u=(-o.L/2+o.L*(i+0.5)/o.n)*sc; wireG(c,u,-h,Math.min(8,sc*o.L/o.n*0.42)*s+1,o.I); wireG(c,u,h,Math.min(8,sc*o.L/o.n*0.42)*s+1,-o.I)}
+      break}
+    case 'loop3':{
+      c.translate(X,Y); c.rotate(ra); const h=o.R*sc;
+      c.strokeStyle='rgba(208,138,74,.8)'; c.lineWidth=Math.max(2,4*s); c.setLineDash([5,4]); c.beginPath(); c.moveTo(0,-h); c.lineTo(0,h); c.stroke(); c.setLineDash([]);
+      wireG(c,0,-h,11*s,o.I); wireG(c,0,h,11*s,-o.I); break}
+    case 'coil3':{
+      c.translate(X,Y); c.rotate(ra); const L=o.L*sc, h=o.R*sc, rr=Math.max(3,Math.min(10,sc*o.L/o.n*0.4))*s;
+      c.fillStyle='rgba(208,138,74,.12)'; c.strokeStyle='rgba(208,138,74,.75)'; c.lineWidth=1.5; c.fillRect(-L/2,-h,L,2*h); c.strokeRect(-L/2,-h,L,2*h);
+      for(let i=0;i<o.n;i++){const u=(-o.L/2+o.L*(i+0.5)/o.n)*sc; wireG(c,u,-h,rr,o.I); wireG(c,u,h,rr,-o.I)}
       break}
     case 'plates':{
       c.translate(X,Y); c.rotate(ra); const L=o.L*sc, d=o.d*sc/2, t=Math.max(4,0.14*sc);
@@ -816,7 +843,7 @@ function drawObj(c,k,o,s=1){
   }
   c.restore();
 }
-const ORDER={shell:0,ball:0,planet:0,earthmag:0,plates:1,rod:1,coil:1,magnet:1,horse:1,charge:2,wire:2,probe:3,compass:4,sonde:5};
+const ORDER={coil3:1,loop3:1,shell:0,ball:0,planet:0,earthmag:0,plates:1,rod:1,coil:1,magnet:1,horse:1,charge:2,wire:2,probe:3,compass:4,sonde:5};
 function drawTop(){
   const c=gctx, k=cam(); c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,Wc,Hc);
   if(F.hole){const [X,Y]=toS(k,0,0); c.fillStyle=st.set.light?'#8d929e':'#5b6273'; c.beginPath(); c.arc(X,Y,F.hole*k.sc,0,TAU); c.fill()}
@@ -1037,6 +1064,8 @@ function hitTest(sx,sy){
       case 'plates': ok=Math.abs(u)<o.L/2+0.2&&Math.abs(v)<o.d/2+0.3; break;
       case 'rod': ok=Math.abs(u)<o.L/2+0.2&&Math.abs(v)<0.35; break;
       case 'coil': ok=Math.abs(u)<o.L/2+0.3&&Math.abs(v)<0.9; break;
+      case 'coil3': ok=Math.abs(u)<o.L/2+0.3&&Math.abs(v)<o.R+0.25; break;
+      case 'loop3': ok=Math.abs(u)<0.35&&Math.abs(v)<o.R+0.25; break;
       case 'horse': ok=u>-1.1&&u<1.15&&Math.abs(v)<0.95; break;
       default: ok=dx*dx+dy*dy<(o.R+0.12)**2;
     }
@@ -1097,7 +1126,7 @@ addEventListener('keydown',e=>{
 });
 
 /* ---------- 3D-Ansicht: Kamera, Raumfeld, Potentiallandschaft ---------- */
-const FOV=40*D2R, ZT=new Set(['charge','magnet','horse','rod','ball','planet','shell','earthmag','probe','sonde','compass']);
+const FOV=40*D2R, ZT=new Set(['coil3','loop3','charge','magnet','horse','rod','ball','planet','shell','earthmag','probe','sonde','compass']);
 const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const C3={a:-Math.PI/2-0.5,b:0.6,d:24,t:[0,0,0]};
 const P3=new Float64Array(3), ptrs=new Map();
@@ -1212,7 +1241,15 @@ function trace3All(){
     const s=FS[i]; if(s.f>=0) continue; const m=need[i]-arr[i]; if(m<=0) continue;
     for(let k=0;k<m;k++){const q=st0(s,fib(m,k)); lines.push({p:trace(q[0],q[1],q[2],-1,i,900).p,d:-1})}
   }
-  if(F.W.length||F.has2||F.customF||F.fill||!pts.length){
+  if(F.SEED3) for(const [sx,sy,sz] of F.SEED3){
+    if(Math.abs(sx-B.cx)>B.hx||Math.abs(sy-B.cy)>B.hy) continue;
+    let closed=false;
+    const chk=(x,y,z,n)=>{if(n>25&&(x-sx)**2+(y-sy)**2+(z-sz)**2<h*h*2.2){closed=true; return true} return false};
+    const A=trace(sx,sy,sz,1,-1,700,chk); let p=A.p;
+    if(!closed){const b=trace(sx,sy,sz,-1,-1,700,chk).p, rev=[]; for(let k=b.length-3;k>=3;k-=3) rev.push(b[k],b[k+1],b[k+2]); p=rev.concat(A.p)}
+    if(p.length>=24) lines.push({p,d:1});
+  }
+  if(F.W.length||F.has2||F.customF||F.fill||(!pts.length&&!F.hasSeg)){
     const few=F.customF||F.fill, nx=few?5:6, ny=few?3:4, nz=few?2:3;
     for(let a=0;a<nz;a++) for(let j=0;j<ny;j++) for(let i=0;i<nx;i++){
       const sx=B.cx-B.hx*0.85+1.7*B.hx*(i+0.5)/nx, sy=B.cy-B.hy*0.85+1.7*B.hy*(j+0.5)/ny, sz=-B.hz*0.7+1.4*B.hz*a/(nz-1);
@@ -1410,6 +1447,16 @@ function drawObj3(c,K,o){
       let A=W(0.45,0.6), Bq=W(0.9,0.6); line(A[0],A[1],z,Bq[0],Bq[1],z,'#e8433a',w);
       A=W(0.45,-0.6); Bq=W(0.9,-0.6); line(A[0],A[1],z,Bq[0],Bq[1],z,'#2fa36b',w);
       break}
+    case 'loop3': case 'coil3':{
+      const ez=(f,s0)=>[o.x+tx*s0+nx*o.R*Math.cos(f),o.y+ty*s0+ny*o.R*Math.cos(f),z+o.R*Math.sin(f)];
+      const N=o.t==='loop3'?48:Math.max(24,o.n*24), turns=o.t==='loop3'?1:o.n, len=o.t==='loop3'?0:o.L;
+      c.strokeStyle='#d0844a'; c.lineWidth=Math.max(2.5,0.07*ps); c.lineJoin='round'; c.beginPath(); let pen=false;
+      for(let k=0;k<=N;k++){const q=ez(TAU*turns*k/N,-len/2+len*k/N); if(pj(K,q[0],q[1],q[2])){pen?c.lineTo(P3[0],P3[1]):c.moveTo(P3[0],P3[1]); pen=true} else pen=false}
+      c.stroke();
+      const sg=o.I>=0?1:-1, f0=Math.PI/2, s0=0, p0=ez(f0,s0), d=[-Math.sin(f0)*sg,Math.cos(f0)*sg];
+      const p1=[p0[0]+(nx*d[0])*0.2,p0[1]+(ny*d[0])*0.2,p0[2]+d[1]*0.2];
+      if(pj(K,p0[0],p0[1],p0[2])){const ax=P3[0], ay=P3[1]; if(pj(K,p1[0],p1[1],p1[2])){c.fillStyle='#ffd0a0'; c.beginPath(); arrowHead(c,P3[0],P3[1],Math.atan2(P3[1]-ay,P3[0]-ax),Math.max(9,0.25*ps)); c.fill()}}
+      break}
     case 'rod': line(o.x-tx*o.L/2,o.y-ty*o.L/2,z,o.x+tx*o.L/2,o.y+ty*o.L/2,z,o.q>=0?'#e8392e':'#2f74e6',Math.max(4,0.22*ps)); break;
     case 'plates':{
       for(const sg of [1,-1]){
@@ -1483,7 +1530,7 @@ function render3(){
   list.sort((a,b)=>b[1]-a[1]);
   for(const [o] of list) drawObj3(c,K,o);
   if(st.sel&&st.objs.includes(st.sel)&&pj(K,st.sel.x,st.sel.y,zOf(st.sel))){
-    const o=st.sel, ps=K.Fo/P3[2], r=['ball','planet','shell','earthmag'].includes(o.t)?o.R*ps+8:['magnet','rod','plates','coil'].includes(o.t)?Math.max(o.L,o.d||0)*ps/2+8:Math.max(18,24*Math.min(2.5,C3.d/P3[2]));
+    const o=st.sel, ps=K.Fo/P3[2], r=['ball','planet','shell','earthmag'].includes(o.t)?o.R*ps+8:o.t==='loop3'?o.R*ps+8:o.t==='coil3'?Math.max(o.L,2*o.R)*ps/2+8:['magnet','rod','plates','coil'].includes(o.t)?Math.max(o.L,o.d||0)*ps/2+8:Math.max(18,24*Math.min(2.5,C3.d/P3[2]));
     c.strokeStyle=st.set.light?'#6d4aff':'#c9b8ff'; c.lineWidth=2; c.setLineDash([6,5]); c.beginPath(); c.arc(P3[0],P3[1],r,0,TAU); c.stroke(); c.setLineDash([]);
   }
 }
@@ -1508,6 +1555,8 @@ function hitTest3(sx,sy){
       case 'magnet': case 'rod': ok=sd(o,o.x-tx*o.L/2,o.y-ty*o.L/2,z,o.x+tx*o.L/2,o.y+ty*o.L/2,z)<Math.max(14,0.3*ps); break;
       case 'plates': for(const sg of [1,-1]){const cx=o.x+nx*o.d/2*sg, cy=o.y+ny*o.d/2*sg; if(sd(o,cx-tx*o.L/2,cy-ty*o.L/2,0,cx+tx*o.L/2,cy+ty*o.L/2,0)<16||sd(o,cx,cy,-hp,cx,cy,hp)<12) ok=true} break;
       case 'coil': ok=sd(o,o.x-tx*o.L/2,o.y-ty*o.L/2,0,o.x+tx*o.L/2,o.y+ty*o.L/2,0)<0.8*ps; break;
+      case 'coil3': ok=sd(o,o.x-tx*o.L/2,o.y-ty*o.L/2,z,o.x+tx*o.L/2,o.y+ty*o.L/2,z)<Math.max(14,o.R*ps); break;
+      case 'loop3': ok=dc<Math.max(16,o.R*ps); break;
       case 'horse': ok=dc<1.0*ps; break;
       default: ok=dc<Math.max(18,(hitR(o,ps)+4)*pr);
     }
