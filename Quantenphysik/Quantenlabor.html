@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantenlabor – Photoeffekt, Spektren, Doppelspalt, Interferometer</title>
+<style>
+  :root{
+    --ink:#1d2230; --muted:#5b6477; --line:#d9dde6; --bg:#f4f6fa; --panel:#ffffff;
+    --accent:#0f766e; --warn:#b91c1c;
+    font-size:17px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.35}
+  header{display:flex;align-items:center;gap:.8rem 1.2rem;flex-wrap:wrap;padding:.6rem 1rem;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+  header h1{font-size:1.25rem;margin:0;flex:1 1 auto;white-space:nowrap}
+  header h1 a{color:inherit;text-decoration:none}
+  header h1 a:hover{text-decoration:underline;text-underline-offset:4px}
+  header h1 small{font-weight:400;color:var(--muted);font-size:.85rem;margin-left:.4rem}
+  .lvl{display:flex;align-items:center;gap:.5rem}
+  .lvl > span{color:var(--muted);font-size:.9rem}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#eef1f6;flex-wrap:wrap}
+  .seg button{border:0;background:transparent;padding:.42rem .75rem;font:inherit;font-size:.92rem;cursor:pointer;color:var(--ink)}
+  .seg button + button{border-left:1px solid var(--line)}
+  .seg button.on{background:var(--accent);color:#fff;font-weight:600}
+  .seg.small{flex-wrap:nowrap}
+  .seg.small button{padding:.3rem .45rem;font-size:.8rem;white-space:nowrap}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:.42rem .8rem;font:inherit;font-size:.92rem;cursor:pointer;color:var(--ink)}
+  .btn:hover{background:#f0f3f8}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+  .btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:1rem;padding:1rem;align-items:start}
+  aside{display:flex;flex-direction:column;gap:.8rem}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.8rem .9rem}
+  .card h2{font-size:1rem;margin:0 0 .55rem}
+  .field{margin:.4rem 0 .7rem}
+  .field > label{display:flex;justify-content:space-between;gap:.5rem;font-size:.9rem;margin-bottom:.15rem}
+  .field > label b{font-variant-numeric:tabular-nums;font-weight:600}
+  input[type=range]{accent-color:var(--accent);width:100%}
+  input.spectrum{-webkit-appearance:none;appearance:none;height:14px;border-radius:7px;outline:none}
+  input.spectrum::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid #1d2230;cursor:pointer}
+  input.spectrum::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid #1d2230;cursor:pointer}
+  select{font:inherit;font-size:.93rem;padding:.35rem;border-radius:8px;border:1px solid var(--line);width:100%;background:#fff}
+  .check{display:flex;align-items:center;gap:.5rem;margin:.35rem 0;font-size:.92rem;cursor:pointer}
+  .check input{width:1.1rem;height:1.1rem;accent-color:var(--accent)}
+  .btnrow{display:flex;gap:.4rem;flex-wrap:wrap;margin:.4rem 0}
+  .note{font-size:.84rem;color:var(--muted);margin:.35rem 0}
+  .tasks{display:flex;flex-direction:column;gap:.35rem}
+  .tasks button{font:inherit;font-size:.88rem;text-align:left;border:1px solid var(--line);background:#fafbfd;border-radius:9px;padding:.4rem .55rem;cursor:pointer;color:var(--ink)}
+  .tasks button:hover{background:#eef6f5;border-color:#b8dcd7}
+  .tasks button.on{background:#e3f3f1;border-color:var(--accent);font-weight:600}
+  #taskInfo p{margin:.45rem 0;font-size:.92rem}
+  #taskInfo .q{background:#fff8e6;border:1px solid #f4dfa5;border-radius:9px;padding:.45rem .6rem}
+  #taskInfo .a{background:#eef7f2;border:1px solid #c5e4d2;border-radius:9px;padding:.45rem .6rem}
+  .stage{min-width:0}
+  .viewbox{position:relative;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;height:calc(100vh - 100px);min-height:520px}
+  #cv{display:block;width:100%;height:100%;touch-action:none}
+  .tip{position:absolute;pointer-events:none;background:#1d2230;color:#fff;font-size:.82rem;border-radius:8px;padding:.25rem .5rem;white-space:nowrap;display:none;z-index:4}
+  @media (max-width: 900px){ .layout{grid-template-columns:1fr} aside{order:2} .viewbox{height:70vh;min-height:420px} }
+</style>
+</head>
+<body>
+<header>
+  <h1><a href="../index.html" title="Zur Startseite">Quantenlabor</a> <small>Licht und Materie im Kleinsten</small></h1>
+  <div class="seg" id="stSeg"><button data-s="0" class="on">Photoeffekt</button><button data-s="1">Spektren</button><button data-s="2">Doppelspalt</button><button data-s="3">Interferometer</button></div>
+  <div class="lvl"><span>Niveau:</span>
+    <div class="seg" id="lvlSeg"><button data-v="easy" class="on">Einfach</button><button data-v="mid">Mittel</button><button data-v="hard">Anspruchsvoll</button></div>
+  </div>
+  <button class="btn" id="fsBtn">Vollbild</button>
+</header>
+<div class="layout">
+  <aside>
+    <div class="card"><h2 id="ctrlTitle">Einstellungen</h2><div id="ctrl"></div></div>
+    <div class="card"><h2>Aufträge</h2><div class="tasks" id="tasks"></div><div id="taskInfo"></div></div>
+  </aside>
+  <section class="stage">
+    <div class="viewbox" id="vb"><canvas id="cv"></canvas><div class="tip" id="tip"></div></div>
+  </section>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   Quantenlabor – vier Stationen:
+   0 Photoeffekt  · 1 Spektren  · 2 Doppelspalt  · 3 Mach-Zehnder-Interferometer
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const HC = 1239.84193;            /* h·c in eV·nm */
+const H_PLANCK = 6.62607015e-34, E_CH = 1.602176634e-19, C_LIGHT = 2.99792458e8, M_E = 9.1093837e-31;
+const S = { st:0, level:'easy', task:-1, showAnswer:false };
+const lvlNum = () => ({easy:0, mid:1, hard:2})[S.level];
+
+/* ---------- Zahlen und Farben ---------- */
+function fmt(v, d){ if (!isFinite(v)) return '–'; return (Math.abs(v) < 0.5*Math.pow(10,-d) ? 0 : v).toFixed(d).replace('.', ','); }
+function sci(v, d){ if (v === 0) return '0'; const ex = Math.floor(Math.log10(Math.abs(v))); const m = v/Math.pow(10,ex); return fmt(m,d) + '·10' + sup(ex); }
+function sup(n){ const m = {'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'}; return String(n).split('').map(c => m[c]).join(''); }
+function nmRGB(nm){
+  if (nm < 380) return [150, 90, 220];
+  if (nm > 780) return [140, 30, 30];
+  let r = 0, g = 0, b = 0;
+  if (nm < 440){ r = -(nm-440)/60; b = 1; }
+  else if (nm < 490){ g = (nm-440)/50; b = 1; }
+  else if (nm < 510){ g = 1; b = -(nm-510)/20; }
+  else if (nm < 580){ r = (nm-510)/70; g = 1; }
+  else if (nm < 645){ r = 1; g = -(nm-645)/65; }
+  else r = 1;
+  const f = nm < 420 ? 0.35 + 0.65*(nm-380)/40 : nm > 700 ? 0.35 + 0.65*(780-nm)/80 : 1;
+  return [r,g,b].map(v => Math.round(255*Math.pow(v*f, 0.8)));
+}
+const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+const spectrumCSS = (a, b) => { const st = []; for (let nm = a; nm <= b; nm += 10) st.push(`${rgba(nmRGB(nm),1)} ${((nm-a)/(b-a)*100).toFixed(1)}%`); return `linear-gradient(90deg,${st.join(',')})`; };
+function region(nm){ return nm < 380 ? 'UV (unsichtbar)' : nm > 750 ? 'Infrarot (unsichtbar)' : 'sichtbar'; }
+
+/* ---------- Canvas ---------- */
+const cv = $('#cv'), ctx = cv.getContext('2d'), vb = $('#vb');
+let W = 0, H = 0;
+function resize(){
+  const r = vb.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+  W = r.width; H = r.height; cv.width = W*dpr; cv.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+  if (DS.layer) DS.rebuild = true;
+}
+new ResizeObserver(resize).observe(vb);
+function line(x1,y1,x2,y2,col,w){ ctx.strokeStyle = col; ctx.lineWidth = w || 1; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); }
+function text(t, x, y, o){
+  o = o || {}; ctx.font = `${o.weight || 500} ${o.size || 13}px ${o.mono ? 'ui-monospace,Menlo,Consolas,monospace' : 'system-ui'}`;
+  ctx.fillStyle = o.col || '#1d2230'; ctx.textAlign = o.align || 'left'; ctx.textBaseline = o.base || 'middle'; ctx.fillText(t, x, y);
+}
+function box(x, y, w, h, fill, stroke, r){ ctx.beginPath(); ctx.roundRect(x, y, w, h, r ?? 8); if (fill){ ctx.fillStyle = fill; ctx.fill(); } if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = 1.2; ctx.stroke(); } }
+function pill(t, x, y, o){
+  o = o || {}; ctx.font = `${o.weight || 600} ${o.size || 13}px system-ui`;
+  const w = ctx.measureText(t).width + 14, h = (o.size || 13) + 10;
+  const bx = o.align === 'left' ? x : o.align === 'right' ? x - w : x - w/2;
+  box(bx, y - h/2, w, h, o.bg || '#10231f', null, 8);
+  text(t, bx + w/2, y + 0.5, {col:o.col || '#7ff5d2', align:'center', weight:o.weight || 600, size:o.size || 13});
+}
+function wrapText(t, x, y, maxW, o){
+  o = o || {}; ctx.font = `${o.weight || 500} ${o.size || 13}px system-ui`;
+  const words = t.split(' '); let ln = '';
+  const lh = (o.size || 13) + 4;
+  for (const w of words){
+    const test = ln ? ln + ' ' + w : w;
+    if (ctx.measureText(test).width > maxW && ln){ text(ln, x, y, o); y += lh; ln = w; } else ln = test;
+  }
+  if (ln){ text(ln, x, y, o); y += lh; }
+  return y;
+}
+function arrow(x1,y1,x2,y2,col,w){
+  line(x1,y1,x2,y2,col,w || 2);
+  const a = Math.atan2(y2-y1, x2-x1), h = 8 + (w || 2);
+  ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2 - h*Math.cos(a-0.45), y2 - h*Math.sin(a-0.45)); ctx.lineTo(x2 - h*Math.cos(a+0.45), y2 - h*Math.sin(a+0.45)); ctx.fill();
+}
+function wiggle(x, y, ang, len, col, amp){
+  ctx.save(); ctx.translate(x,y); ctx.rotate(ang); ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath();
+  for (let k = 0; k <= 24; k++){ const t = k/24, px = -len/2 + t*len, env = Math.sin(Math.PI*t); ctx.lineTo(px, env*(amp || 4)*Math.sin(t*Math.PI*6)); }
+  ctx.stroke(); ctx.restore();
+}
+
+/* ---------- Bedienelemente links ---------- */
+const UI = {
+  el: $('#ctrl'),
+  clear(){ this.el.innerHTML = ''; },
+  slider(label, o){
+    const d = document.createElement('div'); d.className = 'field';
+    d.innerHTML = `<label><span>${label}</span><b></b></label><input type="range" min="${o.min}" max="${o.max}" step="${o.step}">`;
+    const b = d.querySelector('b'), inp = d.querySelector('input');
+    if (o.cls) inp.className = o.cls; if (o.bg) inp.style.background = o.bg;
+    inp.value = o.get(); b.innerHTML = o.fmt(o.get());
+    inp.oninput = () => { o.set(+inp.value); b.innerHTML = o.fmt(+inp.value); };
+    this.el.appendChild(d); return d;
+  },
+  select(label, opts, get, set){
+    const d = document.createElement('div'); d.className = 'field';
+    d.innerHTML = `<label><span>${label}</span></label><select>${opts.map(([v,t]) => `<option value="${v}">${t}</option>`).join('')}</select>`;
+    const s = d.querySelector('select'); s.value = get(); s.onchange = () => set(s.value);
+    this.el.appendChild(d); return d;
+  },
+  seg(label, opts, get, set){
+    const d = document.createElement('div'); d.className = 'field';
+    d.innerHTML = (label ? `<label><span>${label}</span></label>` : '') + `<div class="seg small">${opts.map(([v,t]) => `<button data-v="${v}">${t}</button>`).join('')}</div>`;
+    const btns = [...d.querySelectorAll('button')];
+    const upd = () => btns.forEach(b => b.classList.toggle('on', b.dataset.v === String(get())));
+    btns.forEach(b => b.onclick = () => { set(b.dataset.v); upd(); });
+    upd(); this.el.appendChild(d); return d;
+  },
+  check(label, get, set){
+    const d = document.createElement('label'); d.className = 'check';
+    d.innerHTML = `<input type="checkbox"> ${label}`; const c = d.querySelector('input'); c.checked = get(); c.onchange = () => set(c.checked);
+    this.el.appendChild(d); return d;
+  },
+  buttons(list){
+    const d = document.createElement('div'); d.className = 'btnrow';
+    for (const [t, fn, cls] of list){ const b = document.createElement('button'); b.className = 'btn ' + (cls || ''); b.innerHTML = t; b.onclick = fn; d.appendChild(b); }
+    this.el.appendChild(d); return d;
+  },
+  note(html){ const p = document.createElement('p'); p.className = 'note'; p.innerHTML = html; this.el.appendChild(p); return p; }
+};
+
+/* =====================================================================
+   Station 0: Photoeffekt
+   ===================================================================== */
+const METALS = { Cs:['Cäsium',2.14], K:['Kalium',2.29], Na:['Natrium',2.36], Zn:['Zink',4.33], Cu:['Kupfer',4.65], Pt:['Platin',5.65] };
+const PE = { lam:450, inten:40, metal:'Cs', U:0, photons:[], electrons:[], acc:0, rate:0, pts:[], msg:'' };
+const peE = () => HC/PE.lam;
+const peW = () => METALS[PE.metal][1];
+function peGeo(){
+  const wide = W > 980;
+  const aw = wide ? W*0.58 : W, ah = wide ? H : H*0.56;
+  const tube = { x:aw*0.1, y:ah*0.3, w:aw*0.8, h:ah*0.42 };
+  return {
+    wide, aw, ah, tube,
+    cat:{ x:tube.x + tube.w*0.12, y1:tube.y + tube.h*0.15, y2:tube.y + tube.h*0.85 },
+    an:{ x:tube.x + tube.w*0.88, y1:tube.y + tube.h*0.15, y2:tube.y + tube.h*0.85 },
+    lamp:{ x:tube.x + tube.w*0.62, y:ah*0.1 },
+    panel: wide ? { x:W*0.6, y:12, w:W*0.4 - 16, h:H - 24 } : { x:12, y:ah + 6, w:W - 24, h:H - ah - 18 }
+  };
+}
+function peStep(dt, g){
+  /* Photonen erzeugen */
+  PE.acc += PE.inten*dt;
+  while (PE.acc >= 1){
+    PE.acc -= 1;
+    const ty = g.cat.y1 + Math.random()*(g.cat.y2 - g.cat.y1);
+    PE.photons.push({ x:g.lamp.x, y:g.lamp.y + 18, tx:g.cat.x + 5, ty, t:0 });
+  }
+  const gap = g.an.x - g.cat.x - 8, K = Math.max(260, gap*1.4);
+  for (const p of PE.photons){
+    const L = Math.hypot(p.tx - p.x, p.ty - p.y); p.t += 520*dt/L;
+    if (p.t >= 1){
+      p.dead = true;
+      const Ek = peE() - peW();
+      if (Ek > 0) PE.electrons.push({ s:0, dir:1, Ek:Ek*Math.sqrt(Math.random()), y:p.ty });
+    }
+  }
+  PE.photons = PE.photons.filter(p => !p.dead);
+  for (const e of PE.electrons){
+    const E = e.Ek + PE.U*(e.s/gap);
+    if (e.dir > 0 && E <= 0.003) e.dir = -1;
+    const v = K*Math.sqrt(Math.max(E, 0.004));
+    e.s += e.dir*v*dt;
+    if (e.s >= gap){ e.dead = true; PE.rate += 1/0.8; }
+    else if (e.s <= 0 && e.dir < 0) e.dead = true;
+  }
+  PE.electrons = PE.electrons.filter(e => !e.dead);
+  PE.rate *= Math.exp(-dt/0.8);
+}
+function peCurrent(){ return PE.rate*0.1; }   /* nA, schematisch */
+function peDraw(dt){
+  const g = peGeo();
+  peStep(dt, g);
+  const t = g.tube, lam = PE.lam, col = nmRGB(lam), Eph = peE(), Wm = peW(), lv = lvlNum();
+  /* Lichtkegel */
+  ctx.fillStyle = rgba(col, lam < 380 || lam > 780 ? 0.07 : 0.13);
+  ctx.beginPath(); ctx.moveTo(g.lamp.x - 10, g.lamp.y + 14); ctx.lineTo(g.lamp.x + 10, g.lamp.y + 14); ctx.lineTo(g.cat.x + 6, g.cat.y2); ctx.lineTo(g.cat.x + 6, g.cat.y1); ctx.closePath(); ctx.fill();
+  /* Röhre */
+  box(t.x, t.y, t.w, t.h, 'rgba(226,236,248,.55)', '#9fb3cc', t.h*0.16);
+  text('Vakuumröhre', t.x + t.w/2, t.y + t.h + 14, {col:'#64748b', size:12, align:'center'});
+  /* Kathode und Anode */
+  ctx.fillStyle = '#8b97a8'; ctx.fillRect(g.cat.x - 7, g.cat.y1, 12, g.cat.y2 - g.cat.y1);
+  ctx.fillStyle = '#475569'; ctx.fillRect(g.an.x - 3, g.an.y1, 6, g.an.y2 - g.an.y1);
+  text(METALS[PE.metal][0] + (lv ? '-Platte' : ''), g.cat.x - 2, g.cat.y2 + 14, {size:12, align:'center', weight:600, col:'#334155'});
+  text('Auffänger', g.an.x, g.an.y2 + 14, {size:12, align:'center', weight:600, col:'#334155'});
+  /* Lampe */
+  ctx.fillStyle = '#334155'; ctx.beginPath(); ctx.roundRect(g.lamp.x - 22, g.lamp.y - 16, 44, 30, 6); ctx.fill();
+  ctx.fillStyle = rgba(col, 1); ctx.beginPath(); ctx.arc(g.lamp.x, g.lamp.y + 14, 9, 0, Math.PI); ctx.fill();
+  text(lv ? `${fmt(lam,0)} nm` : (lam < 380 ? 'UV-Licht' : lam > 750 ? 'Infrarot' : 'Licht'), g.lamp.x + 30, g.lamp.y, {size:13, weight:600});
+  if (lam < 380 || lam > 750) text(region(lam), g.lamp.x + 30, g.lamp.y + 17, {size:11, col:'#64748b'});
+  /* Photonen */
+  for (const p of PE.photons){
+    const x = p.x + (p.tx - p.x)*p.t, y = p.y + (p.ty - p.y)*p.t;
+    wiggle(x, y, Math.atan2(p.ty - p.y, p.tx - p.x), 22, rgba(col, 1), 4);
+  }
+  /* Elektronen */
+  const gap = g.an.x - g.cat.x - 8;
+  for (const e of PE.electrons){
+    const x = g.cat.x + 6 + e.s;
+    ctx.fillStyle = '#1d4ed8'; ctx.beginPath(); ctx.arc(x, e.y, 4, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(29,78,216,.18)'; ctx.beginPath(); ctx.arc(x - e.dir*7, e.y, 3, 0, Math.PI*2); ctx.fill();
+  }
+  /* Stromkreis mit Spannungsquelle und Strommesser */
+  const yb = t.y + t.h + 52;
+  line(g.cat.x - 1, g.cat.y2, g.cat.x - 1, yb, '#334155', 2.5); line(g.an.x, g.an.y2, g.an.x, yb, '#334155', 2.5);
+  line(g.cat.x - 1, yb, g.an.x, yb, '#334155', 2.5);
+  const mx = g.cat.x + (g.an.x - g.cat.x)*0.32, ax = g.cat.x + (g.an.x - g.cat.x)*0.7;
+  box(mx - 58, yb - 17, 116, 34, '#fff', '#334155', 8);
+  text(lv ? `U = ${PE.U > 0 ? '+' : ''}${fmt(PE.U,2)} V` : (PE.U < -0.01 ? 'bremst' : PE.U > 0.01 ? 'beschleunigt' : 'aus'), mx, yb, {align:'center', weight:600});
+  text(lv ? 'Spannung (Auffänger gegen Platte)' : 'Spannung', mx, yb + 29, {align:'center', size:11, col:'#64748b'});
+  const I = peCurrent();
+  ctx.fillStyle = '#fff'; ctx.strokeStyle = '#334155'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(ax, yb, 17, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  text('A', ax, yb + 1, {align:'center', weight:700, size:15});
+  pill(lv ? `I = ${fmt(I, 1)} nA` : (I > 0.05 ? 'Strom fließt' : 'kein Strom'), ax, yb + 34);
+  /* Feld zwischen den Platten */
+  if (Math.abs(PE.U) > 0.01 && lv){
+    const n = 4;
+    for (let k = 0; k < n; k++){
+      const y = g.cat.y1 + (k+0.5)/n*(g.cat.y2 - g.cat.y1), x1 = g.cat.x + 30, x2 = g.an.x - 30;
+      ctx.save(); ctx.setLineDash([4,6]);
+      if (PE.U < 0) arrow(x1, y, x2, y, 'rgba(220,38,38,.35)', 1.2); else arrow(x2, y, x1, y, 'rgba(22,163,74,.35)', 1.2);
+      ctx.restore();
+    }
+  }
+  /* Meldung */
+  const Ek = Eph - Wm;
+  let msg = Ek > 0 ? 'Elektronen werden herausgelöst.' : 'Es werden keine Elektronen herausgelöst – egal wie hell das Licht ist.';
+  pill(msg, t.x + t.w/2, t.y - 24, {bg: Ek > 0 ? '#e7f6ef' : '#fff1f1', col: Ek > 0 ? '#166534' : '#b91c1c', size:13});
+  peDrawPanel(g, Eph, Wm);
+}
+function peDrawPanel(g, Eph, Wm){
+  const p = g.panel, lv = lvlNum();
+  box(p.x, p.y, p.w, p.h, '#f8fafc', '#e2e8f0', 12);
+  const hasGraph = lv === 2;
+  const dh = hasGraph ? p.h*0.48 : p.h;
+  /* Energiediagramm */
+  const Emax = 7, x0 = p.x + 56, y0 = p.y + dh - 34, top = p.y + 40, sc = (y0 - top)/Emax;
+  text('Energie', p.x + 14, p.y + 20, {weight:700, size:14});
+  line(x0, y0, x0, top - 6, '#64748b', 1.5);
+  if (lv) for (let e = 0; e <= Emax; e++){ line(x0 - 4, y0 - e*sc, x0, y0 - e*sc, '#64748b', 1); text(e + ' eV', x0 - 8, y0 - e*sc, {align:'right', size:11, col:'#64748b'}); }
+  const cw = Math.min(80, (p.w - 190)/2.3), c1 = x0 + 34, c2 = c1 + cw + 34;
+  const col = nmRGB(PE.lam), hE = Math.min(Emax, Eph)*sc;
+  if (lv){ const f = C_LIGHT/(PE.lam*1e-9); text(`λ = ${fmt(PE.lam,0)} nm · f = ${sci(f,2)} Hz`, p.x + p.w - 12, p.y + 20, {align:'right', size:12, col:'#334155'}); }
+  box(c1, y0 - hE, cw, hE, rgba(col, 0.85), '#334155', 4);
+  text(lv ? 'Photon' : 'Photon', c1 + cw/2, y0 + 14, {align:'center', size:12, weight:600});
+  text(lv ? `E = h·f = ${fmt(Eph,2)} eV` : 'Energie', c1 + cw/2, y0 - hE - 12, {align:'center', size:12, weight:600});
+  /* Austrittsarbeit */
+  const yW = y0 - Wm*sc;
+  ctx.save(); ctx.setLineDash([6,5]); line(c1 - 10, yW, c2 + cw + 6, yW, '#b91c1c', 2); ctx.restore();
+  text(lv ? 'Austritts-' : 'nötig zum', c2 + cw + 10, yW - 8, {size:12, col:'#b91c1c', weight:600});
+  text(lv ? 'arbeit W' : 'Herauslösen', c2 + cw + 10, yW + 8, {size:12, col:'#b91c1c', weight:600});
+  box(c2, yW, cw, Wm*sc, 'rgba(148,163,184,.35)', '#94a3b8', 4);
+  text(lv ? `W = ${fmt(Wm,2)} eV` : 'W', c2 + cw/2, y0 - Wm*sc/2, {align:'center', size:12, col:'#475569', weight:600});
+  const Ek = Eph - Wm;
+  if (Ek > 0){
+    const hk = Math.min(Ek, Emax - Wm)*sc;
+    box(c2, yW - hk, cw, hk, 'rgba(37,99,235,.75)', '#1e3a8a', 4);
+    text(lv ? `E_kin = ${fmt(Ek,2)} eV` : 'Bewegungsenergie', c2 + cw/2, yW - hk - 12, {align:'center', size:12, col:'#1e3a8a', weight:700});
+  } else text(lv ? 'E < W' : 'reicht nicht', c2 + cw/2, yW - 12, {align:'center', size:12, col:'#b91c1c', weight:700});
+  text('Elektron', c2 + cw/2, y0 + 14, {align:'center', size:12, weight:600});
+  if (!hasGraph) return;
+  /* Graph E_kin,max (= e·U_G) über f */
+  const gy = p.y + dh + 8, gh = p.h - dh - 16, gx = p.x + 50, gw = p.w - 70;
+  text('Messung: e·U_Gegen über f', p.x + 14, gy + 10, {weight:700, size:13});
+  const fx0 = 0, fx1 = 16, ey0 = -6, ey1 = 4;
+  const X = f => gx + (f - fx0)/(fx1 - fx0)*gw, Y = e => gy + 28 + (ey1 - e)/(ey1 - ey0)*(gh - 50);
+  for (let f = 0; f <= 16; f += 2){ line(X(f), Y(ey0), X(f), Y(ey1), '#e2e8f0', 1); text(String(f), X(f), Y(ey0) + 10, {align:'center', size:10, col:'#64748b'}); }
+  for (let e = ey0; e <= ey1; e += 2){ line(X(0), Y(e), X(16), Y(e), e === 0 ? '#64748b' : '#e2e8f0', e === 0 ? 1.5 : 1); text(String(e), X(0) - 6, Y(e), {align:'right', size:10, col:'#64748b'}); }
+  text('f in 10¹⁴ Hz', X(16), Y(ey0) + 22, {align:'right', size:11, col:'#64748b'});
+  ctx.fillStyle = '#0f766e';
+  for (const q of PE.pts){ ctx.beginPath(); ctx.arc(X(q.f), Y(q.e), 4.5, 0, Math.PI*2); ctx.fill(); }
+  if (PE.pts.length >= 2){
+    const n = PE.pts.length, sx = PE.pts.reduce((a,q) => a + q.f, 0), sy = PE.pts.reduce((a,q) => a + q.e, 0);
+    const sxx = PE.pts.reduce((a,q) => a + q.f*q.f, 0), sxy = PE.pts.reduce((a,q) => a + q.f*q.e, 0);
+    const den = n*sxx - sx*sx;
+    if (Math.abs(den) > 1e-9){
+      const m = (n*sxy - sx*sy)/den, b = (sy - m*sx)/n;
+      ctx.save(); ctx.beginPath(); ctx.rect(X(0), Y(ey1), gw, Y(ey0) - Y(ey1)); ctx.clip();
+      line(X(0), Y(b), X(16), Y(b + m*16), 'rgba(15,118,110,.7)', 2); ctx.restore();
+      const h = m*E_CH/1e14, f0 = -b/m;
+      text(`Steigung → h ≈ ${sci(h,2)} J·s`, gx + 8, Y(ey1) + 6, {size:12, weight:600, col:'#0f766e'});
+      text(`Grenzfrequenz ≈ ${fmt(f0,2)}·10¹⁴ Hz · W ≈ ${fmt(-b,2)} eV`, gx + 8, Y(ey1) + 22, {size:12, col:'#0f766e'});
+    }
+  } else text('Gegenspannung bis I = 0 erhöhen, dann speichern', gx + 4, Y(ey1) + 8, {size:11, col:'#64748b'});
+}
+function peControls(){
+  UI.slider('Wellenlänge des Lichts', { min:200, max:800, step:1, cls:'spectrum', bg:spectrumCSS(200,800), get:() => PE.lam, set:v => PE.lam = v,
+    fmt:v => lvlNum() ? `${v} nm` : (v < 380 ? 'UV' : v > 750 ? 'Infrarot' : `${v} nm`) });
+  UI.slider('Helligkeit', { min:0, max:100, step:1, get:() => PE.inten, set:v => PE.inten = v, fmt:v => lvlNum() ? `${v} Photonen/s` : (v < 15 ? 'schwach' : v < 60 ? 'mittel' : 'hell') });
+  UI.select('Metall der Platte', Object.entries(METALS).map(([k,[n,w]]) => [k, lvlNum() ? `${n} (W = ${fmt(w,2)} eV)` : n]), () => PE.metal, v => { PE.metal = v; PE.pts = []; });
+  if (lvlNum() >= 1){
+    UI.slider('Spannung Auffänger gegen Platte', { min:-4, max:2, step:0.02, get:() => PE.U, set:v => PE.U = v,
+      fmt:v => `${v > 0 ? '+' : ''}${fmt(v,2)} V` + (v < -0.005 ? ' (Gegenspannung)' : '') });
+    UI.note('Negative Spannung bremst die Elektronen (Gegenfeld). Ab einer bestimmten Gegenspannung kommt kein Elektron mehr an.');
+  }
+  if (lvlNum() === 2){
+    UI.buttons([['Messpunkt speichern', () => {
+      if (PE.U > 0.005){ alertNote('Für die Messung eine Gegenspannung (negativ) einstellen.'); return; }
+      PE.pts.push({ f: C_LIGHT/(PE.lam*1e-9)/1e14, e: -PE.U });
+    }, 'primary'], ['Messpunkte löschen', () => { PE.pts = []; }]]);
+  }
+}
+function alertNote(t){ const n = UI.note('⚠ ' + t); n.style.color = '#b91c1c'; setTimeout(() => n.remove(), 3500); }
+
+/* =====================================================================
+   Station 1: Spektren
+   ===================================================================== */
+const R_H = 1.09677583e7;
+const hLam = (m, n) => 1e9/(R_H*(1/(m*m) - 1/(n*n)));
+const ELEMENTS = {
+  H:  { name:'Wasserstoff', lines: [[656.3,1],[486.1,.5],[434.0,.3],[410.2,.2],[397.0,.12]] },
+  He: { name:'Helium', lines: [[388.9,.35],[447.1,.5],[471.3,.2],[492.2,.2],[501.6,.4],[587.6,1],[667.8,.5],[706.5,.4]] },
+  Na: { name:'Natrium', lines: [[589.0,1],[589.6,.9],[568.8,.1],[498.3,.06],[616.1,.07]] },
+  Hg: { name:'Quecksilber', lines: [[404.7,.5],[407.8,.2],[435.8,.9],[546.1,1],[577.0,.5],[579.1,.5]] },
+  Ne: { name:'Neon', lines: [[540.1,.2],[585.2,.8],[588.2,.4],[594.5,.5],[597.6,.2],[603.0,.3],[607.4,.5],[609.6,.5],[614.3,.7],[616.4,.3],[621.7,.4],[626.6,.5],[633.4,.6],[638.3,.6],[640.2,1],[650.7,.6],[659.9,.4],[667.8,.3],[692.9,.4],[703.2,.6]] }
+};
+const SP = { el:'H', mode:'emission', auto:true, rate:9, acc:0, cnt:{}, flyers:[], level:1, jumps:[], uv:0, ir:0, uvList:[], irList:[], riddle:null, reveal:false, refs:false };
+function spEl(){ return SP.riddle || SP.el; }
+function spReset(){ SP.cnt = {}; SP.flyers = []; SP.uv = 0; SP.ir = 0; SP.uvList = []; SP.irList = []; SP.jumps = []; SP.level = 1; }
+function tubeColor(el){
+  let r = 0, g = 0, b = 0, s = 0;
+  for (const [nm,w] of ELEMENTS[el].lines){ const c = nmRGB(nm); r += c[0]*w; g += c[1]*w; b += c[2]*w; s += w; }
+  const m = Math.max(r,g,b)/s || 1;
+  return [r/s, g/s, b/s].map(v => Math.round(Math.min(255, v/m*235)));
+}
+function spGeo(){
+  const lvlX = W*0.64;
+  return {
+    tube:{ x:W*0.05, y:H*0.14, w:W*0.24, h:Math.max(34, H*0.07) },
+    prism:{ x:W*0.44, y:H*0.175 },
+    strip:{ x:W*0.07, y:H*0.52, w:W*0.86, h:Math.max(50, H*0.12) },
+    lv:{ x:lvlX, y:H*0.06, w:W*0.33, h:H*0.36 }
+  };
+}
+const SPA = 380, SPB = 750;
+function emitPhoton(nm, g){
+  if (nm < SPA){ SP.uv++; SP.uvList.push(nm); if (SP.uvList.length > 6) SP.uvList.shift(); }
+  else if (nm > SPB){ SP.ir++; SP.irList.push(nm); if (SP.irList.length > 6) SP.irList.shift(); }
+  SP.flyers.push({ nm, t:0 });
+}
+function hExcite(n){ SP.level = n; SP.jumps.push({ from:1, to:n, t:0, up:true }); SP.pending = 0.35; }
+function spStep(dt, g){
+  const el = spEl();
+  if (SP.mode === 'emission'){
+    if (el === 'H'){
+      /* Kaskade: angeregtes Elektron fällt in ein tieferes Niveau */
+      if (SP.pending !== undefined && SP.pending > 0){ SP.pending -= dt; }
+      else if (SP.level > 1){
+        const m = 1 + Math.floor(Math.random()*(SP.level - 1));
+        const nm = hLam(m, SP.level);
+        SP.jumps.push({ from:SP.level, to:m, t:0, nm });
+        emitPhoton(nm, g);
+        SP.level = m; SP.pending = SP.auto ? 0.04 : 0.55;
+      } else if (SP.auto){
+        SP.acc += SP.rate*dt;
+        if (SP.acc >= 1){ SP.acc = 0; hExcite(2 + Math.floor(Math.random()*5)); SP.pending = 0.05; }
+      }
+    } else if (SP.auto){
+      SP.acc += SP.rate*3*dt;
+      const L = ELEMENTS[el].lines, tot = L.reduce((a,l) => a + l[1], 0);
+      while (SP.acc >= 1){ SP.acc -= 1; let r = Math.random()*tot; for (const [nm,w] of L){ r -= w; if (r <= 0){ emitPhoton(nm, g); break; } } }
+    }
+  }
+  for (const f of SP.flyers){ f.t += dt*1.6; if (f.t >= 1){ f.dead = true; if (f.nm >= SPA && f.nm <= SPB){ const k = f.nm.toFixed(1); SP.cnt[k] = (SP.cnt[k] || 0) + 1; } } }
+  SP.flyers = SP.flyers.filter(f => !f.dead);
+  for (const j of SP.jumps) j.t += dt*1.4;
+  SP.jumps = SP.jumps.filter(j => j.t < 1.6);
+}
+function spX(nm, s){ return s.x + (nm - SPA)/(SPB - SPA)*s.w; }
+function drawStrip(s, el, mode, counts, small){
+  box(s.x, s.y, s.w, s.h, '#05070d', null, 6);
+  ctx.save(); ctx.beginPath(); ctx.roundRect(s.x, s.y, s.w, s.h, 6); ctx.clip();
+  if (mode === 'absorption'){
+    for (let x = 0; x < s.w; x += 2){ const nm = SPA + x/s.w*(SPB - SPA); ctx.fillStyle = rgba(nmRGB(nm), 1); ctx.fillRect(s.x + x, s.y, 2.5, s.h); }
+    for (const [nm,w] of ELEMENTS[el].lines){ const x = spX(nm, s); ctx.fillStyle = `rgba(0,0,0,${0.55 + 0.45*Math.sqrt(w)})`; ctx.fillRect(x - 1.6, s.y, 3.2, s.h); }
+  } else {
+    for (const [nm,w] of ELEMENTS[el].lines){
+      let b = counts ? 1 - Math.exp(-(counts[nm.toFixed(1)] || 0)/4) : Math.sqrt(w);
+      if (el === 'H' && counts){ b = 1 - Math.exp(-(sumNear(counts, nm))/3); }
+      if (b < 0.01) continue;
+      const x = spX(nm, s), c = nmRGB(nm);
+      const gr = ctx.createLinearGradient(x - 8, 0, x + 8, 0);
+      gr.addColorStop(0, rgba(c,0)); gr.addColorStop(0.5, rgba(c, 0.55*b)); gr.addColorStop(1, rgba(c,0));
+      ctx.fillStyle = gr; ctx.fillRect(x - 8, s.y, 16, s.h);
+      ctx.fillStyle = rgba(c, Math.min(1, 0.25 + b)); ctx.fillRect(x - 1.3, s.y, 2.6, s.h);
+    }
+  }
+  ctx.restore();
+  if (!small && lvlNum()){
+    for (let nm = 400; nm <= 750; nm += 50){ const x = spX(nm, s); line(x, s.y + s.h, x, s.y + s.h + 5, '#64748b', 1); text(nm + ' nm', x, s.y + s.h + 14, {align:'center', size:11, col:'#64748b'}); }
+  }
+}
+function sumNear(counts, nm){ let s = 0; for (const k in counts) if (Math.abs(+k - nm) < 1.2) s += counts[k]; return s; }
+/* Wasserstofflinien in Luft weichen leicht vom Vakuumwert ab – für die Zuordnung reicht das Runden */
+function spDraw(dt){
+  const g = spGeo(), el = spEl(), lv = lvlNum();
+  spStep(dt, g);
+  const tb = g.tube;
+  if (SP.mode === 'emission'){
+    const c = tubeColor(el);
+    const glow = ctx.createLinearGradient(0, tb.y, 0, tb.y + tb.h);
+    glow.addColorStop(0, rgba(c, 0.55)); glow.addColorStop(0.5, rgba(c, 0.95)); glow.addColorStop(1, rgba(c, 0.55));
+    ctx.save(); ctx.shadowColor = rgba(c, 0.9); ctx.shadowBlur = 22; box(tb.x, tb.y, tb.w, tb.h, glow, null, tb.h/2); ctx.restore();
+    box(tb.x, tb.y, tb.w, tb.h, null, 'rgba(51,65,85,.6)', tb.h/2);
+    for (const xx of [tb.x - 10, tb.x + tb.w]){ ctx.fillStyle = '#475569'; ctx.fillRect(xx, tb.y + tb.h*0.3, 10, tb.h*0.4); }
+    text(SP.riddle && !SP.reveal ? 'Leuchtröhre mit unbekanntem Gas' : `Leuchtröhre mit ${ELEMENTS[el].name}`, tb.x + tb.w/2, tb.y + tb.h + 16, {align:'center', size:12, weight:600, col:'#334155'});
+  } else {
+    ctx.fillStyle = '#334155'; ctx.beginPath(); ctx.roundRect(tb.x, tb.y + tb.h*0.1, tb.w*0.22, tb.h*0.8, 6); ctx.fill();
+    ctx.fillStyle = '#fffbea'; ctx.beginPath(); ctx.arc(tb.x + tb.w*0.22, tb.y + tb.h/2, tb.h*0.28, -Math.PI/2, Math.PI/2); ctx.fill();
+    box(tb.x + tb.w*0.45, tb.y - 4, tb.w*0.35, tb.h + 8, rgba(tubeColor(el), 0.18), '#64748b', 6);
+    line(tb.x + tb.w*0.25, tb.y + tb.h/2, tb.x + tb.w*0.45, tb.y + tb.h/2, 'rgba(255,240,160,.9)', 5);
+    text('weißes Licht', tb.x, tb.y + tb.h + 16, {size:12, col:'#334155', weight:600});
+    text(SP.riddle && !SP.reveal ? 'unbekanntes Gas' : `${ELEMENTS[el].name}-Gas`, tb.x + tb.w*0.62, tb.y + tb.h + 16, {size:12, col:'#334155', weight:600, align:'center'});
+  }
+  /* Strahl zum Spektroskop */
+  const pr = g.prism, bx = tb.x + tb.w + 10, by = tb.y + tb.h/2;
+  line(bx, by, pr.x - 22, pr.y, SP.mode === 'emission' ? rgba(tubeColor(el), 0.6) : 'rgba(255,230,150,.8)', 4);
+  for (const f of SP.flyers){
+    const x = bx + (pr.x - 22 - bx)*Math.min(1, f.t*1.4), y = by + (pr.y - by)*Math.min(1, f.t*1.4);
+    if (f.t*1.4 > 1) continue;
+    const c = nmRGB(f.nm); ctx.fillStyle = rgba(c, 1); ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI*2); ctx.fill();
+  }
+  /* Spektroskop (Prisma) */
+  ctx.fillStyle = 'rgba(191,219,254,.6)'; ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(pr.x - 24, pr.y + 22); ctx.lineTo(pr.x + 24, pr.y + 22); ctx.lineTo(pr.x, pr.y - 26); ctx.closePath(); ctx.fill(); ctx.stroke();
+  text('Spektroskop', pr.x, pr.y + 38, {align:'center', size:12, weight:600, col:'#334155'});
+  /* aufgefächertes Licht zum Schirm */
+  const s = g.strip;
+  ctx.save(); ctx.globalAlpha = 0.16;
+  const fan = ctx.createLinearGradient(s.x, 0, s.x + s.w, 0); for (let k = 0; k <= 10; k++){ const nm = SPA + k/10*(SPB-SPA); fan.addColorStop(k/10, rgba(nmRGB(nm),1)); }
+  ctx.fillStyle = fan; ctx.beginPath(); ctx.moveTo(pr.x - 6, pr.y + 10); ctx.lineTo(pr.x + 6, pr.y + 10); ctx.lineTo(s.x + s.w, s.y); ctx.lineTo(s.x, s.y); ctx.closePath(); ctx.fill(); ctx.restore();
+  /* Spektrum */
+  drawStrip(s, el, SP.mode, SP.mode === 'emission' ? SP.cnt : null);
+  text('Spektrum', s.x, s.y - 12, {weight:700, size:14});
+  if (SP.mode === 'emission'){
+    pill(`UV: ${SP.uv}`, s.x - 4, s.y + s.h/2, {bg:'#ede9fe', col:'#5b21b6', size:12, align:'right'});
+    pill(`IR: ${SP.ir}`, s.x + s.w + 4, s.y + s.h/2, {bg:'#fee2e2', col:'#7f1d1d', size:12, align:'left'});
+    if (lv === 2 && (SP.uvList.length || SP.irList.length)) text(`unsichtbar – UV: ${SP.uvList.map(v => fmt(v,0)).join(', ') || '–'} nm · IR: ${SP.irList.map(v => fmt(v,0)).join(', ') || '–'} nm`, s.x, s.y + s.h + 32, {size:11, col:'#64748b'});
+  }
+  /* Vergleichsspektren */
+  if (SP.refs || SP.riddle){
+    let y = s.y + s.h + (lv === 2 ? 48 : 36);
+    const rh = Math.max(16, Math.min(26, (H - y - 10)/5 - 6));
+    text('Vergleichsspektren', s.x, y, {weight:700, size:13}); y += 12;
+    for (const k of Object.keys(ELEMENTS)){
+      drawStrip({x:s.x + 100, y, w:s.w - 100, h:rh}, k, SP.mode, null, true);
+      text(ELEMENTS[k].name, s.x, y + rh/2, {size:12, weight:600});
+      y += rh + 6;
+    }
+  }
+  /* Energieniveaus */
+  const L = g.lv;
+  if (el === 'H' && SP.mode === 'emission' && !(SP.riddle && !SP.reveal)){
+    box(L.x, L.y, L.w, L.h, '#f8fafc', '#e2e8f0', 12);
+    text('Energieniveaus im Wasserstoffatom', L.x + 12, L.y + 16, {weight:700, size:13});
+    text('Niveau antippen = Elektron anregen', L.x + 12, L.y + 33, {size:11, col:'#64748b'});
+    const yTop = L.y + 52, yBot = L.y + L.h - 16, x1 = L.x + (lv ? 70 : 40), x2 = L.x + L.w - 44;
+    const yOf = n => yBot - (1 - 1/n)*(yBot - yTop);
+    for (let n = 1; n <= 6; n++){
+      const y = yOf(n); line(x1, y, x2, y, n === SP.level ? '#0f766e' : '#334155', n === SP.level ? 3 : 1.6);
+      text(`n = ${n}`, x2 + 5, y, {size:n > 4 ? 9 : 11, col:'#475569'});
+      if (lv && n <= 4) text(`${fmt(-13.6/(n*n), 2)} eV`, x1 - 6, y, {align:'right', size:11, col:'#475569'});
+    }
+    ctx.save(); ctx.setLineDash([3,4]); line(x1, yTop - 6, x2, yTop - 6, '#94a3b8', 1); ctx.restore();
+    text(lv ? '0 eV' : 'frei', x2 + 5, yTop - 6, {size:10, col:'#94a3b8'});
+    SP.lvGeo = { x1, x2, yOf };
+    /* Sprünge */
+    let off = 0;
+    for (const j of SP.jumps){
+      const xa = x1 + 26 + (off++ % 8)*((x2 - x1 - 60)/8), a = Math.max(0, 1 - Math.max(0, j.t - 0.6));
+      const c = j.up ? [100,116,139] : nmRGB(j.nm);
+      ctx.globalAlpha = a; arrow(xa, yOf(j.from), xa, yOf(j.to), rgba(c,1), 2.5);
+      if (!j.up && lv === 2) text(`${fmt(j.nm,0)} nm`, xa + 6, (yOf(j.from) + yOf(j.to))/2, {size:10, col:'#334155'});
+      ctx.globalAlpha = 1;
+    }
+    /* Elektron */
+    ctx.fillStyle = '#1d4ed8'; ctx.beginPath(); ctx.arc(x1 + 12, yOf(SP.level), 6, 0, Math.PI*2); ctx.fill();
+    if (lv === 2) text('Skala nicht linear (Höhe ∝ 1 − 1/n)', L.x + 12, L.y + L.h - 4, {size:10, col:'#94a3b8', base:'bottom'});
+  } else {
+    SP.lvGeo = null;
+    box(L.x, L.y, L.w, L.h*0.6, '#f8fafc', '#e2e8f0', 12);
+    const lines = SP.mode === 'absorption'
+      ? ['Das Gas „verschluckt“ genau die Farben,', 'die es selbst aussenden würde.', 'Es entstehen dunkle Linien.']
+      : SP.riddle && !SP.reveal ? ['Welches Gas ist in der Röhre?', 'Vergleiche mit den Spektren unten.'] : ['Jedes Element hat seine eigenen Linien –', 'wie ein Fingerabdruck.', 'Wasserstoff zeigt das Energieschema.'];
+    lines.forEach((t, k) => text(t, L.x + 14, L.y + 24 + k*20, {size:13, col:'#334155'}));
+  }
+}
+function spClick(x, y){
+  const G = SP.lvGeo; if (!G || x < G.x1 - 60 || x > G.x2 + 10) return;
+  let best = 0, bd = 14;
+  for (let n = 2; n <= 6; n++){ const d = Math.abs(G.yOf(n) - y); if (d < bd){ bd = d; best = n; } }
+  if (best && SP.level === 1){ hExcite(best); SP.auto = false; buildControls(); }
+}
+function spControls(){
+  UI.seg('Beobachtung', [['emission','Leuchtendes Gas'],['absorption','Licht durch Gas']], () => SP.mode, v => { SP.mode = v; spReset(); });
+  if (!SP.riddle) UI.select('Gas', Object.entries(ELEMENTS).map(([k,v]) => [k, v.name]), () => SP.el, v => { SP.el = v; spReset(); buildControls(); });
+  else UI.note('Rätsel: In der Röhre ist ein unbekanntes Gas.');
+  if (SP.mode === 'emission'){
+    UI.check('Gas leuchtet dauerhaft (Entladung)', () => SP.auto, v => SP.auto = v);
+    UI.buttons([['Spektrum löschen', () => spReset()]]);
+  }
+  UI.check('Vergleichsspektren zeigen', () => SP.refs, v => SP.refs = v);
+  if (SP.riddle) UI.buttons([[SP.reveal ? `Es ist ${ELEMENTS[SP.riddle].name}!` : 'Auflösen', () => { SP.reveal = true; buildControls(); }, 'primary'], ['Neues Rätsel', () => newRiddle()]]);
+  else UI.buttons([['Rätselgas', () => newRiddle()]]);
+  if (spEl() === 'H' && lvlNum() === 2) UI.note('Wasserstoff: 1/λ = R·(1/m² − 1/n²) mit R = 1,097·10⁷ m⁻¹. Balmer-Serie (m = 2) im Sichtbaren, Lyman (m = 1) im UV, Paschen (m = 3) im IR.');
+}
+function newRiddle(){ const k = Object.keys(ELEMENTS); let r; do { r = k[Math.floor(Math.random()*k.length)]; } while (r === SP.riddle); SP.riddle = r; SP.reveal = false; SP.refs = true; SP.auto = true; spReset(); buildControls(); }
+
+/* =====================================================================
+   Station 2: Doppelspalt mit einzelnen Quantenobjekten
+   ===================================================================== */
+const DS = { obj:'photon', lam:600, kV:10, d:0.5, b:0.05, de:1.5, be:0.3, open:'both', which:false, rate:'slow', run:true, acc:0, hits:[], bins:new Array(120).fill(0), anims:[], showCurve:false, pointer:false, px:null, layer:null, rebuild:true, omega:0 };
+const L_SCR = 1;   /* Abstand Doppelspalt – Schirm in m */
+function dsLam(){ return DS.obj === 'photon' ? DS.lam*1e-9 : H_PLANCK/Math.sqrt(2*M_E*E_CH*DS.kV*1000); }
+function dsD(){ return DS.obj === 'photon' ? DS.d*1e-3 : DS.de*1e-6; }
+function dsB(){ return DS.obj === 'photon' ? DS.b*1e-3 : DS.be*1e-6; }
+function dsRange(){ return DS.obj === 'photon' ? 15e-3 : 60e-6; }
+function sinc2(x){ return Math.abs(x) < 1e-9 ? 1 : (Math.sin(x)/x)**2; }
+function dsI(x){
+  const lam = dsLam(), d = dsD(), b = dsB(), s = x/Math.hypot(x, L_SCR);
+  const env = sinc2(Math.PI*b*s/lam);
+  if (DS.open !== 'both' || DS.which) return env;
+  return env*Math.cos(Math.PI*d*s/lam)**2;
+}
+function dsSample(){ const X = dsRange(); for (let k = 0; k < 4000; k++){ const x = (Math.random()*2 - 1)*X; if (Math.random() < dsI(x)) return x; } return 0; }
+function dsClear(){ DS.hits = []; DS.bins.fill(0); DS.anims = []; DS.rebuild = true; }
+function dsGeo(){
+  const top = H*0.07, bot = H*0.93;
+  return { src:{x:W*0.06, y:H/2}, wall:W*0.33, scr:{x:W*0.58, w:Math.max(26, W*0.05), top, bot}, hist:{x:W*0.58 + Math.max(26, W*0.05) + 14, w:W*0.95 - (W*0.58 + Math.max(26, W*0.05) + 14), top, bot} };
+}
+function dsSlitY(g){
+  const dn = DS.obj === 'photon' ? (DS.d - 0.1)/0.9 : (DS.de - 0.5)/2.5;
+  const sep = 36 + 110*dn;
+  const bn = DS.obj === 'photon' ? (DS.b - 0.02)/0.13 : (DS.be - 0.1)/0.5;
+  return { y1:H/2 - sep/2, y2:H/2 + sep/2, w:5 + 16*bn };
+}
+function dsYofX(x, g){ return (g.scr.top + g.scr.bot)/2 - x/dsRange()*(g.scr.bot - g.scr.top)/2; }
+function dsAddHit(x, g){
+  const bi = Math.floor((x/dsRange() + 1)/2*DS.bins.length);
+  if (bi >= 0 && bi < DS.bins.length) DS.bins[bi]++;
+  const hz = Math.random();
+  DS.hits.push([x, hz]); if (DS.hits.length > 40000) DS.hits.shift();
+  dsPlot(x, hz, g);
+}
+function dsColor(){ return DS.obj === 'photon' ? nmRGB(DS.lam) : [37, 99, 235]; }
+function dsEnsureLayer(g){
+  const w = Math.ceil(g.scr.w), h = Math.ceil(g.scr.bot - g.scr.top);
+  if (!DS.layer || DS.rebuild || DS.layer.width !== w || DS.layer.height !== h){
+    DS.layer = document.createElement('canvas'); DS.layer.width = w; DS.layer.height = h; DS.rebuild = false;
+    const c = DS.layer.getContext('2d'); c.fillStyle = '#0b1020'; c.fillRect(0, 0, w, h);
+    for (const [x,hz] of DS.hits) dsPlot(x, hz, g);
+  }
+}
+function dsPlot(x, hz, g){
+  if (!DS.layer) return;
+  const c = DS.layer.getContext('2d'), col = dsColor();
+  const yy = dsYofX(x, g) - g.scr.top, xx = 2 + hz*(DS.layer.width - 4);
+  c.fillStyle = rgba(col.map(v => Math.min(255, v + 60)), 0.85); c.fillRect(xx - 1, yy - 1, 2.2, 2.2);
+}
+const RATES = { single:0, slow:1.5, mid:25, fast:600 };
+function dsStep(dt, g){
+  DS.omega += dt*2.2;
+  if (DS.run && RATES[DS.rate]){
+    DS.acc += RATES[DS.rate]*dt;
+    let n = Math.floor(DS.acc); DS.acc -= n;
+    for (; n > 0; n--) dsLaunch(g);
+  }
+  for (const a of DS.anims){ a.t += dt/1.1; if (a.t >= 1 && !a.done){ a.done = true; dsAddHit(a.x, g); } }
+  DS.anims = DS.anims.filter(a => a.t < 1.35);
+}
+function dsLaunch(g){
+  const x = dsSample();
+  let slit = DS.open === 'top' ? 1 : DS.open === 'bottom' ? 2 : (DS.which ? (Math.random() < 0.5 ? 1 : 2) : 0);
+  if (RATES[DS.rate] > 5) { dsAddHit(x, g); return; }
+  DS.anims.push({ x, slit, t:0 });
+}
+function dsDraw(dt){
+  const g = dsGeo(), lv = lvlNum(), col = dsColor();
+  dsStep(dt, g); dsEnsureLayer(g);
+  const sl = dsSlitY(g), src = g.src;
+  /* Quelle */
+  box(src.x - 26, src.y - 20, 40, 40, '#334155', null, 6);
+  text(DS.obj === 'photon' ? 'Photonen' : 'Elektronen', src.x - 6, src.y + 34, {align:'center', size:12, weight:600, col:'#334155'});
+  text('Quelle', src.x - 6, src.y - 30, {align:'center', size:11, col:'#64748b'});
+  /* Spaltblende */
+  ctx.fillStyle = '#475569';
+  const wx = g.wall - 6, ww = 12;
+  const open1 = DS.open !== 'bottom', open2 = DS.open !== 'top';
+  const gaps = []; if (open1) gaps.push([sl.y1 - sl.w/2, sl.y1 + sl.w/2]); if (open2) gaps.push([sl.y2 - sl.w/2, sl.y2 + sl.w/2]);
+  let yy = g.scr.top - 10;
+  for (const [a,b] of gaps){ ctx.fillRect(wx, yy, ww, a - yy); yy = b; }
+  ctx.fillRect(wx, yy, ww, g.scr.bot + 10 - yy);
+  if (!open1){ ctx.fillStyle = '#94a3b8'; ctx.fillRect(wx - 3, sl.y1 - sl.w/2 - 2, ww + 6, sl.w + 4); }
+  if (!open2){ ctx.fillStyle = '#94a3b8'; ctx.fillRect(wx - 3, sl.y2 - sl.w/2 - 2, ww + 6, sl.w + 4); }
+  text('Doppelspalt', g.wall, g.scr.top - 14, {align:'center', size:12, weight:600, col:'#334155', base:'bottom'});
+  /* Welcher-Weg-Detektoren */
+  if (DS.which){
+    for (const [k,y] of [[1,sl.y1],[2,sl.y2]]){
+      const lit = DS.anims.some(a => a.slit === k && a.t > 0.42 && a.t < 0.62);
+      box(g.wall + 10, y - 9, 22, 18, lit ? '#facc15' : '#fff', '#334155', 4);
+      text('D', g.wall + 21, y + 1, {align:'center', size:11, weight:700});
+    }
+  }
+  /* Wellen-Animation: Möglichkeiten breiten sich aus */
+  for (const a of DS.anims){
+    if (a.t <= 0.45){
+      const r = a.t/0.45*(g.wall - src.x);
+      ctx.strokeStyle = rgba(col, 0.35*(1 - a.t)); ctx.lineWidth = 2;
+      for (const dr of [0, -14, -28]) if (r + dr > 0){ ctx.beginPath(); ctx.arc(src.x, src.y, r + dr, -0.5, 0.5); ctx.stroke(); }
+    } else if (a.t < 1){
+      const r = (a.t - 0.45)/0.55*(g.scr.x - g.wall);
+      const slits = a.slit ? [a.slit === 1 ? sl.y1 : sl.y2] : [sl.y1, sl.y2].filter((_, k) => k === 0 ? open1 : open2);
+      ctx.strokeStyle = rgba(col, 0.3); ctx.lineWidth = 1.6;
+      for (const sy of slits) for (const dr of [0, -12, -24]) if (r + dr > 0){ ctx.beginPath(); ctx.arc(g.wall, sy, r + dr, -1.2, 1.2); ctx.stroke(); }
+    }
+  }
+  /* Schirm */
+  ctx.drawImage(DS.layer, g.scr.x, g.scr.top);
+  box(g.scr.x, g.scr.top, g.scr.w, g.scr.bot - g.scr.top, null, '#334155', 3);
+  text('Schirm', g.scr.x + g.scr.w/2, g.scr.top - 4, {align:'center', size:12, weight:600, col:'#334155', base:'bottom'});
+  for (const a of DS.anims) if (a.done && a.t < 1.35){ const y = dsYofX(a.x, g); ctx.fillStyle = rgba([255,255,255], 1.35 - a.t); ctx.beginPath(); ctx.arc(g.scr.x + g.scr.w/2, y, 9*(1.4 - a.t), 0, Math.PI*2); ctx.fill(); }
+  /* Histogramm */
+  const hs = g.hist, n = DS.bins.length, bh = (hs.bot - hs.top)/n, mx = Math.max(5, ...DS.bins);
+  ctx.fillStyle = rgba(col, 0.75);
+  for (let k = 0; k < n; k++){ if (!DS.bins[k]) continue; const y = hs.bot - (k+1)*bh; ctx.fillRect(hs.x, y, DS.bins[k]/mx*hs.w*0.92, Math.max(1, bh - 0.5)); }
+  line(hs.x, hs.top, hs.x, hs.bot, '#94a3b8', 1);
+  text(`Anzahl: ${DS.hits.length}`, hs.x + 4, hs.top - 4, {size:12, weight:600, col:'#334155', base:'bottom'});
+  if (DS.showCurve){
+    let integ = 0; const steps = 600, X = dsRange();
+    for (let k = 0; k < steps; k++) integ += dsI(-X + (k + 0.5)/steps*2*X);
+    const binW = 2*X/n, total = DS.hits.length, scale = DS.hits.length ? (total*steps/(integ*n))/mx : 1/1;
+    ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 2; ctx.beginPath();
+    for (let k = 0; k <= 300; k++){
+      const x = -X + k/300*2*X, y = dsYofX(x, g), v = DS.hits.length ? dsI(x)*scale : dsI(x);
+      const px = hs.x + Math.min(1.05, v)*hs.w*0.92; k ? ctx.lineTo(px, y) : ctx.moveTo(px, y);
+    }
+    ctx.stroke();
+    text('Wahrscheinlichkeit', hs.x + hs.w - 4, hs.top + 10, {align:'right', size:11, col:'#dc2626', weight:600});
+  }
+  /* Achse in mm bzw. µm */
+  if (lv){
+    const X = dsRange(), unit = DS.obj === 'photon' ? 1e-3 : 1e-6, uName = DS.obj === 'photon' ? 'mm' : 'µm', step = DS.obj === 'photon' ? 5 : 20;
+    for (let v = -X/unit; v <= X/unit + 1e-9; v += step){ const y = dsYofX(v*unit, g); line(g.scr.x - 5, y, g.scr.x, y, '#64748b', 1); text(fmt(v,0), g.scr.x - 8, y, {align:'right', size:10, col:'#64748b'}); }
+    text(uName, g.scr.x - 8, g.scr.top - 4, {align:'right', size:10, col:'#64748b', base:'bottom'});
+  }
+  /* Infozeile */
+  if (lv){
+    const lam = dsLam();
+    const lamT = DS.obj === 'photon' ? `λ = ${fmt(DS.lam,0)} nm` : `λ = h/p = ${fmt(lam*1e12,1)} pm`;
+    const dT = DS.obj === 'photon' ? `d = ${fmt(DS.d,2)} mm, b = ${fmt(DS.b,3)} mm` : `d = ${fmt(DS.de,1)} µm, b = ${fmt(DS.be,2)} µm`;
+    text(`${lamT} · ${dT} · Abstand zum Schirm 1 m`, src.x - 26, H - 14, {size:12, col:'#334155'});
+    if (lv === 2) text(`Streifenabstand Δx = λ·L/d = ${DS.obj === 'photon' ? fmt(lam*L_SCR/dsD()*1e3, 2) + ' mm' : fmt(lam*L_SCR/dsD()*1e6, 1) + ' µm'}`, src.x - 26, H - 32, {size:12, col:'#334155'});
+  }
+  /* Zeigermodell */
+  if (DS.pointer && lv >= 1) dsDrawPointer(g, sl, open1, open2);
+}
+function dsDrawPointer(g, sl, open1, open2){
+  if (DS.px === null) DS.px = dsRange()*0.12;
+  const x = DS.px, yP = dsYofX(x, g), X0 = g.scr.x;
+  ctx.fillStyle = '#f59e0b'; ctx.beginPath(); ctx.arc(X0 + g.scr.w/2, yP, 7, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#7c2d12'; ctx.lineWidth = 1.5; ctx.stroke();
+  const lam = dsLam(), d = dsD();
+  const s1 = Math.hypot(L_SCR, x - d/2), s2 = Math.hypot(L_SCR, x + d/2);
+  const dPhi = 2*Math.PI*(s2 - s1)/lam, base = DS.omega;
+  ctx.save(); ctx.setLineDash([5,5]);
+  if (open1) line(g.wall + 6, sl.y1, X0, yP, 'rgba(234,88,12,.8)', 1.6);
+  if (open2) line(g.wall + 6, sl.y2, X0, yP, 'rgba(37,99,235,.8)', 1.6);
+  ctx.restore();
+  /* Zeigerkasten */
+  const bw = Math.min(250, W*0.24), bx = g.src.x - 26, by = H*0.56, bh = Math.min(230, H*0.36);
+  box(bx, by, bw, bh, 'rgba(255,255,255,.96)', '#cbd5e1', 12);
+  text('Zeiger am markierten Punkt', bx + 10, by + 16, {weight:700, size:12});
+  const cx = bx + bw*0.42, cy = by + bh*0.56, R = Math.min(bw, bh)*0.2;
+  const a1 = base, a2 = base + dPhi;
+  const p1 = [R*Math.cos(a1), -R*Math.sin(a1)], p2 = [R*Math.cos(a2), -R*Math.sin(a2)];
+  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2); ctx.stroke();
+  const interf = open1 && open2 && !DS.which;
+  if (open1) arrow(cx, cy, cx + p1[0], cy + p1[1], '#ea580c', 2.5);
+  if (open2){ const sx = interf ? p1[0] : 0, sy = interf ? p1[1] : 0; arrow(cx + sx, cy + sy, cx + sx + p2[0], cy + sy + p2[1], '#2563eb', 2.5); }
+  let prob;
+  if (interf){
+    const sx = p1[0] + p2[0], sy = p1[1] + p2[1];
+    arrow(cx, cy, cx + sx, cy + sy, '#111827', 3.5);
+    prob = (sx*sx + sy*sy)/(4*R*R);
+    text('Summe', bx + bw - 10, by + bh - 34, {align:'right', size:11, weight:700});
+  } else prob = (open1 && open2) ? 0.5 : 0.25;
+  const gs = (s2 - s1)/lam;
+  if (lvlNum() === 2) text(`Gangunterschied Δs = ${fmt(gs, 2)} λ`, bx + 10, by + bh - 34, {size:11});
+  text(interf ? `Länge² → Wahrscheinlichkeit: ${fmt(prob*100, 0)} %` : (DS.which ? 'Weg gemessen: Zeiger nicht addieren' : 'nur ein Zeiger'), bx + 10, by + bh - 14, {size:11, weight:600});
+  text('Spalt 1', bx + bw - 10, by + 36, {align:'right', size:11, col:'#ea580c', weight:600});
+  text('Spalt 2', bx + bw - 10, by + 52, {align:'right', size:11, col:'#2563eb', weight:600});
+}
+function dsClick(x, y){
+  const g = dsGeo();
+  if (DS.pointer && x > g.scr.x - 20 && y > g.scr.top && y < g.scr.bot){
+    const X = dsRange(); DS.px = Math.max(-X, Math.min(X, -(y - (g.scr.top + g.scr.bot)/2)/((g.scr.bot - g.scr.top)/2)*X)); return true;
+  }
+  return false;
+}
+function dsControls(){
+  const lv = lvlNum();
+  UI.seg('Quantenobjekte', [['photon','Photonen'],['electron','Elektronen']], () => DS.obj, v => { DS.obj = v; dsClear(); buildControls(); });
+  if (DS.obj === 'photon') UI.slider('Wellenlänge', {min:400, max:700, step:5, cls:'spectrum', bg:spectrumCSS(400,700), get:() => DS.lam, set:v => { DS.lam = v; dsClear(); }, fmt:v => `${v} nm`});
+  else UI.slider('Beschleunigungsspannung', {min:2, max:50, step:1, get:() => DS.kV, set:v => { DS.kV = v; dsClear(); }, fmt:v => `${v} kV` + (lv ? ` (λ = ${fmt(H_PLANCK/Math.sqrt(2*M_E*E_CH*v*1000)*1e12,1)} pm)` : '')});
+  if (DS.obj === 'photon'){
+    UI.slider('Spaltabstand d', {min:0.1, max:1, step:0.05, get:() => DS.d, set:v => { DS.d = v; dsClear(); }, fmt:v => lv ? `${fmt(v,2)} mm` : (v < 0.4 ? 'klein' : v < 0.7 ? 'mittel' : 'groß')});
+    UI.slider('Spaltbreite b', {min:0.02, max:0.15, step:0.005, get:() => DS.b, set:v => { DS.b = v; dsClear(); }, fmt:v => lv ? `${fmt(v,3)} mm` : (v < 0.06 ? 'schmal' : 'breit')});
+  } else {
+    UI.slider('Spaltabstand d', {min:0.5, max:3, step:0.1, get:() => DS.de, set:v => { DS.de = v; dsClear(); }, fmt:v => lv ? `${fmt(v,1)} µm` : (v < 1.3 ? 'klein' : v < 2.2 ? 'mittel' : 'groß')});
+    UI.slider('Spaltbreite b', {min:0.1, max:0.6, step:0.02, get:() => DS.be, set:v => { DS.be = v; dsClear(); }, fmt:v => lv ? `${fmt(v,2)} µm` : (v < 0.3 ? 'schmal' : 'breit')});
+  }
+  UI.seg('Offene Spalte', [['both','beide'],['top','nur 1'],['bottom','nur 2']], () => DS.open, v => { DS.open = v; dsClear(); });
+  UI.check('Detektor misst, durch welchen Spalt', () => DS.which, v => { DS.which = v; dsClear(); });
+  UI.seg('Tempo', [['single','einzeln'],['slow','langsam'],['mid','mittel'],['fast','schnell']], () => DS.rate, v => DS.rate = v);
+  UI.buttons([['1 Objekt schicken', () => dsLaunch(dsGeo()), 'primary'], [DS.run ? 'Pause' : 'Weiter', e => { DS.run = !DS.run; e.target.textContent = DS.run ? 'Pause' : 'Weiter'; }], ['Schirm löschen', () => dsClear()]]);
+  UI.check('Wahrscheinlichkeitskurve zeigen', () => DS.showCurve, v => DS.showCurve = v);
+  if (lv >= 1){ UI.check('Zeigermodell (Punkt am Schirm antippen)', () => DS.pointer, v => DS.pointer = v); }
+}
+
+/* =====================================================================
+   Station 3: Mach-Zehnder-Interferometer
+   ===================================================================== */
+const MZ = { mode:'photon', phase:0, blockA:false, blockB:false, polA:'none', polB:'none', eraser:false, bs2:true, rate:'slow', run:true, acc:0, cnt:[0,0,0], anims:[], flash:[0,0,0] };
+/* komplexe Zahlen [re, im] */
+const cm = (a,b) => [a[0]*b[0] - a[1]*b[1], a[0]*b[1] + a[1]*b[0]];
+const cs = (a,b) => [a[0]+b[0], a[1]+b[1]];
+const cabs2 = a => a[0]*a[0] + a[1]*a[1];
+const I_ = [0,1], ONE = [1,0], R2 = 1/Math.SQRT2;
+function polVec(p){ return p === 'H' ? [1,0] : p === 'V' ? [0,1] : p === 'D' ? [R2,R2] : null; }
+/* Amplituden (Polarisation H/V) der Wege A (unten) und B (links/oben) an den Detektoren */
+function mzAmps(){
+  const lv = lvlNum();
+  const pin = [R2, R2];                      /* Photonen diagonal polarisiert */
+  const proj = (v, p) => { const q = polVec(p); if (!q) return v; const s = v[0]*q[0] + v[1]*q[1]; return [s*q[0], s*q[1]]; };
+  const pA = lv === 2 ? proj(pin, MZ.polA) : pin, pB = lv === 2 ? proj(pin, MZ.polB) : pin;
+  const ph = [Math.cos(MZ.phase), Math.sin(MZ.phase)];
+  /* Weg A: BS1 durch (1/√2) · Spiegel (i) · Phasenschieber; Weg B: BS1 reflektiert (i/√2) · Spiegel (i) */
+  let aA = cm(cm([R2,0], I_), ph), aB = cm([0,R2], I_);
+  if (MZ.blockA) aA = [0,0]; if (MZ.blockB) aB = [0,0];
+  /* am zweiten Strahlteiler: A kommt von unten, B von links. D1 rechts, D2 oben */
+  let d1A, d1B, d2A, d2B;
+  if (MZ.bs2){ d1A = cm(aA, [0,R2]); d2A = cm(aA, [R2,0]); d1B = cm(aB, [R2,0]); d2B = cm(aB, [0,R2]); }
+  else { d1A = [0,0]; d2A = aA; d1B = aB; d2B = [0,0]; }
+  return { pA, pB, d1:[d1A, d1B], d2:[d2A, d2B] };
+}
+function mzProbs(){
+  const A = mzAmps(), lv = lvlNum(), out = [];
+  for (const [xa, xb] of [A.d1, A.d2]){
+    /* Gesamtamplitude als Vektor (H, V) mit komplexen Einträgen */
+    let vH = cs(cm(xa, [A.pA[0],0]), cm(xb, [A.pB[0],0])), vV = cs(cm(xa, [A.pA[1],0]), cm(xb, [A.pB[1],0]));
+    if (lv === 2 && MZ.eraser){ const s = cs(cm(vH,[R2,0]), cm(vV,[R2,0])); vH = cm(s,[R2,0]); vV = cm(s,[R2,0]); }
+    out.push(cabs2(vH) + cabs2(vV));
+  }
+  out.push(Math.max(0, 1 - out[0] - out[1]));
+  return out;
+}
+function mzGeo(){
+  const px = W*0.73;
+  const s = Math.min((px - 150)/1.66, H*0.5);
+  const x0 = (px - (1.66*s + 100))/2 + 0.34*s + 44, y0 = H*0.5 - s*0.3, x1 = x0 + s, y1 = y0 + s;
+  return { s, x0, x1, y0, y1, src:[x0 - s*0.34, y1], D1:[x1 + s*0.32, y0], D2:[x1, y0 - s*0.3], panel:{ x:px, y:16, w:W - px - 16, h:H - 32 } };
+}
+function mzPathPts(g, which){
+  if (which === 'A') return [g.src, [g.x0, g.y1], [g.x1, g.y1], [g.x1, g.y0]];
+  return [g.src, [g.x0, g.y1], [g.x0, g.y0], [g.x1, g.y0]];
+}
+function along(pts, t){
+  const segs = []; let tot = 0;
+  for (let k = 1; k < pts.length; k++){ const l = Math.hypot(pts[k][0] - pts[k-1][0], pts[k][1] - pts[k-1][1]); segs.push(l); tot += l; }
+  let d = t*tot;
+  for (let k = 0; k < segs.length; k++){ if (d <= segs[k]){ const f = d/segs[k]; return [pts[k][0] + (pts[k+1][0] - pts[k][0])*f, pts[k][1] + (pts[k+1][1] - pts[k][1])*f]; } d -= segs[k]; }
+  return pts[pts.length - 1];
+}
+const MZRATES = { single:0, slow:1, mid:30, fast:500 };
+function mzOutcome(){ const p = mzProbs(), r = Math.random(); return r < p[0] ? 0 : r < p[0] + p[1] ? 1 : 2; }
+function mzFire(){
+  if (MZ.mode === 'laser') return;
+  if (MZRATES[MZ.rate] > 5){ const o = mzOutcome(); MZ.cnt[o]++; MZ.flash[o] = 0.15; return; }
+  MZ.anims.push({ t:0, out:null });
+}
+function mzStep(dt){
+  if (MZ.mode === 'photon' && MZ.run && MZRATES[MZ.rate]){
+    MZ.acc += MZRATES[MZ.rate]*dt; let n = Math.floor(MZ.acc); MZ.acc -= n; for (; n > 0; n--) mzFire();
+  }
+  for (const a of MZ.anims){
+    a.t += dt/1.6;
+    if (a.t >= 0.78 && a.out === null){ a.out = mzOutcome(); MZ.cnt[a.out]++; MZ.flash[a.out] = 0.6; }
+  }
+  MZ.anims = MZ.anims.filter(a => a.t < 1.15);
+  MZ.flash = MZ.flash.map(f => Math.max(0, f - dt));
+}
+function drawBS(x, y, lbl){
+  ctx.save(); ctx.translate(x, y); ctx.rotate(-Math.PI/4);
+  ctx.fillStyle = 'rgba(147,197,253,.7)'; ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1.5; ctx.fillRect(-20, -4, 40, 8); ctx.strokeRect(-20, -4, 40, 8);
+  ctx.restore(); text(lbl, x - 26, y + 22, {size:11, col:'#475569', align:'center'});
+}
+function drawMirror(x, y, lbl){
+  ctx.save(); ctx.translate(x, y); ctx.rotate(-Math.PI/4);
+  ctx.fillStyle = '#cbd5e1'; ctx.fillRect(-20, -3, 40, 6); ctx.fillStyle = '#334155'; ctx.fillRect(-20, 3, 40, 4);
+  ctx.restore(); text(lbl, x + 24, y + 22, {size:11, col:'#475569', align:'center'});
+}
+function drawPol(x, y, p, horizBeam){
+  ctx.fillStyle = 'rgba(148,163,184,.35)'; ctx.strokeStyle = '#475569'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.ellipse(x, y, horizBeam ? 6 : 16, horizBeam ? 16 : 6, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  const t = p === 'H' ? '↔' : p === 'V' ? '↕' : '⤢';
+  text(t, x + (horizBeam ? 0 : 22), y + (horizBeam ? -24 : 0), {align:'center', size:14, weight:700, col:'#475569'});
+}
+function mzDraw(dt){
+  mzStep(dt);
+  const g = mzGeo(), lv = lvlNum(), P = mzProbs(), A = mzAmps();
+  const beam = (pts, I, col) => { if (I < 0.005) return; ctx.strokeStyle = rgba(col, 0.25 + 0.6*I); ctx.lineWidth = 2 + 7*I; ctx.lineCap = 'round'; ctx.beginPath(); pts.forEach((p,k) => k ? ctx.lineTo(p[0],p[1]) : ctx.moveTo(p[0],p[1])); ctx.stroke(); };
+  const red = [220,38,38], faint = [148,163,184];
+  /* Strahlwege */
+  const laser = MZ.mode === 'laser';
+  const IA = MZ.blockA ? 0 : 0.5, IB = MZ.blockB ? 0 : 0.5;
+  const pf = p => (lv === 2 && p !== 'none') ? 0.5 : 1;
+  const midA = [g.x1, (g.y0 + g.y1)/2], midB = [(g.x0 + g.x1)/2, g.y0];
+  const blkA = [(g.x0 + g.x1)*0.5 + g.s*0.18, g.y1], blkB = [g.x0, (g.y0 + g.y1)/2 + g.s*0.12];
+  const phA = [(g.x0 + g.x1)*0.5 - g.s*0.12, g.y1];
+  if (laser){
+    beam([g.src, [g.x0, g.y1]], 1, red);
+    beam([[g.x0, g.y1], MZ.blockA ? blkA : [g.x1, g.y1]], 0.5, red);
+    if (!MZ.blockA){ beam([[g.x1, g.y1], midA], 0.5, red); beam([midA, [g.x1, g.y0]], 0.5*pf(MZ.polA), red); }
+    beam([[g.x0, g.y1], MZ.blockB ? blkB : [g.x0, g.y0]], 0.5, red);
+    if (!MZ.blockB){ beam([[g.x0, g.y0], midB], 0.5, red); beam([midB, [g.x1, g.y0]], 0.5*pf(MZ.polB), red); }
+    beam([[g.x1, g.y0], g.D1], P[0], red); beam([[g.x1, g.y0], g.D2], P[1], red);
+  } else {
+    ctx.save(); ctx.setLineDash([4,6]);
+    for (const pts of [[g.src, [g.x0, g.y1], [g.x1, g.y1], [g.x1, g.y0]], [[g.x0, g.y1], [g.x0, g.y0], [g.x1, g.y0]], [[g.x1, g.y0], g.D1], [[g.x1, g.y0], g.D2]]){
+      ctx.strokeStyle = 'rgba(148,163,184,.8)'; ctx.lineWidth = 1.5; ctx.beginPath(); pts.forEach((p,k) => k ? ctx.lineTo(p[0],p[1]) : ctx.moveTo(p[0],p[1])); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  /* Bauteile */
+  box(g.src[0] - 34, g.src[1] - 16, 34, 32, '#334155', null, 5);
+  text(laser ? 'Laser' : 'Einzelphotonen', g.src[0] - 17, g.src[1] + 30, {align:'center', size:11, weight:600, col:'#334155'});
+  drawBS(g.x0, g.y1, 'Strahlteiler 1');
+  if (MZ.bs2) drawBS(g.x1, g.y0, 'Strahlteiler 2'); else { ctx.save(); ctx.setLineDash([3,3]); box(g.x1 - 16, g.y0 - 16, 32, 32, null, '#94a3b8', 4); ctx.restore(); }
+  drawMirror(g.x1, g.y1, 'Spiegel'); drawMirror(g.x0, g.y0, 'Spiegel');
+  text('Weg A', (g.x0 + g.x1)/2, g.y1 + 24, {align:'center', size:12, weight:700, col:'#ea580c'});
+  text('Weg B', g.x0 - 34, (g.y0 + g.y1)/2, {align:'center', size:12, weight:700, col:'#2563eb'});
+  /* Glasplatte (Phasenschieber) in Weg A */
+  const th = 6 + 14*(MZ.phase/(2*Math.PI));
+  box(phA[0] - th/2, phA[1] - 18, th, 36, 'rgba(186,230,253,.8)', '#0284c7', 3);
+  text('Glasplatte', phA[0], phA[1] - 26, {align:'center', size:11, col:'#0369a1'});
+  /* Blocker */
+  for (const [on, p, lab] of [[MZ.blockA, blkA, 'A'], [MZ.blockB, blkB, 'B']]){
+    if (on){ box(p[0] - 10, p[1] - 16, 20, 32, '#1f2937', null, 4); text('✋', p[0], p[1] - 26, {align:'center', size:14}); }
+    else { ctx.save(); ctx.setLineDash([3,3]); box(p[0] - 10, p[1] - 16, 20, 32, null, '#cbd5e1', 4); ctx.restore(); }
+  }
+  /* Polarisationsfilter und Radierer */
+  if (lv === 2){
+    if (MZ.polA !== 'none') drawPol(midA[0], midA[1], MZ.polA, false);
+    if (MZ.polB !== 'none') drawPol(midB[0], midB[1], MZ.polB, true);
+    if (MZ.eraser){ drawPol((g.x1 + g.D1[0])/2, g.D1[1], 'D', true); drawPol(g.D2[0], (g.y0 + g.D2[1])/2, 'D', false); }
+  }
+  /* Detektoren */
+  const drawDet = (p, k, horiz) => {
+    const f = MZ.flash[k], lit = laser ? P[k] : f > 0 ? Math.min(1, f*3) : 0;
+    box(p[0] - 18, p[1] - 18, 36, 36, lit > 0.01 ? `rgba(250,204,21,${0.25 + 0.75*lit})` : '#fff', '#334155', 8);
+    text(`D${k+1}`, p[0], p[1] + 1, {align:'center', size:13, weight:700});
+    if (!laser && f > 0.3) text('klick!', p[0] + (horiz ? 30 : 0), p[1] + (horiz ? 0 : -30), {align:horiz ? 'left' : 'center', size:12, weight:700, col:'#b45309'});
+  };
+  drawDet(g.D1, 0, true); drawDet(g.D2, 1, false);
+  /* Photonen-Animation: Möglichkeiten auf beiden Wegen */
+  for (const a of MZ.anims){
+    const t = Math.min(a.t, 0.78)/0.78;
+    for (const [wh, blocked, col] of [['A', MZ.blockA, [234,88,12]], ['B', MZ.blockB, [37,99,235]]]){
+      const pts = mzPathPts(g, wh);
+      let q = along(pts, t);
+      if (blocked){ const bp = wh === 'A' ? blkA : blkB, tb = wh === 'A' ? 0.62 : 0.6; if (t > tb) continue; }
+      const alpha = a.t > 0.78 ? Math.max(0, 1 - (a.t - 0.78)*6) : 0.75;
+      ctx.fillStyle = rgba(col, alpha*0.35); ctx.beginPath(); ctx.arc(q[0], q[1], 13, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = rgba(col, alpha); ctx.beginPath(); ctx.arc(q[0], q[1], 5, 0, Math.PI*2); ctx.fill();
+    }
+    if (a.out !== null && a.out < 2 && a.t < 1.1){
+      const target = a.out === 0 ? g.D1 : g.D2, f = Math.min(1, (a.t - 0.78)/0.25);
+      const q = [g.x1 + (target[0] - g.x1)*f, g.y0 + (target[1] - g.y0)*f];
+      ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(q[0], q[1], 6, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle = '#92400e'; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+  }
+  if (!laser && MZ.anims.length && lv) text('Solange niemand misst, gibt es beide Möglichkeiten.', g.x0, g.y0 - 44, {size:12, col:'#475569'});
+  /* Zeiger an den Detektoren */
+  const noPol = !(lv === 2 && (MZ.polA !== 'none' || MZ.polB !== 'none' || MZ.eraser));
+  if (lv >= 1 && noPol){
+    for (const [k, pos] of [[0, [g.D1[0], g.D1[1] + 80]], [1, [g.D2[0] - 95, g.D2[1]]]]){
+      const [xa, xb] = k === 0 ? A.d1 : A.d2, R = 34;
+      const sc = R/0.5;
+      const pa = [xa[0]*sc, -xa[1]*sc], pb = [xb[0]*sc, -xb[1]*sc];
+      const cx = pos[0], cy = pos[1];
+      ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(cx, cy, R*1.05, 0, Math.PI*2); ctx.stroke();
+      const sx = pa[0] + pb[0], sy = pa[1] + pb[1];
+      if (Math.hypot(sx, sy) > 2) arrow(cx, cy, cx + sx, cy + sy, 'rgba(17,24,39,.35)', 7);
+      else { ctx.fillStyle = '#111827'; ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI*2); ctx.fill(); }
+      if (cabs2(xa) > 1e-6) arrow(cx, cy, cx + pa[0], cy + pa[1], '#ea580c', 2.2);
+      if (cabs2(xb) > 1e-6) arrow(cx + pa[0], cy + pa[1], cx + pa[0] + pb[0], cy + pa[1] + pb[1], '#2563eb', 2.2);
+      text(`Zeiger bei D${k+1}`, cx, cy + R + 14, {align:'center', size:10, col:'#64748b'});
+    }
+  }
+  /* Zähler und Balken */
+  const p = g.panel, tot = MZ.cnt[0] + MZ.cnt[1] + MZ.cnt[2];
+  box(p.x, p.y, p.w, p.h, '#f8fafc', '#e2e8f0', 12);
+  text(laser ? 'Helligkeit an den Detektoren' : 'Zähler', p.x + 12, p.y + 20, {weight:700, size:14});
+  const labels = ['D1', 'D2', 'absorbiert'];
+  const bh = Math.min(200, p.h*0.4), base = p.y + 60 + bh, bw = Math.min(50, (p.w - 40)/3.4);
+  for (let k = 0; k < 3; k++){
+    if (k === 2 && !(MZ.blockA || MZ.blockB || (lv === 2 && (MZ.polA !== 'none' || MZ.polB !== 'none' || MZ.eraser)))) continue;
+    const x = p.x + 20 + k*(bw + 18);
+    const frac = laser ? P[k] : (tot ? MZ.cnt[k]/tot : 0);
+    box(x, base - bh, bw, bh, '#fff', '#e2e8f0', 4);
+    if (frac > 0) box(x, base - frac*bh, bw, frac*bh, k === 2 ? '#94a3b8' : '#facc15', '#a16207', 4);
+    text(labels[k], x + bw/2, base + 14, {align:'center', size:12, weight:600});
+    if (!laser) text(String(MZ.cnt[k]), x + bw/2, base + 30, {align:'center', size:13, weight:700, mono:true});
+    if (tot || laser) text(`${fmt(frac*100, 0)} %`, x + bw/2, base - bh - 10, {align:'center', size:12, col:'#334155'});
+    if (lv >= 1 && !laser){ const yy = base - P[k]*bh; ctx.save(); ctx.setLineDash([4,3]); line(x - 4, yy, x + bw + 4, yy, '#dc2626', 2); ctx.restore(); }
+  }
+  let y = base + 54;
+  const wr = (t, o) => { y = wrapText(t, p.x + 12, y, p.w - 24, o) + 4; };
+  if (lv >= 1 && !laser) wr('rot gestrichelt: berechnete Wahrscheinlichkeit', {size:11, col:'#dc2626'});
+  if (lv >= 1) wr(`Wahrscheinlichkeit D1: ${fmt(P[0]*100,1)} %, D2: ${fmt(P[1]*100,1)} %`, {size:12});
+  if (lv === 2 && noPol && MZ.bs2 && !MZ.blockA && !MZ.blockB) wr(`P(D1) = cos²(φ/2) mit φ = ${fmt(MZ.phase/Math.PI,2)}·π`, {size:12});
+  if (lv >= 1 && noPol){ y += 4; wr('Zeiger: orange = Weg A, blau = Weg B, grau = Summe. Länge² der Summe ∝ Wahrscheinlichkeit.', {size:11, col:'#475569'}); }
+  MZ.geo = { g, blkA, blkB };
+}
+function mzClick(x, y){
+  const G = MZ.geo; if (!G) return false;
+  if (Math.hypot(x - G.blkA[0], y - G.blkA[1]) < 24){ MZ.blockA = !MZ.blockA; mzReset(); buildControls(); return true; }
+  if (Math.hypot(x - G.blkB[0], y - G.blkB[1]) < 24){ MZ.blockB = !MZ.blockB; mzReset(); buildControls(); return true; }
+  return false;
+}
+function mzReset(){ MZ.cnt = [0,0,0]; MZ.anims = []; }
+function mzControls(){
+  const lv = lvlNum();
+  UI.seg('Lichtquelle', [['photon','einzelne Photonen'],['laser','Laserlicht']], () => MZ.mode, v => { MZ.mode = v; mzReset(); buildControls(); });
+  UI.slider('Glasplatte in Weg A (Phasenverschiebung)', {min:0, max:2*Math.PI, step:Math.PI/36, get:() => MZ.phase, set:v => { MZ.phase = v; mzReset(); },
+    fmt:v => lv ? `${fmt(v/Math.PI, 2)}·π` : (v < 0.1 ? 'dünn' : v > 6.1 ? 'dick' : 'mittel')});
+  UI.check('Weg A blockieren', () => MZ.blockA, v => { MZ.blockA = v; mzReset(); });
+  UI.check('Weg B blockieren', () => MZ.blockB, v => { MZ.blockB = v; mzReset(); });
+  UI.check('Zweiten Strahlteiler entfernen', () => !MZ.bs2, v => { MZ.bs2 = !v; mzReset(); });
+  if (lv === 2){
+    UI.select('Polarisationsfilter in Weg A', [['none','keiner'],['H','waagrecht ↔'],['V','senkrecht ↕']], () => MZ.polA, v => { MZ.polA = v; mzReset(); });
+    UI.select('Polarisationsfilter in Weg B', [['none','keiner'],['H','waagrecht ↔'],['V','senkrecht ↕']], () => MZ.polB, v => { MZ.polB = v; mzReset(); });
+    UI.check('Radierer: 45°-Filter vor beiden Detektoren', () => MZ.eraser, v => { MZ.eraser = v; mzReset(); });
+    UI.note('Die Photonen sind unter 45° polarisiert.');
+  }
+  if (MZ.mode === 'photon'){
+    UI.seg('Tempo', [['single','einzeln'],['slow','langsam'],['mid','schnell'],['fast','sehr schnell']], () => MZ.rate, v => MZ.rate = v);
+    UI.buttons([['1 Photon schicken', () => mzFire(), 'primary'], ['Zähler zurücksetzen', () => mzReset()]]);
+  }
+  UI.note('Tipp: Die gestrichelten Kästchen auf den Wegen antippen, um einen Weg zu blockieren.');
+}
+
+/* =====================================================================
+   Aufträge
+   ===================================================================== */
+const TASKS = [
+  [ /* Photoeffekt */
+    { n:'Welche Farbe löst Elektronen?', min:0, setup(){ Object.assign(PE, {metal:'Zn', lam:650, inten:60, U:0}); },
+      q:'Die Platte ist aus Zink. Beleuchte sie mit rotem, grünem und blauem Licht – und schließlich mit UV-Licht. Wann werden Elektronen herausgelöst?',
+      a:'Bei Zink erst mit UV-Licht (unter etwa 286 nm). Rotes Licht löst auch bei großer Helligkeit kein einziges Elektron heraus: Die Energie eines einzelnen Photons reicht nicht. Das kann man mit einer reinen Wellenvorstellung nicht erklären.' },
+    { n:'Heller oder blauer?', min:0, setup(){ Object.assign(PE, {metal:'Cs', lam:520, inten:20, U:0}); },
+      q:'Die Platte ist aus Cäsium. Mache das Licht heller. Was ändert sich – die Anzahl oder die Geschwindigkeit der Elektronen? Was passiert bei blauem Licht?',
+      a:'Mehr Licht bedeutet mehr Photonen und damit mehr Elektronen (größerer Strom) – aber nicht schnellere. Die Bewegungsenergie hängt nur von der Frequenz (Farbe) ab: E_kin = h·f − W.' },
+    { n:'Gegenspannung', min:1, setup(){ Object.assign(PE, {metal:'Cs', lam:400, inten:60, U:0}); },
+      q:'Stelle eine bremsende Spannung (Gegenspannung) ein und erhöhe sie langsam, bis gerade kein Strom mehr fließt. Vergleiche den Wert mit E_kin im Energiediagramm.',
+      a:'Die schnellsten Elektronen laufen gegen das Feld an. Sie kommen gerade nicht mehr an, wenn e·U_G = E_kin,max. Bei 400 nm und Cäsium sind das etwa 0,96 V.' },
+    { n:'Planck-Konstante bestimmen', min:2, setup(){ Object.assign(PE, {metal:'K', lam:450, inten:70, U:0, pts:[]}); },
+      q:'Miss für mindestens vier Wellenlängen die Gegenspannung, bei der der Strom gerade verschwindet, und speichere jeweils den Messpunkt. Bestimme h aus der Steigung.',
+      a:'Die Messpunkte liegen auf einer Geraden e·U_G = h·f − W. Die Steigung ist h ≈ 6,6·10⁻³⁴ J·s – für jedes Metall gleich. Der Schnittpunkt mit der f-Achse ist die Grenzfrequenz, der mit der Energieachse −W.' }
+  ],
+  [ /* Spektren */
+    { n:'Wasserstoff anregen', min:0, setup(){ Object.assign(SP, {el:'H', mode:'emission', auto:false, riddle:null, refs:false}); spReset(); },
+      q:'Tippe im Energieschema auf ein höheres Niveau. Das Elektron springt zurück und sendet dabei Licht aus. Welche Farbe entsteht beim Sprung von n = 3 auf n = 2?',
+      a:'Rot (656 nm). Jeder Sprung sendet ein Photon mit genau der Energiedifferenz der beiden Niveaus aus. Große Sprünge geben kurzwelliges Licht – Sprünge auf n = 1 liegen im UV, Sprünge auf n = 3 im Infrarot.' },
+    { n:'Fingerabdruck der Elemente', min:0, setup(){ Object.assign(SP, {el:'Ne', mode:'emission', auto:true, riddle:null, refs:true}); spReset(); },
+      q:'Schalte zwischen den Gasen um. Warum kann man ein Element an seinem Spektrum erkennen?',
+      a:'Jedes Element hat seine eigenen Energieniveaus und sendet deshalb nur ganz bestimmte Farben aus. Das Linienmuster ist so eindeutig wie ein Fingerabdruck – so weiß man, woraus Sterne bestehen.' },
+    { n:'Rätselgas', min:0, setup(){ SP.mode = 'emission'; newRiddle(); },
+      q:'In der Röhre leuchtet ein unbekanntes Gas. Vergleiche mit den Vergleichsspektren. Welches Gas ist es?',
+      a:'Man sucht das Vergleichsspektrum, bei dem alle Linien an denselben Stellen liegen. Danach „Auflösen“ drücken.' },
+    { n:'Licht durch Natriumdampf', min:1, setup(){ Object.assign(SP, {el:'Na', mode:'absorption', riddle:null, refs:true}); spReset(); },
+      q:'Weißes Licht geht durch Natriumdampf. Was fehlt im Spektrum? Vergleiche mit dem Spektrum von leuchtendem Natrium.',
+      a:'Es fehlt genau das Gelb bei 589 nm – also die Farbe, die Natrium selbst aussendet. Atome nehmen nur Photonen auf, deren Energie genau zu einem Sprung passt. So entstehen die dunklen Fraunhofer-Linien im Sonnenspektrum.' }
+  ],
+  [ /* Doppelspalt */
+    { n:'Einzelne Photonen', min:0, setup(){ Object.assign(DS, {obj:'photon', rate:'slow', open:'both', which:false, showCurve:false, run:true}); dsClear(); },
+      q:'Es kommt immer nur ein Photon nach dem anderen. Kannst du vorhersagen, wo das nächste landet?',
+      a:'Nein. Jedes Photon landet an einer zufälligen Stelle. Vorhersagbar ist nur die Wahrscheinlichkeit. Erst viele Einschläge ergeben das Streifenmuster – obwohl die Photonen einzeln kommen.' },
+    { n:'Viele Photonen', min:0, setup(){ Object.assign(DS, {obj:'photon', rate:'fast', open:'both', which:false, run:true}); dsClear(); },
+      q:'Wo landen viele Photonen, wo fast keine? Ändere Spaltabstand und Wellenlänge.',
+      a:'Es entsteht ein Interferenzmuster wie bei Wellen. Größerer Spaltabstand → engere Streifen, größere Wellenlänge → breitere Streifen.' },
+    { n:'Nur ein Spalt offen', min:0, setup(){ Object.assign(DS, {obj:'photon', rate:'fast', open:'top', which:false, run:true}); dsClear(); },
+      q:'Nur ein Spalt ist offen. Öffne danach beide. Ist das Muster mit zwei Spalten einfach die Summe von zwei Einzelspalt-Mustern?',
+      a:'Nein! Mit beiden Spalten gibt es Stellen, an denen kein Photon mehr ankommt, obwohl dort mit nur einem Spalt Photonen ankamen. Die Möglichkeiten „durch Spalt 1“ und „durch Spalt 2“ überlagern sich.' },
+    { n:'Welcher Weg?', min:0, setup(){ Object.assign(DS, {obj:'photon', rate:'mid', open:'both', which:true, run:true}); dsClear(); },
+      q:'Ein Detektor misst bei jedem Photon, durch welchen Spalt es geht. Was passiert mit dem Muster?',
+      a:'Das Interferenzmuster verschwindet. Sobald die Weginformation vorliegt, gibt es keine zwei ununterscheidbaren Möglichkeiten mehr, die sich überlagern können.' },
+    { n:'Elektronen am Doppelspalt', min:0, setup(){ Object.assign(DS, {obj:'electron', rate:'fast', open:'both', which:false, run:true}); dsClear(); },
+      q:'Statt Photonen werden Elektronen geschickt. Was beobachtest du? Ändere die Beschleunigungsspannung.',
+      a:'Auch Elektronen erzeugen ein Interferenzmuster. Ihre Wellenlänge ist λ = h/p (de Broglie). Höhere Spannung → größerer Impuls → kleinere Wellenlänge → engere Streifen.' },
+    { n:'Zeigermodell', min:1, setup(){ Object.assign(DS, {obj:'photon', rate:'mid', open:'both', which:false, pointer:true, showCurve:true, run:true}); dsClear(); },
+      q:'Tippe auf verschiedene Stellen am Schirm. Wie stehen die beiden Zeiger zueinander, wo es hell ist – und wo es dunkel ist?',
+      a:'Jeder Spalt liefert einen Zeiger, der sich mit der Weglänge dreht. Am Schirm werden die Zeiger addiert. Zeigen sie in dieselbe Richtung, ist die Summe lang (hohe Wahrscheinlichkeit); zeigen sie entgegengesetzt, heben sie sich auf (Minimum).' }
+  ],
+  [ /* Interferometer */
+    { n:'Ein Photon nach dem anderen', min:0, setup(){ Object.assign(MZ, {mode:'photon', phase:0, blockA:false, blockB:false, bs2:true, polA:'none', polB:'none', eraser:false, rate:'slow', run:true}); mzReset(); },
+      q:'Jedes Photon kann am ersten Strahlteiler Weg A oder Weg B nehmen. Welcher Detektor klickt? Warum ist das erstaunlich?',
+      a:'Es klickt immer nur Detektor 1. Würde jedes Photon zufällig einen der Wege nehmen, müssten beide Detektoren je zur Hälfte klicken. Die beiden Möglichkeiten überlagern sich: Bei D2 löschen sie sich aus, bei D1 verstärken sie sich.' },
+    { n:'Einen Weg blockieren', min:0, setup(){ Object.assign(MZ, {mode:'photon', phase:0, blockA:false, blockB:true, bs2:true, polA:'none', polB:'none', eraser:false, rate:'mid', run:true}); mzReset(); },
+      q:'Weg B ist blockiert. Wie verteilen sich jetzt die Photonen? Warum klickt jetzt auch Detektor 2?',
+      a:'Die Hälfte der Photonen wird blockiert, je ein Viertel landet bei D1 und D2. Ohne zweite Möglichkeit gibt es nichts mehr, das sich bei D2 auslöschen könnte.' },
+    { n:'Glasplatte verschieben', min:0, setup(){ Object.assign(MZ, {mode:'photon', phase:0, blockA:false, blockB:false, bs2:true, polA:'none', polB:'none', eraser:false, rate:'mid', run:true}); mzReset(); },
+      q:'Mache die Glasplatte in Weg A langsam dicker. Wie ändert sich die Verteilung auf D1 und D2? Vergleiche mit Laserlicht.',
+      a:'Die Glasplatte verzögert Weg A. Je nach Dicke landen die Photonen bei D1, bei D2 oder verteilt: P(D1) = cos²(φ/2). Einzelne Photonen ergeben auf Dauer genau die Helligkeitsverteilung des Laserlichts.' },
+    { n:'Zweiten Strahlteiler entfernen', min:0, setup(){ Object.assign(MZ, {mode:'photon', phase:0, blockA:false, blockB:false, bs2:false, polA:'none', polB:'none', eraser:false, rate:'mid', run:true}); mzReset(); },
+      q:'Ohne zweiten Strahlteiler führt Weg A nur zu D2 und Weg B nur zu D1. Wie verteilen sich die Photonen? Hat die Glasplatte noch eine Wirkung?',
+      a:'Je die Hälfte klickt bei D1 und D2, die Glasplatte ändert nichts mehr. Jetzt verrät der Detektor den Weg – und ohne zwei ununterscheidbare Möglichkeiten gibt es keine Interferenz.' },
+    { n:'Weginformation durch Polarisation', min:2, setup(){ Object.assign(MZ, {mode:'photon', phase:0, blockA:false, blockB:false, bs2:true, polA:'H', polB:'V', eraser:false, rate:'mid', run:true}); mzReset(); },
+      q:'In Weg A steht ein waagrechter, in Weg B ein senkrechter Polarisationsfilter. Was passiert mit der Interferenz? Verändere auch die Glasplatte.',
+      a:'Die Interferenz verschwindet: An der Polarisation könnte man ablesen, welchen Weg ein Photon genommen hat – auch wenn es niemand tut. D1 und D2 erhalten je ein Viertel, unabhängig von der Glasplatte.' },
+    { n:'Quantenradierer', min:2, setup(){ Object.assign(MZ, {mode:'photon', phase:0, blockA:false, blockB:false, bs2:true, polA:'H', polB:'V', eraser:true, rate:'mid', run:true}); mzReset(); },
+      q:'Zusätzlich steht vor beiden Detektoren ein 45°-Filter. Kommt die Interferenz zurück? Verändere die Glasplatte.',
+      a:'Ja: Der 45°-Filter „radiert“ die Weginformation aus, weil nach ihm beide Wege dieselbe Polarisation haben. Von den durchgelassenen Photonen landen wieder alle bei D1 (bzw. je nach Glasplatte verteilt) – allerdings bleiben insgesamt drei Viertel der Photonen in den Filtern hängen.' }
+  ]
+];
+function renderTasks(){
+  const el = $('#tasks'); el.innerHTML = '';
+  TASKS[S.st].forEach((t, k) => {
+    if (t.min > lvlNum()) return;
+    const b = document.createElement('button'); b.textContent = t.n; b.classList.toggle('on', k === S.task);
+    b.onclick = () => { S.task = k; S.showAnswer = false; t.setup(); buildControls(); renderTasks(); };
+    el.appendChild(b);
+  });
+  const info = $('#taskInfo');
+  const t = TASKS[S.st][S.task];
+  if (!t || t.min > lvlNum()){ info.innerHTML = '<p class="note">Wähle einen Auftrag oder probiere frei aus.</p>'; return; }
+  info.innerHTML = `<p class="q"><b>Auftrag:</b> ${t.q}</p>` + (S.showAnswer ? `<p class="a">${t.a}</p>` : '') + `<button class="btn" id="ansBtn">${S.showAnswer ? 'Erklärung ausblenden' : 'Erklärung zeigen'}</button>`;
+  $('#ansBtn').onclick = () => { S.showAnswer = !S.showAnswer; renderTasks(); };
+}
+
+/* =====================================================================
+   Stationen umschalten, Zeichenschleife, Eingaben
+   ===================================================================== */
+const STATIONS = [
+  { name:'Photoeffekt', controls:peControls, draw:peDraw },
+  { name:'Spektren', controls:spControls, draw:spDraw, click:spClick },
+  { name:'Doppelspalt', controls:dsControls, draw:dsDraw, click:dsClick },
+  { name:'Interferometer', controls:mzControls, draw:mzDraw, click:mzClick }
+];
+function buildControls(){ UI.clear(); $('#ctrlTitle').textContent = 'Einstellungen: ' + STATIONS[S.st].name; STATIONS[S.st].controls(); }
+function setStation(i){
+  S.st = i; S.task = -1; S.showAnswer = false;
+  for (const b of $('#stSeg').children) b.classList.toggle('on', +b.dataset.s === i);
+  buildControls(); renderTasks();
+  try { history.replaceState(null, '', '#' + ['photoeffekt','spektren','doppelspalt','interferometer'][i]); } catch(_){}
+}
+function setLevel(l){
+  S.level = l; for (const b of $('#lvlSeg').children) b.classList.toggle('on', b.dataset.v === l);
+  if (l !== 'hard'){ PE.U = Math.max(-4, PE.U); if (l === 'easy') PE.U = 0; MZ.polA = 'none'; MZ.polB = 'none'; MZ.eraser = false; }
+  if (l === 'easy') DS.pointer = false;
+  buildControls(); renderTasks();
+}
+$('#stSeg').onclick = e => { const b = e.target.closest('button'); if (b) setStation(+b.dataset.s); };
+$('#lvlSeg').onclick = e => { const b = e.target.closest('button'); if (b) setLevel(b.dataset.v); };
+$('#fsBtn').onclick = () => { const d = document; try { if (d.fullscreenElement) d.exitFullscreen(); else d.documentElement.requestFullscreen().catch(() => {}); } catch(_){} };
+let dragPointer = false;
+cv.addEventListener('pointerdown', e => {
+  const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  const st = STATIONS[S.st];
+  if (st.click && st.click(x, y) !== false && S.st === 2 && DS.pointer){ dragPointer = true; cv.setPointerCapture(e.pointerId); }
+});
+cv.addEventListener('pointermove', e => {
+  if (!dragPointer) return;
+  const r = cv.getBoundingClientRect(); dsClick(e.clientX - r.left, e.clientY - r.top);
+});
+cv.addEventListener('pointerup', () => dragPointer = false);
+window.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  if (e.key === ' '){ if (S.st === 2) dsLaunch(dsGeo()); if (S.st === 3) mzFire(); e.preventDefault(); }
+});
+let last = performance.now();
+function frame(ts){
+  const dt = Math.min(0.05, (ts - last)/1000); last = ts;
+  ctx.clearRect(0, 0, W, H);
+  STATIONS[S.st].draw(dt);
+  requestAnimationFrame(frame);
+}
+resize();
+const startHash = ['photoeffekt','spektren','doppelspalt','interferometer'].indexOf(location.hash.slice(1));
+setStation(startHash >= 0 ? startHash : 0);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

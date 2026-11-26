@@ -19,6 +19,8 @@ neuer Planet. Jede Simulation ist ein Mond ihres Themen-Planeten.
 |---|---|---|
 | `Stoßprozesse/` | `Stoss-Simulation.html` | Elastischer, plastischer (und teilelastischer) Stoß zweier Autos, gerade und schief |
 | `Vektorfelder/` | `Feldlabor.html` | Elektrische, magnetische und Gravitationsfelder als strömende Teilchen, Feldlinien, Pfeile und Äquipotentiallinien; 51 Versuche, Baukasten, eigene Funktionen, 2D- und 3D-Ansicht |
+| `Stromkreise/` | `Stromkreislabor.html` | Stromkreise bauen; Potenzial als Farbe, Höhe oder Elektronendruck; 12 Versuche, Messgeräte und Messspitzen |
+| `Quantenphysik/` | `Quantenlabor.html` | Photoeffekt, Spektren, Doppelspalt mit Einzelobjekten (mit Zeigermodell) und Mach-Zehnder-Interferometer mit Quantenradierer |
 
 ## Stoßprozesse – Stoss-Simulation.html
 
@@ -73,6 +75,52 @@ Gerechnet wird exakt mit Impulserhaltung und der Stoßzahl k: v' = (1 + k)·v_S 
 Modell: relative Einheiten (k = G = 1). Magnete werden als zwei Pole berechnet. Kondensatorplatten und
 gerade Stromleiter werden im Querschnitt gerechnet (senkrecht zur Bildebene unendlich lang, im 3D-Raumfeld daher als lange senkrechte Leiter bzw. Platten dargestellt).
 
+## Stromkreise – Stromkreislabor.html
+
+Ziel: Die Spannung als **Potenzialdifferenz** sichtbar machen – die häufigste Fehlvorstellung ist, dass Spannung eine
+Eigenschaft des Stroms sei.
+
+- **Baukasten auf einem Steckbrett:** Kabel (von Punkt zu Punkt zeichnen), Batterie, Lämpchen, Widerstand, Schalter,
+  Strom- und Spannungsmessgerät aus der Leiste aufs Brett ziehen. Antippen öffnet die Einstellungen (Spannung, Widerstand,
+  Umdrehen, Entfernen); zurück auf die Leiste ziehen löscht. Rückgängig mit Strg+Z.
+- **Drei Ansichten:**
+  - *Farbe:* Jedes Kabel hat die Farbe seines Potenzials (blau = Minuspol, rot = Pluspol). Eine Spannung ist ein
+    Farbunterschied. Über einem Kabel zeigt die Maus das Potenzial an.
+  - *Höhe:* Höhenmodell in Schrägansicht – die Batterie hebt die Ladungen an, im Lämpchen rollen sie hinunter.
+  - *Elektronengas:* Frankfurter Elektronengasmodell – viele Elektronen (hoher Druck) am Minuspol, wenige am Pluspol;
+    Lämpchen und Widerstände als Engstellen.
+- **Messspitzen:** zwei frei bewegliche Spitzen messen die Spannung zwischen beliebigen Punkten (z. B. am offenen Schalter).
+- **12 Versuche** mit Frage und Erklärung: einfacher Stromkreis, Batterie ohne Lämpchen, offener Schalter, Reihe, parallel,
+  überbrücktes Lämpchen, Kurzschluss, gemischte Schaltung, Spannungsteiler, zwei Batterien, „Wird Strom verbraucht?“, leerer Baukasten.
+- **Drei Niveaustufen:** *Einfach* ohne Zahlenwerte an Bauteilen; *Mittel* mit U und I an den Bauteilen und U = R·I;
+  *Anspruchsvoll* zusätzlich Leistung, Knotenregel (Maus auf einen Knoten) und Innenwiderstand der Batterie.
+- Lämpchen brennen bei zu hoher Leistung durch, ein Kurzschluss wird gemeldet.
+
+Modell: Knotenpotenzialverfahren; Kabel 0,0001 Ω, Lämpchen als ohmsche Widerstände (Helligkeit ∝ Leistung),
+Batterie mit sehr kleinem Innenwiderstand und Strombegrenzung bei Kurzschluss (20 A). Bezugspunkt φ = 0 ist der Minuspol.
+
+## Quantenphysik – Quantenlabor.html
+
+Vier Stationen (oben umschaltbar, auch direkt über `#photoeffekt`, `#spektren`, `#doppelspalt`, `#interferometer`),
+jeweils mit Aufträgen und Erklärungen:
+
+- **Photoeffekt:** Lampe mit einstellbarer Wellenlänge (200–800 nm) und Helligkeit, sechs Metalle, Photonen und
+  herausgelöste Elektronen, Energiediagramm (Photonenenergie, Austrittsarbeit, Bewegungsenergie). Ab *Mittel*:
+  Gegenspannung. *Anspruchsvoll:* Messpunkte speichern, Ausgleichsgerade, Bestimmung von h, Grenzfrequenz und W.
+- **Spektren:** Leuchtröhren (H, He, Na, Hg, Ne) und Absorption (weißes Licht durch Gas). Beim Wasserstoff ein
+  Energieniveauschema zum Antippen: Das Elektron fällt zurück und sendet Photonen aus (Lyman im UV, Balmer sichtbar,
+  Paschen im IR). Rätselgas mit Vergleichsspektren.
+- **Doppelspalt:** Photonen (400–700 nm) oder Elektronen (2–50 kV, λ = h/p) einzeln oder in großer Zahl; Schirm mit
+  Einschlägen, Histogramm und Wahrscheinlichkeitskurve; einen Spalt schließen; Welcher-Weg-Detektor. Ab *Mittel*:
+  Zeigermodell für einen antippbaren Punkt am Schirm.
+- **Interferometer (Mach-Zehnder):** einzelne Photonen oder Laserlicht, Glasplatte als Phasenschieber, Wege blockieren,
+  zweiten Strahlteiler entfernen, Zähler mit berechneter Wahrscheinlichkeit, Zeiger an den Detektoren. *Anspruchsvoll:*
+  Polarisationsfilter (Weginformation) und 45°-Filter als Quantenradierer.
+
+Modell: Austrittsarbeiten Cs 2,14 · K 2,29 · Na 2,36 · Zn 4,33 · Cu 4,65 · Pt 5,65 eV; Doppelspalt mit
+I ∝ cos²(π d sinθ/λ)·sinc²(π b sinθ/λ) und Abstand 1 m; Interferometer mit Strahlteiler-Amplituden 1/√2 und i/√2,
+Photonen unter 45° polarisiert. Die Stromstärke am Photoeffekt ist schematisch (ein Elektron je absorbiertem Photon).
+
 ## Navigation
 
-In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“ oder „Stoßprozesse“) zurück zur Startseite `index.html`.
+In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“, „Stromkreislabor“ oder „Quantenlabor“) zurück zur Startseite `index.html`.
