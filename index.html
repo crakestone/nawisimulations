@@ -372,7 +372,7 @@ list.querySelector('.filters').addEventListener('click', e => {
   }
   function geo(){
     const n = planets.length, Rn = n ? planets[n-1].R : 0.6;
-    const mx = narrow ? 30 : clamp((free.x1 - free.x0)*0.12, 30, 64), myT = 44, myB = 38;      /* Platz für Planeten und Beschriftungen außen */
+    const mx = narrow ? 30 : clamp((free.x1 - free.x0)*0.12, 30, 64), myT = 50, myB = 40;      /* Platz für Planeten und Beschriftungen außen */
     const A = Math.max(60, (free.x1 - free.x0)/2 - mx), B = Math.max(40, (free.y1 - free.y0 - myT - myB)/2);
     ecc = clamp(B/A, 0.5, 0.7);           /* viel Höhe frei → Bahnen steiler, Planeten stehen weiter auseinander */
     const S = Math.min(A/Rn, B/(Rn*ecc), 230/Rn);
@@ -412,7 +412,11 @@ list.querySelector('.filters').addEventListener('click', e => {
     return { x0: b.x0+dx, y0: b.y0+dy, x1: b.x1+dx, y1: b.y1+dy, dx, dy };
   }
   function labelBoxes(x, y, off, nw, sw){
-    return [ fit(box(x + off[0], y + off[1], nw + 8, NAME_H)), fit(box(x + off[2], y + off[3], sw + 8, SUB_H)) ];
+    const n = box(x + off[0], y + off[1], nw + 8, NAME_H), s = box(x + off[2], y + off[3], sw + 8, SUB_H);
+    /* Beide Zeilen gemeinsam verschieben, damit sie sich am Rand nicht übereinanderschieben */
+    const u = fit({ x0: Math.min(n.x0, s.x0), y0: Math.min(n.y0, s.y0), x1: Math.max(n.x1, s.x1), y1: Math.max(n.y1, s.y1) });
+    const sh = b => ({ x0: b.x0+u.dx, y0: b.y0+u.dy, x1: b.x1+u.dx, y1: b.y1+u.dy, dx: u.dx, dy: u.dy });
+    return [ sh(n), sh(s) ];
   }
   function placeLabels(cx, cy, sr, smooth){
     const sun = box(cx, cy, sr*4.2, sr*4.2);
@@ -426,9 +430,9 @@ list.querySelector('.filters').addEventListener('click', e => {
       let best = -1, bestC = Infinity;
       cs.forEach((c, k) => {
         const bx = labelBoxes(x, y, [c.n[0], c.n[1], c.s[0], c.s[1]], p.nw, p.sw);
-        let cost = c.pref*25 + (k === p.cand ? 0 : 120);
+        let cost = c.pref*25 + (k === p.cand ? 0 : 90);
         for (const b of bx){
-          for (const q of placed) cost += 4*ovl(b, q);
+          for (const q of placed) cost += 8*ovl(b, q);
           discs.forEach((q, j) => { if (j !== i) cost += 3*ovl(b, q); });
           cost += 6*ovl(b, sun);
           for (const q of textRects) cost += 6*ovl(b, q);
