@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stoßprozesse – elastischer und plastischer Stoß</title>
+<style>
+  :root{
+    --c1:#e8741e; --c1d:#b5530b; --c2:#2a6fdb; --c2d:#1a4c9e;
+    --ink:#1d2230; --muted:#5b6477; --line:#d9dde6; --bg:#f4f6fa; --panel:#ffffff;
+    --accent:#0f766e; --warn:#9a3412; --warnbg:#fff4e6;
+    font-size:17px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.35}
+  header{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding:.6rem 1rem;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+  header h1{font-size:1.25rem;margin:0;flex:1 1 auto;white-space:nowrap}
+  header h1 small{font-weight:400;color:var(--muted);font-size:.85rem;margin-left:.4rem}
+  .lvl{display:flex;align-items:center;gap:.5rem}
+  .lvl > span{color:var(--muted);font-size:.9rem}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#eef1f6}
+  .seg button{border:0;background:transparent;padding:.42rem .75rem;font:inherit;font-size:.92rem;cursor:pointer;color:var(--ink)}
+  .seg button + button{border-left:1px solid var(--line)}
+  .seg button.on{background:var(--accent);color:#fff;font-weight:600}
+  .seg.wide{display:flex}
+  .seg.wide button{flex:1 1 0;padding:.42rem .3rem}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:.45rem .8rem;font:inherit;font-size:.95rem;cursor:pointer}
+  .btn:hover{background:#f0f3f8}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600;min-width:7.5rem}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .layout{display:grid;grid-template-columns:330px minmax(0,1fr);gap:1rem;padding:1rem;align-items:start}
+  aside{display:flex;flex-direction:column;gap:.8rem}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.8rem .9rem}
+  .card h2{font-size:1rem;margin:0 0 .55rem;display:flex;align-items:center;gap:.45rem}
+  .card h3{font-size:.95rem;margin:.2rem 0 .5rem}
+  .dot{width:.85rem;height:.85rem;border-radius:50%;display:inline-block}
+  .dot.c1{background:var(--c1)} .dot.c2{background:var(--c2)}
+  .field{margin:.45rem 0 .7rem}
+  .field label{display:flex;justify-content:space-between;align-items:baseline;font-size:.92rem;margin-bottom:.15rem}
+  .field label span.hint{color:var(--muted);font-size:.8rem}
+  .row{display:flex;gap:.55rem;align-items:center}
+  .row input[type=range]{flex:1 1 auto;min-width:0}
+  .num{width:6.2rem;font:inherit;font-size:.95rem;padding:.25rem .35rem;border:1px solid var(--line);border-radius:8px;text-align:right}
+  .unit{min-width:2.6rem;color:var(--muted);font-size:.9rem}
+  input[type=range]{accent-color:var(--accent);height:1.6rem}
+  #car1 input[type=range]{accent-color:var(--c1)}
+  #car2 input[type=range]{accent-color:var(--c2)}
+  select{font:inherit;font-size:.95rem;padding:.35rem;border-radius:8px;border:1px solid var(--line);width:100%;background:#fff}
+  .check{display:flex;align-items:center;gap:.5rem;margin:.35rem 0;font-size:.93rem;cursor:pointer}
+  .check input{width:1.1rem;height:1.1rem;accent-color:var(--accent)}
+  .small{font-size:.82rem;color:var(--muted);margin:.3rem 0 0}
+  .stage{display:flex;flex-direction:column;gap:.8rem;min-width:0}
+  .player{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+  .player .time{font-variant-numeric:tabular-nums;min-width:7.5rem;font-weight:600}
+  .player input[type=range]{flex:1 1 200px}
+  .player select{width:auto}
+  .viewbox{position:relative;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .viewbox .tag{position:absolute;left:.6rem;top:.45rem;background:rgba(255,255,255,.85);padding:.1rem .5rem;border-radius:8px;font-size:.85rem;font-weight:600;color:var(--muted);pointer-events:none}
+  .viewbox canvas{display:block;width:100%;height:100%}
+  #boxSide{height:230px} #boxTop{height:180px}
+  #tableBox{overflow-x:auto}
+  body.d2 #boxTop{height:min(560px,62vh)}
+  .msg{background:var(--warnbg);color:var(--warn);border:1px solid #fed7aa;border-radius:12px;padding:.55rem .8rem;font-size:.95rem}
+  .note{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;border-radius:12px;padding:.55rem .8rem;font-size:.95rem}
+  .results{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:.8rem}
+  .results .full{grid-column:1 / -1}
+  table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:.95rem}
+  th,td{white-space:nowrap;padding:.35rem .55rem;border-bottom:1px solid var(--line);text-align:right;vertical-align:top}
+  th:first-child,td:first-child{text-align:left}
+  thead th{font-size:.85rem;color:var(--muted);font-weight:600}
+  thead tr.grp th{color:var(--ink);font-size:.92rem;border-bottom:2px solid var(--line);text-align:center}
+  td.c1{color:var(--c1d)} td.c2{color:var(--c2d)} td.sum{font-weight:700}
+  td.sep, th.sep{border-left:2px solid var(--line)}
+  td .sub{display:block;font-size:.78rem;color:var(--muted)}
+  .hidden-val{color:#aab;font-weight:700}
+  .ebar{display:grid;grid-template-columns:5.2rem 1fr 6.5rem;align-items:center;gap:.5rem;margin:.45rem 0;font-size:.9rem}
+  .ebar .bar{height:1.5rem;background:#f0f2f6;border-radius:6px;overflow:hidden;display:flex}
+  .ebar .seg1{background:var(--c1)} .ebar .seg2{background:var(--c2)}
+  .ebar .loss{background:repeating-linear-gradient(45deg,#9aa3b2 0 6px,#c5cbd6 6px 12px)}
+  .ebar .val{text-align:right;font-variant-numeric:tabular-nums}
+  .legend{display:flex;gap:1rem;flex-wrap:wrap;font-size:.82rem;color:var(--muted)}
+  .legend i{display:inline-block;width:.9rem;height:.9rem;border-radius:3px;vertical-align:-2px;margin-right:.3rem}
+  #pCanvasBox{height:230px;position:relative}
+  #pCanvasBox canvas{width:100%;height:100%;display:block}
+  .formula{font-size:1rem;line-height:1.9}
+  .formula p{margin:.25rem 0}
+  .formula .eq{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:1.1rem}
+  .frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 .15rem;line-height:1.25}
+  .frac > span:first-child{border-bottom:1.5px solid currentColor;padding:0 .2rem}
+  .frac > span:last-child{padding:0 .2rem}
+  .res{font-weight:700;color:var(--accent)}
+  .obs{font-size:1rem}
+  .obs li{margin:.2rem 0}
+  .reveal{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+  .only-1d{} body.d2 .only-1d{display:none!important}
+  body:not(.d2) .only-2d{display:none!important}
+  body:not(.lvl-hard) .only-hard{display:none!important}
+  body.lvl-easy .not-easy{display:none!important}
+  footer{color:var(--muted);font-size:.8rem;padding:0 1rem 1rem}
+  @media (max-width: 980px){
+    .layout{grid-template-columns:1fr}
+    .results{grid-template-columns:1fr}
+    header h1{white-space:normal}
+  }
+</style>
+</head>
+<body class="lvl-mid">
+<header>
+  <h1>Stoßprozesse <small>elastischer &amp; plastischer Stoß</small></h1>
+  <div class="lvl"><span>Niveau:</span>
+    <div class="seg" id="segLevel">
+      <button data-v="easy">Einfach</button><button data-v="mid">Mittel</button><button data-v="hard">Anspruchsvoll</button>
+    </div>
+  </div>
+  <button class="btn" id="btnFull" title="Vollbild (für den Beamer)">⛶ Vollbild</button>
+</header>
+
+<div class="layout">
+  <aside>
+    <div class="card">
+      <h2>Versuch</h2>
+      <div class="field">
+        <label for="preset">Beispiel laden</label>
+        <select id="preset"></select>
+      </div>
+      <div class="field">
+        <label>Fahrzeuge</label>
+        <div class="seg wide" id="segRange"><button data-v="labor">Modellautos (Labor)</button><button data-v="strasse">Echte Fahrzeuge</button></div>
+      </div>
+      <div class="field">
+        <label>Stoßrichtung</label>
+        <div class="seg wide" id="segDim"><button data-v="1d">Gerader Stoß</button><button data-v="2d">Schiefer Stoß</button></div>
+      </div>
+      <div class="field">
+        <label>Stoßart</label>
+        <div class="seg wide" id="segType"><button data-v="elastisch">elastisch</button><button data-v="teil" class="only-hard">teilelastisch</button><button data-v="plastisch">plastisch</button></div>
+      </div>
+      <div class="field only-hard" id="kField">
+        <label for="kRange">Stoßzahl k <span class="hint">0 = plastisch … 1 = elastisch</span></label>
+        <div class="row"><input type="range" id="kRange" min="0" max="1" step="0.01"><input class="num" id="kNum" type="number" min="0" max="1" step="0.01"><span class="unit"></span></div>
+      </div>
+    </div>
+
+    <div class="card" id="car1">
+      <h2><span class="dot c1"></span>Auto 1</h2>
+      <div class="field">
+        <label for="m1Range">Masse m₁</label>
+        <div class="row"><input type="range" id="m1Range"><input class="num" id="m1Num" type="number"><span class="unit">kg</span></div>
+      </div>
+      <div class="field">
+        <label for="v1Range">Geschwindigkeit v₁ <span class="hint only-1d">negativ = nach links</span><span class="hint only-2d">nach rechts</span></label>
+        <div class="row"><input type="range" id="v1Range"><input class="num" id="v1Num" type="number"><span class="unit vunit">m/s</span></div>
+      </div>
+    </div>
+
+    <div class="card" id="car2">
+      <h2><span class="dot c2"></span>Auto 2</h2>
+      <div class="field">
+        <label for="m2Range">Masse m₂</label>
+        <div class="row"><input type="range" id="m2Range"><input class="num" id="m2Num" type="number"><span class="unit">kg</span></div>
+      </div>
+      <div class="field">
+        <label for="v2Range">Geschwindigkeit v₂ <span class="hint only-1d">negativ = nach links</span></label>
+        <div class="row"><input type="range" id="v2Range"><input class="num" id="v2Num" type="number"><span class="unit vunit">m/s</span></div>
+      </div>
+      <div class="field only-2d">
+        <label for="aRange">Stoßwinkel α <span class="hint">zwischen den Fahrtrichtungen</span></label>
+        <div class="row"><input type="range" id="aRange" min="0" max="180" step="1"><input class="num" id="aNum" type="number" min="0" max="180" step="1"><span class="unit">°</span></div>
+        <p class="small">90° = Kreuzung, 180° = frontal, 0° = Auffahren</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Anzeige</h2>
+      <div class="field only-1d">
+        <label>Ansicht</label>
+        <div class="seg wide" id="segView"><button data-v="beide">beide</button><button data-v="seite">von der Seite</button><button data-v="oben">von oben</button></div>
+      </div>
+      <div class="field">
+        <label>Pfeile an den Autos</label>
+        <div class="seg wide" id="segArrows"><button data-v="v">Geschwindigkeit</button><button data-v="p">Impuls</button><button data-v="none">keine</button></div>
+      </div>
+      <label class="check"><input type="checkbox" id="chkPause"> beim Stoß anhalten</label>
+      <label class="check"><input type="checkbox" id="chkHide"> Ergebnisse zuerst verbergen (Übungsmodus)</label>
+      <label class="check only-hard"><input type="checkbox" id="chkCM"> Schwerpunkt S anzeigen</label>
+      <label class="check only-hard"><input type="checkbox" id="chkCMFrame"> Kamera fährt mit dem Schwerpunkt mit (Schwerpunktsystem)</label>
+    </div>
+  </aside>
+
+  <section class="stage">
+    <div class="card player">
+      <button class="btn primary" id="btnPlay">▶ Start</button>
+      <button class="btn" id="btnReset" title="Zurück zum Anfang (Taste R)">⟲ Zurück</button>
+      <select id="selSpeed" title="Abspielgeschwindigkeit">
+        <option value="1">Echtzeit</option>
+        <option value="0.5">Zeitlupe ½</option>
+        <option value="0.25" selected>Zeitlupe ¼</option>
+        <option value="0.1">Zeitlupe 1/10</option>
+      </select>
+      <input type="range" id="tRange" min="0" max="1" step="0.001" title="Zeit">
+      <span class="time" id="tLabel">t = 0 s</span>
+    </div>
+    <div id="msgBox" class="msg" hidden></div>
+    <div class="viewbox only-1d" id="boxSide"><span class="tag">Ansicht von der Seite</span><canvas id="cSide"></canvas></div>
+    <div class="viewbox" id="boxTop"><span class="tag">Ansicht von oben</span><canvas id="cTop"></canvas></div>
+    <div id="noteBox" class="note" hidden></div>
+
+    <div class="results">
+      <div class="card full" id="revealCard" hidden>
+        <div class="reveal"><strong>Übungsmodus:</strong> Berechne zuerst die Werte nach dem Stoß. <button class="btn primary" id="btnReveal">Ergebnisse aufdecken</button></div>
+      </div>
+      <div class="card full">
+        <h2>Werte vor und nach dem Stoß</h2>
+        <div id="tableBox"></div>
+        <p class="small" id="tableHint"></p>
+      </div>
+      <div class="card">
+        <h2>Impulsdiagramm</h2>
+        <div id="pCanvasBox"><canvas id="cP"></canvas></div>
+        <p class="small" id="pHint"></p>
+      </div>
+      <div class="card not-easy" id="energyCard">
+        <h2>Bewegungsenergie</h2>
+        <div id="energyBox"></div>
+      </div>
+      <div class="card" id="obsCard">
+        <h2>Beobachtung</h2>
+        <ul class="obs" id="obsList"></ul>
+      </div>
+      <div class="card full">
+        <h2>So wird gerechnet</h2>
+        <div class="formula" id="formulaBox"></div>
+      </div>
+    </div>
+  </section>
+</div>
+<footer>Tasten: Leertaste = Start/Pause, R = zurück. Modell: Die Fahrzeuge werden wie Massepunkte behandelt (zentraler Stoß, keine Reibung, keine Drehung).</footer>
+
+<script>
+"use strict";
+/* =====================================================================
+   Einstellungen und Zustand
+   ===================================================================== */
+const RANGES = {
+  labor:   { mMin:0.1, mMax:5,     mStep:0.05, vMax:5,       vStep:0.05, vUnit:'m/s',  vFac:1,   baseW:2,  log:false },
+  strasse: { mMin:500, mMax:40000, mStep:10,   vMax:150/3.6, vStep:1/3.6, vUnit:'km/h', vFac:3.6, baseW:40, log:true }
+};
+
+const S = {
+  level:'mid', range:'labor', dim:'1d', type:'elastisch', k:0.5,
+  m1:1, m2:1, v1:0.8, v2:0, alpha:90,
+  view:'beide', arrows:'v', pauseAtHit:false, hide:false, revealed:false,
+  showCM:false, cmFrame:false,
+  speed:0.25, playing:false, t:0, pausedAtHit:false
+};
+
+const PRESETS = [
+  { group:'Modellautos (Labor)', items:[
+    { name:'Wagen stößt ruhenden Wagen (gleiche Masse)', range:'labor', dim:'1d', type:'elastisch', m1:1, m2:1, v1:0.8, v2:0 },
+    { name:'Frontal, gleiche Massen', range:'labor', dim:'1d', type:'elastisch', m1:1, m2:1, v1:0.6, v2:-0.6 },
+    { name:'Schwerer Wagen trifft leichten', range:'labor', dim:'1d', type:'elastisch', m1:3, m2:0.5, v1:0.6, v2:0 },
+    { name:'Leichter Wagen trifft schweren', range:'labor', dim:'1d', type:'elastisch', m1:0.5, m2:3, v1:0.8, v2:0 },
+    { name:'Auffahren, Wagen bleiben kleben', range:'labor', dim:'1d', type:'plastisch', m1:1, m2:2, v1:1.0, v2:0.25 },
+    { name:'Frontal, gleicher Impuls → Stillstand', range:'labor', dim:'1d', type:'plastisch', m1:2, m2:1, v1:0.4, v2:-0.8 },
+    { name:'Schiefer Stoß unter 90°', range:'labor', dim:'2d', type:'elastisch', m1:1, m2:1, v1:0.6, v2:0.6, alpha:90 }
+  ]},
+  { group:'Echte Fahrzeuge', items:[
+    { name:'Auffahrunfall an der Ampel', range:'strasse', dim:'1d', type:'plastisch', m1:1300, m2:1500, v1:50/3.6, v2:0 },
+    { name:'Frontalzusammenstoß PKW gegen PKW', range:'strasse', dim:'1d', type:'plastisch', m1:1400, m2:1400, v1:70/3.6, v2:-70/3.6 },
+    { name:'Kleinwagen gegen LKW (frontal)', range:'strasse', dim:'1d', type:'plastisch', m1:1000, m2:12000, v1:80/3.6, v2:-40/3.6 },
+    { name:'Kreuzungsunfall (90°)', range:'strasse', dim:'2d', type:'plastisch', m1:1200, m2:1600, v1:50/3.6, v2:40/3.6, alpha:90 },
+    { name:'Gedankenexperiment: PKW elastisch gegen LKW', range:'strasse', dim:'1d', type:'elastisch', m1:1300, m2:12000, v1:50/3.6, v2:0 }
+  ]}
+];
+
+/* =====================================================================
+   Hilfsfunktionen
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const clamp = (x,a,b) => Math.max(a, Math.min(b, x));
+const add = (a,b) => [a[0]+b[0], a[1]+b[1]];
+const sub = (a,b) => [a[0]-b[0], a[1]-b[1]];
+const mul = (a,k) => [a[0]*k, a[1]*k];
+const dot = (a,b) => a[0]*b[0] + a[1]*b[1];
+const len = a => Math.hypot(a[0], a[1]);
+const rot = (a,th) => [a[0]*Math.cos(th) - a[1]*Math.sin(th), a[0]*Math.sin(th) + a[1]*Math.cos(th)];
+const MINUS = '−';
+
+const nfCache = {};
+function nf(d){ return nfCache[d] || (nfCache[d] = new Intl.NumberFormat('de-AT', {minimumFractionDigits:d, maximumFractionDigits:d})); }
+function fmt(x, d){
+  if (!isFinite(x)) return '–';
+  if (Math.abs(x) < 0.5*Math.pow(10,-d)) x = 0;
+  const s = nf(d).format(Math.abs(x));
+  return (x < 0 ? MINUS : '') + s;
+}
+function autoDigits(x){ const a = Math.abs(x); return a >= 100 ? 0 : a >= 10 ? 1 : 2; }
+function fmtA(x){ return fmt(x, autoDigits(x)); }
+/* Zahl in Formeln: negative Werte in Klammern */
+function fz(x, d){ const s = fmt(x, d); return s.startsWith(MINUS) ? '(' + s + ')' : s; }
+function frac(a,b){ return `<span class="frac"><span>${a}</span><span>${b}</span></span>`; }
+
+function R(){ return RANGES[S.range]; }
+function vDigits(){ return S.range === 'labor' ? 2 : 1; }
+/* Geschwindigkeit in Anzeigeeinheit */
+function vDisp(v){ return v * R().vFac; }
+function fmtV(v){ return fmt(vDisp(v), vDigits()); }
+function mDigits(){ return S.range === 'labor' ? 2 : 0; }
+function fmtM(m){ return fmt(m, mDigits()); }
+function energyUnit(maxE){ return maxE >= 10000 ? {f:1/1000, u:'kJ'} : {f:1, u:'J'}; }
+
+/* =====================================================================
+   Fahrzeuge: Abmessungen abhängig von Masse / Wertebereich
+   ===================================================================== */
+function carSpec(m){
+  if (S.range === 'labor') return { kind:'cart', L:0.28, W:0.12, H:0.06, r:0.016 };
+  if (m < 1100)  return { kind:'car',   L:3.7, W:1.65, H:1.45, r:0.30, label:'Kleinwagen' };
+  if (m < 2300)  return { kind:'car',   L:4.6, W:1.82, H:1.48, r:0.33, label:'PKW' };
+  if (m < 4500)  return { kind:'van',   L:5.8, W:2.0,  H:2.45, r:0.36, label:'Transporter' };
+  return { kind:'truck', L:9.5, W:2.5, H:3.5, r:0.50, label:'LKW' };
+}
+
+/* Überlappung zweier gedrehter Rechtecke (Trennungsachsen-Test) */
+function corners(c, th, L, W){
+  const ex = [Math.cos(th)*L/2, Math.sin(th)*L/2], ey = [-Math.sin(th)*W/2, Math.cos(th)*W/2];
+  return [add(add(c,ex),ey), add(sub(c,ex),ey), sub(sub(c,ex),ey), sub(add(c,ex),ey)];
+}
+function rectsOverlap(c1,t1,a,c2,t2,b){
+  const p1 = corners(c1,t1,a.L,a.W), p2 = corners(c2,t2,b.L,b.W);
+  const axes = [[Math.cos(t1),Math.sin(t1)],[-Math.sin(t1),Math.cos(t1)],[Math.cos(t2),Math.sin(t2)],[-Math.sin(t2),Math.cos(t2)]];
+  for (const ax of axes){
+    let mn1=Infinity,mx1=-Infinity,mn2=Infinity,mx2=-Infinity;
+    for (const p of p1){ const d=dot(p,ax); mn1=Math.min(mn1,d); mx1=Math.max(mx1,d); }
+    for (const p of p2){ const d=dot(p,ax); mn2=Math.min(mn2,d); mx2=Math.max(mx2,d); }
+    if (mx1 < mn2 - 1e-9 || mx2 < mn1 - 1e-9) return false;
+  }
+  return true;
+}
+/* Abstand der Mittelpunkte (entlang û), bei dem sich die Fahrzeuge gerade berühren */
+function contactDistance(a,t1,b,t2,uhat){
+  let lo = 0, hi = a.L + b.L + a.W + b.W;
+  for (let i=0;i<50;i++){
+    const mid = (lo+hi)/2;
+    if (rectsOverlap([0,0],t1,a, mul(uhat,mid),t2,b)) lo = mid; else hi = mid;
+  }
+  return hi;
+}
+
+/* =====================================================================
+   Physik
+   ===================================================================== */
+let RES = null;
+function compute(){
+  const m1 = S.m1, m2 = S.m2, M = m1 + m2;
+  const a = S.alpha * Math.PI/180;
+  const v1 = [S.v1, 0];
+  const v2 = S.dim === '1d' ? [S.v2, 0] : [S.v2*Math.cos(a), S.v2*Math.sin(a)];
+  const e = S.type === 'elastisch' ? 1 : S.type === 'plastisch' ? 0 : S.k;
+  const vS = mul(add(mul(v1,m1), mul(v2,m2)), 1/M);
+  const u = sub(v1, v2);
+  const collide = S.dim === '1d' ? (S.v1 - S.v2 > 1e-9) : (len(u) > 1e-9);
+
+  let w1 = v1, w2 = v2;
+  if (collide){
+    /* v' = vS − k·(v − vS)  (k=1: elastisch, k=0: plastisch) */
+    w1 = sub(vS, mul(sub(v1,vS), e));
+    w2 = sub(vS, mul(sub(v2,vS), e));
+  }
+  const c1 = carSpec(m1), c2 = carSpec(m2);
+  let th1, th2;
+  if (S.dim === '1d'){
+    th1 = S.v1 < 0 ? Math.PI : 0;
+    th2 = S.v2 > 0 ? 0 : Math.PI;
+  } else { th1 = 0; th2 = a; }
+
+  const p1 = mul(v1,m1), p2 = mul(v2,m2), q1 = mul(w1,m1), q2 = mul(w2,m2);
+  const E1 = 0.5*m1*dot(v1,v1), E2 = 0.5*m2*dot(v2,v2), F1 = 0.5*m1*dot(w1,w1), F2 = 0.5*m2*dot(w2,w2);
+  const mu = m1*m2/M;
+  const dE = collide ? 0.5*mu*(1-e*e)*dot(u,u) : 0;
+
+  /* Sichtbereich und Zeitfenster */
+  const vmax = Math.max(len(v1), len(v2));
+  let W = Math.max(R().baseW, 3.5*(c1.L + c2.L));
+  let Tpre = vmax > 1e-9 ? 0.36*W/vmax : 2;
+  if (Tpre < 1.0){ Tpre = 1.0; W = vmax*Tpre/0.36; }
+  if (Tpre > 8) Tpre = 8;
+  const vmaxA = Math.max(len(w1), len(w2));
+  const Tpost = vmaxA > 1e-9 ? clamp(0.5*W/vmaxA, 1.5, 8) : 2;
+
+  let r1c, r2c, uhat = [1,0], D = 0, cp = [0,0];
+  if (collide){
+    uhat = mul(u, 1/len(u));
+    D = contactDistance(c1,th1,c2,th2,uhat);
+    r1c = mul(uhat, -D*m2/M);
+    r2c = mul(uhat,  D*m1/M);
+    /* schiefer Stoß: Auto 1 fährt auf der x-Achse, Auto 2 auf einer Geraden durch den Ursprung
+       (Kreuzungsmittelpunkt). Relative Lage beim Kontakt bleibt r1 − r2 = −D·û. */
+    if (S.dim === '2d' && Math.abs(Math.sin(a)) > 0.05){
+      const s2 = D*uhat[1]/Math.sin(a);
+      r2c = [s2*Math.cos(a), s2*Math.sin(a)];
+      r1c = [r2c[0] - D*uhat[0], 0];
+    }
+    const h = (c,th) => Math.abs(Math.cos(th - Math.atan2(uhat[1],uhat[0])))*c.L/2 + Math.abs(Math.sin(th - Math.atan2(uhat[1],uhat[0])))*c.W/2;
+    const h1 = h(c1,th1), h2 = h(c2,th2);
+    cp = add(r1c, mul(uhat, D*h1/(h1+h2)));
+  } else {
+    r1c = [-0.18*W, 0]; r2c = [0.18*W, 0];
+    if (S.dim === '2d'){ r1c = [-0.18*W, -c1.W]; r2c = [0.18*W, c2.W]; }
+  }
+  const tStart = collide ? -Tpre : 0;
+  const tEnd = Tpost;
+
+  RES = { m1,m2,M,v1,v2,w1,w2,vS,u,e,mu,collide,c1,c2,th1,th2,p1,p2,q1,q2,E1,E2,F1,F2,dE,
+          W,tStart,tEnd,r1c,r2c,uhat,D,cp };
+  return RES;
+}
+function posAt(i, t){
+  const r = i===1 ? RES.r1c : RES.r2c;
+  const v = t < 0 || !RES.collide ? (i===1 ? RES.v1 : RES.v2) : (i===1 ? RES.w1 : RES.w2);
+  return add(r, mul(v, t));
+}
+function cmAt(t){
+  return mul(add(mul(posAt(1,t),RES.m1), mul(posAt(2,t),RES.m2)), 1/RES.M);
+}
+
+/* =====================================================================
+   Bedienelemente
+   ===================================================================== */
+function setupSeg(id, key, after, resetsTime = true){
+  const el = $(id);
+  el.addEventListener('click', ev => {
+    const b = ev.target.closest('button'); if (!b) return;
+    S[key] = b.dataset.v;
+    if (after) after();
+    refreshAll(resetsTime);
+  });
+}
+function markSegs(){
+  const map = { segLevel:'level', segRange:'range', segDim:'dim', segType:'type', segView:'view', segArrows:'arrows' };
+  for (const id in map) for (const b of $(id).querySelectorAll('button')) b.classList.toggle('on', b.dataset.v === S[map[id]]);
+}
+
+/* Massenregler: Labor linear, echte Fahrzeuge logarithmisch */
+function mToSlider(m){ const r=R(); return r.log ? 1000*Math.log(m/r.mMin)/Math.log(r.mMax/r.mMin) : m; }
+function sliderToM(x){
+  const r=R();
+  if (!r.log) return Math.round(x/r.mStep)*r.mStep;
+  const m = r.mMin*Math.pow(r.mMax/r.mMin, x/1000);
+  const step = m < 2000 ? 10 : m < 10000 ? 50 : 100;
+  return Math.round(m/step)*step;
+}
+function syncInputs(){
+  const r = R();
+  for (const i of [1,2]){
+    const mr = $('m'+i+'Range'), mn = $('m'+i+'Num'), vr = $('v'+i+'Range'), vn = $('v'+i+'Num');
+    if (r.log){ mr.min=0; mr.max=1000; mr.step=1; } else { mr.min=r.mMin; mr.max=r.mMax; mr.step=r.mStep; }
+    mn.min=r.mMin; mn.max=r.mMax; mn.step=r.mStep;
+    mr.value = mToSlider(S['m'+i]); mn.value = +S['m'+i].toFixed(mDigits());
+    const vmaxD = r.vMax*r.vFac, stepD = r.vStep*r.vFac;
+    vr.min = S.dim==='1d' ? -vmaxD : 0; vr.max = vmaxD; vr.step = +stepD.toFixed(3);
+    vn.min = vr.min; vn.max = vr.max; vn.step = vr.step;
+    const vd = +(S['v'+i]*r.vFac).toFixed(vDigits());
+    vr.value = vd; vn.value = vd;
+  }
+  for (const el of document.querySelectorAll('.vunit')) el.textContent = r.vUnit;
+  $('aRange').value = S.alpha; $('aNum').value = S.alpha;
+  $('kRange').value = S.k; $('kNum').value = S.k;
+  $('chkPause').checked = S.pauseAtHit; $('chkHide').checked = S.hide;
+  $('chkCM').checked = S.showCM; $('chkCMFrame').checked = S.cmFrame;
+}
+function bindNumber(i, kind){
+  const rangeEl = $(kind+i+'Range'), numEl = $(kind+i+'Num');
+  const apply = (raw, fromSlider) => {
+    const r = R();
+    let x = parseFloat(String(raw).replace(',','.'));
+    if (!isFinite(x)) return;
+    if (kind === 'm'){
+      let m = fromSlider ? sliderToM(x) : x;
+      S['m'+i] = clamp(m, r.mMin, r.mMax);
+    } else {
+      let v = x / r.vFac;
+      const lo = S.dim==='1d' ? -r.vMax : 0;
+      S['v'+i] = clamp(v, lo, r.vMax);
+    }
+    refreshAll(true, fromSlider ? numEl : rangeEl);
+  };
+  rangeEl.addEventListener('input', () => apply(rangeEl.value, true));
+  numEl.addEventListener('change', () => apply(numEl.value, false));
+}
+
+function refreshAll(paramsChanged){
+  if (paramsChanged){ S.revealed = false; S.playing = false; S.pausedAtHit = false; }
+  if (S.level !== 'hard' && S.type === 'teil') S.type = 'elastisch';
+  if (S.level !== 'hard'){ S.cmFrame = false; S.showCM = false; }
+  document.body.classList.toggle('d2', S.dim === '2d');
+  document.body.classList.remove('lvl-easy','lvl-mid','lvl-hard');
+  document.body.classList.add('lvl-' + S.level);
+  $('kField').style.display = (S.level==='hard' && S.type==='teil') ? '' : 'none';
+  const showSide = S.dim==='1d' && S.view !== 'oben', showTop = S.dim==='2d' || S.view !== 'seite';
+  $('boxSide').style.display = showSide ? '' : 'none';
+  $('boxTop').style.display = showTop ? '' : 'none';
+  if (S.dim==='1d') $('boxTop').style.height = S.view==='oben' ? '300px' : '';
+  else $('boxTop').style.height = '';
+  if (S.dim==='1d') $('boxSide').style.height = S.view==='seite' ? '330px' : '';
+  markSegs();
+  syncInputs();
+  compute();
+  if (paramsChanged) S.t = RES.tStart;
+  const tr = $('tRange'); tr.min = RES.tStart; tr.max = RES.tEnd; tr.value = S.t;
+  updatePlayButton();
+  renderResults();
+  draw();
+}
+
+/* =====================================================================
+   Ergebnisse: Tabelle, Energie, Formeln, Beobachtungen
+   ===================================================================== */
+function hiddenNow(){ return S.hide && !S.revealed && RES.collide; }
+function Q(){ return '<span class="hidden-val">?</span>'; }
+
+function dirArrow(vec){
+  const ang = Math.atan2(vec[1], vec[0])*180/Math.PI;
+  return `<span style="display:inline-block;transform:rotate(${-ang}deg)">→</span>`;
+}
+function vecAngle(vec){ return Math.atan2(vec[1], vec[0])*180/Math.PI; }
+
+/* Anzeige einer vektoriellen Größe in der Tabelle */
+function cellVec(vec, kind){
+  const isV = kind === 'v';
+  const scal = isV ? (x => fmtV(x)) : (x => fmtA(x));
+  const unit = isV ? R().vUnit : 'kg·m/s';
+  const mag = len(vec);
+  const sub2 = (isV && S.range==='strasse') ? `<span class="sub">${S.dim==='1d' && S.level!=='easy' ? fmt(vec[0],2) : fmt(mag,2)} m/s</span>` : '';
+  if (S.dim === '1d'){
+    if (S.level === 'easy'){
+      if (mag < 1e-9) return `0 ${unit}${isV ? ' <span class="sub">steht</span>' : ''}`;
+      return `${scal(mag)} ${unit} ${vec[0] > 0 ? '→' : '←'}${sub2}`;
+    }
+    const s = scal(vec[0]);
+    return `${vec[0] > 1e-12 && !s.startsWith('0') ? '+' : ''}${s} ${unit}${sub2}`;
+  }
+  /* schiefer Stoß */
+  if (mag < 1e-9) return `0 ${unit}`;
+  const angTxt = `${dirArrow(vec)} ${fmt(vecAngle(vec),0)}°`;
+  if (S.level === 'hard'){
+    return `${scal(mag)} ${unit}<span class="sub">(${scal(vec[0])} | ${scal(vec[1])}) · ${angTxt}</span>${sub2}`;
+  }
+  return `${scal(mag)} ${unit}<span class="sub">Richtung ${angTxt}</span>${sub2}`;
+}
+
+function renderTable(){
+  const r = RES, hide = hiddenNow();
+  const H = x => hide ? Q() : x;
+  const showE = S.level !== 'easy';
+  const eu = energyUnit(Math.max(r.E1+r.E2, r.F1+r.F2));
+  const fE = x => fmtA(x*eu.f) + ' ' + eu.u;
+  const common = r.collide && r.e === 0;
+  let rows = [];
+  rows.push(['Masse', fmtM(r.m1)+' kg', fmtM(r.m2)+' kg', fmtM(r.M)+' kg', fmtM(r.m1)+' kg', fmtM(r.m2)+' kg', fmtM(r.M)+' kg']);
+  rows.push(['Geschwindigkeit', cellVec(r.v1,'v'), cellVec(r.v2,'v'),
+             S.level==='hard' ? '<span class="sub">v<sub>S</sub> =</span>'+cellVec(r.vS,'v') : '–',
+             H(cellVec(r.w1,'v')), H(cellVec(r.w2,'v')),
+             S.level==='hard' ? H('<span class="sub">v<sub>S</sub> =</span>'+cellVec(r.vS,'v')) : (common ? H('<span class="sub">gemeinsam</span>') : '–')]);
+  rows.push(['Impuls', cellVec(r.p1,'p'), cellVec(r.p2,'p'), cellVec(add(r.p1,r.p2),'p'),
+             H(cellVec(r.q1,'p')), H(cellVec(r.q2,'p')), H(cellVec(add(r.q1,r.q2),'p'))]);
+  if (showE){
+    rows.push(['Bewegungs&shy;energie', fE(r.E1), fE(r.E2), fE(r.E1+r.E2), H(fE(r.F1)), H(fE(r.F2)), H(fE(r.F1+r.F2))]);
+  }
+  const head = `<thead><tr class="grp"><th></th><th colspan="3">vor dem Stoß</th><th colspan="3" class="sep">nach dem Stoß</th></tr>
+    <tr><th></th><th>Auto 1</th><th>Auto 2</th><th>gesamt</th><th class="sep">Auto 1</th><th>Auto 2</th><th>gesamt</th></tr></thead>`;
+  const body = rows.map(row => `<tr><td>${row[0]}</td><td class="c1">${row[1]}</td><td class="c2">${row[2]}</td><td class="sum">${row[3]}</td><td class="c1 sep">${row[4]}</td><td class="c2">${row[5]}</td><td class="sum">${row[6]}</td></tr>`).join('');
+  let extra = '';
+  if (showE && r.collide){
+    extra = `<tr><td colspan="4">Energie für Verformung, Wärme, Schall</td><td class="sep" colspan="3" style="text-align:right"><strong>${H(fE(r.dE) + ' (' + fmt(100*r.dE/Math.max(1e-12,r.E1+r.E2),0) + ' %)')}</strong></td></tr>`;
+  }
+  $('tableBox').innerHTML = `<table>${head}<tbody>${body}${extra}</tbody></table>`;
+  let hint = '';
+  if (S.dim==='1d' && S.level!=='easy') hint = 'Vorzeichen: + bedeutet nach rechts, − bedeutet nach links.';
+  if (S.dim==='2d') hint = 'Richtung: Winkel gegenüber der Fahrtrichtung von Auto 1 (gegen den Uhrzeigersinn positiv).' + (S.level==='hard' ? ' In Klammern: (x-Komponente | y-Komponente).' : '');
+  if (S.range==='strasse') hint += (hint ? ' ' : '') + 'Für den Impuls wird in m/s gerechnet (km/h : 3,6 = m/s).';
+  $('tableHint').textContent = hint;
+}
+
+function renderEnergy(){
+  const r = RES, hide = hiddenNow();
+  const Eb = r.E1 + r.E2;
+  const eu = energyUnit(Math.max(Eb, r.F1+r.F2));
+  const fE = x => fmtA(x*eu.f) + ' ' + eu.u;
+  if (Eb < 1e-12){ $('energyBox').innerHTML = '<p class="small">Keine Bewegungsenergie – beide Autos stehen.</p>'; return; }
+  const pc = x => (100*x/Eb).toFixed(3) + '%';
+  const after = hide
+    ? `<div class="ebar"><span>nachher</span><div class="bar"></div><span class="val">${Q()}</span></div>`
+    : `<div class="ebar"><span>nachher</span><div class="bar"><div class="seg1" style="width:${pc(r.F1)}"></div><div class="seg2" style="width:${pc(r.F2)}"></div><div class="loss" style="width:${pc(Math.max(0,r.dE))}"></div></div><span class="val">${fE(r.F1+r.F2)}</span></div>`;
+  $('energyBox').innerHTML =
+    `<div class="ebar"><span>vorher</span><div class="bar"><div class="seg1" style="width:${pc(r.E1)}"></div><div class="seg2" style="width:${pc(r.E2)}"></div></div><span class="val">${fE(Eb)}</span></div>` + after +
+    `<div class="legend"><span><i style="background:var(--c1)"></i>Auto 1</span><span><i style="background:var(--c2)"></i>Auto 2</span><span><i style="background:repeating-linear-gradient(45deg,#9aa3b2 0 4px,#c5cbd6 4px 8px)"></i>Verformung / Wärme</span></div>`;
+}
+
+function renderObservations(){
+  const r = RES, out = [];
+  if (!r.collide){
+    out.push(S.dim==='1d' ? 'Die Autos stoßen nicht zusammen: Auto 1 (links) ist nicht schneller als Auto 2.' : 'Die Autos stoßen nicht zusammen: Sie fahren gleich schnell in dieselbe Richtung.');
+  } else if (hiddenNow()){
+    out.push('Was passiert wohl nach dem Stoß? Erst überlegen, dann aufdecken!');
+  } else {
+    out.push('Der Gesamtimpuls ist vor und nach dem Stoß gleich groß (Impulserhaltung).');
+    if (r.e === 1) out.push('Beim elastischen Stoß bleibt auch die gesamte Bewegungsenergie erhalten.');
+    if (r.e === 0) out.push('Beim plastischen Stoß bleiben die Autos zusammen und fahren mit gemeinsamer Geschwindigkeit weiter.');
+    if (r.e < 1 && S.level !== 'easy') out.push(`${fmt(100*r.dE/(r.E1+r.E2),0)} % der Bewegungsenergie werden in Verformung, Wärme und Schall umgewandelt.`);
+    if (r.e < 1 && S.level === 'easy') out.push('Ein Teil der Bewegungsenergie steckt danach in der Verformung (Blech, Knete) und in Wärme.');
+    if (len(r.vS) < 1e-9 && r.e === 0) out.push('Der Gesamtimpuls ist null – deshalb bleiben beide Autos nach dem Stoß stehen.');
+    if (S.dim==='1d' && r.e===1 && Math.abs(r.m1-r.m2) < 1e-9) out.push('Gleiche Massen, elastischer Stoß: Die Autos tauschen ihre Geschwindigkeiten.');
+    if (S.dim==='1d' && r.e===1 && len(r.v2)<1e-9 && r.m2 > 4*r.m1) out.push('Ein leichtes Auto prallt von einem schweren, ruhenden Auto fast mit derselben Geschwindigkeit zurück.');
+    if (S.dim==='1d' && r.e===1 && len(r.v2)<1e-9 && r.m1 > 4*r.m2) out.push('Ein schweres Auto fährt fast ungebremst weiter, das leichte Auto wird fast doppelt so schnell weggestoßen.');
+    if (S.dim==='2d' && r.e===1 && Math.abs(r.m1-r.m2)<1e-9 && Math.min(len(r.v1),len(r.v2))<1e-9) out.push('Gleiche Massen, eines ruht: Nach dem Stoß fahren die Autos im rechten Winkel (90°) auseinander.');
+    if (S.dim==='2d') out.push('Die Impulse sind Pfeile (Vektoren): Der Summenpfeil ist vorher und nachher gleich lang und zeigt in dieselbe Richtung.');
+  }
+  if (S.range==='strasse' && r.e > 0.6 && r.collide) out.push('Hinweis: Echte Autos stoßen nie (fast) elastisch – das ist ein Gedankenexperiment.');
+  $('obsList').innerHTML = out.map(x => `<li>${x}</li>`).join('');
+}
+
+function renderFormulas(){
+  const r = RES;
+  const box = $('formulaBox');
+  if (!r.collide){ box.innerHTML = '<p>Ohne Zusammenstoß ändern sich die Geschwindigkeiten nicht.</p>'; return; }
+  if (hiddenNow()){
+    box.innerHTML = '<p>Die Rechnung wird nach dem Aufdecken angezeigt.</p>' + givenLine(); return;
+  }
+  const d = 2;               /* Nachkommastellen in m/s */
+  const m1 = fmtM(r.m1), m2 = fmtM(r.m2), M = fmtM(r.M);
+  const v1 = fz(r.v1[0], d), v2 = fz(r.v2[0], d);
+  const pd = x => fmtA(x);
+  const eu = energyUnit(r.E1+r.E2);
+  let h = '';
+  const note = S.range==='strasse' ? '<p class="small">Gerechnet wird in m/s (km/h : 3,6 = m/s), Massen in kg.</p>' : '';
+
+  if (S.level === 'easy'){
+    h += `<p><strong>Impuls = Masse · Geschwindigkeit</strong> &nbsp; <span class="eq">p = m · v</span></p>`;
+    if (S.dim === '1d'){
+      h += `<p class="small">Fahrt nach links zählt negativ (−).</p>`;
+      h += `<p class="eq">p₁ = ${m1} kg · ${v1} m/s = ${pd(r.p1[0])} kg·m/s</p>`;
+      h += `<p class="eq">p₂ = ${m2} kg · ${v2} m/s = ${pd(r.p2[0])} kg·m/s</p>`;
+      h += `<p class="eq">Gesamtimpuls: p₁ + p₂ = ${pd(r.p1[0])} + ${fz(r.p2[0],autoDigits(r.p2[0]))} = <span class="res">${pd(r.p1[0]+r.p2[0])} kg·m/s</span></p>`;
+      if (r.e === 0){
+        h += `<p><strong>Plastischer Stoß:</strong> Beide Autos fahren gemeinsam weiter. Gesamtimpuls und Gesamtmasse bleiben gleich:</p>`;
+        h += `<p class="eq">v' = ${frac('Gesamtimpuls','Gesamtmasse')} = ${frac(pd(r.p1[0]+r.p2[0])+' kg·m/s', M+' kg')} = <span class="res">${fmt(r.w1[0],d)} m/s</span></p>`;
+      } else {
+        h += `<p><strong>Elastischer Stoß:</strong> Die Autos prallen voneinander ab. Der Gesamtimpuls bleibt gleich und es geht keine Bewegungsenergie verloren.</p>`;
+        h += `<p class="eq">Nachher: p₁' + p₂' = ${pd(r.q1[0])} + ${fz(r.q2[0],autoDigits(r.q2[0]))} = <span class="res">${pd(r.q1[0]+r.q2[0])} kg·m/s</span></p>`;
+      }
+    } else {
+      h += `<p>Impulse haben eine Richtung, sie sind Pfeile (Vektoren). Man addiert sie, indem man die Pfeile aneinanderhängt (siehe Impulsdiagramm).</p>`;
+      h += `<p class="eq">|p₁| = ${m1} kg · ${fmt(len(r.v1),d)} m/s = ${pd(len(r.p1))} kg·m/s &nbsp;&nbsp; |p₂| = ${m2} kg · ${fmt(len(r.v2),d)} m/s = ${pd(len(r.p2))} kg·m/s</p>`;
+      h += `<p class="eq">Gesamtimpuls (Pfeilsumme): <span class="res">${pd(len(add(r.p1,r.p2)))} kg·m/s</span></p>`;
+      if (r.e === 0) h += `<p class="eq">Gemeinsame Geschwindigkeit: v' = ${frac('Gesamtimpuls','Gesamtmasse')} = ${frac(pd(len(add(r.p1,r.p2)))+' kg·m/s', M+' kg')} = <span class="res">${fmt(len(r.w1),d)} m/s</span></p>`;
+    }
+    box.innerHTML = h + note; return;
+  }
+
+  if (S.level === 'mid'){
+    h += `<p><span class="eq">p = m · v</span> &nbsp; und &nbsp; <span class="eq">E = ½ · m · v²</span></p>`;
+    if (S.dim === '1d'){
+      if (r.e === 1){
+        h += `<p><strong>Elastischer Stoß</strong> (Impuls- und Energieerhaltung):</p>`;
+        h += `<p class="eq">v₁' = ${frac('(m₁ − m₂) · v₁ + 2 · m₂ · v₂','m₁ + m₂')} = ${frac(`(${m1} − ${m2}) · ${v1} + 2 · ${m2} · ${v2}`, M)} = <span class="res">${fmt(r.w1[0],d)} m/s</span></p>`;
+        h += `<p class="eq">v₂' = ${frac('(m₂ − m₁) · v₂ + 2 · m₁ · v₁','m₁ + m₂')} = ${frac(`(${m2} − ${m1}) · ${v2} + 2 · ${m1} · ${v1}`, M)} = <span class="res">${fmt(r.w2[0],d)} m/s</span></p>`;
+      } else {
+        h += `<p><strong>Plastischer Stoß</strong> (nur Impulserhaltung, gemeinsame Geschwindigkeit):</p>`;
+        h += `<p class="eq">v' = ${frac('m₁ · v₁ + m₂ · v₂','m₁ + m₂')} = ${frac(`${m1} · ${v1} + ${m2} · ${v2}`, M)} = <span class="res">${fmt(r.w1[0],d)} m/s</span></p>`;
+        h += `<p class="eq">ΔE = E<sub>vorher</sub> − E<sub>nachher</sub> = ${fmtA((r.E1+r.E2)*eu.f)} ${eu.u} − ${fmtA((r.F1+r.F2)*eu.f)} ${eu.u} = <span class="res">${fmtA(r.dE*eu.f)} ${eu.u}</span></p>`;
+      }
+      h += `<p class="eq">Kontrolle Impuls: ${pd(r.p1[0]+r.p2[0])} kg·m/s vorher = ${pd(r.q1[0]+r.q2[0])} kg·m/s nachher ✓</p>`;
+    } else {
+      h += `<p>Beim schiefen Stoß gilt die Impulserhaltung <strong>für jede Richtung einzeln</strong> (x- und y-Richtung).</p>`;
+      h += `<p class="eq">v₂ in Komponenten: v₂ₓ = v₂ · cos α = ${fmt(len(r.v2),d)} · cos ${fmt(S.alpha,0)}° = ${fmt(r.v2[0],d)} m/s, &nbsp; v₂ᵧ = v₂ · sin α = ${fmt(r.v2[1],d)} m/s</p>`;
+      if (r.e === 0){
+        h += `<p class="eq">vₓ' = ${frac('m₁ · v₁ₓ + m₂ · v₂ₓ','m₁ + m₂')} = ${frac(`${m1} · ${fz(r.v1[0],d)} + ${m2} · ${fz(r.v2[0],d)}`, M)} = ${fmt(r.w1[0],d)} m/s</p>`;
+        h += `<p class="eq">vᵧ' = ${frac('m₁ · v₁ᵧ + m₂ · v₂ᵧ','m₁ + m₂')} = ${frac(`${m1} · 0 + ${m2} · ${fz(r.v2[1],d)}`, M)} = ${fmt(r.w1[1],d)} m/s</p>`;
+        h += `<p class="eq">|v'| = √(vₓ'² + vᵧ'²) = <span class="res">${fmt(len(r.w1),d)} m/s</span>, &nbsp; Richtung: tan φ = ${frac("vᵧ'","vₓ'")} → φ = <span class="res">${fmt(vecAngle(r.w1),0)}°</span></p>`;
+        h += `<p class="eq">ΔE = E<sub>vorher</sub> − E<sub>nachher</sub> = <span class="res">${fmtA(r.dE*eu.f)} ${eu.u}</span></p>`;
+      } else {
+        h += `<p>Für den elastischen schiefen Stoß braucht man ein Modell, wie die Autos sich berühren. Hier: <strong>zentraler Stoß</strong>. Mit der Schwerpunktgeschwindigkeit v<sub>S</sub> gilt (als Vektoren):</p>`;
+        h += `<p class="eq">v<sub>S</sub> = ${frac('m₁ · v₁ + m₂ · v₂','m₁ + m₂')} = (${fmt(r.vS[0],d)} | ${fmt(r.vS[1],d)}) m/s, &nbsp; v₁' = 2 · v<sub>S</sub> − v₁, &nbsp; v₂' = 2 · v<sub>S</sub> − v₂</p>`;
+        h += `<p class="eq">v₁' = (${fmt(r.w1[0],d)} | ${fmt(r.w1[1],d)}) m/s → <span class="res">${fmt(len(r.w1),d)} m/s</span>, &nbsp; v₂' = (${fmt(r.w2[0],d)} | ${fmt(r.w2[1],d)}) m/s → <span class="res">${fmt(len(r.w2),d)} m/s</span></p>`;
+      }
+    }
+    box.innerHTML = h + note; return;
+  }
+
+  /* anspruchsvoll */
+  const k = fmt(r.e, 2);
+  const kName = r.e===1 ? 'elastisch' : r.e===0 ? 'plastisch' : 'teilelastisch';
+  const vecS = v => S.dim==='1d' ? fmt(v[0],d) : `(${fmt(v[0],d)} | ${fmt(v[1],d)})`;
+  h += `<p><strong>Allgemeiner gerader/zentraler Stoß</strong> mit Stoßzahl k (k = 1: elastisch, k = 0: plastisch). Hier: k = ${k} (${kName}).</p>`;
+  h += `<p class="eq">Schwerpunktgeschwindigkeit: v<sub>S</sub> = ${frac('m₁ · v₁ + m₂ · v₂','m₁ + m₂')} = ${frac(`${m1} · ${S.dim==='1d'?v1:vecS(r.v1)} + ${m2} · ${S.dim==='1d'?v2:vecS(r.v2)}`, M)} = <span class="res">${vecS(r.vS)} m/s</span></p>`;
+  h += `<p class="eq">v₁' = (1 + k) · v<sub>S</sub> − k · v₁ = <span class="res">${vecS(r.w1)} m/s</span>, &nbsp; v₂' = (1 + k) · v<sub>S</sub> − k · v₂ = <span class="res">${vecS(r.w2)} m/s</span></p>`;
+  h += `<p class="eq">Relativgeschwindigkeit: v₁' − v₂' = −k · (v₁ − v₂) &nbsp; (Newtonsche Stoßhypothese)</p>`;
+  h += `<p class="eq">Energieverlust: ΔE = ½ · μ · (1 − k²) · |v₁ − v₂|², &nbsp; μ = ${frac('m₁ · m₂','m₁ + m₂')} = ${fmtA(r.mu)} kg (reduzierte Masse)</p>`;
+  h += `<p class="eq">ΔE = ½ · ${fmtA(r.mu)} · (1 − ${k}²) · ${fmt(len(r.u),d)}² = <span class="res">${fmtA(r.dE*eu.f)} ${eu.u}</span> &nbsp; (${fmt(100*r.dE/(r.E1+r.E2),1)} % von E<sub>vorher</sub>)</p>`;
+  h += `<p class="small">Im Schwerpunktsystem (Kamera fährt mit v<sub>S</sub> mit) ist der Gesamtimpuls null: Beide Autos kehren ihre Geschwindigkeit um und werden dabei um den Faktor k langsamer. Der Schwerpunkt bewegt sich vor und nach dem Stoß gleichförmig.</p>`;
+  box.innerHTML = h + note;
+}
+function givenLine(){
+  const r = RES;
+  return `<p class="small">Gegeben: m₁ = ${fmtM(r.m1)} kg, m₂ = ${fmtM(r.m2)} kg, v₁ = ${fmtV(S.v1)} ${R().vUnit}, v₂ = ${fmtV(S.v2)} ${R().vUnit}${S.dim==='2d' ? ', α = '+fmt(S.alpha,0)+'°' : ''}</p>`;
+}
+
+function renderResults(){
+  const hideMode = S.hide && RES.collide;
+  $('revealCard').hidden = !(hideMode && !S.revealed);
+  renderTable(); renderEnergy(); renderObservations(); renderFormulas();
+  const msg = $('msgBox');
+  if (!RES.collide){ msg.hidden = false; msg.textContent = S.dim==='1d'
+      ? 'So gibt es keinen Zusammenstoß: Auto 1 startet links und muss schneller nach rechts fahren als Auto 2.'
+      : 'So gibt es keinen Zusammenstoß: Beide Autos fahren gleich schnell in dieselbe Richtung (oder stehen).'; }
+  else msg.hidden = true;
+  const note = $('noteBox');
+  if (S.dim==='2d'){ note.hidden = false; note.textContent = 'Modell für den schiefen Stoß: Die Autos treffen sich zentral und werden wie Massepunkte behandelt; sie drehen sich beim Stoß nicht.'; }
+  else note.hidden = true;
+  $('pHint').textContent = S.dim==='1d'
+    ? 'Die Pfeile werden aneinandergehängt. Der schwarze Pfeil ist der Gesamtimpuls.'
+    : 'Vektoraddition: p₁ und p₂ werden aneinandergehängt, der schwarze Pfeil ist der Gesamtimpuls.';
+}
+
+/* =====================================================================
+   Zeichnen
+   ===================================================================== */
+const cSide = $('cSide'), cTop = $('cTop'), cP = $('cP');
+function fitCanvas(c){
+  const rect = c.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  const w = Math.max(1, Math.round(rect.width*dpr)), h = Math.max(1, Math.round(rect.height*dpr));
+  if (c.width !== w || c.height !== h){ c.width = w; c.height = h; }
+  const ctx = c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  return { ctx, w:rect.width, h:rect.height };
+}
+function niceStep(x){
+  const p = Math.pow(10, Math.floor(Math.log10(x))), f = x/p;
+  return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10) * p;
+}
+function fmtLen(x){ return x >= 1 ? fmt(x, x % 1 ? 1 : 0) + ' m' : fmt(x*100, 0) + ' cm'; }
+function shade(hex, f){
+  const n = parseInt(hex.slice(1),16); let r=n>>16, g=(n>>8)&255, b=n&255;
+  if (f < 0){ r*=1+f; g*=1+f; b*=1+f; } else { r+=(255-r)*f; g+=(255-g)*f; b+=(255-b)*f; }
+  return `rgb(${r|0},${g|0},${b|0})`;
+}
+function roundRect(ctx,x,y,w,h,r){
+  r = Math.min(r, Math.abs(w)/2, Math.abs(h)/2);
+  ctx.beginPath(); ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h); ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r); ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+}
+function arrow(ctx, x1,y1,x2,y2, color, width, label, dashed){
+  const dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy);
+  if (L < 2) return;
+  const ux=dx/L, uy=dy/L, head=Math.min(14, Math.max(7, L*0.35)), hw=head*0.55;
+  ctx.save();
+  ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=width; ctx.lineCap='round';
+  if (dashed) ctx.setLineDash([7,5]);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2-ux*head*0.8, y2-uy*head*0.8); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-ux*head-uy*hw, y2-uy*head+ux*hw); ctx.lineTo(x2-ux*head+uy*hw, y2-uy*head-ux*hw); ctx.closePath(); ctx.fill();
+  if (label){
+    ctx.font='600 14px system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    const nx = -uy, ny = ux, off = 13;
+    const lx=(x1+x2)/2 + nx*off*(ny>0?-1:1), ly=(y1+y2)/2 + ny*off*(ny>0?-1:1);
+    ctx.lineWidth=4; ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.strokeText(label,lx,ly);
+    ctx.fillText(label,lx,ly);
+  }
+  ctx.restore();
+}
+function badge(ctx,x,y,n,color){
+  ctx.save(); ctx.beginPath(); ctx.arc(x,y,10,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill();
+  ctx.lineWidth=2.5; ctx.strokeStyle=color; ctx.stroke();
+  ctx.fillStyle=color; ctx.font='700 13px system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(n,x,y+0.5);
+  ctx.restore();
+}
+
+/* --- Kamera --- */
+function camAt(t){ return S.cmFrame ? cmAt(t) : [0,0]; }
+function makeView(w,h,is2d){
+  const s = is2d ? Math.min(w,h)/RES.W : w/RES.W;
+  return { w,h,s, cx:w/2, cy:h/2, cam:camAt(S.t) };
+}
+function toS(V,p){ return [V.cx + (p[0]-V.cam[0])*V.s, V.cy - (p[1]-V.cam[1])*V.s]; }
+
+/* --- Zustand nach dem Stoß (Verformung, Partikel) --- */
+function afterHit(){ return RES.collide && S.t >= 0; }
+function crumpleLevel(){ return (S.range==='strasse' && RES.e < 0.95) ? (1 - RES.e) : 0; }
+
+/* ===================== Ansicht von oben ===================== */
+function drawTopBackground(ctx,V){
+  const {w,h,s} = V, W = RES.W;
+  const xmin = V.cam[0] - w/2/s, xmax = V.cam[0] + w/2/s;
+  if (S.range === 'strasse'){
+    ctx.fillStyle = '#a9d18e'; ctx.fillRect(0,0,w,h);
+    const roadW = 8;
+    const roads = S.dim==='2d' ? [0, S.alpha*Math.PI/180] : [0];
+    for (const ang of roads){
+      ctx.save();
+      const o = toS(V,[0,0]); ctx.translate(o[0],o[1]); ctx.rotate(-ang);
+      const Lr = 4*Math.max(w,h);
+      ctx.fillStyle = '#6b7280'; ctx.fillRect(-Lr, -roadW/2*s, 2*Lr, roadW*s);
+      ctx.fillStyle = '#e5e7eb'; ctx.fillRect(-Lr, -roadW/2*s, 2*Lr, 0.15*s); ctx.fillRect(-Lr, roadW/2*s-0.15*s, 2*Lr, 0.15*s);
+      ctx.restore();
+    }
+    for (const ang of roads){
+      ctx.save();
+      const o = toS(V,[0,0]); ctx.translate(o[0],o[1]); ctx.rotate(-ang);
+      ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = Math.max(1.5, 0.15*s); ctx.setLineDash([3*s, 3*s]);
+      const shift = ang===0 ? ((-V.cam[0]) % (6))*s : 0;
+      ctx.lineDashOffset = -shift;
+      const Lr = 4*Math.max(w,h);
+      ctx.beginPath(); ctx.moveTo(-Lr,0); ctx.lineTo(Lr,0); ctx.stroke();
+      ctx.restore();
+    }
+  } else {
+    ctx.fillStyle = S.dim==='2d' ? '#eef3f8' : '#f1ebe0'; ctx.fillRect(0,0,w,h);
+    const st = niceStep(W/12);
+    ctx.strokeStyle = S.dim==='2d' ? '#d6e0ea' : '#e2d8c6'; ctx.lineWidth = 1;
+    const ymin = V.cam[1] - h/2/s, ymax = V.cam[1] + h/2/s;
+    ctx.beginPath();
+    for (let x = Math.floor(xmin/st)*st; x <= xmax; x += st){ const p = toS(V,[x,0]); ctx.moveTo(p[0],0); ctx.lineTo(p[0],h); }
+    if (S.dim==='2d') for (let y = Math.floor(ymin/st)*st; y <= ymax; y += st){ const p = toS(V,[0,y]); ctx.moveTo(0,p[1]); ctx.lineTo(w,p[1]); }
+    ctx.stroke();
+    if (S.dim === '1d'){
+      const a = toS(V,[0,0.09]), b = toS(V,[0,-0.09]);
+      ctx.fillStyle = '#c7ccd4'; ctx.fillRect(0, a[1], w, b[1]-a[1]);
+      ctx.fillStyle = '#9aa1ac'; ctx.fillRect(0, a[1], w, 2); ctx.fillRect(0, b[1]-2, w, 2);
+    }
+  }
+  /* Maßstab */
+  const st = niceStep(RES.W/8), px = st*s;
+  ctx.save(); ctx.fillStyle='rgba(255,255,255,.85)'; roundRect(ctx, 10, h-34, px+20, 26, 6); ctx.fill();
+  ctx.strokeStyle='#1d2230'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(20,h-16); ctx.lineTo(20+px,h-16);
+  ctx.moveTo(20,h-21); ctx.lineTo(20,h-11); ctx.moveTo(20+px,h-21); ctx.lineTo(20+px,h-11); ctx.stroke();
+  ctx.fillStyle='#1d2230'; ctx.font='12px system-ui,sans-serif'; ctx.textAlign='center'; ctx.fillText(fmtLen(st), 20+px/2, h-22);
+  ctx.restore();
+}
+
+function drawCrumpleTop(ctx, spec, impactDirLocal, amount){
+  /* zackige Verformung am Aufprallpunkt (lokale Koordinaten in Metern) */
+  const d = impactDirLocal, L=spec.L, W=spec.W;
+  const tt = Math.min((L/2)/Math.max(1e-9,Math.abs(d[0])), (W/2)/Math.max(1e-9,Math.abs(d[1])));
+  const p = mul(d, tt);
+  const rad = (0.22 + 0.2*amount) * Math.min(L, 2*W) * 0.5;
+  ctx.save();
+  ctx.fillStyle = 'rgba(40,40,48,.55)';
+  ctx.beginPath();
+  for (let i=0;i<14;i++){
+    const ang = i/14*Math.PI*2, rr = rad*(i%2 ? 0.55 : 1);
+    const x = p[0] + Math.cos(ang)*rr, y = p[1] + Math.sin(ang)*rr;
+    i ? ctx.lineTo(x,y) : ctx.moveTo(x,y);
+  }
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+function drawCarTop(ctx, V, i, pos, th){
+  const r = RES, spec = i===1 ? r.c1 : r.c2, col = i===1 ? '#e8741e' : '#2a6fdb', m = i===1 ? r.m1 : r.m2;
+  const p = toS(V,pos), s = V.s, L = spec.L, W = spec.W;
+  ctx.save(); ctx.translate(p[0],p[1]); ctx.scale(s,-s); ctx.rotate(th);
+  ctx.lineWidth = 1.5/s;
+  ctx.save(); ctx.shadowColor='rgba(0,0,0,.25)'; ctx.shadowBlur=6; ctx.shadowOffsetY=-2;
+  ctx.fillStyle = col; roundRect(ctx,-L/2,-W/2,L,W, spec.kind==='cart'?0.01:W*0.22); ctx.fill(); ctx.restore();
+  ctx.strokeStyle = shade(col,-0.35); roundRect(ctx,-L/2,-W/2,L,W, spec.kind==='cart'?0.01:W*0.22); ctx.stroke();
+  ctx.save(); roundRect(ctx,-L/2,-W/2,L,W, spec.kind==='cart'?0.01:W*0.22); ctx.clip();
+  if (spec.kind === 'cart'){
+    const n = cartBlocks(m), bw = 0.036, gap = 0.006;
+    const perRow = 6, rows = Math.min(n, perRow);
+    const tot = rows*bw + (rows-1)*gap;
+    for (let k=0;k<rows;k++){
+      const layers = Math.floor(n/perRow) + (k < n%perRow ? 1 : 0);
+      ctx.fillStyle = shade('#8a8f99', -0.12*Math.max(0,layers-1)); ctx.fillRect(-tot/2 + k*(bw+gap), -0.035, bw, 0.07);
+      ctx.strokeStyle='#5b616b'; ctx.strokeRect(-tot/2 + k*(bw+gap), -0.035, bw, 0.07);
+    }
+    drawBumpersTop(ctx, spec);
+  } else if (spec.kind === 'truck'){
+    ctx.fillStyle = '#e9edf2'; ctx.fillRect(-L/2, -W/2, L-2.4, W);
+    ctx.fillStyle = col; ctx.fillRect(-L/2, -W/2, L-2.4, 0.22); ctx.fillRect(-L/2, W/2-0.22, L-2.4, 0.22);
+    ctx.fillStyle = '#26303d'; ctx.fillRect(L/2-0.75, -W/2+0.2, 0.35, W-0.4);
+  } else {
+    const glass = '#26303d';
+    const fw = spec.kind==='van' ? 0.30 : 0.14, roofStart = spec.kind==='van' ? -0.46 : -0.24;
+    ctx.fillStyle = glass; ctx.beginPath();
+    ctx.moveTo(L*fw, -W*0.40); ctx.lineTo(L*(fw+0.12), -W*0.36); ctx.lineTo(L*(fw+0.12), W*0.36); ctx.lineTo(L*fw, W*0.40); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = shade(col, 0.18); ctx.fillRect(L*roofStart, -W*0.38, L*(fw-roofStart), W*0.76);
+    if (spec.kind==='car'){ ctx.fillStyle = glass; ctx.fillRect(L*(roofStart-0.10), -W*0.36, L*0.09, W*0.72); }
+    ctx.fillStyle = '#fff6c2'; ctx.fillRect(L/2-0.12, -W/2+0.08, 0.1, 0.32); ctx.fillRect(L/2-0.12, W/2-0.4, 0.1, 0.32);
+    ctx.fillStyle = '#d63b3b'; ctx.fillRect(-L/2+0.02, -W/2+0.08, 0.08, 0.3); ctx.fillRect(-L/2+0.02, W/2-0.38, 0.08, 0.3);
+  }
+  const amount = crumpleLevel();
+  if (afterHit() && amount > 0){
+    const toOther = i===1 ? r.uhat : mul(r.uhat,-1);
+    drawCrumpleTop(ctx, spec, rot(toOther, -th), amount);
+  }
+  ctx.restore();
+  ctx.restore();
+  badge(ctx, p[0], p[1], i, i===1 ? '#b5530b' : '#1a4c9e');
+}
+function cartBlocks(m){ return clamp(Math.round((m-0.25)/0.25), 0, 18); }
+function drawBumpersTop(ctx, spec){
+  const L = spec.L;
+  if (RES.e > 0.5){
+    ctx.strokeStyle = '#374151'; ctx.lineWidth = 0.004;
+    for (const sgn of [1,-1]){
+      ctx.beginPath();
+      for (let k=0;k<=8;k++){ const x = sgn*(L/2 - 0.004 - k*0.0035), y = (k%2?1:-1)*0.025; k?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+      ctx.stroke();
+    }
+  } else {
+    ctx.fillStyle = '#a16207';
+    for (const sgn of [1,-1]){ ctx.beginPath(); ctx.ellipse(sgn*(L/2-0.012), 0, 0.012, 0.03, 0, 0, Math.PI*2); ctx.fill(); }
+  }
+}
+
+function drawFlashAndDebris(ctx, V){
+  if (!RES.collide) return;
+  const t = S.t; if (t < 0) return;
+  const cp = add(RES.cp, mul(RES.vS, t));
+  const p = toS(V,cp);
+  if (t < 0.3){
+    const a = 1 - t/0.3, R0 = 14 + 26*(t/0.3);
+    ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = '#fde047'; ctx.strokeStyle='#f59e0b'; ctx.lineWidth=2;
+    ctx.beginPath();
+    for (let i=0;i<16;i++){ const ang=i/16*Math.PI*2, rr = i%2 ? R0*0.45 : R0; const x=p[0]+Math.cos(ang)*rr, y=p[1]+Math.sin(ang)*rr; i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+    ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+  }
+  if (crumpleLevel() > 0 && t < 1.6){
+    ctx.save(); ctx.globalAlpha = Math.max(0, 1 - t/1.6);
+    for (let i=0;i<18;i++){
+      const ang = RND[i]*Math.PI*2, spd = (2 + 6*RND[i+20]) * RES.W/60;
+      const dist = spd * (1 - Math.exp(-2.5*t)) / 2.5;
+      const q = add(cp, [Math.cos(ang)*dist, Math.sin(ang)*dist]);
+      const qs = toS(V,q);
+      ctx.fillStyle = i%3===0 ? '#cbd5e1' : i%3===1 ? '#374151' : (i%2 ? '#e8741e' : '#2a6fdb');
+      ctx.fillRect(qs[0]-2, qs[1]-2, 3 + 2*RND[i+40], 3 + 2*RND[i+60]);
+    }
+    ctx.restore();
+  }
+}
+const RND = (() => { let x = 12345; const a=[]; for (let i=0;i<100;i++){ x = (x*16807) % 2147483647; a.push(x/2147483647); } return a; })();
+
+function arrowScale(){
+  const r = RES;
+  if (S.arrows === 'v'){ const mx = Math.max(len(r.v1),len(r.v2),len(r.w1),len(r.w2)); return mx>1e-9 ? 0.2*r.W/mx : 0; }
+  const mx = Math.max(len(r.p1),len(r.p2),len(r.q1),len(r.q2), len(add(r.p1,r.p2))); return mx>1e-9 ? 0.2*r.W/mx : 0;
+}
+function curVec(i){
+  const r = RES, after = afterHit();
+  if (S.arrows === 'v') return i===1 ? (after?r.w1:r.v1) : (after?r.w2:r.v2);
+  return i===1 ? (after?r.q1:r.p1) : (after?r.q2:r.p2);
+}
+function arrowsHidden(){ return hiddenNow() && afterHit(); }
+
+function drawTop(){
+  if ($('boxTop').style.display === 'none') return;
+  const {ctx,w,h} = fitCanvas(cTop);
+  const V = makeView(w,h,S.dim==='2d');
+  drawTopBackground(ctx,V);
+  const t = S.t;
+  for (const i of [1,2]) drawCarTop(ctx,V,i,posAt(i,t), i===1?RES.th1:RES.th2);
+  drawFlashAndDebris(ctx,V);
+  if (S.arrows !== 'none' && !arrowsHidden()){
+    const k = arrowScale();
+    for (const i of [1,2]){
+      const vec = curVec(i), p0 = toS(V,posAt(i,t)), p1 = toS(V, add(posAt(i,t), mul(vec,k)));
+      const lab = (S.arrows==='v' ? 'v' : 'p') + (i===1?'₁':'₂') + (afterHit() ? "'" : '');
+      arrow(ctx, p0[0],p0[1], p1[0],p1[1], i===1?'#9a3f05':'#123a7a', 3.5, lab);
+    }
+  }
+  if (S.showCM){
+    const c = toS(V, cmAt(t));
+    ctx.save(); ctx.beginPath(); ctx.arc(c[0],c[1],8,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle='#111'; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(c[0],c[1]); ctx.arc(c[0],c[1],8,0,Math.PI/2); ctx.closePath(); ctx.fillStyle='#111'; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(c[0],c[1]); ctx.arc(c[0],c[1],8,Math.PI,Math.PI*1.5); ctx.closePath(); ctx.fill();
+    ctx.font='700 13px system-ui'; ctx.fillText('S', c[0]+11, c[1]-9); ctx.restore();
+  }
+}
+
+/* ===================== Ansicht von der Seite ===================== */
+function drawSideBackground(ctx,V,ground){
+  const {w,h,s} = V;
+  const g = ctx.createLinearGradient(0,0,0,ground); g.addColorStop(0, S.range==='strasse' ? '#cfe6fb' : '#f6f7fb'); g.addColorStop(1, S.range==='strasse' ? '#f2f8fe' : '#ffffff');
+  ctx.fillStyle = g; ctx.fillRect(0,0,w,ground);
+  if (S.range==='strasse'){
+    ctx.fillStyle = '#6b7280'; ctx.fillRect(0, ground, w, 12);
+    ctx.fillStyle = '#a9d18e'; ctx.fillRect(0, ground+12, w, h-ground-12);
+  } else {
+    ctx.fillStyle = '#b9bfc8'; ctx.fillRect(0, ground, w, 7);
+    ctx.fillStyle = '#d9c3a0'; ctx.fillRect(0, ground+7, w, h-ground-7);
+  }
+  /* Skala in Metern */
+  const st = niceStep(RES.W/10);
+  const xmin = V.cam[0] - w/2/s, xmax = V.cam[0] + w/2/s;
+  ctx.save(); ctx.strokeStyle='#1d2230'; ctx.fillStyle='#1d2230'; ctx.lineWidth=1; ctx.font='12px system-ui,sans-serif'; ctx.textAlign='center';
+  for (let x = Math.floor(xmin/st)*st; x <= xmax+st; x += st){
+    const px = V.cx + (x - V.cam[0])*s;
+    ctx.beginPath(); ctx.moveTo(px, ground+(S.range==='strasse'?12:7)); ctx.lineTo(px, ground+(S.range==='strasse'?20:15)); ctx.stroke();
+    ctx.fillText((Math.abs(x)<1e-9 ? '0' : fmt(x, st<1 ? (st<0.1?2:1) : 0)) + ' m', px, ground+33);
+  }
+  ctx.restore();
+}
+function drawWheel(ctx, x, y, r, angle){
+  ctx.save(); ctx.translate(x,y);
+  ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fillStyle='#1f2937'; ctx.fill();
+  ctx.beginPath(); ctx.arc(0,0,r*0.55,0,Math.PI*2); ctx.fillStyle='#cbd5e1'; ctx.fill();
+  ctx.rotate(angle); ctx.strokeStyle='#475569'; ctx.lineWidth = r*0.14;
+  for (let k=0;k<3;k++){ ctx.rotate(Math.PI/3*2); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0, r*0.52); ctx.stroke(); }
+  ctx.restore();
+}
+function drawCarSide(ctx, V, ground, i, pos, th){
+  const r = RES, spec = i===1 ? r.c1 : r.c2, col = i===1 ? '#e8741e' : '#2a6fdb', m = i===1 ? r.m1 : r.m2;
+  const s = V.s, L = spec.L, H = spec.H, rw = spec.r;
+  const px = V.cx + (pos[0]-V.cam[0])*s;
+  const dir = Math.cos(th) >= 0 ? 1 : -1;
+  const wheelAng = dir * pos[0] / rw;
+  ctx.save(); ctx.translate(px, ground); ctx.scale(dir*s, -s);   /* lokale Koordinaten: x nach vorne, y nach oben, Meter */
+  ctx.lineWidth = 1.5/s; ctx.lineJoin='round';
+  const amount = crumpleLevel();
+  const toOther = i===1 ? r.uhat : mul(r.uhat,-1);
+  const impactFront = (toOther[0]*dir) > 0;
+  if (spec.kind === 'cart'){
+    const y0 = rw*1.2, bh = 0.032;
+    ctx.fillStyle = col; ctx.fillRect(-L/2+0.012, y0, L-0.024, bh);
+    ctx.strokeStyle = shade(col,-0.35); ctx.strokeRect(-L/2+0.012, y0, L-0.024, bh);
+    const n = cartBlocks(m), bw = 0.036, bhh = 0.016, gap = 0.006, perRow = 6;
+    const rows = Math.min(n, perRow), tot = rows*bw + (rows-1)*gap;
+    for (let k=0;k<n;k++){
+      const col_ = k % perRow, layer = Math.floor(k / perRow);
+      const x = -tot/2 + col_*(bw+gap), y = y0 + bh + layer*bhh;
+      ctx.fillStyle = '#8a8f99'; ctx.fillRect(x, y, bw, bhh); ctx.strokeStyle='#5b616b'; ctx.strokeRect(x,y,bw,bhh);
+    }
+    /* Puffer: Feder (elastisch) oder Knetmasse (plastisch) */
+    if (r.e > 0.5){
+      ctx.strokeStyle = '#374151'; ctx.lineWidth = 2/s;
+      for (const sgn of [1,-1]){ ctx.beginPath(); for (let k=0;k<=6;k++){ const x = sgn*(L/2 - 0.012 + k*0.002) , y = y0 + bh/2 + (k%2?1:-1)*bh*0.35; k?ctx.lineTo(sgn*(L/2-0.012) + sgn*k*0.002, y):ctx.moveTo(x,y); } ctx.stroke(); }
+    } else {
+      ctx.fillStyle = '#a16207';
+      for (const sgn of [1,-1]){ ctx.beginPath(); ctx.ellipse(sgn*(L/2-0.008), y0+bh/2, 0.008, bh*0.42, 0, 0, Math.PI*2); ctx.fill(); }
+    }
+    ctx.restore();
+    for (const xw of [-L*0.32, L*0.32]) { ctx.save(); ctx.translate(px, ground); ctx.scale(dir*s,-s); drawWheel(ctx, xw, rw, rw, wheelAng); ctx.restore(); }
+    const topY = ground - (y0 + bh + Math.ceil(n/perRow)*bhh)*s;
+    return { topY, px };
+  }
+  ctx.fillStyle = col; ctx.strokeStyle = shade(col,-0.35);
+  ctx.beginPath();
+  if (spec.kind === 'car'){
+    ctx.moveTo(-L/2, 0.30); ctx.lineTo(L/2, 0.30); ctx.lineTo(L/2, 0.72); ctx.quadraticCurveTo(L/2-0.05, 0.86, L/2-0.35, 0.9);
+    ctx.lineTo(L*0.20, 0.95); ctx.lineTo(L*0.02, H); ctx.lineTo(-L*0.28, H); ctx.lineTo(-L/2+0.15, 0.98); ctx.lineTo(-L/2, 0.9); ctx.closePath();
+  } else if (spec.kind === 'van'){
+    ctx.moveTo(-L/2, 0.34); ctx.lineTo(L/2, 0.34); ctx.lineTo(L/2, 1.05); ctx.lineTo(L/2-0.75, H); ctx.lineTo(-L/2, H); ctx.closePath();
+  } else {
+    ctx.moveTo(L/2-2.3, 0.75); ctx.lineTo(L/2, 0.75); ctx.lineTo(L/2, 2.2); ctx.lineTo(L/2-0.25, 3.05); ctx.lineTo(L/2-2.3, 3.05); ctx.closePath();
+  }
+  ctx.fill(); ctx.stroke();
+  if (spec.kind === 'truck'){
+    ctx.fillStyle = '#e9edf2'; ctx.strokeStyle='#9aa3b2'; ctx.fillRect(-L/2, 0.95, L-2.45, H-0.95); ctx.strokeRect(-L/2, 0.95, L-2.45, H-0.95);
+    ctx.fillStyle = col; ctx.fillRect(-L/2, 1.25, L-2.45, 0.25);
+    ctx.fillStyle = '#374151'; ctx.fillRect(-L/2, 0.65, L-0.2, 0.3);
+    ctx.fillStyle = '#26303d'; ctx.beginPath(); ctx.moveTo(L/2-0.05, 2.25); ctx.lineTo(L/2-0.28, 2.95); ctx.lineTo(L/2-1.1, 2.95); ctx.lineTo(L/2-1.1, 2.25); ctx.closePath(); ctx.fill();
+  } else {
+    ctx.fillStyle = '#26303d';
+    if (spec.kind==='car'){
+      ctx.beginPath(); ctx.moveTo(L*0.17, 0.97); ctx.lineTo(L*0.01, H-0.06); ctx.lineTo(-L*0.25, H-0.06); ctx.lineTo(-L*0.36, 0.99); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = col; ctx.lineWidth = 0.06; ctx.beginPath(); ctx.moveTo(-L*0.08, 0.97); ctx.lineTo(-L*0.08, H-0.05); ctx.stroke();
+    } else {
+      ctx.beginPath(); ctx.moveTo(L/2-0.08, 1.15); ctx.lineTo(L/2-0.75, H-0.12); ctx.lineTo(L/2-1.5, H-0.12); ctx.lineTo(L/2-1.5, 1.15); ctx.closePath(); ctx.fill();
+      ctx.fillRect(-L/2+0.4, 1.3, L-2.4, H-1.55);
+    }
+    ctx.fillStyle = '#fff6c2'; ctx.fillRect(L/2-0.06, spec.kind==='car'?0.62:0.8, 0.06, 0.14);
+    ctx.fillStyle = '#d63b3b'; ctx.fillRect(-L/2, spec.kind==='car'?0.7:0.9, 0.06, 0.16);
+  }
+  if (afterHit() && amount > 0){
+    const x0 = impactFront ? L/2 : -L/2, sg = impactFront ? -1 : 1, dpt = (0.25+0.35*amount);
+    const top = spec.kind==='truck' ? (impactFront?3.0:H) : (spec.kind==='car' ? 0.95 : H*0.9);
+    ctx.fillStyle = 'rgba(40,40,48,.6)'; ctx.beginPath(); ctx.moveTo(x0, 0.32);
+    const n = 7;
+    for (let k=0;k<=n;k++){ const y = 0.32 + (top-0.32)*k/n; ctx.lineTo(x0 + sg*dpt*(k%2?1:0.35), y); }
+    ctx.lineTo(x0, top); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+  const wheels = spec.kind==='truck' ? [L/2-1.25, -L/2+1.4, -L/2+2.5] : [L/2-L*0.2, -L/2+L*0.2];
+  for (const xw of wheels){ ctx.save(); ctx.translate(px, ground); ctx.scale(dir*s,-s); drawWheel(ctx, xw, rw, rw, wheelAng); ctx.restore(); }
+  return { topY: ground - H*s, px };
+}
+function drawSide(){
+  if ($('boxSide').style.display === 'none') return;
+  const {ctx,w,h} = fitCanvas(cSide);
+  const V = makeView(w,h,false);
+  const ground = h - 46;
+  drawSideBackground(ctx,V,ground);
+  const t = S.t, tops = {};
+  for (const i of [1,2]) tops[i] = drawCarSide(ctx,V,ground,i,posAt(i,t), i===1?RES.th1:RES.th2);
+  /* Stoßblitz */
+  if (RES.collide && t >= 0 && t < 0.3){
+    const cp = add(RES.cp, mul(RES.vS,t)), x = V.cx + (cp[0]-V.cam[0])*V.s;
+    const hh = Math.min(tops[1].topY, tops[2].topY), y = (ground + hh)/2;
+    const a = 1 - t/0.3, R0 = 12 + 22*(t/0.3);
+    ctx.save(); ctx.globalAlpha=a; ctx.fillStyle='#fde047'; ctx.strokeStyle='#f59e0b'; ctx.lineWidth=2; ctx.beginPath();
+    for (let k=0;k<16;k++){ const ang=k/16*Math.PI*2, rr=k%2?R0*0.45:R0; const xx=x+Math.cos(ang)*rr, yy=y+Math.sin(ang)*rr; k?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy); }
+    ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+  }
+  for (const i of [1,2]) badge(ctx, tops[i].px, tops[i].topY - 16, i, i===1 ? '#b5530b' : '#1a4c9e');
+  if (S.arrows !== 'none' && !arrowsHidden()){
+    const k = arrowScale();
+    for (const i of [1,2]){
+      const vec = curVec(i), y = tops[i].topY - 40, x0 = tops[i].px;
+      const lab = (S.arrows==='v' ? 'v' : 'p') + (i===1?'₁':'₂') + (afterHit() ? "'" : '');
+      arrow(ctx, x0, y, x0 + vec[0]*k*V.s, y, i===1?'#9a3f05':'#123a7a', 3.5, lab);
+    }
+  }
+  if (S.showCM){
+    const c = cmAt(t), x = V.cx + (c[0]-V.cam[0])*V.s;
+    ctx.save(); ctx.strokeStyle='#111'; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(x, 18); ctx.lineTo(x, ground); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#111'; ctx.font='700 13px system-ui'; ctx.textAlign='center'; ctx.fillText('S', x, 14); ctx.restore();
+  }
+}
+
+/* ===================== Impulsdiagramm ===================== */
+function drawP(){
+  const {ctx,w,h} = fitCanvas(cP);
+  ctx.clearRect(0,0,w,h);
+  const r = RES, hide = hiddenNow();
+  const before = [r.p1, r.p2], after = [r.q1, r.q2];
+  const half = w/2;
+  ctx.save(); ctx.strokeStyle = '#e5e7eb'; ctx.beginPath(); ctx.moveTo(half, 10); ctx.lineTo(half, h-10); ctx.stroke(); ctx.restore();
+  ctx.fillStyle = '#5b6477'; ctx.font = '600 14px system-ui,sans-serif'; ctx.textAlign='center';
+  ctx.fillText('vorher', half/2, 18); ctx.fillText('nachher', half*1.5, 18);
+  const col1 = '#e8741e', col2 = '#2a6fdb';
+  const sumLabel = S.level==='easy' ? 'Gesamtimpuls' : 'p₁ + p₂';
+  if (S.dim === '1d'){
+    const vals = [0, r.p1[0], r.p1[0]+r.p2[0], r.q1[0], r.q1[0]+r.q2[0]];
+    const mx = Math.max(...vals.map(Math.abs), 1e-9);
+    const sc = (half*0.42)/mx;
+    const rows = [h*0.32, h*0.52, h*0.78];
+    for (const [k, set] of [[0,before],[1,after]]){
+      const ox = half*k + half/2;
+      if (k===1 && hide){ ctx.fillStyle='#aab'; ctx.font='700 40px system-ui'; ctx.fillText('?', ox, h*0.6); continue; }
+      ctx.save(); ctx.strokeStyle='#cbd5e1'; ctx.setLineDash([3,4]); ctx.beginPath(); ctx.moveTo(ox, 28); ctx.lineTo(ox, h-12); ctx.stroke(); ctx.restore();
+      const a = set[0][0], b = set[1][0];
+      arrow(ctx, ox, rows[0], ox + a*sc, rows[0], col1, 4, (k? "p₁'" : 'p₁'));
+      ctx.save(); ctx.strokeStyle='#cbd5e1'; ctx.setLineDash([3,4]); ctx.beginPath(); ctx.moveTo(ox+a*sc, rows[0]); ctx.lineTo(ox+a*sc, rows[1]); ctx.stroke(); ctx.restore();
+      arrow(ctx, ox + a*sc, rows[1], ox + (a+b)*sc, rows[1], col2, 4, (k? "p₂'" : 'p₂'));
+      if (Math.abs(a+b)*sc >= 2) arrow(ctx, ox, rows[2], ox + (a+b)*sc, rows[2], '#111827', 4, sumLabel);
+      else { ctx.fillStyle='#111827'; ctx.font='600 13px system-ui'; ctx.fillText(sumLabel + ' = 0', ox, rows[2]); }
+    }
+  } else {
+    const pts = [[0,0], r.p1, add(r.p1,r.p2), r.q1, add(r.q1,r.q2)];
+    const bb = set => { const P=[[0,0], set[0], add(set[0],set[1])]; return [Math.min(...P.map(p=>p[0])), Math.max(...P.map(p=>p[0])), Math.min(...P.map(p=>p[1])), Math.max(...P.map(p=>p[1]))]; };
+    const b1 = bb(before), b2 = bb(after);
+    const ex = Math.max(b1[1]-b1[0], b2[1]-b2[0], 1e-9), ey = Math.max(b1[3]-b1[2], b2[3]-b2[2], 1e-9);
+    const sc = Math.min(half*0.78/ex, (h-60)/ey);
+    for (const [k, set, b] of [[0,before,b1],[1,after,b2]]){
+      const cx = half*k + half/2, cy = 30 + (h-40)/2;
+      if (k===1 && hide){ ctx.fillStyle='#aab'; ctx.font='700 40px system-ui'; ctx.textAlign='center'; ctx.fillText('?', cx, h*0.6); continue; }
+      const mx = (b[0]+b[1])/2, my = (b[2]+b[3])/2;
+      const T = p => [cx + (p[0]-mx)*sc, cy - (p[1]-my)*sc];
+      const O = T([0,0]), A = T(set[0]), B = T(add(set[0],set[1]));
+      arrow(ctx, O[0],O[1], A[0],A[1], col1, 4, k? "p₁'" : 'p₁');
+      arrow(ctx, A[0],A[1], B[0],B[1], col2, 4, k? "p₂'" : 'p₂');
+      arrow(ctx, O[0],O[1], B[0],B[1], '#111827', 3, sumLabel, true);
+      ctx.beginPath(); ctx.arc(O[0],O[1],3,0,Math.PI*2); ctx.fillStyle='#111827'; ctx.fill();
+    }
+  }
+}
+
+function draw(){ drawSide(); drawTop(); drawP(); updateTimeLabel(); }
+
+/* =====================================================================
+   Animation
+   ===================================================================== */
+function updateTimeLabel(){
+  const t = S.t;
+  $('tLabel').textContent = 't = ' + fmt(t, 2) + ' s';
+  $('tRange').value = t;
+}
+function updatePlayButton(){ $('btnPlay').textContent = S.playing ? '❚❚ Pause' : (S.t >= RES.tEnd - 1e-6 ? '▶ Nochmal' : '▶ Start'); }
+let lastTs = null;
+function loop(ts){
+  if (S.playing){
+    if (lastTs !== null){
+      const dt = Math.min(0.05, (ts - lastTs)/1000) * S.speed;
+      const prev = S.t;
+      S.t = Math.min(RES.tEnd, S.t + dt);
+      if (S.pauseAtHit && RES.collide && prev < 0 && S.t >= 0 && !S.pausedAtHit){ S.t = 0; S.playing = false; S.pausedAtHit = true; }
+      if (S.t >= RES.tEnd){ S.playing = false; }
+      if (!S.playing) updatePlayButton();
+    }
+    lastTs = ts;
+    draw();
+  } else lastTs = null;
+  requestAnimationFrame(loop);
+}
+function togglePlay(){
+  if (S.playing){ S.playing = false; }
+  else {
+    if (S.t >= RES.tEnd - 1e-6){ S.t = RES.tStart; S.pausedAtHit = false; }
+    S.playing = true;
+  }
+  updatePlayButton(); draw();
+}
+function resetTime(){ S.playing = false; S.t = RES.tStart; S.pausedAtHit = false; updatePlayButton(); draw(); }
+
+/* =====================================================================
+   Start
+   ===================================================================== */
+function applyPreset(p){
+  S.range = p.range; S.dim = p.dim; S.type = p.type;
+  S.m1 = p.m1; S.m2 = p.m2; S.v1 = p.v1; S.v2 = p.v2;
+  if (p.alpha !== undefined) S.alpha = p.alpha;
+  refreshAll(true);
+}
+function init(){
+  const sel = $('preset');
+  sel.innerHTML = '<option value="">– eigenes Experiment –</option>' + PRESETS.map((g,gi) =>
+    `<optgroup label="${g.group}">` + g.items.map((it,ii) => `<option value="${gi}.${ii}">${it.name}</option>`).join('') + '</optgroup>').join('');
+  sel.addEventListener('change', () => { if (!sel.value) return; const [g,i] = sel.value.split('.').map(Number); applyPreset(PRESETS[g].items[i]); });
+  const clearPreset = () => { sel.value = ''; };
+
+  setupSeg('segLevel','level');
+  setupSeg('segRange','range', () => {
+    clearPreset();
+    const r = R();
+    if (S.range === 'strasse'){ S.m1 = 1300; S.m2 = 1500; S.v1 = 50/3.6; S.v2 = S.dim==='1d' ? 0 : 40/3.6; }
+    else { S.m1 = 1; S.m2 = 1; S.v1 = 0.8; S.v2 = S.dim==='1d' ? 0 : 0.6; }
+  });
+  setupSeg('segDim','dim', () => {
+    clearPreset();
+    if (S.dim === '2d'){ S.v1 = Math.abs(S.v1); S.v2 = Math.abs(S.v2); if (S.v2 < 1e-9) S.v2 = S.v1 || R().vMax/4; }
+    else { S.v1 = Math.abs(S.v1); S.v2 = S.alpha > 90 ? -Math.abs(S.v2) : Math.abs(S.v2); if (S.v1 <= S.v2) S.v2 = 0; }
+  });
+  setupSeg('segType','type', clearPreset);
+  setupSeg('segView','view', null, false);
+  setupSeg('segArrows','arrows', null, false);
+  for (const i of [1,2]){ bindNumber(i,'m'); bindNumber(i,'v'); }
+  for (const id of ['m1Range','m2Range','v1Range','v2Range','m1Num','m2Num','v1Num','v2Num']) $(id).addEventListener('input', clearPreset);
+  $('aRange').addEventListener('input', () => { S.alpha = +$('aRange').value; clearPreset(); refreshAll(true); });
+  $('aNum').addEventListener('change', () => { S.alpha = clamp(+$('aNum').value || 0, 0, 180); clearPreset(); refreshAll(true); });
+  $('kRange').addEventListener('input', () => { S.k = +$('kRange').value; refreshAll(true); });
+  $('kNum').addEventListener('change', () => { S.k = clamp(+$('kNum').value || 0, 0, 1); refreshAll(true); });
+  $('chkPause').addEventListener('change', e => { S.pauseAtHit = e.target.checked; });
+  $('chkHide').addEventListener('change', e => { S.hide = e.target.checked; S.revealed = false; renderResults(); draw(); });
+  $('chkCM').addEventListener('change', e => { S.showCM = e.target.checked; draw(); });
+  $('chkCMFrame').addEventListener('change', e => { S.cmFrame = e.target.checked; draw(); });
+  $('btnReveal').addEventListener('click', () => { S.revealed = true; renderResults(); draw(); });
+  $('btnPlay').addEventListener('click', togglePlay);
+  $('btnReset').addEventListener('click', resetTime);
+  $('selSpeed').addEventListener('change', e => { S.speed = +e.target.value; });
+  $('tRange').addEventListener('input', e => { S.playing = false; S.t = +e.target.value; S.pausedAtHit = S.t >= 0; updatePlayButton(); draw(); });
+  $('btnFull').addEventListener('click', () => {
+    if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.target.matches('input[type=number], select')) return;
+    if (e.code === 'Space'){ e.preventDefault(); togglePlay(); }
+    else if (e.key === 'r' || e.key === 'R') resetTime();
+  });
+  window.addEventListener('resize', draw);
+  refreshAll(true);
+  requestAnimationFrame(loop);
+}
+init();
+</script>
+</body>
+</html>
