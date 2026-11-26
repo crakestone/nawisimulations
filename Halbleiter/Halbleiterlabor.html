@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halbleiterlabor – Bänder, Dotierung, Diode, Solarzelle, LED</title>
+<style>
+  :root{
+    --ink:#1d2230; --muted:#5b6477; --line:#d9dde6; --bg:#f4f6fa; --panel:#ffffff;
+    --accent:#0f766e; --warn:#b91c1c;
+    font-size:17px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.35}
+  header{display:flex;align-items:center;gap:.7rem 1.1rem;flex-wrap:wrap;padding:.6rem 1rem;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+  header h1{font-size:1.25rem;margin:0;flex:1 1 auto;white-space:nowrap}
+  header h1 a{color:inherit;text-decoration:none}
+  header h1 a:hover{text-decoration:underline;text-underline-offset:4px}
+  header h1 small{font-weight:400;color:var(--muted);font-size:.85rem;margin-left:.4rem}
+  .lvl{display:flex;align-items:center;gap:.5rem}
+  .lvl > span{color:var(--muted);font-size:.9rem}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#eef1f6;flex-wrap:wrap}
+  .seg button{border:0;background:transparent;padding:.42rem .7rem;font:inherit;font-size:.92rem;cursor:pointer;color:var(--ink)}
+  .seg button + button{border-left:1px solid var(--line)}
+  .seg button.on{background:var(--accent);color:#fff;font-weight:600}
+  .seg.small{flex-wrap:nowrap}
+  .seg.small button{padding:.3rem .45rem;font-size:.8rem;white-space:nowrap}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:.42rem .8rem;font:inherit;font-size:.92rem;cursor:pointer;color:var(--ink)}
+  .btn:hover{background:#f0f3f8}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+  .layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:1rem;padding:1rem;align-items:start}
+  aside{display:flex;flex-direction:column;gap:.8rem}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.8rem .9rem}
+  .card h2{font-size:1rem;margin:0 0 .55rem}
+  .field{margin:.4rem 0 .7rem}
+  .field > label{display:flex;justify-content:space-between;gap:.5rem;font-size:.9rem;margin-bottom:.15rem}
+  .field > label b{font-variant-numeric:tabular-nums;font-weight:600;text-align:right}
+  input[type=range]{accent-color:var(--accent);width:100%}
+  input.spectrum{-webkit-appearance:none;appearance:none;height:14px;border-radius:7px;outline:none}
+  input.spectrum::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid #1d2230;cursor:pointer}
+  input.spectrum::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid #1d2230;cursor:pointer}
+  select{font:inherit;font-size:.93rem;padding:.35rem;border-radius:8px;border:1px solid var(--line);width:100%;background:#fff}
+  .check{display:flex;align-items:center;gap:.5rem;margin:.35rem 0;font-size:.92rem;cursor:pointer}
+  .check input{width:1.1rem;height:1.1rem;accent-color:var(--accent)}
+  .btnrow{display:flex;gap:.4rem;flex-wrap:wrap;margin:.4rem 0}
+  .note{font-size:.84rem;color:var(--muted);margin:.35rem 0}
+  .tasks{display:flex;flex-direction:column;gap:.35rem}
+  .tasks button{font:inherit;font-size:.88rem;text-align:left;border:1px solid var(--line);background:#fafbfd;border-radius:9px;padding:.4rem .55rem;cursor:pointer;color:var(--ink)}
+  .tasks button:hover{background:#eef6f5;border-color:#b8dcd7}
+  .tasks button.on{background:#e3f3f1;border-color:var(--accent);font-weight:600}
+  #taskInfo p{margin:.45rem 0;font-size:.92rem}
+  #taskInfo .q{background:#fff8e6;border:1px solid #f4dfa5;border-radius:9px;padding:.45rem .6rem}
+  #taskInfo .a{background:#eef7f2;border:1px solid #c5e4d2;border-radius:9px;padding:.45rem .6rem}
+  .stage{min-width:0}
+  .viewbox{position:relative;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;height:calc(100vh - 100px);min-height:560px}
+  #cv{display:block;width:100%;height:100%;touch-action:none}
+  @media (max-width: 900px){ .layout{grid-template-columns:1fr} aside{order:2} .viewbox{height:75vh;min-height:460px} }
+</style>
+</head>
+<body>
+<header>
+  <h1><a href="../index.html" title="Zur Startseite">Halbleiterlabor</a> <small>vom Bändermodell zur Solarzelle</small></h1>
+  <div class="seg" id="stSeg"><button data-s="0" class="on">Bänder</button><button data-s="1">Dotierung</button><button data-s="2">Photoeffekt</button><button data-s="3">Diode</button><button data-s="4">Solarzelle</button><button data-s="5">LED</button></div>
+  <div class="lvl"><span>Niveau:</span>
+    <div class="seg" id="lvlSeg"><button data-v="easy" class="on">Einfach</button><button data-v="mid">Mittel</button><button data-v="hard">Anspruchsvoll</button></div>
+  </div>
+  <button class="btn" id="fsBtn">Vollbild</button>
+</header>
+<div class="layout">
+  <aside>
+    <div class="card"><h2 id="ctrlTitle">Einstellungen</h2><div id="ctrl"></div></div>
+    <div class="card"><h2>Aufträge</h2><div class="tasks" id="tasks"></div><div id="taskInfo"></div></div>
+  </aside>
+  <section class="stage">
+    <div class="viewbox" id="vb"><canvas id="cv"></canvas></div>
+  </section>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   Halbleiterlabor – sechs Stationen:
+   0 Bändermodell · 1 Dotierung · 2 Photoeffekt außen & innen
+   3 pn-Übergang (Diode) · 4 Solarzelle · 5 LED
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const HC = 1239.84193;               /* h·c in eV·nm */
+const KB = 8.617333e-5;              /* Boltzmann-Konstante in eV/K */
+const QE = 1.602176634e-19, C_LIGHT = 2.99792458e8, H_PL = 6.62607015e-34;
+const S = { st:0, level:'easy', task:-1, showAnswer:false };
+const lvlNum = () => ({easy:0, mid:1, hard:2})[S.level];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const rnd = (a, b) => a + Math.random()*(b - a);
+
+/* ---------- Zahlen und Farben ---------- */
+function fmt(v, d){ if (!isFinite(v)) return '–'; return (Math.abs(v) < 0.5*Math.pow(10,-d) ? 0 : v).toFixed(d).replace('.', ','); }
+function sup(n){ const m = {'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'}; return String(n).split('').map(c => m[c]).join(''); }
+function sci(v, d){ if (v === 0) return '0'; const ex = Math.floor(Math.log10(Math.abs(v))); const m = v/Math.pow(10,ex); return fmt(m,d) + '·10' + sup(ex); }
+function fmtI(I){ const a = Math.abs(I), s = I < 0 ? '−' : ''; if (a >= 1) return s + fmt(a, 2) + ' A'; if (a >= 1e-3) return s + fmt(a*1000, a < 0.01 ? 2 : 1) + ' mA'; if (a >= 1e-6) return s + fmt(a*1e6, 1) + ' µA'; if (a >= 1e-9) return s + fmt(a*1e9, 1) + ' nA'; return s + fmt(a*1e12, 1) + ' pA'; }
+function fmtR(R){ if (R >= 1e6) return fmt(R/1e6, 1) + ' MΩ'; if (R >= 1e3) return fmt(R/1e3, 1) + ' kΩ'; return fmt(R, R < 10 ? 2 : 0) + ' Ω'; }
+function nmRGB(nm){
+  if (nm < 380) return [150, 90, 220];
+  if (nm > 780) return [120, 30, 30];
+  let r = 0, g = 0, b = 0;
+  if (nm < 440){ r = -(nm-440)/60; b = 1; }
+  else if (nm < 490){ g = (nm-440)/50; b = 1; }
+  else if (nm < 510){ g = 1; b = -(nm-510)/20; }
+  else if (nm < 580){ r = (nm-510)/70; g = 1; }
+  else if (nm < 645){ r = 1; g = -(nm-645)/65; }
+  else r = 1;
+  const f = nm < 420 ? 0.35 + 0.65*(nm-380)/40 : nm > 700 ? 0.35 + 0.65*(780-nm)/80 : 1;
+  return [r,g,b].map(v => Math.round(255*Math.pow(v*f, 0.8)));
+}
+const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+const spectrumCSS = (a, b) => { const st = []; const step = (b - a)/60; for (let nm = a; nm <= b + 1e-9; nm += step) st.push(`${rgba(nmRGB(nm),1)} ${((nm-a)/(b-a)*100).toFixed(1)}%`); return `linear-gradient(90deg,${st.join(',')})`; };
+const region = nm => nm < 380 ? 'UV' : nm > 750 ? 'Infrarot' : 'sichtbar';
+
+/* ---------- Canvas ---------- */
+const cv = $('#cv'), ctx = cv.getContext('2d'), vb = $('#vb');
+let W = 0, H = 0;
+function resize(){
+  const r = vb.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+  W = r.width; H = r.height; cv.width = W*dpr; cv.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+new ResizeObserver(resize).observe(vb);
+function line(x1,y1,x2,y2,col,w){ ctx.strokeStyle = col; ctx.lineWidth = w || 1; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); }
+function dline(x1,y1,x2,y2,col,w,dash){ ctx.save(); ctx.setLineDash(dash || [5,4]); line(x1,y1,x2,y2,col,w); ctx.restore(); }
+function text(t, x, y, o){
+  o = o || {}; ctx.font = `${o.weight || 500} ${o.size || 13}px ${o.mono ? 'ui-monospace,Menlo,Consolas,monospace' : 'system-ui'}`;
+  ctx.fillStyle = o.col || '#1d2230'; ctx.textAlign = o.align || 'left'; ctx.textBaseline = o.base || 'middle'; ctx.fillText(t, x, y);
+}
+function box(x, y, w, h, fill, stroke, r){ ctx.beginPath(); ctx.roundRect(x, y, w, h, r ?? 8); if (fill){ ctx.fillStyle = fill; ctx.fill(); } if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = 1.2; ctx.stroke(); } }
+function circle(x, y, r, fill, stroke, lw){ ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); if (fill){ ctx.fillStyle = fill; ctx.fill(); } if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = lw || 1.5; ctx.stroke(); } }
+function pill(t, x, y, o){
+  o = o || {}; ctx.font = `${o.weight || 600} ${o.size || 13}px system-ui`;
+  const w = ctx.measureText(t).width + 14, h = (o.size || 13) + 10;
+  const bx = o.align === 'left' ? x : o.align === 'right' ? x - w : x - w/2;
+  box(bx, y - h/2, w, h, o.bg || '#10231f', o.border || null, 8);
+  text(t, bx + w/2, y + 0.5, {col:o.col || '#7ff5d2', align:'center', weight:o.weight || 600, size:o.size || 13});
+}
+function wrapText(t, x, y, maxW, o){
+  o = o || {}; ctx.font = `${o.weight || 500} ${o.size || 13}px system-ui`;
+  const words = t.split(' '); let ln = ''; const lh = (o.size || 13) + 4;
+  for (const w of words){ const test = ln ? ln + ' ' + w : w; if (ctx.measureText(test).width > maxW && ln){ text(ln, x, y, o); y += lh; ln = w; } else ln = test; }
+  if (ln){ text(ln, x, y, o); y += lh; }
+  return y;
+}
+function arrow(x1,y1,x2,y2,col,w){
+  line(x1,y1,x2,y2,col,w || 2);
+  const a = Math.atan2(y2-y1, x2-x1), h = 7 + (w || 2);
+  ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2 - h*Math.cos(a-0.45), y2 - h*Math.sin(a-0.45)); ctx.lineTo(x2 - h*Math.cos(a+0.45), y2 - h*Math.sin(a+0.45)); ctx.fill();
+}
+function wiggle(x, y, ang, len, col, amp, lw){
+  ctx.save(); ctx.translate(x,y); ctx.rotate(ang); ctx.strokeStyle = col; ctx.lineWidth = lw || 2.2; ctx.beginPath();
+  for (let k = 0; k <= 24; k++){ const t = k/24, px = -len/2 + t*len, env = Math.sin(Math.PI*t); ctx.lineTo(px, env*(amp || 4)*Math.sin(t*Math.PI*6)); }
+  ctx.stroke(); ctx.restore();
+}
+function heat(x, y, a){ /* kleine Wärmewellen */
+  ctx.save(); ctx.globalAlpha = a; ctx.strokeStyle = '#ea580c'; ctx.lineWidth = 1.6;
+  for (let k = -1; k <= 1; k++){ ctx.beginPath(); for (let s = 0; s <= 10; s++){ const yy = y - s*1.6, xx = x + k*6 + Math.sin(s*1.2)*2.2; s ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy); } ctx.stroke(); }
+  ctx.restore();
+}
+function hole(x, y, r){ circle(x, y, r, '#fff', '#dc2626', 1.8); text('+', x, y + 0.5, {align:'center', size:Math.round(r*1.5), weight:700, col:'#dc2626'}); }
+function elec(x, y, r){ circle(x, y, r, '#1d4ed8'); }
+/* Diagrammrahmen mit Achsen */
+function plot(r, o){
+  box(r.x, r.y, r.w, r.h, '#f8fafc', '#e2e8f0', 12);
+  if (o.title) text(o.title, r.x + 12, r.y + 16, {weight:700, size:13});
+  const L = r.x + (o.left || 50), R = r.x + r.w - (o.right || 14), T = r.y + (o.title ? 36 : 14), B = r.y + r.h - 30;
+  const X = v => L + (v - o.x0)/(o.x1 - o.x0)*(R - L), Y = v => B - (v - o.y0)/(o.y1 - o.y0)*(B - T);
+  for (const v of o.xt || []){ line(X(v), T, X(v), B, '#e5e9f0', 1); text(o.xf ? o.xf(v) : String(v), X(v), B + 10, {align:'center', size:10, col:'#64748b'}); }
+  for (const v of o.yt || []){ line(L, Y(v), R, Y(v), v === 0 ? '#94a3b8' : '#e5e9f0', 1); text(o.yf ? o.yf(v) : String(v), L - 5, Y(v), {align:'right', size:10, col:'#64748b'}); }
+  line(L, T, L, B, '#64748b', 1.2); line(L, B, R, B, '#64748b', 1.2);
+  if (o.xl) text(o.xl, R, B + 22, {align:'right', size:11, col:'#475569'});
+  if (o.yl) text(o.yl, L + 4, T - 8, {size:11, col:'#475569'});
+  return { X, Y, L, R, T, B };
+}
+function clipTo(p){ ctx.save(); ctx.beginPath(); ctx.rect(p.L, p.T - 2, p.R - p.L, p.B - p.T + 4); ctx.clip(); }
+function linFit(pts){
+  const n = pts.length; if (n < 2) return null;
+  const sx = pts.reduce((a,q) => a + q.f, 0), sy = pts.reduce((a,q) => a + q.e, 0), sxx = pts.reduce((a,q) => a + q.f*q.f, 0), sxy = pts.reduce((a,q) => a + q.f*q.e, 0);
+  const den = n*sxx - sx*sx; if (Math.abs(den) < 1e-12) return null;
+  const m = (n*sxy - sx*sy)/den; return { m, b:(sy - m*sx)/n };
+}
+
+/* ---------- Bedienelemente links ---------- */
+const UI = {
+  el: $('#ctrl'),
+  clear(){ this.el.innerHTML = ''; },
+  slider(label, o){
+    const d = document.createElement('div'); d.className = 'field';
+    d.innerHTML = `<label><span>${label}</span><b></b></label><input type="range" min="${o.min}" max="${o.max}" step="${o.step}">`;
+    const b = d.querySelector('b'), inp = d.querySelector('input');
+    if (o.cls) inp.className = o.cls; if (o.bg) inp.style.background = o.bg;
+    inp.value = o.get(); b.innerHTML = o.fmt(o.get());
+    inp.oninput = () => { o.set(+inp.value); b.innerHTML = o.fmt(+inp.value); };
+    d.refresh = () => { inp.value = o.get(); b.innerHTML = o.fmt(o.get()); };
+    this.el.appendChild(d); return d;
+  },
+  select(label, opts, get, set){
+    const d = document.createElement('div'); d.className = 'field';
+    d.innerHTML = `<label><span>${label}</span></label><select>${opts.map(([v,t]) => `<option value="${v}">${t}</option>`).join('')}</select>`;
+    const s = d.querySelector('select'); s.value = get(); s.onchange = () => set(s.value);
+    this.el.appendChild(d); return d;
+  },
+  seg(label, opts, get, set){
+    const d = document.createElement('div'); d.className = 'field';
+    d.innerHTML = (label ? `<label><span>${label}</span></label>` : '') + `<div class="seg small">${opts.map(([v,t]) => `<button data-v="${v}">${t}</button>`).join('')}</div>`;
+    const btns = [...d.querySelectorAll('button')];
+    const upd = () => btns.forEach(b => b.classList.toggle('on', b.dataset.v === String(get())));
+    btns.forEach(b => b.onclick = () => { set(b.dataset.v); upd(); });
+    upd(); this.el.appendChild(d); return d;
+  },
+  check(label, get, set){
+    const d = document.createElement('label'); d.className = 'check';
+    d.innerHTML = `<input type="checkbox"> ${label}`; const c = d.querySelector('input'); c.checked = get(); c.onchange = () => set(c.checked);
+    this.el.appendChild(d); return d;
+  },
+  buttons(list){
+    const d = document.createElement('div'); d.className = 'btnrow';
+    for (const [t, fn, cls] of list){ const b = document.createElement('button'); b.className = 'btn ' + (cls || ''); b.innerHTML = t; b.onclick = fn; d.appendChild(b); }
+    this.el.appendChild(d); return d;
+  },
+  note(html){ const p = document.createElement('p'); p.className = 'note'; p.innerHTML = html; this.el.appendChild(p); return p; }
+};
+function flash(t){ const n = UI.note('⚠ ' + t); n.style.color = '#b91c1c'; setTimeout(() => n.remove(), 3500); }
+
+/* =====================================================================
+   Station 0: Bändermodell
+   ===================================================================== */
+const MAT0 = {
+  Cu:   { name:'Kupfer', kind:'Leiter', metal:true },
+  Ge:   { name:'Germanium', kind:'Halbleiter', Eg:0.66, NN:7.9e18, mu:5800 },
+  Si:   { name:'Silizium', kind:'Halbleiter', Eg:1.12, NN:1.7e19, mu:1850 },
+  GaAs: { name:'Galliumarsenid', kind:'Halbleiter', Eg:1.42, NN:1.8e18, mu:8900 },
+  C:    { name:'Diamant', kind:'Isolator', Eg:5.47, NN:1e19, mu:4000 }
+};
+const BD = { N:4, a:0.38, mat:'Si', T:300, field:false, light:false, lam:700, inten:50, el:[], ho:[], gens:[], phot:[], acc:0, adj:0 };
+const ni = (m, T) => m.metal ? 8.5e22 : m.NN*Math.pow(T/300, 1.5)*Math.exp(-m.Eg/(2*KB*Math.max(T, 1)));
+/* spezifischer Widerstand in Ω·m */
+function rho(m, T){
+  if (m.metal) return 1.68e-8*(1 + 0.0039*(T - 293));
+  const n = ni(m, T)*1e6;                       /* in m⁻³ */
+  return 1/Math.max(1e-40, n*QE*m.mu*1e-4);
+}
+/* Anzahl der gezeichneten thermischen Ladungsträgerpaare (logarithmisch, nicht maßstäblich) */
+function thermalDots(m, T){ if (m.metal) return 0; const n = ni(m, T); return n < 1e3 ? 0 : clamp(Math.round(2.2*Math.log10(n/1e3)), 0, 34); }
+function bdGeo(){
+  const wide = W > 900;
+  return {
+    form: wide ? { x:W*0.03, y:H*0.17, w:W*0.45, h:H*0.79 } : { x:10, y:H*0.08, w:W - 20, h:H*0.4 },
+    atoms: wide ? { x:W*0.03, y:H*0.02, w:W*0.45, h:H*0.13 } : null,
+    cry: wide ? { x:W*0.52, y:H*0.1, w:W*0.45, h:H*0.5 } : { x:10, y:H*0.5, w:W - 20, h:H*0.28 },
+    cond: wide ? { x:W*0.52, y:H*0.64, w:W*0.45, h:H*0.33 } : { x:10, y:H*0.8, w:W - 20, h:H*0.19 }
+  };
+}
+/* Banddiagramm im Kristallfenster */
+function bdBands(c, m){
+  const top = c.y + 26, bot = c.y + c.h - 12;
+  if (m.metal) return { metal:true, top, bot, EF:top + (bot - top)*0.45 };
+  const gap = clamp(18 + 30*m.Eg, 30, (bot - top)*0.62);
+  const bh = (bot - top - gap)/2;
+  return { cbTop:top, cbBot:top + bh, vbTop:top + bh + gap, vbBot:bot, gap };
+}
+function bdStep(dt, c){
+  const m = MAT0[BD.mat];
+  const target = thermalDots(m, BD.T);
+  BD.adj -= dt;
+  const thermal = BD.el.filter(e => !e.photo).length;
+  if (BD.adj <= 0 && thermal !== target){
+    BD.adj = 0.06;
+    if (thermal < target){ const x = Math.random(); BD.el.push({x, y:Math.random(), photo:false}); BD.ho.push({x, y:Math.random(), photo:false}); BD.gens.push({x, t:0, up:true}); }
+    else { const i = BD.el.findIndex(e => !e.photo), j = BD.ho.findIndex(e => !e.photo); if (i >= 0){ BD.gens.push({x:BD.el[i].x, t:0, up:false}); BD.el.splice(i,1); } if (j >= 0) BD.ho.splice(j,1); }
+  }
+  /* Licht: Photonen erzeugen Elektron-Loch-Paare, wenn E ≥ E_g */
+  if (BD.light && !m.metal){
+    BD.acc += BD.inten/6*dt;
+    while (BD.acc >= 1){ BD.acc -= 1; BD.phot.push({x:Math.random(), t:0}); }
+  }
+  for (const p of BD.phot){
+    p.t += dt*1.4;
+    if (p.t >= 1 && !p.done){
+      p.done = true;
+      if (HC/BD.lam >= m.Eg && !m.metal){ BD.el.push({x:p.x, y:0.6, photo:true, life:3.5}); BD.ho.push({x:p.x, y:0.4, photo:true, life:3.5}); BD.gens.push({x:p.x, t:0, up:true, light:true}); }
+    }
+  }
+  BD.phot = BD.phot.filter(p => p.t < (HC/BD.lam >= (m.Eg || 0) ? 1.05 : 2.2));
+  for (const arr of [BD.el, BD.ho]) for (const q of arr) if (q.photo){ q.life -= dt; }
+  if (BD.el.some(e => e.photo && e.life <= 0)){ BD.el = BD.el.filter(e => !(e.photo && e.life <= 0)); BD.ho = BD.ho.filter(e => !(e.photo && e.life <= 0)); }
+  /* Bewegung: Zufall + Drift im elektrischen Feld (Pluspol rechts) */
+  const drift = BD.field ? 0.12 : 0;
+  for (const e of BD.el){ e.x += (rnd(-0.06,0.06) + drift)*dt*3; e.y = clamp(e.y + rnd(-0.3,0.3)*dt, 0.05, 0.95); }
+  for (const h of BD.ho){ h.x += (rnd(-0.06,0.06) - drift*0.6)*dt*3; h.y = clamp(h.y + rnd(-0.3,0.3)*dt, 0.05, 0.95); }
+  for (const q of [...BD.el, ...BD.ho]){ if (q.x > 1) q.x -= 1; if (q.x < 0) q.x += 1; }
+  for (const g of BD.gens) g.t += dt*2;
+  BD.gens = BD.gens.filter(g => g.t < 1);
+}
+function bdDraw(dt){
+  const g = bdGeo(), m = MAT0[BD.mat], lv = lvlNum();
+  bdStep(dt, g.cry);
+  bdDrawFormation(g, lv);
+  /* ----- Kristall: Banddiagramm ----- */
+  const c = g.cry, b = bdBands(c, m);
+  box(c.x, c.y, c.w, c.h, '#fbfcfe', '#e2e8f0', 12);
+  text(`${m.name} (${m.kind}) bei ${fmt(BD.T,0)} K`, c.x + 12, c.y + 13, {weight:700, size:13});
+  const ix = c.x + 46, iw = c.w - 92;
+  const X = x => ix + x*iw;
+  if (BD.field){
+    box(c.x + 8, c.y + 30, 22, c.h - 44, '#e2e8f0', '#64748b', 4); text('−', c.x + 19, c.y + c.h/2, {align:'center', size:20, weight:700});
+    box(c.x + c.w - 30, c.y + 30, 22, c.h - 44, '#fee2e2', '#dc2626', 4); text('+', c.x + c.w - 19, c.y + c.h/2, {align:'center', size:20, weight:700, col:'#dc2626'});
+  }
+  if (b.metal){
+    box(ix, b.top, iw, b.bot - b.top, '#fff7ed', '#f59e0b', 6);
+    box(ix, b.EF, iw, b.bot - b.EF, 'rgba(37,99,235,.16)', null, 4);
+    ctx.fillStyle = 'rgba(29,78,216,.55)';
+    for (let yy = b.EF + 6; yy < b.bot - 3; yy += 9) for (let xx = ix + 5; xx < ix + iw - 3; xx += 9) { ctx.beginPath(); ctx.arc(xx, yy, 2, 0, Math.PI*2); ctx.fill(); }
+    dline(ix, b.EF, ix + iw, b.EF, '#1e3a8a', 1.5);
+    text(lv ? 'Fermi-Energie' : 'bis hier gefüllt', ix + iw - 4, b.EF - 9, {align:'right', size:11, col:'#1e3a8a'});
+    text('ein Band, nur teilweise mit Elektronen gefüllt', ix + 6, b.top + 12, {size:12, col:'#9a3412'});
+    /* bewegliche Elektronen an der Fermi-Kante */
+    const t = performance.now()/1000;
+    for (let k = 0; k < 16; k++){ let x = ((k*0.137 + (BD.field ? t*0.12 : 0) + 0.02*Math.sin(t*3 + k)) % 1 + 1) % 1; elec(X(x), b.EF - 5 - (k % 3)*4, 3.3); }
+  } else {
+    box(ix, b.cbTop, iw, b.cbBot - b.cbTop, '#fff7ed', '#f59e0b', 6);
+    box(ix, b.vbTop, iw, b.vbBot - b.vbTop, '#eff6ff', '#3b82f6', 6);
+    text('Leitungsband', ix + 6, b.cbTop + 12, {size:12, weight:600, col:'#9a3412'});
+    text('Valenzband', ix + 6, b.vbBot - 11, {size:12, weight:600, col:'#1e40af'});
+    ctx.fillStyle = 'rgba(29,78,216,.5)';
+    for (let yy = b.vbTop + 6; yy < b.vbBot - 20; yy += 8) for (let xx = ix + 5; xx < ix + iw - 3; xx += 8) { ctx.beginPath(); ctx.arc(xx, yy, 1.9, 0, Math.PI*2); ctx.fill(); }
+    /* Bandlücke */
+    const mx = ix + iw + 14;
+    arrow(mx, b.vbTop, mx, b.cbBot + 2, '#475569', 1.5); arrow(mx, b.cbBot, mx, b.vbTop - 2, '#475569', 1.5);
+    text(lv ? `E_g = ${fmt(m.Eg,2)} eV` : 'Lücke', ix + iw/2, (b.cbBot + b.vbTop)/2, {align:'center', size:12, weight:600, col:'#475569'});
+    for (const gg of BD.gens){
+      const x = X(gg.x), y1 = gg.up ? b.vbTop - 2 : b.cbBot + 2, y2 = gg.up ? b.cbBot + 2 : b.vbTop - 2;
+      ctx.globalAlpha = 1 - gg.t; arrow(x, y1, x, y1 + (y2 - y1)*Math.min(1, gg.t*2), gg.light ? '#ca8a04' : gg.up ? '#0f766e' : '#94a3b8', 2); ctx.globalAlpha = 1;
+    }
+    for (const h of BD.ho) hole(X(h.x), b.vbTop + 7 + h.y*10, 4.3);
+    for (const e of BD.el) elec(X(e.x), b.cbBot - 7 - e.y*10, 4.3);
+  }
+  /* Licht */
+  if (BD.light && !m.metal){
+    const col = nmRGB(BD.lam), lx = c.x + c.w/2;
+    box(lx - 18, c.y - 8, 36, 14, '#334155', null, 4);
+    for (const p of BD.phot){
+      const absorbed = HC/BD.lam >= m.Eg, x = X(p.x);
+      const yEnd = absorbed ? b.vbTop + 4 : c.y + c.h - 6;
+      const tt = absorbed ? Math.min(1, p.t) : Math.min(1, p.t/2.2);
+      if (p.t > (absorbed ? 1 : 2.2)) continue;
+      wiggle(lx + (x - lx)*tt, c.y + 6 + (yEnd - c.y - 6)*tt, Math.atan2(yEnd - c.y, x - lx), 18, rgba(col, 0.9), 3.5, 2);
+    }
+    if (HC/BD.lam < m.Eg) pill('Photonenenergie zu klein – Licht geht durch', c.x + c.w/2, (b.cbBot + b.vbTop)/2 + 18, {bg:'#fff1f1', col:'#b91c1c', size:11});
+  }
+  bdDrawCond(g.cond, m, lv);
+}
+function bdDrawFormation(g, lv){
+  const f = g.form;
+  /* Atome in einer Reihe */
+  if (g.atoms){
+    const a = g.atoms, n = BD.N === 99 ? 9 : BD.N, cx = a.x + a.w/2, sp = clamp(BD.a, 0.2, 1)*a.w/(n === 1 ? 1 : 3.2);
+    const spacing = Math.min(sp*1.4, (a.w - 40)/Math.max(1, n - 1));
+    for (let k = 0; k < n; k++){
+      const x = cx + (k - (n - 1)/2)*spacing, y = a.y + a.h*0.55, r = Math.min(16, a.h*0.22);
+      const halo = ctx.createRadialGradient(x, y, r*0.3, x, y, r*1.9); halo.addColorStop(0,'rgba(59,130,246,.35)'); halo.addColorStop(1,'rgba(59,130,246,0)');
+      ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(x, y, r*1.9, 0, Math.PI*2); ctx.fill();
+      circle(x, y, r*0.55, '#334155');
+    }
+    text(BD.N === 99 ? 'sehr viele Atome (Kristall)' : `${BD.N} Atom${BD.N > 1 ? 'e' : ''}`, a.x + 12, a.y + 12, {weight:700, size:13});
+  }
+  const p = plot(f, { title:'Vom Atom zum Band', x0:0.2, x1:1.0, y0:-11, y1:1, xt:[], yt: lv ? [-10,-8,-6,-4,-2,0] : [], yf:v => v + ' eV', left: lv ? 50 : 30, xl:'Atomabstand →', yl:'Energie' });
+  const w1 = a => 5.8*Math.exp(-(a - 0.2)/0.12), w2 = a => 7.2*Math.exp(-(a - 0.2)/0.12);
+  const E1 = -7, E2 = -3;
+  clipTo(p);
+  const bands = [[E1, w1, '59,130,246', 'Valenzband'], [E2, w2, '245,158,11', 'Leitungsband']];
+  if (BD.N === 99){
+    for (const [E0, w, col] of bands){
+      ctx.fillStyle = `rgba(${col},.28)`; ctx.beginPath();
+      for (let k = 0; k <= 80; k++){ const a = 0.2 + k/80*0.8; const x = p.X(a), y = p.Y(E0 + w(a)); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+      for (let k = 80; k >= 0; k--){ const a = 0.2 + k/80*0.8; ctx.lineTo(p.X(a), p.Y(E0 - w(a))); }
+      ctx.closePath(); ctx.fill();
+    }
+  } else {
+    for (const [E0, w, col] of bands){
+      for (let k = 1; k <= BD.N; k++){
+        const c = Math.cos(Math.PI*k/(BD.N + 1));
+        ctx.strokeStyle = `rgba(${col},.95)`; ctx.lineWidth = 1.8; ctx.beginPath();
+        for (let s = 0; s <= 80; s++){ const a = 0.2 + s/80*0.8; const x = p.X(a), y = p.Y(E0 + w(a)*c); s ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+        ctx.stroke();
+      }
+    }
+  }
+  ctx.restore();
+  /* Gleichgewichtsabstand und gewählter Abstand */
+  dline(p.X(0.38), p.T, p.X(0.38), p.B, '#94a3b8', 1);
+  text('Abstand im Kristall', p.X(0.38) + 4, p.B - 10, {size:10, col:'#64748b'});
+  text('einzelne Atome', p.R - 4, p.B - 10, {align:'right', size:10, col:'#64748b'});
+  const xa = p.X(BD.a);
+  line(xa, p.T, xa, p.B, '#0f766e', 2);
+  /* Elektronen auf den Niveaus am gewählten Abstand */
+  if (BD.N !== 99){
+    for (let k = 1; k <= BD.N; k++){
+      const y = p.Y(E1 + w1(BD.a)*Math.cos(Math.PI*k/(BD.N + 1)));
+      elec(xa - 6, y, 3.2); elec(xa + 6, y, 3.2);
+    }
+  } else {
+    text('voll besetzt', xa + 8, p.Y(E1), {size:11, weight:600, col:'#1e40af'});
+    text('leer', xa + 8, p.Y(E2), {size:11, weight:600, col:'#9a3412'});
+  }
+  const gapA = (E2 - w2(BD.a)) - (E1 + w1(BD.a));
+  if (BD.N === 99){
+    text('Valenzband', p.X(0.27), p.Y(E1) , {align:'center', size:11, weight:700, col:'#1e40af'});
+    text('Leitungsband', p.X(0.27), p.Y(E2 + 1.8), {align:'center', size:11, weight:700, col:'#9a3412'});
+    if (gapA > 0.05) text(lv ? `Bandlücke ${fmt(gapA,1)} eV` : 'Bandlücke', xa - 6, p.Y((E1 + w1(BD.a) + E2 - w2(BD.a))/2), {align:'right', size:11, weight:600, col:'#475569'});
+    else text('Bänder überlappen', xa - 6, p.Y(-5), {align:'right', size:11, weight:600, col:'#475569'});
+  }
+  if (lv === 2 && BD.N !== 99 && BD.N > 1) text(`${BD.N} Atome → je ${BD.N} Niveaus`, p.L + 8, p.T + 10, {size:11, col:'#475569'});
+}
+function bdDrawCond(r, m, lv){
+  if (lv === 0){
+    box(r.x, r.y, r.w, r.h, '#f8fafc', '#e2e8f0', 12);
+    text('Wie gut leitet das Material?', r.x + 12, r.y + 18, {weight:700, size:13});
+    const lg = -Math.log10(rho(m, BD.T)), t = clamp((lg + 14)/22, 0, 1);
+    const bx = r.x + 14, bw = r.w - 28, by = r.y + 40;
+    box(bx, by, bw, 20, '#e2e8f0', null, 10); box(bx, by, Math.max(10, bw*t), 20, t > 0.7 ? '#16a34a' : t > 0.3 ? '#f59e0b' : '#94a3b8', null, 10);
+    const word = t > 0.9 ? 'sehr gut (Leiter)' : t > 0.45 ? 'mäßig' : t > 0.25 ? 'schlecht' : 'praktisch gar nicht (Isolator)';
+    text(word, r.x + 14, by + 40, {size:14, weight:700});
+    wrapText(m.metal ? 'Im Metall gibt es immer freie Elektronen. Wärme lässt die Atome stärker schwingen – der Widerstand steigt ein wenig.'
+      : `Nur Elektronen, die die Bandlücke überspringen, können wandern. ${BD.T > 350 ? 'Bei Wärme gelingt das mehr Elektronen.' : 'Erwärme das Material!'}`, r.x + 14, by + 64, r.w - 28, {size:12, col:'#475569'});
+    return;
+  }
+  const Ts = [100, 200, 300, 400, 500, 600];
+  const p = plot(r, { title:'Spezifischer Widerstand (logarithmisch)', x0:50, x1:600, y0:-9, y1:15, xt:Ts, yt:[-8,-4,0,4,8,12], yf:v => '10' + sup(v), xl:'T in K', yl:'ρ in Ω·m', left:50 });
+  clipTo(p);
+  for (const [k, mm] of Object.entries(MAT0)){
+    const sel = k === BD.mat;
+    ctx.strokeStyle = sel ? '#0f766e' : '#cbd5e1'; ctx.lineWidth = sel ? 2.5 : 1.3; ctx.beginPath();
+    for (let T = 60; T <= 600; T += 5){ const y = p.Y(clamp(Math.log10(rho(mm, T)), -10, 16)); T === 60 ? ctx.moveTo(p.X(T), y) : ctx.lineTo(p.X(T), y); }
+    ctx.stroke();
+    const yl = p.Y(clamp(Math.log10(rho(mm, 560)), -9, 14.4));
+    text(mm.name, p.X(590), yl - 7, {align:'right', size:10, col:sel ? '#0f766e' : '#94a3b8', weight:sel ? 700 : 500});
+  }
+  ctx.restore();
+  const rv = rho(m, BD.T), y = p.Y(clamp(Math.log10(rv), -9, 15));
+  circle(p.X(BD.T), y, 5.5, '#0f766e', '#fff', 2);
+  if (lv === 2){
+    const info = m.metal ? `ρ = ${sci(rv,2)} Ω·m · freie Elektronen ≈ 8,5·10²² cm⁻³` : `ρ = ${sci(rv,2)} Ω·m · n_i = ${sci(ni(m, BD.T),1)} cm⁻³`;
+    text(info, p.L + 6, p.T + 6, {size:11, weight:600, col:'#0f766e'});
+  }
+}
+function bdControls(){
+  const lv = lvlNum();
+  UI.select('Anzahl der Atome', [['1','1 Atom'],['2','2 Atome'],['3','3 Atome'],['4','4 Atome'],['6','6 Atome'],['10','10 Atome'],['99','sehr viele (Kristall)']], () => String(BD.N), v => BD.N = +v);
+  UI.slider('Abstand der Atome', {min:0.22, max:1, step:0.01, get:() => BD.a, set:v => BD.a = v, fmt:v => Math.abs(v - 0.38) < 0.015 ? 'wie im Kristall' : v > 0.7 ? 'weit' : v < 0.3 ? 'sehr eng' : 'mittel'});
+  UI.select('Material des Kristalls', Object.entries(MAT0).map(([k,m]) => [k, `${m.name} (${m.kind}${lv && !m.metal ? ', E_g = ' + fmt(m.Eg,2) + ' eV' : ''})`]), () => BD.mat, v => { BD.mat = v; BD.el = []; BD.ho = []; });
+  UI.slider('Temperatur', {min:20, max:600, step:5, get:() => BD.T, set:v => BD.T = v, fmt:v => `${v} K (${fmt(v - 273,0)} °C)`});
+  UI.check('Spannung anlegen (Pluspol rechts)', () => BD.field, v => BD.field = v);
+  UI.check('Mit Licht bestrahlen', () => BD.light, v => { BD.light = v; buildControls(); });
+  if (BD.light){
+    UI.slider('Wellenlänge', {min:300, max:2000, step:10, cls:'spectrum', bg:spectrumCSS(300, 2000), get:() => BD.lam, set:v => BD.lam = v, fmt:v => `${v} nm (${region(v)})` + (lv ? ` · ${fmt(HC/v,2)} eV` : '')});
+    UI.slider('Helligkeit', {min:5, max:100, step:5, get:() => BD.inten, set:v => BD.inten = v, fmt:v => v < 30 ? 'schwach' : v < 70 ? 'mittel' : 'hell'});
+  }
+  UI.note('Die Zahl der gezeichneten Ladungsträger wächst logarithmisch mit der wirklichen Dichte – sonst wären bei Germanium Millionen Mal mehr zu sehen als bei Galliumarsenid.');
+}
+
+/* =====================================================================
+   Station 1: Dotierung – Kristallgitter und Bänder nebeneinander
+   ===================================================================== */
+const DP = { dop:'P', conc:1, T:300, field:false, cols:7, rows:5, bonds:[], dops:[], free:[], holes:[], moves:[], gens:[], adj:0, genAcc:0 };
+const E_DON = 0.045;   /* Ionisierungsenergie von P bzw. B in Si (eV) */
+const ionFrac = T => 1 - Math.exp(-6*KB*T/E_DON);
+function dpBuild(){
+  const C = DP.cols, R = DP.rows;
+  DP.bonds = []; DP.free = []; DP.holes = []; DP.moves = []; DP.gens = [];
+  for (let j = 0; j < R; j++) for (let i = 0; i < C; i++){
+    if (i < C - 1) DP.bonds.push({ a:[i,j], b:[i+1,j], e:2 });
+    if (j < R - 1) DP.bonds.push({ a:[i,j], b:[i,j+1], e:2 });
+  }
+  const pos = { 1:[[3,2]], 2:[[2,1],[4,3]], 3:[[1,1],[3,3],[5,1]] }[DP.conc] || [];
+  DP.dops = DP.dop === 'none' ? [] : pos.map(([i,j]) => ({ i, j, type:DP.dop, ion:false, ang:Math.random()*6 }));
+  for (const d of DP.dops) if (d.type === 'B'){
+    const bi = DP.bonds.findIndex(b => b.a[0] === d.i && b.a[1] === d.j && b.b[0] === d.i + 1);
+    DP.bonds[bi].e = 1; DP.holes.push({ bond:bi, bound:true, home:d, t:Math.random() });
+  }
+}
+const bondMid = b => [(b.a[0] + b.b[0])/2, (b.a[1] + b.b[1])/2];
+const shareAtom = (b, c) => [b.a, b.b].some(p => [c.a, c.b].some(q => p[0] === q[0] && p[1] === q[1]));
+function dpGeo(){
+  const wide = W > 900;
+  const lw = wide ? W*0.56 : W, lh = wide ? H*0.9 : H*0.55;
+  const s = Math.min((lw - 60)/(DP.cols - 0.2), (lh - 70)/(DP.rows - 0.2));
+  const gw = s*(DP.cols - 1), gh = s*(DP.rows - 1);
+  return { s, x0:(lw - gw)/2, y0: (wide ? H*0.08 : 30) + (lh - gh)/2 - 10,
+           band: wide ? { x:W*0.6, y:H*0.06, w:W*0.38, h:H*0.6 } : { x:10, y:lh + 10, w:W - 20, h:H - lh - 20 },
+           info: wide ? { x:W*0.6, y:H*0.7, w:W*0.38, h:H*0.27 } : null };
+}
+function dpStep(dt){
+  const f = ionFrac(DP.T);
+  DP.adj -= dt;
+  if (DP.adj <= 0){
+    DP.adj = 0.25;
+    /* Donatoren (Phosphor): fünftes Elektron löst sich */
+    const don = DP.dops.filter(d => d.type === 'P');
+    const want = Math.round(f*don.length), have = don.filter(d => d.ion).length;
+    if (have < want){ const d = don.find(d => !d.ion); d.ion = true; DP.free.push({ x:d.i + 0.3, y:d.j - 0.3, vx:0, vy:0, from:d, life:Infinity }); }
+    else if (have > want){ const d = don.find(d => d.ion); const k = DP.free.findIndex(e => e.from === d); if (k >= 0) DP.free.splice(k,1); d.ion = false; }
+    /* Akzeptoren (Bor): Loch wird frei */
+    const acc = DP.dops.filter(d => d.type === 'B');
+    const wantA = Math.round(f*acc.length), haveA = DP.holes.filter(h => h.home && !h.bound).length;
+    if (haveA < wantA){ const h = DP.holes.find(h => h.home && h.bound); if (h){ h.bound = false; h.home.ion = true; } }
+    else if (haveA > wantA){ const h = DP.holes.find(h => h.home && !h.bound); if (h){ DP.bonds[h.bond].e = 2; const bi = DP.bonds.findIndex(b => b.a[0] === h.home.i && b.a[1] === h.home.j && b.b[0] === h.home.i + 1); DP.bonds[bi].e = 1; h.bond = bi; h.bound = true; h.home.ion = false; } }
+  }
+  /* Eigenleitung: bei hoher Temperatur bricht eine Bindung auf */
+  DP.genAcc += 3*Math.exp(10 - 1.12/(2*KB*DP.T))*dt;
+  if (DP.genAcc >= 1){
+    DP.genAcc = 0;
+    const cand = DP.bonds.map((b,k) => k).filter(k => DP.bonds[k].e === 2 && !DP.holes.some(h => h.bond === k));
+    if (cand.length){
+      const k = cand[Math.floor(Math.random()*cand.length)], b = DP.bonds[k], [mx, my] = bondMid(b);
+      b.e = 1; DP.holes.push({ bond:k, bound:false, home:null, t:0 });
+      DP.free.push({ x:mx, y:my, vx:0, vy:0, from:null, life:rnd(4, 7) });
+      DP.gens.push({ x:mx, y:my, t:0 });
+    }
+  }
+  /* freie Elektronen: Zufallsbewegung + Drift zum Pluspol (rechts) */
+  for (const e of DP.free){
+    e.vx += rnd(-1, 1)*dt*4; e.vy += rnd(-1, 1)*dt*4; e.vx *= 0.96; e.vy *= 0.96;
+    e.x += (e.vx + (DP.field ? 0.9 : 0))*dt; e.y = clamp(e.y + e.vy*dt, -0.35, DP.rows - 0.65);
+    if (e.x > DP.cols - 0.6) e.x -= DP.cols; if (e.x < -0.4) e.x += DP.cols;
+    if (e.y <= -0.35 || e.y >= DP.rows - 0.65) e.vy *= -1;
+    if (isFinite(e.life)) e.life -= dt;
+  }
+  /* Rekombination thermisch erzeugter Paare */
+  for (const e of DP.free) if (e.life <= 0 && !e.gone){
+    const free = DP.holes.filter(h => !h.bound);
+    if (free.length){
+      let best = free[0], bd = 1e9; for (const h of free){ const [mx,my] = bondMid(DP.bonds[h.bond]); const d = Math.hypot(mx - e.x, my - e.y); if (d < bd){ bd = d; best = h; } }
+      DP.bonds[best.bond].e = 2; DP.holes.splice(DP.holes.indexOf(best), 1); if (best.home) best.home.ion = false;
+      e.gone = true; DP.gens.push({ x:e.x, y:e.y, t:0, rec:true });
+    } else e.life = 2;
+  }
+  DP.free = DP.free.filter(e => !e.gone);
+  /* Lochwanderung: ein Nachbarelektron springt in das Loch */
+  for (const h of DP.holes){
+    if (h.bound) continue;
+    h.t += dt;
+    if (h.t < 0.45 || DP.moves.some(m => m.hole === h)) continue;
+    h.t = rnd(-0.25, 0.1);
+    const cur = DP.bonds[h.bond], [cx] = bondMid(cur);
+    const nb = DP.bonds.map((b,k) => k).filter(k => k !== h.bond && DP.bonds[k].e === 2 && shareAtom(DP.bonds[k], cur) && !DP.holes.some(o => o.bond === k));
+    if (!nb.length) continue;
+    let pick;
+    if (DP.field){ const left = nb.filter(k => bondMid(DP.bonds[k])[0] < cx - 0.1); pick = (left.length && Math.random() < 0.8) ? left[Math.floor(Math.random()*left.length)] : nb[Math.floor(Math.random()*nb.length)]; }
+    else pick = nb[Math.floor(Math.random()*nb.length)];
+    DP.moves.push({ hole:h, from:pick, to:h.bond, t:0 });
+  }
+  for (const m of DP.moves){
+    m.t += dt*3.2;
+    if (m.t >= 1){
+      DP.bonds[m.from].e = 1; DP.bonds[m.to].e = 2; m.hole.bond = m.from;
+      /* am linken Rand (Minuspol) verlässt das Loch den Kristall und kommt rechts wieder herein */
+      if (DP.field && bondMid(DP.bonds[m.from])[0] < 0.6){
+        const right = DP.bonds.map((b,k) => k).filter(k => bondMid(DP.bonds[k])[0] > DP.cols - 1.6 && DP.bonds[k].e === 2 && !DP.holes.some(o => o.bond === k));
+        if (right.length){ const k = right[Math.floor(Math.random()*right.length)]; DP.bonds[m.from].e = 2; DP.bonds[k].e = 1; m.hole.bond = k; }
+      }
+    }
+  }
+  DP.moves = DP.moves.filter(m => m.t < 1);
+  for (const g of DP.gens) g.t += dt*1.5;
+  DP.gens = DP.gens.filter(g => g.t < 1);
+  for (const d of DP.dops) d.ang += dt*2.2;
+}
+function dpDraw(dt){
+  dpStep(dt);
+  const g = dpGeo(), lv = lvlNum(), s = g.s;
+  const P = (i, j) => [g.x0 + i*s, g.y0 + j*s];
+  if (DP.field){
+    const y0 = g.y0 - s*0.6, h = s*(DP.rows - 1) + s*1.2;
+    box(g.x0 - s*0.75, y0, 18, h, '#e2e8f0', '#64748b', 4); text('−', g.x0 - s*0.75 + 9, y0 + h/2, {align:'center', size:20, weight:700});
+    box(g.x0 + s*(DP.cols - 1) + s*0.75 - 18, y0, 18, h, '#fee2e2', '#dc2626', 4); text('+', g.x0 + s*(DP.cols - 1) + s*0.75 - 9, y0 + h/2, {align:'center', size:20, weight:700, col:'#dc2626'});
+  }
+  text(DP.dop === 'none' ? 'Reines Silizium' : DP.dop === 'P' ? 'Silizium mit Phosphor (n-dotiert)' : 'Silizium mit Bor (p-dotiert)', 16, 18, {weight:700, size:14});
+  if (lv) text(`Temperatur ${fmt(DP.T,0)} K – jede Bindung besteht aus zwei Elektronen`, 16, 38, {size:12, col:'#475569'});
+  /* Bindungen */
+  const moving = new Set(DP.moves.map(m => m.from));
+  DP.bonds.forEach((b, k) => {
+    const A = P(...b.a), B = P(...b.b), horiz = b.a[1] === b.b[1];
+    const off = s*0.055, nx = horiz ? 0 : off, ny = horiz ? off : 0;
+    const a1 = [A[0] + (B[0]-A[0])*0.28, A[1] + (B[1]-A[1])*0.28], b1 = [A[0] + (B[0]-A[0])*0.72, A[1] + (B[1]-A[1])*0.72];
+    line(a1[0] - nx, a1[1] - ny, b1[0] - nx, b1[1] - ny, '#94a3b8', 2); line(a1[0] + nx, a1[1] + ny, b1[0] + nx, b1[1] + ny, '#94a3b8', 2);
+    const m = [(A[0] + B[0])/2, (A[1] + B[1])/2];
+    const isHole = DP.holes.find(h => h.bond === k);
+    const n = moving.has(k) ? 1 : b.e;
+    if (n >= 1) elec(m[0] - nx*1.8 - (horiz ? 0 : 0), m[1] - ny*1.8, s*0.055 + 1.5);
+    if (n >= 2) elec(m[0] + nx*1.8, m[1] + ny*1.8, s*0.055 + 1.5);
+    else if (isHole) hole(m[0] + nx*1.8, m[1] + ny*1.8, s*0.07 + 2);
+  });
+  /* springende Elektronen (Lochwanderung) */
+  for (const mv of DP.moves){
+    const A = bondMid(DP.bonds[mv.from]), B = bondMid(DP.bonds[mv.to]);
+    const x = A[0] + (B[0] - A[0])*mv.t, y = A[1] + (B[1] - A[1])*mv.t;
+    const [px, py] = P(x, y); elec(px, py, s*0.055 + 1.8);
+  }
+  /* Atomrümpfe */
+  for (let j = 0; j < DP.rows; j++) for (let i = 0; i < DP.cols; i++){
+    const d = DP.dops.find(d => d.i === i && d.j === j), [x, y] = P(i, j), r = s*0.2;
+    const col = d ? (d.type === 'P' ? '#16a34a' : '#ea580c') : '#475569';
+    circle(x, y, r, col);
+    text(d ? d.type : 'Si', x, y + 0.5, {align:'center', size:Math.round(r*0.85), weight:700, col:'#fff'});
+    if (d && d.ion){ circle(x + r*0.85, y - r*0.85, r*0.42, '#fff', col, 2); text(d.type === 'P' ? '+' : '−', x + r*0.85, y - r*0.85 + 0.5, {align:'center', size:Math.round(r*0.6), weight:800, col}); }
+    if (d && d.type === 'P' && !d.ion){
+      const rr = s*0.42; ctx.strokeStyle = 'rgba(22,163,74,.35)'; ctx.setLineDash([3,3]); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(x, y, rr, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+      elec(x + rr*Math.cos(d.ang), y + rr*Math.sin(d.ang), s*0.06 + 2);
+    }
+  }
+  /* freie Elektronen */
+  for (const e of DP.free){ const [x, y] = P(e.x, e.y); circle(x, y, s*0.09 + 2, 'rgba(29,78,216,.18)'); elec(x, y, s*0.06 + 2.2); }
+  for (const gg of DP.gens){ const [x, y] = P(gg.x, gg.y); circle(x, y, 6 + 20*gg.t, null, gg.rec ? `rgba(148,163,184,${1 - gg.t})` : `rgba(234,88,12,${1 - gg.t})`, 2); }
+  dpDrawBands(g, lv);
+}
+function dpDrawBands(g, lv){
+  const r = g.band;
+  box(r.x, r.y, r.w, r.h, '#fbfcfe', '#e2e8f0', 12);
+  text('Dasselbe im Bändermodell', r.x + 12, r.y + 16, {weight:700, size:13});
+  const ix = r.x + 14, iw = r.w - 28, top = r.y + 36, bot = r.y + r.h - 12;
+  const gap = (bot - top)*0.44, bh = (bot - top - gap)/2;
+  const cbT = top, cbB = top + bh, vbT = cbB + gap, vbB = bot;
+  const X = gx => ix + (gx + 0.5)/DP.cols*iw;
+  box(ix, cbT, iw, bh, '#fff7ed', '#f59e0b', 6); box(ix, vbT, iw, bh, '#eff6ff', '#3b82f6', 6);
+  text('Leitungsband', ix + 6, cbT + 11, {size:11, weight:600, col:'#9a3412'});
+  text('Valenzband', ix + 6, vbB - 10, {size:11, weight:600, col:'#1e40af'});
+  ctx.fillStyle = 'rgba(29,78,216,.45)';
+  for (let yy = vbT + 6; yy < vbB - 18; yy += 8) for (let xx = ix + 5; xx < ix + iw - 3; xx += 8){ ctx.beginPath(); ctx.arc(xx, yy, 1.8, 0, Math.PI*2); ctx.fill(); }
+  /* Donator- und Akzeptorniveaus (Abstand zur Bandkante zur Verdeutlichung vergrößert) */
+  const dE = gap*0.1;
+  for (const d of DP.dops){
+    const x = X(d.i), y = d.type === 'P' ? cbB + dE : vbT - dE, col = d.type === 'P' ? '#16a34a' : '#ea580c';
+    line(x - 14, y, x + 14, y, col, 3);
+    if (d.type === 'P' && !d.ion) elec(x, y - 5, 4);
+    if (d.type === 'B'){ const h = DP.holes.find(h => h.home === d); if (h && h.bound) hole(x, y + 6, 4.3); else if (d.ion) elec(x, y - 5, 4); }
+    if (d.ion) text(d.type === 'P' ? '+' : '−', x + 18, y, {size:12, weight:800, col});
+  }
+  if (DP.dops.length && lv){
+    const d0 = DP.dops[0], y = d0.type === 'P' ? cbB + dE : vbT - dE;
+    text(d0.type === 'P' ? 'Donatorniveau' : 'Akzeptorniveau', ix + iw - 4, y + (d0.type === 'P' ? -9 : 9), {align:'right', size:11, weight:600, col:d0.type === 'P' ? '#16a34a' : '#ea580c'});
+  }
+  for (const e of DP.free) elec(X(e.x), cbB - 8 - ((e.y + 0.35)/DP.rows)*(bh - 24), 4.2);
+  for (const h of DP.holes) if (!h.bound){ const [mx, my] = bondMid(DP.bonds[h.bond]); hole(X(mx), vbT + 8 + (my/DP.rows)*(bh - 26), 4.4); }
+  text(lv ? 'E_g = 1,12 eV' : 'Bandlücke', ix + iw/2, (cbB + vbT)/2, {align:'center', size:12, col:'#475569', weight:600});
+  /* Fermi-Niveau */
+  if (lv === 2){
+    let ef = (cbB + vbT)/2;
+    const kT = KB*DP.T, Nd = 1e16*DP.conc;
+    const nint = ni(MAT0.Si, DP.T);
+    if (DP.dop === 'P'){ const n = Nd*ionFrac(DP.T)/2 + Math.sqrt((Nd*ionFrac(DP.T)/2)**2 + nint*nint); ef = (cbB + vbT)/2 - Math.log(Math.max(1, n/nint))*kT/1.12*gap; }
+    if (DP.dop === 'B'){ const p = Nd*ionFrac(DP.T)/2 + Math.sqrt((Nd*ionFrac(DP.T)/2)**2 + nint*nint); ef = (cbB + vbT)/2 + Math.log(Math.max(1, p/nint))*kT/1.12*gap; }
+    ef = clamp(ef, cbB + 4, vbT - 4);
+    dline(ix, ef, ix + iw, ef, '#7c3aed', 1.6);
+    text('Fermi-Niveau', ix + 4, ef - 8, {size:11, weight:600, col:'#7c3aed'});
+  }
+  if (!g.info) return;
+  const r2 = g.info; box(r2.x, r2.y, r2.w, r2.h, '#f8fafc', '#e2e8f0', 12);
+  const nE = DP.free.length, nH = DP.holes.filter(h => !h.bound).length;
+  let y = r2.y + 18;
+  text(`Freie Elektronen: ${nE}   ·   Freie Löcher: ${nH}`, r2.x + 12, y, {weight:700, size:13}); y += 22;
+  const msg = DP.dop === 'P' ? 'Phosphor hat 5 Außenelektronen, für die Bindungen braucht es nur 4. Das fünfte ist nur schwach gebunden und wird schon bei Zimmertemperatur frei. Elektronen sind hier die Majoritätsträger (n wie negativ).'
+    : DP.dop === 'B' ? 'Bor hat nur 3 Außenelektronen – in einer Bindung fehlt eines. In dieses Loch springt ein Nachbarelektron, dadurch wandert das Loch. Löcher sind hier die Majoritätsträger (p wie positiv).'
+    : 'Im reinen Silizium sind alle Elektronen in Bindungen. Erst bei hoher Temperatur bricht ab und zu eine Bindung auf: Es entstehen ein freies Elektron und ein Loch.';
+  y = wrapText(msg, r2.x + 12, y, r2.w - 24, {size:12, col:'#334155'});
+  if (lv === 2 && DP.dop !== 'none') wrapText(`Ionisierungsenergie ≈ ${fmt(E_DON*1000,0)} meV; bei ${fmt(DP.T,0)} K ist kT = ${fmt(KB*DP.T*1000,0)} meV → ${fmt(ionFrac(DP.T)*100,0)} % ionisiert (Modell).`, r2.x + 12, y + 4, r2.w - 24, {size:11, col:'#64748b'});
+}
+function dpControls(){
+  UI.seg('Dotierung', [['none','rein'],['P','Phosphor (n)'],['B','Bor (p)']], () => DP.dop, v => { DP.dop = v; dpBuild(); });
+  UI.seg('Anzahl der Fremdatome', [['1','1'],['2','2'],['3','3']], () => String(DP.conc), v => { DP.conc = +v; dpBuild(); });
+  UI.slider('Temperatur', {min:10, max:600, step:5, get:() => DP.T, set:v => DP.T = v, fmt:v => `${v} K (${fmt(v - 273,0)} °C)`});
+  UI.check('Spannung anlegen (Pluspol rechts)', () => DP.field, v => DP.field = v);
+  UI.note('Grün = Phosphor (5 Außenelektronen), orange = Bor (3 Außenelektronen). Rote Kreise mit + sind Löcher.');
+}
+
+/* =====================================================================
+   Station 2: Photoeffekt außen (Metall) und innen (Halbleiter)
+   ===================================================================== */
+const METALS = { Cs:['Cäsium',2.14], Na:['Natrium',2.36], Zn:['Zink',4.33], Pt:['Platin',5.65] };
+const SEMIS = { Ge:['Germanium',0.66], Si:['Silizium',1.12], GaAs:['Galliumarsenid',1.42], CdS:['Cadmiumsulfid',2.42] };
+const PF = { lam:600, inten:40, metal:'Zn', semi:'Si', acc:0, ev:[], pairs:[], out:0, outT:[], heatE:0 };
+function pfGeo(){
+  const wide = W > 900, top = 50;
+  const ph = wide ? H*0.7 : H*0.42;
+  return wide ? { L:{ x:W*0.03, y:top, w:W*0.45, h:ph }, R:{ x:W*0.52, y:top, w:W*0.45, h:ph }, info:{ x:W*0.03, y:top + ph + 14, w:W*0.94, h:H - top - ph - 24 } }
+              : { L:{ x:10, y:top, w:W - 20, h:ph }, R:{ x:10, y:top + ph + 10, w:W - 20, h:ph }, info:null };
+}
+function pfStep(dt){
+  PF.acc += PF.inten/12*dt;
+  while (PF.acc >= 1){ PF.acc -= 1; PF.ev.push({ t:0, xm:rnd(0.15, 0.85), xs:rnd(0.15, 0.85) }); }
+  for (const e of PF.ev) e.t += dt*0.8;
+  for (const e of PF.ev) if (e.t >= 0.55 && !e.done){
+    e.done = true;
+    const E = HC/PF.lam;
+    if (E > METALS[PF.metal][1]) PF.outT.push(performance.now());
+    if (E >= SEMIS[PF.semi][1]) PF.pairs.push({ x:e.xs, life:rnd(3, 5) });
+  }
+  PF.ev = PF.ev.filter(e => e.t < 1.6);
+  for (const p of PF.pairs) p.life -= dt;
+  PF.pairs = PF.pairs.filter(p => p.life > 0);
+  const now = performance.now(); PF.outT = PF.outT.filter(t => now - t < 3000);
+}
+function pfDraw(dt){
+  pfStep(dt);
+  const g = pfGeo(), lv = lvlNum(), E = HC/PF.lam, col = nmRGB(PF.lam);
+  const Wm = METALS[PF.metal][1], Eg = SEMIS[PF.semi][1];
+  text(`Licht: ${fmt(PF.lam,0)} nm (${region(PF.lam)})` + (lv ? ` · Energie eines Photons E = h·f = ${fmt(E,2)} eV` : ''), 16, 22, {weight:700, size:14});
+  box(W - 170, 10, 18, 22, rgba(col, 1), '#334155', 4);
+  /* gemeinsamer Energiemaßstab für beide Seiten */
+  const scale = (g.L.h - 90)/7.2;
+  const lab = (t, x, y) => text(t, x, y, {size:12, weight:600, col:'#b91c1c'});
+  for (const [r, isMetal] of [[g.L, true], [g.R, false]]){
+    box(r.x, r.y, r.w, r.h, '#fbfcfe', '#e2e8f0', 12);
+    text(isMetal ? `Äußerer Photoeffekt: ${METALS[PF.metal][0]} (Metall)` : `Innerer Photoeffekt: ${SEMIS[PF.semi][0]} (Halbleiter)`, r.x + 12, r.y + 16, {weight:700, size:13});
+    const ix = r.x + 20, iw = r.w*0.62, base = r.y + r.h - 50;
+    if (isMetal){
+      const yVac = base - Wm*scale;
+      box(ix, base, iw, 38, 'rgba(37,99,235,.18)', '#3b82f6', 4);
+      ctx.fillStyle = 'rgba(29,78,216,.55)'; for (let yy = base + 6; yy < base + 36; yy += 8) for (let xx = ix + 5; xx < ix + iw - 3; xx += 8){ ctx.beginPath(); ctx.arc(xx, yy, 1.8, 0, Math.PI*2); ctx.fill(); }
+      dline(ix, yVac, ix + iw + 70, yVac, '#64748b', 1.5);
+      text(lv ? 'Vakuum (außerhalb)' : 'draußen', ix + iw + 8, yVac - 10, {size:11, col:'#475569'});
+      arrow(ix + iw + 22, base, ix + iw + 22, yVac + 3, '#b91c1c', 1.5);
+      text(lv ? `W = ${fmt(Wm,2)} eV` : 'Austrittsarbeit', ix + iw + 28, (base + yVac)/2, {size:12, weight:600, col:'#b91c1c'});
+      text('Elektronen im Metall', ix + 6, base + 48, {size:11, col:'#1e40af'});
+      for (const e of PF.ev){
+        const x = ix + e.xm*iw;
+        if (e.t < 0.55){ const tt = e.t/0.55; wiggle(x - 60*(1 - tt), r.y + 40 + (base - r.y - 40)*tt, Math.atan2(base - r.y - 40, 60), 22, rgba(col, 1), 4); continue; }
+        const tt = Math.min(1, (e.t - 0.55)/0.5), yTop = base - E*scale;
+        if (E > Wm){
+          const y = base - (base - yTop)*tt;
+          arrow(x, base, x, Math.min(base - 2, y), '#0f766e', 2);
+          if (tt >= 1){ const ft = (e.t - 1.05)/0.55; const ex = x + ft*(r.x + r.w - 20 - x); elec(ex, yTop, 4.5); if (lv && ft < 0.6) text(`E_kin = ${fmt(E - Wm,2)} eV`, ex + 8, yTop - 10, {size:11, col:'#0f766e', weight:600}); }
+          else elec(x, y, 4.5);
+        } else {
+          const up = tt < 0.6 ? tt/0.6 : 1 - (tt - 0.6)/0.4, y = base - (base - yTop)*up;
+          elec(x, y, 4.5); if (tt > 0.6) heat(x + 8, base - 4, 1 - (e.t - 1.15)/0.45);
+        }
+      }
+      const rate = PF.outT.length/3;
+      pill(E > Wm ? `Elektronen verlassen das Metall (${fmt(rate,1)} pro s)` : 'Kein Elektron kommt heraus', r.x + r.w/2, r.y + 44, {bg:E > Wm ? '#e7f6ef' : '#fff1f1', col:E > Wm ? '#166534' : '#b91c1c', size:12});
+    } else {
+      const yCB = base - Eg*scale;
+      box(ix, base, iw, 38, '#eff6ff', '#3b82f6', 4);
+      ctx.fillStyle = 'rgba(29,78,216,.5)'; for (let yy = base + 6; yy < base + 36; yy += 8) for (let xx = ix + 5; xx < ix + iw - 3; xx += 8){ ctx.beginPath(); ctx.arc(xx, yy, 1.8, 0, Math.PI*2); ctx.fill(); }
+      box(ix, yCB - 46, iw, 46, '#fff7ed', '#f59e0b', 4);
+      text('Leitungsband', ix + 6, yCB - 36, {size:11, weight:600, col:'#9a3412'});
+      text('Valenzband', ix + 6, base + 48, {size:11, col:'#1e40af'});
+      arrow(ix + iw + 22, base, ix + iw + 22, yCB + 3, '#b91c1c', 1.5);
+      text(lv ? `E_g = ${fmt(Eg,2)} eV` : 'Bandlücke', ix + iw + 28, (base + yCB)/2, {size:12, weight:600, col:'#b91c1c'});
+      for (const p of PF.pairs){ const x = ix + p.x*iw; elec(x, yCB - 6, 4.2); hole(x, base + 7, 4.2); }
+      for (const e of PF.ev){
+        const x = ix + e.xs*iw;
+        if (E < Eg){ const tt = e.t/1.6; wiggle(x - 60*(1 - tt), r.y + 40 + (r.h - 60)*tt, Math.atan2(r.h - 60, 60), 22, rgba(col, 0.8), 4); continue; }
+        if (e.t < 0.55){ const tt = e.t/0.55; wiggle(x - 60*(1 - tt), r.y + 40 + (base - r.y - 40)*tt, Math.atan2(base - r.y - 40, 60), 22, rgba(col, 1), 4); continue; }
+        const tt = Math.min(1, (e.t - 0.55)/0.4), yTop = Math.max(yCB - 44, base - E*scale);
+        if (tt < 1){ arrow(x, base, x, base - (base - yTop)*tt, '#0f766e', 2); elec(x, base - (base - yTop)*tt, 4.5); }
+        else {
+          const ft = Math.min(1, (e.t - 0.95)/0.4), y = yTop + (yCB - 6 - yTop)*ft;
+          elec(x, y, 4.5);
+          if (E - Eg > 0.15 && ft < 1) heat(x + 9, (y + yTop)/2, 1 - ft);
+        }
+      }
+      pill(E >= Eg ? 'Elektron-Loch-Paare entstehen – das Elektron bleibt im Kristall' : 'Photonenenergie zu klein – das Licht geht durch', r.x + r.w/2, r.y + 44, {bg:E >= Eg ? '#e7f6ef' : '#fff1f1', col:E >= Eg ? '#166534' : '#b91c1c', size:12});
+    }
+    /* Photonenenergie als Pfeil am rechten Rand */
+    const px = r.x + r.w - 62;
+    const yt = Math.max(r.y + 60, base - E*scale);
+    arrow(px, base, px, yt, rgba(col, 1), 3);
+    text(lv ? `Photon ${fmt(E,2)} eV` : 'Photon', px + 6, yt + 4, {size:11, weight:600});
+  }
+  if (!g.info) return;
+  const r = g.info; box(r.x, r.y, r.w, r.h, '#f8fafc', '#e2e8f0', 12);
+  const nPairs = PF.pairs.length, Rd = 1e6, Rl = Rd/(1 + nPairs*2.5);
+  let y = r.y + 18;
+  text(lv ? `Fotowiderstand aus ${SEMIS[PF.semi][0]}: R ≈ ${fmtR(Rl)} (im Dunkeln ${fmtR(Rd)})` : `Fotowiderstand: ${nPairs > 8 ? 'leitet gut' : nPairs > 0 ? 'leitet etwas' : 'leitet kaum'}`, r.x + 14, y, {weight:700, size:13});
+  const bw = Math.min(260, r.w*0.3), t = clamp(1 - Math.log10(Rl/1e4)/2, 0, 1);
+  box(r.x + r.w - bw - 14, y - 8, bw, 16, '#e2e8f0', null, 8); box(r.x + r.w - bw - 14, y - 8, Math.max(8, bw*t), 16, '#16a34a', null, 8);
+  y += 22;
+  const cmp = lv === 0
+    ? 'Beim Metall muss ein Elektron ganz herausgeschleudert werden – dafür braucht es viel Energie. Im Halbleiter reicht es, ein Elektron ins Leitungsband zu heben. Es bleibt im Kristall und macht ihn leitfähig.'
+    : `Austrittsarbeit ${METALS[PF.metal][0]}: ${fmt(Wm,2)} eV (Grenzwellenlänge ${fmt(HC/Wm,0)} nm) · Bandlücke ${SEMIS[PF.semi][0]}: ${fmt(Eg,2)} eV (Grenzwellenlänge ${fmt(HC/Eg,0)} nm). Der innere Photoeffekt funktioniert deshalb auch mit rotem und infrarotem Licht – das nutzen Solarzellen, Fotodioden und Kamerasensoren.`;
+  y = wrapText(cmp, r.x + 14, y, r.w - 28, {size:12, col:'#334155'});
+  if (lv === 2 && E > Eg) wrapText(`Überschussenergie E − E_g = ${fmt(E - Eg,2)} eV wird in kurzer Zeit als Wärme an das Gitter abgegeben (Thermalisierung).`, r.x + 14, y + 2, r.w - 28, {size:11, col:'#9a3412'});
+}
+function pfControls(){
+  const lv = lvlNum();
+  UI.slider('Wellenlänge', {min:200, max:2000, step:10, cls:'spectrum', bg:spectrumCSS(200, 2000), get:() => PF.lam, set:v => PF.lam = v, fmt:v => `${v} nm (${region(v)})`});
+  UI.slider('Helligkeit', {min:5, max:100, step:5, get:() => PF.inten, set:v => PF.inten = v, fmt:v => v < 30 ? 'schwach' : v < 70 ? 'mittel' : 'hell'});
+  UI.select('Metall (äußerer Photoeffekt)', Object.entries(METALS).map(([k,[n,w]]) => [k, lv ? `${n} (W = ${fmt(w,2)} eV)` : n]), () => PF.metal, v => PF.metal = v);
+  UI.select('Halbleiter (innerer Photoeffekt)', Object.entries(SEMIS).map(([k,[n,e]]) => [k, lv ? `${n} (E_g = ${fmt(e,2)} eV)` : n]), () => PF.semi, v => { PF.semi = v; PF.pairs = []; });
+  UI.note('Beide Seiten werden mit demselben Licht beleuchtet und im selben Energiemaßstab gezeichnet.');
+}
+
+/* =====================================================================
+   Station 3: pn-Übergang (Diode)
+   ===================================================================== */
+const DIODES = { Si:{ name:'Silizium', Eg:1.12, Is:1e-14, Vbi:0.75 }, Ge:{ name:'Germanium', Eg:0.66, Is:2e-8, Vbi:0.35 } };
+const PN = { mat:'Si', U0:0, R:100, h:[], e:[], cross:[], flashes:[], acc:0, init:false, UD:0, I:0, lampOn:true };
+const UT0 = KB*300;
+function diodeI(d, U){ return d.Is*(Math.exp(Math.min(U/UT0, 80)) - 1); }
+function solveDiode(d, U0, R){
+  if (R <= 0) return U0;
+  let lo = Math.min(U0, 0) - 0.1, hi = Math.max(U0, 0) + 0.1;
+  for (let k = 0; k < 80; k++){ const m = (lo + hi)/2; if (U0 - m - R*diodeI(d, m) > 0) lo = m; else hi = m; }
+  return (lo + hi)/2;
+}
+function pnGeo(){
+  const wide = W > 900;
+  return wide ? { bar:{ x:W*0.04, y:H*0.09, w:W*0.56, h:H*0.27 }, band:{ x:W*0.04, y:H*0.42, w:W*0.56, h:H*0.54 }, circ:{ x:W*0.64, y:H*0.04, w:W*0.33, h:H*0.36 }, kl:{ x:W*0.64, y:H*0.44, w:W*0.33, h:H*0.52 } }
+              : { bar:{ x:10, y:H*0.06, w:W - 20, h:H*0.2 }, band:{ x:10, y:H*0.28, w:W - 20, h:H*0.3 }, circ:{ x:10, y:H*0.6, w:W*0.48, h:H*0.38 }, kl:{ x:W*0.5, y:H*0.6, w:W*0.48, h:H*0.38 } };
+}
+function pnInit(){ PN.h = Array.from({length:30}, () => ({ x:rnd(0, 0.45), y:rnd(0.08, 0.92) })); PN.e = Array.from({length:30}, () => ({ x:rnd(0.55, 1), y:rnd(0.08, 0.92) })); PN.cross = []; PN.init = true; }
+function pnWidth(d, UD){ return 0.12*Math.sqrt(Math.max(0.03, (d.Vbi - UD)/d.Vbi)); }   /* halbe Breite relativ zur Balkenlänge */
+function pnStep(dt){
+  if (!PN.init) pnInit();
+  const d = DIODES[PN.mat];
+  PN.UD = solveDiode(d, PN.U0, PN.R); PN.I = diodeI(d, PN.UD);
+  const w = pnWidth(d, PN.UD), xl = 0.5 - w, xr = 0.5 + w;
+  /* Ladungsträger bleiben außerhalb der Sperrschicht */
+  for (const h of PN.h){ h.x += rnd(-0.04, 0.04)*dt*3; h.y = clamp(h.y + rnd(-0.3, 0.3)*dt, 0.06, 0.94); if (h.x > xl - 0.012) h.x = xl - 0.012 - Math.random()*0.03; if (h.x < 0.01) h.x = 0.01; }
+  for (const e of PN.e){ e.x += rnd(-0.04, 0.04)*dt*3; e.y = clamp(e.y + rnd(-0.3, 0.3)*dt, 0.06, 0.94); if (e.x < xr + 0.012) e.x = xr + 0.012 + Math.random()*0.03; if (e.x > 0.99) e.x = 0.99; }
+  /* Durchlassrichtung: Elektronen und Löcher überqueren die Sperrschicht und rekombinieren */
+  const rate = clamp(PN.I*1000*0.6, 0, 22);
+  PN.acc += rate*dt;
+  while (PN.acc >= 1){ PN.acc -= 1; const isE = Math.random() < 0.5; PN.cross.push({ e:isE, x:isE ? xr : xl, y:rnd(0.15, 0.85), t:0, stop: isE ? rnd(0.06, 0.2) : rnd(0.06, 0.2) }); }
+  for (const c of PN.cross){
+    c.t += dt;
+    const v = 0.35*dt;
+    if (c.e) c.x -= v; else c.x += v;
+    const dist = c.e ? xr - c.x : c.x - xl;
+    if (dist > 2*w + c.stop && !c.done){ c.done = true; PN.flashes.push({ x:c.x, y:c.y, t:0 }); }
+  }
+  PN.cross = PN.cross.filter(c => !c.done);
+  for (const f of PN.flashes) f.t += dt*2; PN.flashes = PN.flashes.filter(f => f.t < 1);
+}
+function pnDraw(dt){
+  pnStep(dt);
+  const g = pnGeo(), lv = lvlNum(), d = DIODES[PN.mat], b = g.bar;
+  const w = pnWidth(d, PN.UD), X = x => b.x + x*b.w, Y = y => b.y + 26 + y*(b.h - 34);
+  text(`pn-Übergang in ${d.name}`, b.x, b.y - 10, {weight:700, size:14});
+  /* Balken: p links, n rechts */
+  box(b.x, b.y + 20, b.w*0.5, b.h - 22, 'rgba(254,226,226,.7)', null, 6);
+  box(b.x + b.w*0.5, b.y + 20, b.w*0.5, b.h - 22, 'rgba(219,234,254,.7)', null, 6);
+  box(X(0.5 - w), b.y + 20, (2*w)*b.w, b.h - 22, 'rgba(241,245,249,.95)', null, 0);
+  box(b.x, b.y + 20, b.w, b.h - 22, null, '#94a3b8', 6);
+  text('p-Gebiet', b.x + 8, b.y + 31, {size:12, weight:700, col:'#b91c1c'});
+  text('n-Gebiet', b.x + b.w - 8, b.y + 31, {size:12, weight:700, col:'#1d4ed8', align:'right'});
+  text(lv ? 'Raumladungszone (Sperrschicht)' : 'Sperrschicht', X(0.5), b.y + b.h + 12, {align:'center', size:11, weight:600, col:'#475569'});
+  dline(X(0.5 - w), b.y + 20, X(0.5 - w), b.y + b.h - 2, '#94a3b8', 1); dline(X(0.5 + w), b.y + 20, X(0.5 + w), b.y + b.h - 2, '#94a3b8', 1);
+  /* ortsfeste Ionen in der Sperrschicht */
+  const nIon = Math.max(1, Math.round(w*b.w/16));
+  for (let k = 0; k < nIon; k++) for (let r = 0; r < 4; r++){
+    const yy = Y(0.15 + r*0.23), xa = X(0.5 - w) + (k + 0.5)*(w*b.w/nIon), xd = X(0.5) + (k + 0.5)*(w*b.w/nIon);
+    box(xa - 6, yy - 6, 12, 12, '#fecaca', '#b91c1c', 2); text('−', xa, yy + 0.5, {align:'center', size:12, weight:800, col:'#b91c1c'});
+    box(xd - 6, yy - 6, 12, 12, '#bfdbfe', '#1d4ed8', 2); text('+', xd, yy + 0.5, {align:'center', size:12, weight:800, col:'#1d4ed8'});
+  }
+  if (lv){ const ya = b.y + 20 + 4, fl = Math.min(w*b.w*1.6, 60 + (d.Vbi - PN.UD)*14); arrow(X(0.5) + fl/2, ya + 3, X(0.5) - fl/2, ya + 3, 'rgba(124,58,237,.8)', 2); text('E-Feld', X(0.5) + fl/2 + 4, ya + 3, {size:10, col:'#7c3aed', weight:600}); }
+  for (const h of PN.h) hole(X(h.x), Y(h.y), 5);
+  for (const e of PN.e) elec(X(e.x), Y(e.y), 4.5);
+  for (const c of PN.cross) c.e ? elec(X(c.x), Y(c.y), 4.5) : hole(X(c.x), Y(c.y), 5);
+  for (const f of PN.flashes) circle(X(f.x), Y(f.y), 5 + 14*f.t, null, `rgba(234,88,12,${1 - f.t})`, 2);
+  /* Kontakte und Polung */
+  const pol = PN.U0 > 0.01 ? ['+','−'] : PN.U0 < -0.01 ? ['−','+'] : ['',''];
+  box(b.x - 14, b.y + 20, 10, b.h - 22, '#64748b', null, 2); box(b.x + b.w + 4, b.y + 20, 10, b.h - 22, '#64748b', null, 2);
+  if (pol[0]) text(pol[0], b.x - 9, b.y + 8, {align:'center', size:18, weight:800, col:pol[0] === '+' ? '#dc2626' : '#334155'});
+  if (pol[1]) text(pol[1], b.x + b.w + 9, b.y + 8, {align:'center', size:18, weight:800, col:pol[1] === '+' ? '#dc2626' : '#334155'});
+  if (lv) pnDrawBands(g.band, d, w, lv); else pnDrawEasyInfo(g.band);
+  pnDrawCircuit(g.circ, d, lv);
+  pnDrawCurve(g.kl, d, lv);
+}
+function pnDrawEasyInfo(r){
+  box(r.x, r.y, r.w, r.h, '#f8fafc', '#e2e8f0', 12);
+  const st = PN.U0 > 0.4 ? 'durch' : PN.U0 < -0.05 ? 'sperr' : 'null';
+  text(st === 'durch' ? 'Durchlassrichtung: Die Diode leitet.' : st === 'sperr' ? 'Sperrrichtung: Die Diode sperrt.' : 'Ohne Spannung', r.x + 14, r.y + 20, {weight:700, size:15});
+  const t = st === 'durch' ? 'Pluspol am p-Gebiet, Minuspol am n-Gebiet: Löcher und Elektronen werden in die Sperrschicht gedrückt. Sie wird schmal, die Ladungsträger überqueren sie und treffen sich – dabei vereinigen sie sich (Rekombination). Es fließt ein Strom.'
+    : st === 'sperr' ? 'Minuspol am p-Gebiet, Pluspol am n-Gebiet: Löcher und Elektronen werden von der Grenze weggezogen. Die Sperrschicht wird breiter, fast kein Strom fließt.'
+    : 'An der Grenze sind Elektronen in das p-Gebiet gewandert und haben dort Löcher gefüllt. Zurück bleibt eine Zone ohne freie Ladungsträger – die Sperrschicht. Nur ortsfeste Ionen bleiben übrig.';
+  wrapText(t, r.x + 14, r.y + 50, r.w - 28, {size:16, col:'#334155'});
+}
+function pnDrawBands(r, d, w, lv){
+  box(r.x, r.y, r.w, r.h, '#fbfcfe', '#e2e8f0', 12);
+  text('Bändermodell des pn-Übergangs', r.x + 12, r.y + 16, {weight:700, size:13});
+  const dE = Math.max(0.02, d.Vbi - PN.UD), delta = (d.Eg - d.Vbi)/2;
+  const range = d.Eg + dE + 0.5, top = r.y + 40, bot = r.y + r.h - 22, sc = (bot - top)/range;
+  const ix = r.x + 10, iw = r.w - 20;
+  const ECn = d.Eg + 0.25;                      /* Leitungsbandkante im n-Gebiet (Energie über Unterkante) */
+  const Yv = E => bot - E*sc;
+  const S = x => { const xl = 0.5 - w, xr = 0.5 + w; if (x <= xl) return 1; if (x >= xr) return 0; const u = (x - xl)/(xr - xl); return u < 0.5 ? 1 - 2*u*u : 2*(1 - u)*(1 - u); };
+  const ECx = x => ECn + dE*S(x), EVx = x => ECx(x) - d.Eg;
+  const X = x => ix + x*iw;
+  ctx.fillStyle = 'rgba(245,158,11,.18)'; ctx.beginPath();
+  for (let k = 0; k <= 100; k++){ const x = k/100; k ? ctx.lineTo(X(x), Yv(ECx(x))) : ctx.moveTo(X(x), Yv(ECx(x))); }
+  ctx.lineTo(X(1), r.y + 30); ctx.lineTo(X(0), r.y + 30); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = 'rgba(59,130,246,.18)'; ctx.beginPath();
+  for (let k = 0; k <= 100; k++){ const x = k/100; k ? ctx.lineTo(X(x), Yv(EVx(x))) : ctx.moveTo(X(x), Yv(EVx(x))); }
+  ctx.lineTo(X(1), bot + 14); ctx.lineTo(X(0), bot + 14); ctx.closePath(); ctx.fill();
+  for (const [fn, col] of [[ECx,'#d97706'],[EVx,'#2563eb']]){ ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath(); for (let k = 0; k <= 100; k++){ const x = k/100; k ? ctx.lineTo(X(x), Yv(fn(x))) : ctx.moveTo(X(x), Yv(fn(x))); } ctx.stroke(); }
+  text('Leitungsband', X(0.02), Yv(ECx(0)) - 10, {size:11, weight:600, col:'#9a3412'});
+  text('Valenzband', X(0.62), Yv(EVx(0.62)) + 14, {size:11, weight:600, col:'#1e40af'});
+  /* Fermi-Niveaus */
+  const EFn = ECn - delta, EFp = EVx(0) + delta;
+  dline(X(0.5 + w), Yv(EFn), X(1), Yv(EFn), '#7c3aed', 1.5); dline(X(0), Yv(EFp), X(0.5 - w), Yv(EFp), '#7c3aed', 1.5);
+  if (lv === 2) text(Math.abs(PN.UD) > 0.02 ? `Fermi-Niveaus um e·U = ${fmt(PN.UD,2)} eV verschoben` : 'Fermi-Niveau überall gleich', X(1) - 4, Yv(EFn) + 12, {align:'right', size:11, col:'#7c3aed', weight:600});
+  /* Barriere */
+  const bx = X(0.5 + w) + 18;
+  arrow(bx, Yv(ECn), bx, Yv(ECn + dE) + 2, '#b91c1c', 1.6);
+  text(lv === 2 ? `Barriere e·(U_D − U) = ${fmt(dE,2)} eV` : 'Energieberg (Barriere)', bx + 6, Math.max(Yv(ECn + dE/2), Yv(ECn) - 40) + (dE < 0.25 ? 30 : 0), {size:11, weight:600, col:'#b91c1c'});
+  /* Ladungsträger an den Bandkanten */
+  for (const e of PN.e) elec(X(e.x), Yv(ECx(e.x)) - 6 - e.y*8, 3.6);
+  for (const h of PN.h) hole(X(h.x), Yv(EVx(h.x)) + 6 + h.y*8, 4);
+  for (const c of PN.cross){ if (c.e) elec(X(c.x), Yv(ECx(c.x)) - 6, 3.8); else hole(X(c.x), Yv(EVx(c.x)) + 7, 4.2); }
+  text('p', X(0.25), r.y + 30, {align:'center', size:14, weight:800, col:'#b91c1c'});
+  text('n', X(0.75), r.y + 30, {align:'center', size:14, weight:800, col:'#1d4ed8'});
+}
+function pnDrawCircuit(r, d, lv){
+  box(r.x, r.y, r.w, r.h, '#f8fafc', '#e2e8f0', 12);
+  text('Stromkreis', r.x + 12, r.y + 16, {weight:700, size:13});
+  const l = r.x + 34, rr = r.x + r.w - 34, t = r.y + 50, bt = r.y + r.h - 40;
+  ctx.strokeStyle = '#334155'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(l, t); ctx.lineTo(rr, t); ctx.lineTo(rr, bt); ctx.lineTo(l, bt); ctx.closePath(); ctx.stroke();
+  /* Spannungsquelle links */
+  const by = (t + bt)/2;
+  ctx.fillStyle = '#f8fafc'; ctx.fillRect(l - 14, by - 12, 28, 24);
+  const plusTop = PN.U0 >= 0;
+  line(l - 14, by - 7, l + 14, by - 7, '#1f2937', plusTop ? 2 : 5); line(l - 8, by + 7, l + 8, by + 7, '#1f2937', plusTop ? 5 : 2);
+  text(`${PN.U0 > 0 ? '+' : ''}${fmt(PN.U0,1)} V`, l + 18, by, {size:12, weight:700});
+  /* Diode oben */
+  const dx = (l + rr)/2;
+  ctx.fillStyle = '#f8fafc'; ctx.fillRect(dx - 22, t - 14, 44, 28);
+  ctx.fillStyle = '#1f2937'; ctx.beginPath(); ctx.moveTo(dx - 12, t - 12); ctx.lineTo(dx + 10, t); ctx.lineTo(dx - 12, t + 12); ctx.closePath(); ctx.fill();
+  line(dx + 11, t - 12, dx + 11, t + 12, '#1f2937', 3); line(dx - 22, t, dx + 22, t, '#1f2937', 2.2);
+  text('p', dx - 20, t - 18, {size:11, weight:700, col:'#b91c1c'}); text('n', dx + 16, t - 18, {size:11, weight:700, col:'#1d4ed8'});
+  /* Lämpchen rechts */
+  const ly = (t + bt)/2, br = clamp(PN.I*1000/30, 0, 1.3);
+  if (br > 0.02){ const gr = ctx.createRadialGradient(rr, ly, 3, rr, ly, 40); gr.addColorStop(0, `rgba(253,224,71,${0.3 + 0.5*Math.min(1,br)})`); gr.addColorStop(1, 'rgba(253,224,71,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(rr, ly, 40, 0, Math.PI*2); ctx.fill(); }
+  circle(rr, ly, 13, br > 0.02 ? '#fef3c7' : '#fff', '#1f2937', 2.2);
+  line(rr - 9, ly - 9, rr + 9, ly + 9, '#1f2937', 2); line(rr + 9, ly - 9, rr - 9, ly + 9, '#1f2937', 2);
+  if (lv) text(`${PN.R} Ω`, rr - 18, ly, {align:'right', size:11, col:'#475569'});
+  pill(lv ? `I = ${fmtI(PN.I)}` : (PN.I > 2e-3 ? 'Strom fließt' : 'kein Strom'), dx, bt, {size:13});
+  if (lv) pill(`U an der Diode = ${fmt(PN.UD,2)} V`, dx, bt + 24, {size:12, bg:'#e2e8f0', col:'#1d2230'});
+}
+function pnDrawCurve(r, d, lv){
+  if (lv === 0){
+    box(r.x, r.y, r.w, r.h, '#f8fafc', '#e2e8f0', 12);
+    text('So funktioniert eine Diode', r.x + 12, r.y + 18, {weight:700, size:13});
+    wrapText('Eine Diode ist wie ein Ventil: Sie lässt den Strom nur in eine Richtung durch. Probiere beide Polungen aus!', r.x + 12, r.y + 44, r.w - 24, {size:13, col:'#334155'});
+    return;
+  }
+  const p = plot(r, { title:'Kennlinie der Diode', x0:-1, x1:1, y0:-10, y1:50, xt:[-1,-0.5,0,0.5,1], yt:[0,10,20,30,40,50], xf:v => fmt(v,1), xl:'U in V', yl:'I in mA', left:40 });
+  clipTo(p);
+  for (const [k, dd] of Object.entries(DIODES)){
+    const sel = k === PN.mat;
+    ctx.strokeStyle = sel ? '#0f766e' : '#cbd5e1'; ctx.lineWidth = sel ? 2.5 : 1.4; ctx.beginPath();
+    for (let s = 0; s <= 200; s++){ const U = -1 + s/100; const y = p.Y(clamp(diodeI(dd, U)*1000, -12, 60)); s ? ctx.lineTo(p.X(U), y) : ctx.moveTo(p.X(U), y); }
+    ctx.stroke();
+  }
+  /* Arbeitsgerade des Vorwiderstands */
+  if (lv === 2 && PN.U0 > 0){ ctx.save(); ctx.setLineDash([4,4]); line(p.X(0), p.Y(PN.U0/PN.R*1000), p.X(Math.min(1, PN.U0)), p.Y((PN.U0 - Math.min(1, PN.U0))/PN.R*1000), '#94a3b8', 1.5); ctx.restore(); }
+  ctx.restore();
+  const xU = clamp(PN.UD, -1, 1);
+  circle(p.X(xU), p.Y(clamp(PN.I*1000, -10, 50)), 6, '#0f766e', '#fff', 2);
+  if (PN.UD < -1) text(`← ${fmt(PN.UD,1)} V`, p.L + 4, p.Y(0) - 10, {size:11, col:'#0f766e', weight:600});
+  text(`Schwellspannung ≈ ${fmt(d.Vbi - 0.1,1)} V`, p.L + 6, p.T + 6, {size:11, col:'#0f766e', weight:600});
+  if (lv === 2) text(`I = I_S·(e^(U/U_T) − 1), I_S = ${sci(d.Is,0)} A, U_T = ${fmt(UT0*1000,1)} mV`, p.L + 6, p.T + 22, {size:10, col:'#475569'});
+}
+function pnControls(){
+  const lv = lvlNum();
+  UI.slider('Spannung der Quelle', {min:-5, max:5, step:0.05, get:() => PN.U0, set:v => PN.U0 = v, fmt:v => `${v > 0 ? '+' : ''}${fmt(v,2)} V` + (v > 0.01 ? ' (Plus am p-Gebiet)' : v < -0.01 ? ' (Plus am n-Gebiet)' : '')});
+  UI.buttons([['Durchlassrichtung', () => { PN.U0 = 3; buildControls(); }], ['Sperrrichtung', () => { PN.U0 = -3; buildControls(); }], ['0 V', () => { PN.U0 = 0; buildControls(); }]]);
+  UI.seg('Material', Object.entries(DIODES).map(([k,v]) => [k, v.name]), () => PN.mat, v => PN.mat = v);
+  if (lv) UI.select('Lämpchen (Widerstand)', [['50','50 Ω'],['100','100 Ω'],['220','220 Ω']], () => String(PN.R), v => PN.R = +v);
+  UI.note('p-Gebiet: rote Löcher (+), n-Gebiet: blaue Elektronen. In der Sperrschicht bleiben nur ortsfeste Ionen.');
+}
+
+/* =====================================================================
+   Station 4: Solarzelle
+   Modell: Sonnenspektrum als Schwarzer Strahler (5778 K), auf die
+   Bestrahlungsstärke skaliert. Jedes absorbierte Photon (E ≥ E_g) liefert
+   mit 90 % Wahrscheinlichkeit ein Elektron (Quantenausbeute).
+   Kennlinie: I = I_L − I_0·(e^(U/U_T) − 1), I_0 = C·e^(−E_g/kT).
+   C ist so gewählt, dass Silizium bei 25 °C U_oc = 0,63 V hat.
+   ===================================================================== */
+const CELLMATS = {
+  Si:   { name:'Silizium', Eg:1.12, thick:180, Ldiff:200, direct:false, col:'#1e3a8a' },
+  CIGS: { name:'CIGS (Dünnschicht)', Eg:1.15, thick:2.5, Ldiff:2, direct:true, col:'#3f3f46' },
+  GaAs: { name:'Galliumarsenid', Eg:1.42, thick:3, Ldiff:5, direct:true, col:'#334155' },
+  CdTe: { name:'Cadmiumtellurid (Dünnschicht)', Eg:1.45, thick:3, Ldiff:2, direct:true, col:'#44403c' },
+  Pero: { name:'Perowskit', Eg:1.6, thick:0.6, Ldiff:1, direct:true, col:'#57534e' },
+  Ge:   { name:'Germanium', Eg:0.66, thick:150, Ldiff:150, direct:false, col:'#525252' }
+};
+const QEFF = 0.9, AREA = 0.01;   /* Quantenausbeute, Zellfläche 100 cm² in m² */
+const SPEC = (() => {
+  const Es = [], F = []; let P = 0; const kT = KB*5778, dE = 0.01;
+  for (let E = 0.31; E <= 4.4; E += dE){ const f = E*E/Math.expm1(E/kT); Es.push(E); F.push(f); P += E*f*dE; }
+  const sc = 1000/(P*QE);       /* Photonen pro (m²·s·eV) bei 1000 W/m² */
+  const Fs = F.map(v => v*sc);
+  const cum = []; let s = 0; for (const v of Fs){ s += v; cum.push(s); }
+  return { Es, F:Fs, dE, cum, tot:s };
+})();
+function photonFlux(Eg){ let n = 0; SPEC.Es.forEach((E,k) => { if (E >= Eg) n += SPEC.F[k]*SPEC.dE; }); return n; }     /* bei 1000 W/m² */
+const C_J0 = (() => { const kT = KB*298.15, Jsc = QE*photonFlux(1.12)*QEFF; return Jsc/(Math.expm1(0.63/kT)*Math.exp(-1.12/kT)); })();
+const SC = { light:'sun', lam:550, G:1000, mat:'Si', Tc:25, Ns:1, logR:-0.85, ph:[], car:[], heats:[], flashes:[], acc:0, fan:0, wire:0, showEta:false, op:null };
+/* Kennwerte einer Zelle für die aktuellen Einstellungen */
+function cellParams(matKey, G, lightMode, lam, Tc){
+  const m = CELLMATS[matKey], T = Tc + 273.15, kT = KB*T;
+  let N, Pin = G;                               /* N: absorbierbare Photonen pro m² und s */
+  if (lightMode === 'sun') N = photonFlux(m.Eg)*G/1000;
+  else { const E = HC/lam; N = E >= m.Eg ? G/(E*QE) : 0; }
+  const IL = QE*N*QEFF*AREA;
+  const I0 = C_J0*Math.exp(-m.Eg/kT)*AREA;
+  const Voc = IL > 0 ? kT*Math.log(IL/I0 + 1) : 0;
+  let Pm = 0, Um = 0;
+  for (let k = 1; k <= 400; k++){ const U = Voc*k/400, P = U*(IL - I0*Math.expm1(U/kT)); if (P > Pm){ Pm = P; Um = U; } }
+  return { m, kT, IL, I0, Voc, Pm, Um, Im: Um ? Pm/Um : 0, Pin: Pin*AREA, N };
+}
+const cellI = (c, U) => c.IL - c.I0*Math.expm1(U/c.kT);
+/* Arbeitspunkt mit Lastwiderstand R am Modul aus Ns Zellen */
+function opPoint(c, Ns, R){
+  if (c.IL <= 0) return { U:0, I:0 };
+  let lo = 0, hi = c.Voc;
+  for (let k = 0; k < 70; k++){ const m = (lo + hi)/2; if (cellI(c, m) - Ns*m/R > 0) lo = m; else hi = m; }
+  const U = (lo + hi)/2; return { U, I:Math.max(0, cellI(c, U)) };
+}
+/* Verlustanalyse pro Zelle (Leistungen in W) */
+function losses(c, op, lightMode, lam, G){
+  const Eg = c.m.Eg; let Pb = 0, Pt = 0, Pg = 0;
+  if (lightMode === 'sun'){
+    SPEC.Es.forEach((E,k) => { const p = SPEC.F[k]*SPEC.dE*QE*G/1000*AREA; if (E < Eg) Pb += E*p; else { Pt += (E - Eg)*p; Pg += Eg*p; } });
+  } else { const E = HC/lam, Ph = G*AREA; if (E < Eg) Pb = Ph; else { Pt = Ph*(E - Eg)/E; Pg = Ph*Eg/E; } }
+  const Pop = op.U*op.I;
+  return [
+    ['Photonen zu energiearm (E < E_g)', Pb, '#94a3b8'],
+    ['Überschussenergie → Wärme', Pt, '#f97316'],
+    ['Reflexion, Rekombination', 0.1*Pg, '#a8a29e'],
+    ['Spannung kleiner als E_g/e', (Eg - c.Voc)*c.IL, '#facc15'],
+    ['Kennlinienform (Füllfaktor)', c.Voc*c.IL - c.Pm, '#fde68a'],
+    ['nicht im besten Arbeitspunkt', c.Pm - Pop, '#e5e7eb'],
+    ['elektrische Leistung', Pop, '#16a34a']
+  ];
+}
+function absorbDepth(m, E){       /* Eindringtiefe in µm (zufällig gezogen) */
+  if (E < m.Eg) return Infinity;
+  const lamEff = HC/(E - m.Eg + 1.12);
+  const T = [[300,1.7e6],[350,1.04e6],[400,9.5e4],[450,2.6e4],[500,1.1e4],[550,6.4e3],[600,4.1e3],[650,2.8e3],[700,1.9e3],[750,1.3e3],[800,850],[850,540],[900,310],[950,160],[1000,64],[1050,16],[1100,3.5],[1110,1.5]];
+  let a = 1.5;
+  for (let k = 0; k < T.length - 1; k++) if (lamEff >= T[k][0] && lamEff <= T[k+1][0]){ const f = (lamEff - T[k][0])/(T[k+1][0] - T[k][0]); a = Math.exp(Math.log(T[k][1]) + f*(Math.log(T[k+1][1]) - Math.log(T[k][1]))); }
+  if (lamEff < 300) a = 1.7e6;
+  if (m.direct) a *= 12;
+  return -Math.log(Math.random())/a*1e4;
+}
+function sampleSunE(){ const r = Math.random()*SPEC.tot; let lo = 0, hi = SPEC.cum.length - 1; while (lo < hi){ const m = (lo + hi) >> 1; if (SPEC.cum[m] < r) lo = m + 1; else hi = m; } return SPEC.Es[lo]; }
+let etaCurve = null;
+function etaVsEg(){
+  if (etaCurve) return etaCurve;
+  etaCurve = [];
+  for (let Eg = 0.5; Eg <= 2.6; Eg += 0.02){
+    const kT = KB*298.15, IL = QE*photonFlux(Eg)*QEFF*AREA, I0 = C_J0*Math.exp(-Eg/kT)*AREA, Voc = kT*Math.log(IL/I0 + 1);
+    let Pm = 0; for (let k = 1; k <= 200; k++){ const U = Voc*k/200; Pm = Math.max(Pm, U*(IL - I0*Math.expm1(U/kT))); }
+    let ult = 0; SPEC.Es.forEach((E,k) => { if (E >= Eg) ult += Eg*SPEC.F[k]*SPEC.dE*QE; });
+    etaCurve.push([Eg, Pm/(1000*AREA), ult/1000]);
+  }
+  return etaCurve;
+}
+function scGeo(){
+  const wide = W > 900;
+  return wide ? { cell:{ x:W*0.06, y:H*0.16, w:W*0.34, h:H*0.5 }, read:{ x:W*0.03, y:H*0.76, w:W*0.53, h:H*0.21 }, iu:{ x:W*0.585, y:H*0.02, w:W*0.4, h:H*0.47 }, loss:{ x:W*0.585, y:H*0.51, w:W*0.4, h:H*0.46 } }
+              : { cell:{ x:W*0.08, y:H*0.08, w:W*0.5, h:H*0.3 }, read:{ x:10, y:H*0.43, w:W - 20, h:H*0.13 }, iu:{ x:10, y:H*0.57, w:W - 20, h:H*0.21 }, loss:{ x:10, y:H*0.79, w:W - 20, h:H*0.2 } };
+}
+function scState(){
+  const c = cellParams(SC.mat, SC.G, SC.light, SC.lam, SC.Tc);
+  const R = Math.pow(10, SC.logR)*SC.Ns;
+  const op = opPoint(c, SC.Ns, R);
+  return { c, R, op };
+}
+function scStep(dt, g, st){
+  const m = CELLMATS[SC.mat], cell = g.cell;
+  SC.acc += SC.G/1000*30*dt;
+  while (SC.acc >= 1){
+    SC.acc -= 1;
+    const E = SC.light === 'sun' ? sampleSunE() : HC/SC.lam;
+    SC.ph.push({ E, x:rnd(0.06, 0.94), t:0, d:absorbDepth(m, E) });
+  }
+  const yOf = d => cell.y + 14 + (cell.h - 26)*Math.log(1 + d/0.1)/Math.log(1 + m.thick/0.1);
+  for (const p of SC.ph){
+    p.t += dt;
+    const ySun = cell.y - 60, target = p.d <= m.thick ? yOf(p.d) : cell.y + cell.h + 40;
+    p.y = ySun + (target - ySun)*Math.min(1, p.t/(p.d <= m.thick ? 0.55 : 1.0));
+    if (p.d <= m.thick && p.t >= 0.55 && !p.done){
+      p.done = true;
+      const dj = m.direct ? 0.5*m.thick : 0.8;           /* bis hierher: n-Schicht und Raumladungszone */
+      const collect = p.d <= dj ? 1 : Math.exp(-(p.d - dj)/m.Ldiff);
+      const ok = Math.random() < collect;
+      SC.car.push({ x:p.x, y:p.y, t:0, ok, e:true }); SC.car.push({ x:p.x, y:p.y, t:0, ok, e:false });
+      if (p.E - m.Eg > 0.25) SC.heats.push({ x:p.x, y:p.y, t:0 });
+    }
+  }
+  SC.ph = SC.ph.filter(p => !p.done && p.t < 1.05);
+  const frac = st.c.IL > 0 ? st.op.I/st.c.IL : 0;
+  for (const q of SC.car){
+    q.t += dt;
+    if (!q.ok){ if (q.t > 0.5 && !q.gone){ q.gone = true; if (q.e) SC.flashes.push({ x:q.x, y:q.y, t:0 }); } continue; }
+    const v = 260*dt;
+    if (q.e){ q.y -= v; if (q.y <= cell.y + 6){ q.gone = true; if (Math.random() > frac) SC.flashes.push({ x:q.x, y:cell.y + 6 + (cell.h - 26)*0.2, t:0, junction:true }); } }
+    else { q.y += v*0.8; if (q.y >= cell.y + cell.h - 6) q.gone = true; }
+  }
+  SC.car = SC.car.filter(q => !q.gone);
+  for (const h of SC.heats) h.t += dt*1.3; SC.heats = SC.heats.filter(h => h.t < 1);
+  for (const f of SC.flashes) f.t += dt*2; SC.flashes = SC.flashes.filter(f => f.t < 1);
+  const ref = cellParams(SC.mat, 1000, 'sun', 550, 25).Pm*SC.Ns;
+  SC.fan += dt*14*Math.sqrt(clamp(st.op.U*st.op.I*SC.Ns/ref, 0, 2));
+  SC.wire += dt*clamp(st.op.I/3, 0, 2)*120;
+}
+function scDraw(dt){
+  const g = scGeo(), st = scState(), lv = lvlNum(), m = CELLMATS[SC.mat], cell = g.cell;
+  scStep(dt, g, st);
+  SC.op = st;
+  /* Sonne bzw. Lampe */
+  const sx = cell.x + cell.w*0.12, sy = cell.y - 72;
+  if (SC.light === 'sun'){
+    const glow = ctx.createRadialGradient(sx, sy, 4, sx, sy, 36); glow.addColorStop(0, `rgba(253,224,71,${0.4 + 0.5*SC.G/1200})`); glow.addColorStop(1, 'rgba(253,224,71,0)');
+    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(sx, sy, 36, 0, Math.PI*2); ctx.fill(); circle(sx, sy, 15, '#facc15', '#eab308', 2);
+    text(lv ? `Sonnenlicht ${fmt(SC.G,0)} W/m²` : (SC.G > 800 ? 'volle Sonne' : SC.G > 300 ? 'leicht bewölkt' : 'stark bewölkt'), sx + 26, sy, {size:12, weight:600});
+  } else {
+    box(sx - 16, sy - 10, 32, 20, '#334155', null, 4); circle(sx, sy + 10, 6, rgba(nmRGB(SC.lam),1));
+    text(`${fmt(SC.lam,0)} nm (${region(SC.lam)})` + (lv ? ` · ${fmt(HC/SC.lam,2)} eV` : ''), sx + 26, sy, {size:12, weight:600});
+  }
+  /* Zellquerschnitt mit logarithmischer Tiefe */
+  const yOf = d => cell.y + 14 + (cell.h - 26)*Math.log(1 + d/0.1)/Math.log(1 + m.thick/0.1);
+  const dn = m.direct ? 0.05 : 0.3, dj = m.direct ? 0.5*m.thick : 0.8;
+  box(cell.x, cell.y + 10, cell.w, yOf(dn) - cell.y - 10, '#bfdbfe', null, 0);
+  box(cell.x, yOf(dn), cell.w, yOf(dj) - yOf(dn), '#f1f5f9', null, 0);
+  box(cell.x, yOf(dj), cell.w, cell.y + cell.h - 12 - yOf(dj), '#fecaca', null, 0);
+  box(cell.x, cell.y + cell.h - 12, cell.w, 12, '#94a3b8', null, 0);
+  for (let k = 0; k < 6; k++) box(cell.x + (k + 0.5)*cell.w/6 - 5, cell.y + 2, 10, 10, '#475569', null, 2);
+  box(cell.x, cell.y + 2, cell.w, cell.h - 2, null, '#64748b', 2);
+  text('Frontkontakt', cell.x + cell.w + 8, cell.y + 6, {size:10, col:'#475569'});
+  text(m.direct ? 'n-Schicht' : 'n-Schicht', cell.x + cell.w + 8, (cell.y + 10 + yOf(dn))/2 + 3, {size:10, col:'#1d4ed8', weight:600});
+  text(lv ? 'Raumladungszone' : 'Grenzschicht', cell.x + cell.w + 8, (yOf(dn) + yOf(dj))/2, {size:10, col:'#475569', weight:600});
+  text('p-Schicht', cell.x + cell.w + 8, (yOf(dj) + cell.y + cell.h - 12)/2, {size:10, col:'#b91c1c', weight:600});
+  text('Rückkontakt', cell.x + cell.w + 8, cell.y + cell.h - 6, {size:10, col:'#475569'});
+  if (lv){
+    for (const d of [0.1, 1, 10, 100].filter(d => d < m.thick)) { line(cell.x - 5, yOf(d), cell.x, yOf(d), '#64748b', 1); text(d < 1 ? fmt(d,1) + ' µm' : fmt(d,0) + ' µm', cell.x - 7, yOf(d), {align:'right', size:9, col:'#64748b'}); }
+    text(`Dicke ${fmt(m.thick, m.thick < 10 ? 1 : 0)} µm (Tiefe logarithmisch)`, cell.x, cell.y + cell.h + 14, {size:10, col:'#64748b'});
+  }
+  /* Photonen */
+  for (const p of SC.ph){
+    const nm = HC/p.E, x = cell.x + p.x*cell.w;
+    wiggle(x, p.y, Math.PI/2, 18, rgba(nmRGB(nm), nm > 780 ? 0.75 : 1), 3.5, 2);
+  }
+  for (const h of SC.heats) heat(cell.x + h.x*cell.w + 7, h.y, 1 - h.t);
+  for (const q of SC.car){ const x = cell.x + q.x*cell.w; q.e ? elec(x, q.y, 3.6) : hole(x, q.y, 3.8); }
+  for (const f of SC.flashes) circle(cell.x + f.x*cell.w, f.y, 3 + 10*f.t, null, `rgba(234,88,12,${1 - f.t})`, 1.6);
+  /* äußerer Stromkreis mit Ventilator */
+  const wx = cell.x + cell.w + 122, top = cell.y + 6, bot = cell.y + cell.h - 6, fy = (top + bot)/2;
+  ctx.strokeStyle = '#334155'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(cell.x + cell.w*0.92, top); ctx.lineTo(cell.x + cell.w*0.92, top - 18); ctx.lineTo(wx, top - 18); ctx.lineTo(wx, fy - 26);
+  ctx.moveTo(wx, fy + 26); ctx.lineTo(wx, bot + 18); ctx.lineTo(cell.x + cell.w*0.5, bot + 18); ctx.lineTo(cell.x + cell.w*0.5, bot); ctx.stroke();
+  if (st.op.I > 0.01){
+    const path = [[cell.x + cell.w*0.92, top], [cell.x + cell.w*0.92, top - 18], [wx, top - 18], [wx, fy - 26]];
+    const path2 = [[wx, fy + 26], [wx, bot + 18], [cell.x + cell.w*0.5, bot + 18], [cell.x + cell.w*0.5, bot]];
+    for (const pp of [path, path2]){
+      let tot = 0; const seg = []; for (let k = 1; k < pp.length; k++){ const l = Math.hypot(pp[k][0] - pp[k-1][0], pp[k][1] - pp[k-1][1]); seg.push(l); tot += l; }
+      for (let s = (SC.wire % 22); s < tot; s += 22){ let d = s, k = 0; while (d > seg[k]){ d -= seg[k]; k++; } const f = d/seg[k]; elec(pp[k][0] + (pp[k+1][0] - pp[k][0])*f, pp[k][1] + (pp[k+1][1] - pp[k][1])*f, 3); }
+    }
+  }
+  circle(wx, fy, 26, '#fff', '#334155', 2);
+  ctx.save(); ctx.translate(wx, fy); ctx.rotate(SC.fan);
+  for (let k = 0; k < 3; k++){ ctx.rotate(Math.PI*2/3); ctx.fillStyle = '#0ea5e9'; ctx.beginPath(); ctx.ellipse(0, -12, 6, 12, 0.3, 0, Math.PI*2); ctx.fill(); }
+  ctx.restore(); circle(wx, fy, 4, '#334155');
+  text(SC.logR > 3.5 ? 'Leerlauf' : SC.logR < -3 ? 'Kurzschluss' : 'Ventilator', wx, fy + 38, {align:'center', size:11, weight:600, col:'#334155'});
+  scDrawReadout(g.read, st, lv);
+  scDrawIU(g.iu, st, lv);
+  if (SC.showEta && lv === 2) scDrawEta(g.loss); else scDrawLoss(g.loss, st, lv);
+}
+function scDrawReadout(r, st, lv){
+  box(r.x, r.y, r.w, r.h, '#f8fafc', '#e2e8f0', 12);
+  const c = st.c, U = st.op.U*SC.Ns, I = st.op.I, P = U*I, Pin = c.Pin*SC.Ns;
+  const items = lv === 0
+    ? [['Spannung', fmt(U, 2) + ' V'], ['Stromstärke', fmt(I, 2) + ' A'], ['Leistung', fmt(P, 2) + ' W']]
+    : [['U', fmt(U, 2) + ' V'], ['I', fmt(I, 2) + ' A'], ['P', fmt(P, 2) + ' W'], ['Wirkungsgrad', fmt(Pin > 0 ? P/Pin*100 : 0, 1) + ' %']];
+  const cw = (r.w - 20)/items.length;
+  items.forEach(([k, v], i) => {
+    const x = r.x + 10 + i*cw;
+    text(k, x + 6, r.y + 20, {size:12, col:'#64748b'});
+    text(v, x + 6, r.y + 46, {size:22, weight:700, mono:true});
+  });
+  let y = r.y + r.h - 18;
+  if (lv) text(`${SC.Ns > 1 ? SC.Ns + ' Zellen in Reihe · ' : ''}Leerlaufspannung ${fmt(c.Voc*SC.Ns,2)} V · Kurzschlussstrom ${fmt(c.IL,2)} A · MPP ${fmt(c.Pm*SC.Ns,2)} W` + (lv === 2 ? ` · Füllfaktor ${fmt(c.IL*c.Voc > 0 ? c.Pm/(c.IL*c.Voc)*100 : 0,0)} %` : ''), r.x + 16, y, {size:12, col:'#334155'});
+  else text(P > 0.5*c.Pm*SC.Ns && P > 0.01 ? 'Der Ventilator dreht sich gut.' : P > 0.01 ? 'Der Ventilator dreht sich langsam.' : 'Der Ventilator steht.', r.x + 16, y, {size:13, weight:600, col:'#334155'});
+}
+function scDrawIU(r, st, lv){
+  const c = st.c, Ns = SC.Ns;
+  if (lv === 0){
+    box(r.x, r.y, r.w, r.h, '#f8fafc', '#e2e8f0', 12);
+    text('Was passiert in der Solarzelle?', r.x + 12, r.y + 18, {weight:700, size:13});
+    let y = r.y + 44;
+    for (const t of ['1. Ein Photon wird absorbiert und erzeugt ein freies Elektron (blau) und ein Loch (rot).', '2. Das elektrische Feld an der Grenzschicht trennt die beiden: Elektronen nach oben, Löcher nach unten.', '3. Die Elektronen fließen über die Kabel durch den Ventilator und kommen von unten zurück.', 'Licht mit zu wenig Energie geht einfach durch.'])
+      y = wrapText(t, r.x + 14, y, r.w - 28, {size:13, col:'#334155'}) + 6;
+    return;
+  }
+  const Umax = Math.max(0.2, c.Voc*Ns*1.08), Imax = Math.max(0.2, c.IL*1.15), Pmax = Math.max(0.05, c.Pm*Ns*1.25);
+  const nice = v => { const p = Math.pow(10, Math.floor(Math.log10(v))); for (const k of [1,2,5,10]) if (v/(p*k) <= 5) return p*k; return p*10; };
+  const ux = nice(Umax), iy = nice(Imax);
+  const p = plot(r, { title:'Kennlinie: Strom und Leistung', x0:0, x1:Umax, y0:0, y1:Imax, xt:Array.from({length:Math.floor(Umax/ux) + 1}, (_,k) => k*ux), yt:Array.from({length:Math.floor(Imax/iy) + 1}, (_,k) => k*iy), xf:v => fmt(v, ux < 1 ? 1 : 0), yf:v => fmt(v, iy < 1 ? 1 : 0), xl:'U in V', yl:'I in A', left:44, right:44 });
+  clipTo(p);
+  ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2.5; ctx.beginPath();
+  for (let k = 0; k <= 200; k++){ const U = c.Voc*k/200, y = p.Y(Math.max(0, cellI(c, U))); k ? ctx.lineTo(p.X(U*Ns), y) : ctx.moveTo(p.X(U*Ns), y); }
+  ctx.stroke();
+  const YP = v => p.B - v/Pmax*(p.B - p.T);
+  ctx.strokeStyle = '#f97316'; ctx.lineWidth = 2; ctx.beginPath();
+  for (let k = 0; k <= 200; k++){ const U = c.Voc*k/200, y = YP(U*Ns*Math.max(0, cellI(c, U))); k ? ctx.lineTo(p.X(U*Ns), y) : ctx.moveTo(p.X(U*Ns), y); }
+  ctx.stroke();
+  /* Widerstandsgerade */
+  const R = st.R; ctx.save(); ctx.setLineDash([4,4]); line(p.X(0), p.Y(0), p.X(Math.min(Umax, Imax*R)), p.Y(Math.min(Imax, Umax/R)), '#94a3b8', 1.5); ctx.restore();
+  ctx.restore();
+  text('P', p.R + 6, p.T + 4, {size:11, col:'#f97316', weight:700});
+  for (let k = 1; k <= 4; k++){ const v = Pmax*k/4.6; text(fmt(v, v < 1 ? 2 : 1) + ' W', p.R + 4, YP(v), {size:9, col:'#f97316'}); }
+  /* MPP und Arbeitspunkt */
+  if (c.Pm > 0){ circle(p.X(c.Um*Ns), p.Y(c.Im), 5, null, '#16a34a', 2); circle(p.X(c.Um*Ns), YP(c.Pm*Ns), 5, null, '#16a34a', 2); text('MPP', p.X(c.Um*Ns) + 7, YP(c.Pm*Ns) - 9, {size:11, weight:700, col:'#16a34a'}); }
+  circle(p.X(st.op.U*Ns), p.Y(st.op.I), 6.5, '#0f766e', '#fff', 2);
+  circle(p.X(st.op.U*Ns), YP(st.op.U*Ns*st.op.I), 5.5, '#f97316', '#fff', 2);
+  text('Arbeitspunkt', p.X(st.op.U*Ns) - 8, p.Y(st.op.I) + 14, {align:'right', size:11, weight:600, col:'#0f766e'});
+}
+function scDrawLoss(r, st, lv){
+  box(r.x, r.y, r.w, r.h, '#f8fafc', '#e2e8f0', 12);
+  const L = losses(st.c, st.op, SC.light, SC.lam, SC.G), Pin = st.c.Pin;
+  text(lv ? 'Wohin geht die Lichtenergie? (eine Zelle)' : 'Wohin geht die Lichtenergie?', r.x + 12, r.y + 16, {weight:700, size:13});
+  if (Pin <= 0){ text('Kein Licht.', r.x + 14, r.y + 46, {size:13}); return; }
+  let rows = L;
+  if (lv === 0){
+    const out = L[6][1], heatAll = L[1][1] + L[2][1] + L[3][1] + L[4][1] + L[5][1];
+    rows = [['nicht nutzbar (geht durch)', L[0][1], '#94a3b8'], ['wird zu Wärme', heatAll, '#f97316'], ['elektrische Energie', out, '#16a34a']];
+  }
+  const bx = r.x + 14, bw = r.w - 28; let x = bx; const by = r.y + 32;
+  for (const [, v, col] of rows){ const w = Math.max(0, v/Pin*bw); box(x, by, w, 22, col, null, 0); x += w; }
+  box(bx, by, bw, 22, null, '#64748b', 4);
+  let y = by + 40; const lh = Math.min(22, (r.y + r.h - y - 6)/rows.length);
+  for (const [name, v, col] of rows){
+    box(bx, y - 6, 12, 12, col, '#64748b', 2);
+    text(name, bx + 18, y, {size:12, col:'#334155'});
+    text(fmt(Math.max(0, v/Pin*100), 1) + ' %', bx + bw, y, {align:'right', size:12, weight:700, mono:true});
+    y += lh;
+  }
+}
+function scDrawEta(r){
+  const cur = etaVsEg();
+  const p = plot(r, { title:'Bestmöglicher Wirkungsgrad je nach Bandlücke (Modell)', x0:0.5, x1:2.6, y0:0, y1:50, xt:[0.5,1,1.5,2,2.5], yt:[0,10,20,30,40,50], xf:v => fmt(v,1), xl:'E_g in eV', yl:'η in %', left:40 });
+  clipTo(p);
+  ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2; ctx.beginPath(); cur.forEach(([E,,u],k) => { k ? ctx.lineTo(p.X(E), p.Y(u*100)) : ctx.moveTo(p.X(E), p.Y(u*100)); }); ctx.stroke();
+  ctx.strokeStyle = '#16a34a'; ctx.lineWidth = 2.5; ctx.beginPath(); cur.forEach(([E,e],k) => { k ? ctx.lineTo(p.X(E), p.Y(e*100)) : ctx.moveTo(p.X(E), p.Y(e*100)); }); ctx.stroke();
+  ctx.restore();
+  text('nur Photonen genutzt, E_g je Photon', p.X(1.6), p.Y(44), {size:10, col:'#94a3b8'});
+  text('mit Spannungs- und Kennlinienverlust', p.X(1.6), p.Y(14), {size:10, col:'#16a34a'});
+  for (const [k, m] of Object.entries(CELLMATS)){
+    const e = cellParams(k, 1000, 'sun', 550, 25), sel = k === SC.mat;
+    circle(p.X(m.Eg), p.Y(e.Pm/e.Pin*100), sel ? 6 : 4, sel ? '#0f766e' : '#64748b', '#fff', 1.5);
+    text(m.name.split(' ')[0], p.X(m.Eg), p.Y(e.Pm/e.Pin*100) - 11, {align:'center', size:9, col:sel ? '#0f766e' : '#64748b', weight:sel ? 700 : 500});
+  }
+}
+function scControls(){
+  const lv = lvlNum();
+  UI.seg('Licht', [['sun','Sonnenlicht'],['mono','einfarbig']], () => SC.light, v => { SC.light = v; buildControls(); });
+  if (SC.light === 'mono') UI.slider('Wellenlänge', {min:300, max:1600, step:10, cls:'spectrum', bg:spectrumCSS(300,1600), get:() => SC.lam, set:v => SC.lam = v, fmt:v => `${v} nm (${region(v)})` + (lv ? ` · ${fmt(HC/v,2)} eV` : '')});
+  UI.slider(SC.light === 'sun' ? 'Bestrahlungsstärke' : 'Lichtleistung', {min:0, max:1200, step:10, get:() => SC.G, set:v => SC.G = v, fmt:v => lv ? `${v} W/m²` : (v > 800 ? 'volle Sonne' : v > 300 ? 'bewölkt' : v > 0 ? 'stark bewölkt' : 'dunkel')});
+  UI.select('Material der Zelle', Object.entries(CELLMATS).map(([k,m]) => [k, lv ? `${m.name} (E_g = ${fmt(m.Eg,2)} eV)` : m.name]), () => SC.mat, v => { SC.mat = v; SC.ph = []; SC.car = []; });
+  const rs = UI.slider('Verbraucher (Lastwiderstand)', {min:-4, max:4, step:0.05, get:() => SC.logR, set:v => SC.logR = v, fmt:v => v > 3.5 ? 'Leerlauf (offen)' : v < -3 ? 'Kurzschluss' : lv ? fmtR(Math.pow(10, v)*SC.Ns) : (v < -1.2 ? 'klein' : v < -0.4 ? 'passend' : 'groß')});
+  UI.buttons([['Kurzschluss', () => { SC.logR = -4; rs.refresh(); }], ['Leerlauf', () => { SC.logR = 4; rs.refresh(); }], ['bester Punkt (MPP)', () => { const c = cellParams(SC.mat, SC.G, SC.light, SC.lam, SC.Tc); if (c.Im > 0){ SC.logR = Math.log10(c.Um/c.Im); rs.refresh(); } }, 'primary']]);
+  if (lv){
+    UI.slider('Temperatur der Zelle', {min:-10, max:80, step:1, get:() => SC.Tc, set:v => SC.Tc = v, fmt:v => `${v} °C`});
+    UI.select('Zellen in Reihe (Modul)', [['1','1 Zelle'],['2','2 Zellen'],['4','4 Zellen'],['36','36 Zellen'],['60','60 Zellen']], () => String(SC.Ns), v => SC.Ns = +v);
+  }
+  if (lv === 2) UI.check('Wirkungsgrad je nach Bandlücke zeigen', () => SC.showEta, v => SC.showEta = v);
+  UI.note('Zellfläche 10 cm × 10 cm. Sonnenlicht als Schwarzer Strahler mit 5778 K; Quantenausbeute 90 %.');
+}
+
+/* =====================================================================
+   Station 5: LED – die Umkehrung der Solarzelle
+   ===================================================================== */
+const LEDS = {
+  ir:     { name:'Infrarot (GaAs)', Eg:1.42 },
+  red:    { name:'Rot (AlGaAs)', Eg:1.9 },
+  orange: { name:'Orange (GaAsP)', Eg:2.03 },
+  yellow: { name:'Gelb (AlGaInP)', Eg:2.1 },
+  green:  { name:'Grün (InGaN)', Eg:2.38 },
+  blue:   { name:'Blau (InGaN)', Eg:2.65 },
+  violet: { name:'Violett (InGaN)', Eg:3.1 },
+  white:  { name:'Weiß (blau + Leuchtstoff)', Eg:2.65, white:true }
+};
+const LD = { led:'red', U0:0, R:100, broken:false, pts:[], ph:[], acc:0, rec:[], UD:0, I:0 };
+const ledI = (Eg, U) => 1e-3*Math.exp(Math.min(60, (U - (Eg - 0.05))/(2*UT0)));
+function solveLED(Eg, U0, R){
+  if (U0 <= 0) return 0;
+  if (R <= 0) return U0;
+  let lo = 0, hi = U0;
+  for (let k = 0; k < 70; k++){ const m = (lo + hi)/2; if (U0 - m - R*ledI(Eg, m) > 0) lo = m; else hi = m; }
+  return (lo + hi)/2;
+}
+function ldGeo(){
+  const wide = W > 900;
+  return wide ? { led:{ x:W*0.03, y:H*0.03, w:W*0.27, h:H*0.42 }, band:{ x:W*0.03, y:H*0.48, w:W*0.56, h:H*0.49 }, circ:{ x:W*0.32, y:H*0.03, w:W*0.27, h:H*0.42 }, right:{ x:W*0.62, y:H*0.03, w:W*0.36, h:H*0.94 } }
+              : { led:{ x:10, y:10, w:W*0.48, h:H*0.3 }, band:{ x:10, y:H*0.32, w:W - 20, h:H*0.3 }, circ:{ x:W*0.51, y:10, w:W*0.47, h:H*0.3 }, right:{ x:10, y:H*0.64, w:W - 20, h:H*0.35 } };
+}
+function ldStep(dt){
+  const L = LEDS[LD.led];
+  if (LD.broken){ LD.UD = 0; LD.I = 0; }
+  else {
+    LD.UD = solveLED(L.Eg, LD.U0, LD.R); LD.I = LD.U0 > 0 ? ledI(L.Eg, LD.UD) : 0;
+    if (LD.I > 0.06){ LD.broken = true; buildControls(); }
+  }
+  const rate = clamp(LD.I*1000*1.2, 0, 30);
+  LD.acc += rate*dt;
+  while (LD.acc >= 1){ LD.acc -= 1; LD.rec.push({ x:rnd(0.42, 0.58), t:0, nm: ledPhotonNm(L) }); }
+  for (const r of LD.rec) r.t += dt*1.2; LD.rec = LD.rec.filter(r => r.t < 1.6);
+}
+function ledPhotonNm(L){
+  const E = L.Eg + KB*300/2 + (Math.random() + Math.random() + Math.random() - 1.5)*0.05;
+  if (L.white && Math.random() < 0.55) return rnd(520, 650);   /* Leuchtstoff wandelt blaues Licht in gelbes um */
+  return HC/E;
+}
+function ldDraw(dt){
+  ldStep(dt);
+  const g = ldGeo(), lv = lvlNum(), L = LEDS[LD.led];
+  const lamC = HC/(L.Eg + KB*300/2), col = L.white ? [255, 248, 230] : nmRGB(lamC);
+  const bright = LD.broken ? 0 : clamp(LD.I/0.02, 0, 1.4);
+  /* LED-Gehäuse */
+  const r = g.led, cx = r.x + r.w/2, cy = r.y + r.h*0.44;
+  box(r.x, r.y, r.w, r.h, '#fbfcfe', '#e2e8f0', 12);
+  if (bright > 0.01){
+    const gl = ctx.createRadialGradient(cx, cy, 5, cx, cy, r.w*0.5*(0.6 + 0.5*bright));
+    gl.addColorStop(0, rgba(col, lamC > 780 ? 0.15 : 0.55*Math.min(1, bright))); gl.addColorStop(1, rgba(col, 0));
+    ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(cx, cy, r.w*0.5*(0.6 + 0.5*bright), 0, Math.PI*2); ctx.fill();
+  }
+  const domeCol = L.white ? [240, 240, 240] : col;
+  ctx.fillStyle = rgba(domeCol, 0.35 + 0.5*Math.min(1, bright)); ctx.strokeStyle = '#475569'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(cx - 26, cy + 30); ctx.lineTo(cx - 26, cy - 8); ctx.arc(cx, cy - 8, 26, Math.PI, 0); ctx.lineTo(cx + 26, cy + 30); ctx.closePath(); ctx.fill(); ctx.stroke();
+  box(cx - 32, cy + 30, 64, 8, '#94a3b8', '#475569', 2);
+  line(cx - 12, cy + 38, cx - 12, cy + 80, '#64748b', 3); line(cx + 12, cy + 38, cx + 12, cy + 70, '#64748b', 3);
+  if (LD.broken){ text('durchgebrannt', cx, cy - 8, {align:'center', size:12, weight:700, col:'#b91c1c'}); }
+  text(L.name, r.x + 12, r.y + 16, {weight:700, size:13});
+  text(LD.broken ? 'kaputt – zu viel Strom!' : lamC > 760 && bright > 0.02 ? 'leuchtet unsichtbar (Infrarot)' : bright > 0.02 ? 'leuchtet' : 'aus', cx, r.y + r.h - 14, {align:'center', size:12, weight:600, col:LD.broken ? '#b91c1c' : '#334155'});
+  ldDrawCircuit(g.circ, lv);
+  ldDrawBand(g.band, L, lv);
+  if (lv === 2) ldDrawPlanck(g.right, L); else ldDrawSpectrum(g.right, L, lv);
+}
+function ldDrawCircuit(r, lv){
+  box(r.x, r.y, r.w, r.h, '#f8fafc', '#e2e8f0', 12);
+  text('Stromkreis', r.x + 12, r.y + 16, {weight:700, size:13});
+  const l = r.x + 30, rr = r.x + r.w - 30, t = r.y + 48, bt = r.y + r.h - 70;
+  ctx.strokeStyle = '#334155'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(l, t); ctx.lineTo(rr, t); ctx.lineTo(rr, bt); ctx.lineTo(l, bt); ctx.closePath(); ctx.stroke();
+  const by = (t + bt)/2;
+  ctx.fillStyle = '#f8fafc'; ctx.fillRect(l - 14, by - 12, 28, 24);
+  line(l - 14, by - 7, l + 14, by - 7, '#1f2937', 2); line(l - 8, by + 7, l + 8, by + 7, '#1f2937', 5);
+  text(`${fmt(LD.U0,2)} V`, l + 18, by, {size:12, weight:700});
+  const mx = (l + rr)/2;
+  if (LD.R > 0){ ctx.fillStyle = '#f8fafc'; ctx.fillRect(mx - 26, t - 9, 52, 18); box(mx - 22, t - 8, 44, 16, '#fff', '#1f2937', 2); text(`${LD.R} Ω`, mx, t + 21, {align:'center', size:11, col:'#475569'}); }
+  else text('ohne Vorwiderstand!', mx, t - 14, {align:'center', size:11, weight:700, col:'#b91c1c'});
+  /* LED-Symbol rechts (Durchlassrichtung nach unten) */
+  const ly = (t + bt)/2; ctx.fillStyle = '#f8fafc'; ctx.fillRect(rr - 14, ly - 16, 28, 32);
+  ctx.fillStyle = '#1f2937'; ctx.beginPath(); ctx.moveTo(rr - 11, ly - 10); ctx.lineTo(rr + 11, ly - 10); ctx.lineTo(rr, ly + 8); ctx.closePath(); ctx.fill();
+  line(rr - 11, ly + 9, rr + 11, ly + 9, '#1f2937', 3); line(rr, ly - 16, rr, ly + 16, '#1f2937', 2.2);
+  if (LD.I > 2e-4 && !LD.broken){ arrow(rr + 14, ly - 4, rr + 26, ly - 12, '#f59e0b', 1.6); arrow(rr + 14, ly + 4, rr + 26, ly - 4, '#f59e0b', 1.6); }
+  const yy = bt + 24;
+  pill(lv ? `I = ${fmtI(LD.I)}` : (LD.I > 1e-3 ? 'Strom fließt' : 'kein Strom'), r.x + r.w*0.3, yy, {size:13});
+  if (lv) pill(`U an der LED = ${fmt(LD.UD,2)} V`, r.x + r.w*0.7, yy, {size:12, bg:'#e2e8f0', col:'#1d2230'});
+  if (LD.R > 0 && lv && LD.I > 1e-4) text(`am Widerstand: ${fmt(LD.R*LD.I,2)} V`, r.x + r.w/2, yy + 24, {align:'center', size:11, col:'#475569'});
+}
+function ldDrawBand(r, L, lv){
+  box(r.x, r.y, r.w, r.h, '#fbfcfe', '#e2e8f0', 12);
+  text(lv ? 'Im Bändermodell: Elektronen fallen in Löcher und senden Licht aus' : 'Was in der LED passiert', r.x + 12, r.y + 16, {weight:700, size:13});
+  const ix = r.x + 14, iw = r.w - 28, top = r.y + 40, bot = r.y + r.h - 16;
+  const dE = Math.max(0.05, 0.9*L.Eg - LD.UD*0.9), sc = (bot - top)/(L.Eg + dE + 0.6);
+  const Yv = E => bot - E*sc, X = x => ix + x*iw;
+  const S = x => x < 0.42 ? 1 : x > 0.58 ? 0 : 0.5 + 0.5*Math.cos(Math.PI*(x - 0.42)/0.16);
+  const ECx = x => L.Eg + 0.3 + dE*S(x), EVx = x => ECx(x) - L.Eg;
+  for (const [fn, col] of [[ECx,'#d97706'],[EVx,'#2563eb']]){ ctx.strokeStyle = col; ctx.lineWidth = 2.4; ctx.beginPath(); for (let k = 0; k <= 100; k++){ const x = k/100; k ? ctx.lineTo(X(x), Yv(fn(x))) : ctx.moveTo(X(x), Yv(fn(x))); } ctx.stroke(); }
+  text('p-Gebiet', X(0.05), r.y + 30, {size:12, weight:700, col:'#b91c1c'}); text('n-Gebiet', X(0.95), r.y + 30, {size:12, weight:700, col:'#1d4ed8', align:'right'});
+  text('Leitungsband', X(0.04), Yv(ECx(0.04)) - 10, {size:11, col:'#9a3412', weight:600});
+  text('Valenzband', X(0.72), Yv(EVx(0.8)) + 14, {size:11, col:'#1e40af', weight:600});
+  for (let k = 0; k < 14; k++){ const x = 0.62 + (k % 7)*0.05 + 0.01*Math.sin(performance.now()/400 + k); elec(X(x), Yv(ECx(x)) - 5 - Math.floor(k/7)*8, 3.5); }
+  for (let k = 0; k < 14; k++){ const x = 0.05 + (k % 7)*0.05 + 0.01*Math.cos(performance.now()/400 + k); hole(X(x), Yv(EVx(x)) + 6 + Math.floor(k/7)*9, 3.8); }
+  arrow(X(0.5), Yv(EVx(0.5)), X(0.5), Yv(ECx(0.5)), '#64748b', 1.2);
+  text(lv ? `E_g = ${fmt(L.Eg,2)} eV` : 'Bandlücke', X(0.5) + 8, (Yv(EVx(0.5)) + Yv(ECx(0.5)))/2, {size:11, weight:600, col:'#475569'});
+  for (const q of LD.rec){
+    const x = X(q.x), yC = Yv(ECx(q.x)) - 4, yV = Yv(EVx(q.x)) + 4, pc = nmRGB(q.nm);
+    if (q.t < 0.5){ const y = yC + (yV - yC)*(q.t/0.5); elec(x, y, 3.8); }
+    else { const tt = (q.t - 0.5)/1.1; wiggle(x + tt*120, (yC + yV)/2 - tt*90, -0.6, 20, rgba(pc, 1 - tt*0.6), 4, 2.2); }
+  }
+  if (lv === 2) text(`Photonenenergie ≈ E_g → λ ≈ h·c/E_g = ${fmt(HC/L.Eg,0)} nm`, r.x + r.w - 12, r.y + r.h - 14, {align:'right', size:11, col:'#475569'});
+}
+function ldSpectrumVal(L, nm){
+  const E = HC/nm, E0 = L.Eg + KB*300/2, s = 0.035;
+  let v = Math.exp(-((E - E0)**2)/(2*s*s));
+  if (L.white){ v *= 0.6; const s2 = 0.28, E2 = HC/575; v += 0.55*Math.exp(-((E - E2)**2)/(2*s2*s2)); }
+  return v;
+}
+function ldDrawSpectrum(r, L, lv){
+  const p = plot({ x:r.x, y:r.y, w:r.w, h:r.h*0.55 }, { title:'Spektrum des LED-Lichts', x0:350, x1:950, y0:0, y1:1.15, xt:[400,500,600,700,800,900], yt:[], xl:'λ in nm', yl:'Helligkeit', left:20 });
+  for (let nm = 380; nm < 780; nm += 4){ ctx.fillStyle = rgba(nmRGB(nm), 0.18); ctx.fillRect(p.X(nm), p.B - 8, p.X(nm + 4) - p.X(nm) + 1, 8); }
+  const b = LD.broken ? 0 : clamp(LD.I/0.02, 0, 1);
+  if (b > 0.005){
+    ctx.beginPath(); for (let nm = 350; nm <= 950; nm += 2){ const y = p.Y(ldSpectrumVal(L, nm)*b); nm === 350 ? ctx.moveTo(p.X(nm), y) : ctx.lineTo(p.X(nm), y); }
+    ctx.strokeStyle = '#0f766e'; ctx.lineWidth = 2.4; ctx.stroke();
+  } else text('LED leuchtet nicht', p.L + 10, p.T + 14, {size:12, col:'#64748b'});
+  const r2 = { x:r.x, y:r.y + r.h*0.58, w:r.w, h:r.h*0.42 };
+  box(r2.x, r2.y, r2.w, r2.h, '#f8fafc', '#e2e8f0', 12);
+  text('Farbe und Bandlücke', r2.x + 12, r2.y + 16, {weight:700, size:13});
+  let y = r2.y + 38;
+  const list = Object.entries(LEDS).filter(([k]) => k !== 'white');
+  const rh = Math.min(20, (r2.h - 50)/list.length);
+  for (const [k, l] of list){
+    const nm = HC/(l.Eg + KB*150), sel = k === LD.led;
+    box(r2.x + 12, y - 6, 12, 12, rgba(nmRGB(nm), 1), '#475569', 2);
+    text(l.name, r2.x + 30, y, {size:11, weight:sel ? 700 : 500});
+    text(lv ? `${fmt(l.Eg,2)} eV · ${fmt(nm,0)} nm` : (nm > 760 ? 'unsichtbar' : ''), r2.x + r2.w - 12, y, {align:'right', size:11, weight:sel ? 700 : 500, mono:true});
+    y += rh;
+  }
+}
+function ldDrawPlanck(r, L){
+  ldDrawSpectrum({ x:r.x, y:r.y, w:r.w, h:r.h*0.42 }, L, 2);
+  const g = { x:r.x, y:r.y + r.h*0.45, w:r.w, h:r.h*0.55 };
+  const p = plot(g, { title:'Messung: e·U über f', x0:2, x1:8, y0:1, y1:3.4, xt:[2,3,4,5,6,7,8], yt:[1,1.5,2,2.5,3], xf:v => String(v), yf:v => fmt(v,1), xl:'f in 10¹⁴ Hz', yl:'e·U in eV', left:40 });
+  ctx.fillStyle = '#0f766e';
+  for (const q of LD.pts) circle(p.X(q.f), p.Y(q.e), 4.5, '#0f766e');
+  const fit = linFit(LD.pts);
+  if (fit){
+    clipTo(p); line(p.X(2), p.Y(fit.b + fit.m*2), p.X(8), p.Y(fit.b + fit.m*8), 'rgba(15,118,110,.7)', 2); ctx.restore();
+    const h = fit.m*QE/1e14;
+    text(`Steigung → h ≈ ${sci(h,2)} J·s`, p.L + 8, p.T + 8, {size:12, weight:700, col:'#0f766e'});
+  } else text('LED gerade zum Leuchten bringen (I ≈ 1 mA), dann speichern', p.L + 6, p.T + 8, {size:10, col:'#64748b'});
+}
+function ldControls(){
+  const lv = lvlNum();
+  UI.select('LED', Object.entries(LEDS).map(([k,l]) => [k, l.name]), () => LD.led, v => { LD.led = v; LD.broken = false; buildControls(); });
+  UI.slider('Spannung der Quelle', {min:0, max:6, step:0.01, get:() => LD.U0, set:v => LD.U0 = v, fmt:v => `${fmt(v,2)} V`});
+  UI.seg('Vorwiderstand', [['0','keiner'],['100','100 Ω'],['330','330 Ω']], () => String(LD.R), v => LD.R = +v);
+  if (LD.broken) UI.buttons([['Neue LED einsetzen', () => { LD.broken = false; LD.U0 = Math.min(LD.U0, 1.5); buildControls(); }, 'primary']]);
+  if (lv === 2){
+    UI.buttons([['Messpunkt speichern', () => {
+      if (LD.I < 2e-4){ flash('Die LED leuchtet noch nicht – Spannung erhöhen.'); return; }
+      if (LEDS[LD.led].white){ flash('Weiße LEDs haben keine einheitliche Farbe – bitte eine farbige LED wählen.'); return; }
+      const lamC = HC/(LEDS[LD.led].Eg + KB*150);
+      LD.pts = LD.pts.filter(q => q.k !== LD.led); LD.pts.push({ k:LD.led, f:C_LIGHT/(lamC*1e-9)/1e14, e:LD.UD });
+    }, 'primary'], ['Messpunkte löschen', () => { LD.pts = []; }]]);
+    UI.note('Gespeichert werden die Frequenz des LED-Lichts und die Spannung an der LED. Bei der Schwellspannung gilt näherungsweise e·U ≈ h·f.');
+  }
+}
+
+/* =====================================================================
+   Aufträge
+   ===================================================================== */
+const TASKS = [
+  [ /* Bänder */
+    { n:'Vom Atom zum Band', min:0, setup(){ Object.assign(BD, {N:1, a:0.95, mat:'Si', T:300, field:false, light:false}); },
+      q:'Erhöhe die Anzahl der Atome und verringere ihren Abstand. Was passiert mit den Energieniveaus?',
+      a:'Rücken Atome zusammen, beeinflussen sich ihre Elektronen. Jedes Energieniveau spaltet sich in so viele Niveaus auf, wie Atome beteiligt sind. Bei sehr vielen Atomen liegen diese Niveaus so dicht, dass ein Band entsteht. Zwischen zwei Bändern kann eine Lücke bleiben: die Bandlücke.' },
+    { n:'Leiter, Halbleiter, Isolator', min:0, setup(){ Object.assign(BD, {N:99, a:0.38, mat:'Cu', T:300, field:true, light:false}); BD.el = []; BD.ho = []; },
+      q:'Vergleiche Kupfer, Silizium und Diamant bei Zimmertemperatur. Woran liegt es, ob ein Material leitet?',
+      a:'Im Metall ist ein Band nur teilweise gefüllt – die Elektronen können sofort wandern. Im Halbleiter ist das Valenzband voll und das Leitungsband fast leer; die Lücke ist so klein, dass einige Elektronen durch Wärme hinüberkommen. Beim Isolator ist die Lücke so groß, dass praktisch keines hinüberkommt.' },
+    { n:'Erwärmen', min:0, setup(){ Object.assign(BD, {N:99, a:0.38, mat:'Si', T:150, field:true, light:false}); BD.el = []; BD.ho = []; },
+      q:'Erhöhe die Temperatur des Siliziums langsam. Wie ändert sich die Leitfähigkeit? Vergleiche mit Kupfer.',
+      a:'Beim Halbleiter springen mit steigender Temperatur viel mehr Elektronen ins Leitungsband – er leitet immer besser (Heißleiter, NTC). Beim Metall stören die stärker schwingenden Atome die Elektronen – der Widerstand steigt leicht (Kaltleiter).' },
+    { n:'Licht auf den Halbleiter', min:0, setup(){ Object.assign(BD, {N:99, a:0.38, mat:'Si', T:200, field:true, light:true, lam:1500, inten:60}); BD.el = []; BD.ho = []; },
+      q:'Beleuchte das kalte Silizium mit Infrarot (1500 nm) und dann mit rotem Licht (700 nm). Was ist der Unterschied?',
+      a:'Ein Photon kann ein Elektron nur über die Lücke heben, wenn seine Energie mindestens E_g ist. Bei Silizium (1,12 eV) gelingt das ab etwa 1100 nm abwärts. Dann entstehen Elektron-Loch-Paare und der Kristall leitet besser: innerer Photoeffekt (Fotoleitung).' },
+    { n:'Wie viele freie Elektronen?', min:2, setup(){ Object.assign(BD, {N:99, a:0.38, mat:'Si', T:300, field:false, light:false}); },
+      q:'Wie groß ist die Eigenleitungsdichte n_i von Silizium bei 300 K? Vergleiche mit der Zahl der Atome (5·10²² pro cm³) und mit Kupfer.',
+      a:'n_i ≈ 10¹⁰ cm⁻³ – nur etwa jedes 5·10¹²-te Atom gibt ein Elektron ab. Im Kupfer ist es eines pro Atom. Deshalb ist reines Silizium ein schlechter Leiter, und schon winzige Mengen an Fremdatomen ändern seine Leitfähigkeit enorm.' }
+  ],
+  [ /* Dotierung */
+    { n:'Reines Silizium', min:0, setup(){ Object.assign(DP, {dop:'none', T:300, field:false}); dpBuild(); },
+      q:'Im reinen Silizium sind alle Elektronen in Bindungen. Was passiert, wenn du stark erwärmst (über 450 K)?',
+      a:'Einzelne Bindungen brechen auf: Ein Elektron wird frei und hinterlässt ein Loch. Beide können wandern (Eigenleitung). Bei Zimmertemperatur geschieht das sehr selten.' },
+    { n:'n-Dotierung mit Phosphor', min:0, setup(){ Object.assign(DP, {dop:'P', conc:2, T:20, field:false}); dpBuild(); },
+      q:'Zwei Phosphoratome sitzen im Gitter. Erhöhe die Temperatur von 20 K auf Zimmertemperatur. Was passiert mit dem fünften Elektron?',
+      a:'Phosphor hat fünf Außenelektronen, für die vier Bindungen braucht es nur vier. Das fünfte ist so schwach gebunden (etwa 45 meV), dass es schon bei tiefen Temperaturen frei wird. Zurück bleibt ein positives Phosphor-Ion. Im Bändermodell liegt das Donatorniveau knapp unter dem Leitungsband.' },
+    { n:'p-Dotierung mit Bor', min:0, setup(){ Object.assign(DP, {dop:'B', conc:2, T:300, field:false}); dpBuild(); },
+      q:'Bor hat nur drei Außenelektronen. Beobachte das Loch. Wie kommt es, dass es wandert?',
+      a:'Ein Elektron aus einer Nachbarbindung springt in das Loch – dadurch entsteht das Loch dort, wo das Elektron herkam. Das Loch wandert also, obwohl sich eigentlich Elektronen bewegen. Es verhält sich wie eine positive Ladung.' },
+    { n:'Ladungsträger im Feld', min:0, setup(){ Object.assign(DP, {dop:'B', conc:3, T:300, field:true}); dpBuild(); },
+      q:'Rechts ist der Pluspol. In welche Richtung wandern die Löcher? Schalte dann auf Phosphor um. Wohin wandern die Elektronen?',
+      a:'Löcher wandern zum Minuspol (links), Elektronen zum Pluspol (rechts). Beide tragen zum Strom in dieselbe Richtung bei.' },
+    { n:'Fermi-Niveau', min:2, setup(){ Object.assign(DP, {dop:'P', conc:3, T:300, field:false}); dpBuild(); },
+      q:'Vergleiche die Lage des Fermi-Niveaus bei reinem, n- und p-dotiertem Silizium. Was passiert bei sehr hoher Temperatur?',
+      a:'Bei n-Dotierung rückt das Fermi-Niveau zum Leitungsband, bei p-Dotierung zum Valenzband. Bei hoher Temperatur überwiegt die Eigenleitung, das Fermi-Niveau wandert zurück zur Mitte der Lücke.' }
+  ],
+  [ /* Photoeffekt außen & innen */
+    { n:'Gleiches Licht, zwei Materialien', min:0, setup(){ Object.assign(PF, {lam:600, metal:'Zn', semi:'Si', inten:40}); PF.pairs = []; },
+      q:'Oranges Licht fällt auf Zink und auf Silizium. Wo passiert etwas – und warum?',
+      a:'Beim Zink nichts: Um ein Elektron ganz aus dem Metall zu lösen, braucht es 4,3 eV, ein oranges Photon hat nur etwa 2 eV. Beim Silizium genügt es, ein Elektron über die Bandlücke von 1,12 eV zu heben – das gelingt.' },
+    { n:'Infrarot', min:0, setup(){ Object.assign(PF, {lam:1000, metal:'Cs', semi:'Si', inten:40}); PF.pairs = []; },
+      q:'Infrarotes Licht (1000 nm) fällt ein. Funktioniert der äußere Photoeffekt selbst bei Cäsium? Und der innere bei Silizium und Germanium?',
+      a:'Ein 1000-nm-Photon hat 1,24 eV – zu wenig für jedes Metall, aber genug für Silizium und Germanium. Deshalb können Solarzellen auch den infraroten Teil des Sonnenlichts nutzen und Handykameras Infrarot „sehen“.' },
+    { n:'Wohin mit der Überschussenergie?', min:1, setup(){ Object.assign(PF, {lam:350, metal:'Na', semi:'Si', inten:30}); PF.pairs = []; },
+      q:'UV-Licht mit 350 nm hat viel mehr Energie als nötig. Was geschieht mit dem Rest beim Metall, was beim Halbleiter?',
+      a:'Beim Metall bekommt das herausgelöste Elektron den Rest als Bewegungsenergie. Im Halbleiter gibt das Elektron die Überschussenergie in Billionstelsekunden als Wärme an das Gitter ab und landet an der Unterkante des Leitungsbandes. Für eine Solarzelle ist dieser Anteil verloren.' },
+    { n:'Fotowiderstand', min:0, setup(){ Object.assign(PF, {lam:520, metal:'Zn', semi:'CdS', inten:20}); PF.pairs = []; },
+      q:'Fotowiderstände bestehen oft aus Cadmiumsulfid. Ändere die Helligkeit. Wie verändert sich der Widerstand? Warum reagiert CdS nicht auf rotes Licht?',
+      a:'Mehr Licht erzeugt mehr Elektron-Loch-Paare, der Widerstand sinkt stark. CdS hat eine Bandlücke von 2,4 eV – das entspricht etwa 510 nm. Rotes Licht hat zu wenig Energie, deshalb ist ein CdS-Fotowiderstand ungefähr so empfindlich wie das menschliche Auge.' }
+  ],
+  [ /* Diode */
+    { n:'Die Sperrschicht entsteht', min:0, setup(){ Object.assign(PN, {U0:0, mat:'Si'}); pnInit(); },
+      q:'Warum gibt es an der Grenze zwischen p- und n-Gebiet eine Zone ohne freie Ladungsträger?',
+      a:'Elektronen aus dem n-Gebiet wandern (Diffusion) ins p-Gebiet und füllen dort Löcher. Zurück bleiben ortsfeste Ionen: positive im n-Gebiet, negative im p-Gebiet. Ihr elektrisches Feld hält weitere Ladungsträger zurück – es entsteht ein Gleichgewicht und eine Sperrschicht.' },
+    { n:'Durchlassrichtung', min:0, setup(){ Object.assign(PN, {U0:3, mat:'Si'}); },
+      q:'Der Pluspol ist am p-Gebiet. Was passiert mit der Sperrschicht und dem Lämpchen?',
+      a:'Die äußere Spannung drückt Löcher und Elektronen zur Grenze. Die Sperrschicht wird schmal, der Energieberg kleiner. Die Ladungsträger überqueren die Grenze und rekombinieren – es fließt ein Strom, das Lämpchen leuchtet.' },
+    { n:'Sperrrichtung', min:0, setup(){ Object.assign(PN, {U0:-3, mat:'Si'}); },
+      q:'Jetzt ist der Pluspol am n-Gebiet. Was passiert mit der Sperrschicht?',
+      a:'Löcher und Elektronen werden von der Grenze weggezogen, die Sperrschicht wird breiter und der Energieberg höher. Es fließt praktisch kein Strom – nur ein winziger Sperrstrom.' },
+    { n:'Kennlinie aufnehmen', min:1, setup(){ Object.assign(PN, {U0:0, mat:'Si'}); },
+      q:'Erhöhe die Spannung in kleinen Schritten von 0 V auf 3 V. Ab welcher Spannung an der Diode steigt der Strom deutlich an?',
+      a:'Bei Silizium ab etwa 0,6–0,7 V (Schwellspannung). Darunter ist der Strom winzig, darüber steigt er exponentiell. Der Großteil der Quellenspannung fällt dann am Lämpchen ab.' },
+    { n:'Germanium und Silizium', min:1, setup(){ Object.assign(PN, {U0:1, mat:'Ge'}); },
+      q:'Vergleiche die Kennlinien von Germanium und Silizium. Woran liegt der Unterschied?',
+      a:'Germanium hat eine kleinere Bandlücke (0,66 eV statt 1,12 eV). Der Energieberg am Übergang ist kleiner, deshalb leitet eine Germaniumdiode schon ab etwa 0,3 V. Dafür ist ihr Sperrstrom größer.' }
+  ],
+  [ /* Solarzelle */
+    { n:'Wie entsteht Solarstrom?', min:0, setup(){ Object.assign(SC, {light:'mono', lam:550, G:400, mat:'Si', Ns:1, logR:-0.8, Tc:25}); },
+      q:'Grünes Licht fällt auf die Zelle. Verfolge ein Elektron (blau) und ein Loch (rot). Wohin wandern sie und warum?',
+      a:'Das Photon erzeugt ein Elektron-Loch-Paar. Am pn-Übergang herrscht ein elektrisches Feld, das die beiden trennt: Elektronen zur n-Seite (oben), Löcher zur p-Seite (unten). Oben sammeln sich Elektronen, unten fehlen welche – zwischen den Kontakten liegt eine Spannung. Über den Verbraucher fließen die Elektronen zurück.' },
+    { n:'Welche Farben nutzt die Zelle?', min:0, setup(){ Object.assign(SC, {light:'mono', lam:1200, G:600, mat:'Si', Ns:1, logR:-0.8}); },
+      q:'Verändere die Wellenlänge von 300 nm bis 1600 nm. Welches Licht geht durch? Bei welchem Licht wird viel Energie zu Wärme?',
+      a:'Licht über etwa 1100 nm (Photonenenergie unter 1,12 eV) geht durch Silizium hindurch. Blaues und UV-Licht wird genutzt, aber die Energie über 1,12 eV wird zu Wärme. Am besten nutzt die Zelle Licht knapp oberhalb der Bandlücke.' },
+    { n:'Leerlauf und Kurzschluss', min:1, setup(){ Object.assign(SC, {light:'sun', G:1000, mat:'Si', Ns:1, logR:4, Tc:25}); },
+      q:'Miss die Spannung im Leerlauf und den Strom im Kurzschluss. Wie groß ist jeweils die Leistung? Ändere die Bestrahlungsstärke.',
+      a:'Im Leerlauf ist die Spannung am größten (etwa 0,63 V), aber es fließt kein Strom. Im Kurzschluss fließt der größte Strom, aber die Spannung ist null. In beiden Fällen ist die Leistung null. Der Kurzschlussstrom wächst proportional zur Bestrahlungsstärke, die Leerlaufspannung nur wenig.' },
+    { n:'Den besten Arbeitspunkt finden', min:1, setup(){ Object.assign(SC, {light:'sun', G:1000, mat:'Si', Ns:1, logR:1, Tc:25}); },
+      q:'Verändere den Lastwiderstand, bis die Leistung am größten ist. Vergleiche mit dem Knopf „bester Punkt (MPP)“.',
+      a:'Die Leistung P = U·I ist am größten im Maximum Power Point (MPP), bei etwa 80 % der Leerlaufspannung. Wechselrichter von Solaranlagen suchen diesen Punkt ständig neu (MPP-Tracking).' },
+    { n:'Wohin geht die Sonnenenergie?', min:1, setup(){ Object.assign(SC, {light:'sun', G:1000, mat:'Si', Ns:1, Tc:25}); const c = cellParams('Si',1000,'sun',550,25); SC.logR = Math.log10(c.Um/c.Im); },
+      q:'Betrachte die Verlustbilanz im Maximum Power Point. Welche zwei Verluste sind am größten? Vergleiche Germanium und Galliumarsenid.',
+      a:'Am größten sind die Photonen mit zu wenig Energie und die Überschussenergie, die zu Wärme wird. Eine kleine Bandlücke (Germanium) nutzt viele Photonen, aber jedes nur mit wenig Energie. Eine große Bandlücke liefert mehr Spannung, nutzt aber weniger Photonen.' },
+    { n:'Heiße Solarzellen', min:1, setup(){ Object.assign(SC, {light:'sun', G:1000, mat:'Si', Ns:1, Tc:25}); const c = cellParams('Si',1000,'sun',550,25); SC.logR = Math.log10(c.Um/c.Im); },
+      q:'Erhöhe die Temperatur der Zelle von 25 °C auf 70 °C. Wie ändern sich Leerlaufspannung und Leistung?',
+      a:'Die Leerlaufspannung sinkt (bei Silizium um etwa 2 mV pro Grad), damit auch die Leistung. Im Sommer bei praller Sonne liefern Solarmodule deshalb weniger als an kalten, klaren Frühlingstagen.' },
+    { n:'Ein Solarmodul', min:1, setup(){ Object.assign(SC, {light:'sun', G:1000, mat:'Si', Ns:60, Tc:25}); const c = cellParams('Si',1000,'sun',550,25); SC.logR = Math.log10(c.Um/c.Im); },
+      q:'Ein Modul besteht aus 60 Zellen in Reihe. Welche Spannung, welchen Strom und welche Leistung liefert es?',
+      a:'Die Spannungen addieren sich (etwa 38 V Leerlauf), der Strom bleibt der einer Zelle. Ein Modul mit 60 Zellen von 10 cm × 10 cm liefert hier etwa 110 W. Echte Zellen sind größer (etwa 16–21 cm Kantenlänge), daher liefern Module 300–450 W.' },
+    { n:'Das ideale Material', min:2, setup(){ Object.assign(SC, {light:'sun', G:1000, mat:'Si', Ns:1, Tc:25, showEta:true}); const c = cellParams('Si',1000,'sun',550,25); SC.logR = Math.log10(c.Um/c.Im); },
+      q:'Welche Bandlücke wäre für Sonnenlicht ideal? Warum gibt es überhaupt ein Optimum?',
+      a:'Das Optimum liegt bei etwa 1,1–1,4 eV – Silizium und Galliumarsenid liegen nahe daran. Kleine Bandlücke: viele Photonen, aber geringe Spannung. Große Bandlücke: hohe Spannung, aber viele Photonen gehen durch. Mehrfachsolarzellen aus Schichten mit verschiedenen Bandlücken umgehen diese Grenze.' }
+  ],
+  [ /* LED */
+    { n:'LED einschalten', min:0, setup(){ Object.assign(LD, {led:'red', U0:0, R:100, broken:false}); },
+      q:'Erhöhe die Spannung langsam. Ab wann leuchtet die rote LED? Was passiert im Bändermodell?',
+      a:'Die LED leuchtet ab etwa 1,8 V an der LED. Elektronen aus dem n-Gebiet fallen im p-Gebiet in Löcher, also vom Leitungs- ins Valenzband. Die frei werdende Energie wird als Photon ausgesandt – genau umgekehrt wie in der Solarzelle.' },
+    { n:'Ohne Vorwiderstand', min:0, setup(){ Object.assign(LD, {led:'red', U0:1.5, R:0, broken:false}); },
+      q:'Die LED hängt ohne Vorwiderstand an der Quelle. Erhöhe die Spannung vorsichtig. Was passiert?',
+      a:'Oberhalb der Schwellspannung steigt der Strom extrem steil an – schon wenige Zehntel Volt mehr zerstören die LED. Ein Vorwiderstand begrenzt den Strom: Die überschüssige Spannung fällt an ihm ab.' },
+    { n:'Farbe und Bandlücke', min:0, setup(){ Object.assign(LD, {led:'blue', U0:4, R:100, broken:false}); },
+      q:'Vergleiche verschiedene LEDs bei derselben Quellenspannung. Welche braucht die höchste Spannung an der LED? Wie hängt das mit der Farbe zusammen?',
+      a:'Je kürzer die Wellenlänge, desto größer die Photonenenergie und desto größer die Bandlücke des Materials. Eine blaue LED braucht deshalb etwa 2,6 V, eine rote etwa 1,8 V, eine Infrarot-LED nur etwa 1,4 V.' },
+    { n:'Weißes Licht aus einer LED', min:1, setup(){ Object.assign(LD, {led:'white', U0:4, R:100, broken:false}); },
+      q:'Wie entsteht weißes Licht in einer LED? Betrachte das Spektrum.',
+      a:'Eine blaue LED regt eine gelbe Leuchtstoffschicht an. Diese wandelt einen Teil des blauen Lichts in gelbes, langwelligeres Licht um. Blau und Gelb zusammen wirken weiß.' },
+    { n:'Planck-Konstante mit LEDs', min:2, setup(){ Object.assign(LD, {led:'ir', U0:0, R:100, broken:false, pts:[]}); },
+      q:'Stelle für mindestens vier LEDs die Spannung so ein, dass sie gerade zu leuchten beginnen (I ≈ 1 mA), und speichere jeweils den Messpunkt. Bestimme h aus der Steigung.',
+      a:'Bei der Schwellspannung gilt e·U ≈ h·f, die Messpunkte liegen auf einer Geraden mit der Steigung h/e. Man erhält h ≈ 6,6·10⁻³⁴ J·s – derselbe Wert wie beim Photoeffekt, nur in umgekehrter Richtung.' }
+  ]
+];
+function renderTasks(){
+  const el = $('#tasks'); el.innerHTML = '';
+  TASKS[S.st].forEach((t, k) => {
+    if (t.min > lvlNum()) return;
+    const b = document.createElement('button'); b.textContent = t.n; b.classList.toggle('on', k === S.task);
+    b.onclick = () => { S.task = k; S.showAnswer = false; t.setup(); buildControls(); renderTasks(); };
+    el.appendChild(b);
+  });
+  const info = $('#taskInfo'), t = TASKS[S.st][S.task];
+  if (!t || t.min > lvlNum()){ info.innerHTML = '<p class="note">Wähle einen Auftrag oder probiere frei aus.</p>'; return; }
+  info.innerHTML = `<p class="q"><b>Auftrag:</b> ${t.q}</p>` + (S.showAnswer ? `<p class="a">${t.a}</p>` : '') + `<button class="btn" id="ansBtn">${S.showAnswer ? 'Erklärung ausblenden' : 'Erklärung zeigen'}</button>`;
+  $('#ansBtn').onclick = () => { S.showAnswer = !S.showAnswer; renderTasks(); };
+}
+
+/* =====================================================================
+   Stationen umschalten, Zeichenschleife
+   ===================================================================== */
+const STATIONS = [
+  { name:'Bändermodell', hash:'baender', controls:bdControls, draw:bdDraw },
+  { name:'Dotierung', hash:'dotierung', controls:dpControls, draw:dpDraw },
+  { name:'Photoeffekt außen & innen', hash:'photoeffekt', controls:pfControls, draw:pfDraw },
+  { name:'pn-Übergang (Diode)', hash:'diode', controls:pnControls, draw:pnDraw },
+  { name:'Solarzelle', hash:'solarzelle', controls:scControls, draw:scDraw },
+  { name:'LED', hash:'led', controls:ldControls, draw:ldDraw }
+];
+function buildControls(){ UI.clear(); $('#ctrlTitle').textContent = 'Einstellungen: ' + STATIONS[S.st].name; STATIONS[S.st].controls(); }
+function setStation(i){
+  S.st = i; S.task = -1; S.showAnswer = false;
+  for (const b of $('#stSeg').children) b.classList.toggle('on', +b.dataset.s === i);
+  buildControls(); renderTasks();
+  try { history.replaceState(null, '', '#' + STATIONS[i].hash); } catch(_){}
+}
+function setLevel(l){
+  S.level = l; for (const b of $('#lvlSeg').children) b.classList.toggle('on', b.dataset.v === l);
+  if (l === 'easy'){ SC.Ns = 1; SC.Tc = 25; }
+  if (l !== 'hard') SC.showEta = false;
+  buildControls(); renderTasks();
+}
+$('#stSeg').onclick = e => { const b = e.target.closest('button'); if (b) setStation(+b.dataset.s); };
+$('#lvlSeg').onclick = e => { const b = e.target.closest('button'); if (b) setLevel(b.dataset.v); };
+$('#fsBtn').onclick = () => { const d = document; try { if (d.fullscreenElement) d.exitFullscreen(); else d.documentElement.requestFullscreen().catch(() => {}); } catch(_){} };
+let last = performance.now();
+function frame(ts){
+  const dt = Math.min(0.05, (ts - last)/1000); last = ts;
+  ctx.clearRect(0, 0, W, H);
+  try { STATIONS[S.st].draw(dt); } catch(err){ console.error(err); }
+  requestAnimationFrame(frame);
+}
+resize();
+dpBuild();
+const startHash = STATIONS.findIndex(s => s.hash === location.hash.slice(1));
+setStation(startHash >= 0 ? startHash : 0);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

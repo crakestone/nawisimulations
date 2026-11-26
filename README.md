@@ -20,6 +20,7 @@ neuer Planet. Jede Simulation ist ein Mond ihres Themen-Planeten.
 | `Stoßprozesse/` | `Stoss-Simulation.html` | Elastischer, plastischer (und teilelastischer) Stoß zweier Autos, gerade und schief |
 | `Vektorfelder/` | `Feldlabor.html` | Elektrische, magnetische und Gravitationsfelder als strömende Teilchen, Feldlinien, Pfeile und Äquipotentiallinien; 51 Versuche, Baukasten, eigene Funktionen, 2D- und 3D-Ansicht |
 | `Stromkreise/` | `Stromkreislabor.html` | Stromkreise bauen; Potenzial als Farbe, Höhe oder Elektronendruck; 12 Versuche, Messgeräte und Messspitzen |
+| `Halbleiter/` | `Halbleiterlabor.html` | Bändermodell, Dotierung, innerer und äußerer Photoeffekt, pn-Übergang, Solarzelle, LED |
 | `Quantenphysik/` | `Quantenlabor.html` | Photoeffekt, Spektren, Doppelspalt mit Einzelobjekten (mit Zeigermodell) und Mach-Zehnder-Interferometer mit Quantenradierer |
 
 ## Stoßprozesse – Stoss-Simulation.html
@@ -121,6 +122,32 @@ Modell: Austrittsarbeiten Cs 2,14 · K 2,29 · Na 2,36 · Zn 4,33 · Cu 4,65 · 
 I ∝ cos²(π d sinθ/λ)·sinc²(π b sinθ/λ) und Abstand 1 m; Interferometer mit Strahlteiler-Amplituden 1/√2 und i/√2,
 Photonen unter 45° polarisiert. Die Stromstärke am Photoeffekt ist schematisch (ein Elektron je absorbiertem Photon).
 
+## Halbleiter – Halbleiterlabor.html
+
+Sechs Stationen (auch direkt über `#baender`, `#dotierung`, `#photoeffekt`, `#diode`, `#solarzelle`, `#led`), jeweils mit
+Aufträgen, Erklärungen und drei Niveaustufen:
+
+- **Bänder:** Energieniveaus von 1, 2, … sehr vielen Atomen spalten bei kleinem Abstand zu Bändern auf (Tight-Binding-Schema).
+  Kristall aus Kupfer, Germanium, Silizium, Galliumarsenid oder Diamant mit Valenz- und Leitungsband, Temperatur,
+  angelegter Spannung und Licht (Fotoleitung). Spezifischer Widerstand über der Temperatur (logarithmisch).
+- **Dotierung:** Siliziumgitter mit Bindungselektronen neben dem Bändermodell; Phosphor (Donator, fünftes Elektron) und
+  Bor (Akzeptor, Lochwanderung durch springende Elektronen), Eigenleitung bei hoher Temperatur, Drift im Feld, Fermi-Niveau.
+- **Photoeffekt außen & innen:** dasselbe Licht (200–2000 nm) auf ein Metall und einen Halbleiter im selben Energiemaßstab;
+  Austrittsarbeit gegen Bandlücke, Thermalisierung, Fotowiderstand (z. B. CdS).
+- **Diode:** p- und n-Gebiet mit Löchern, Elektronen und ortsfesten Ionen; Raumladungszone, die mit der Spannung schmaler
+  oder breiter wird; Bandverbiegung mit Fermi-Niveaus; Stromkreis mit Lämpchen; Kennlinie nach Shockley (Si und Ge).
+- **Solarzelle:** Querschnitt mit logarithmischer Tiefe, Photonen aus dem Sonnenspektrum oder einfarbig, Eindringtiefe je
+  nach Wellenlänge, Trennung der Ladungsträger, Ventilator als Verbraucher; Kennlinie mit Leistungskurve, MPP und
+  Widerstandsgerade; Verlustbilanz; Temperatur; Modul mit bis zu 60 Zellen; Wirkungsgrad je nach Bandlücke.
+  Materialien: Si, CIGS, GaAs, CdTe, Perowskit, Ge.
+- **LED:** Stromkreis mit Vorwiderstand (oder ohne – dann brennt sie durch), Rekombination im Bändermodell, Spektrum,
+  sieben Farben und weiße LED; *Anspruchsvoll:* Bestimmung von h aus Schwellspannung und Frequenz.
+
+Modell der Solarzelle: Sonnenspektrum als Schwarzer Strahler (5778 K) auf die Bestrahlungsstärke skaliert,
+Quantenausbeute 90 %, Zellfläche 100 cm², Diodengleichung mit I₀ ∝ e^(−E_g/kT), so kalibriert, dass Silizium bei 25 °C
+U_oc = 0,63 V hat (Si: η ≈ 19 %, Füllfaktor 0,83, −1,6 mV/K). Eigenleitungsdichte n_i = √(N_C·N_V)·(T/300 K)^1,5·e^(−E_g/2kT).
+Die Zahl der gezeichneten thermischen Ladungsträger ist logarithmisch skaliert.
+
 ## Navigation
 
-In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“, „Stromkreislabor“ oder „Quantenlabor“) zurück zur Startseite `index.html`.
+In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“, „Stromkreislabor“, „Quantenlabor“ oder „Halbleiterlabor“) zurück zur Startseite `index.html`.
