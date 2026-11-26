@@ -72,3 +72,7 @@ Gerechnet wird exakt mit Impulserhaltung und der Stoßzahl k: v' = (1 + k)·v_S 
 
 Modell: relative Einheiten (k = G = 1). Magnete werden als zwei Pole berechnet. Kondensatorplatten und
 gerade Stromleiter werden im Querschnitt gerechnet (senkrecht zur Bildebene unendlich lang, im 3D-Raumfeld daher als lange senkrechte Leiter bzw. Platten dargestellt).
+
+## Navigation
+
+In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“ oder „Stoßprozesse“) zurück zur Startseite `index.html`.
