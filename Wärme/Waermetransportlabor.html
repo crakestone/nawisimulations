@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wärmetransportlabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: sachliches Laborheft, ruhig und genau
+   IDEA: Wärme sichtbar machen – Teilchen, Temperaturfarben, Strömung, Strahlungspfeile und Wärmebild
+   COLOUR and TYPE: Weiß bzw. Nacht; kalt blau, warm rot, Akzent Orange; Archivo + Source Sans 3
+   LAYOUT: Stationsleiste, Experiment groß links, Regler rechts, darunter Aufträge und Erklärung */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#111419);--ink:light-dark(#15181d,#e9ecf1);--mut:light-dark(#566170,#9ea8b5);
+--line:light-dark(#d8dde4,#2d343e);--soft:light-dark(#f5f3f1,#1b1917);--card:light-dark(#ffffff,#161b21);
+--acc:light-dark(#c2410c,#fb923c);--accink:light-dark(#ffffff,#1a0d04);
+--hot:#d7301f;--cold:#2f62c9;--sun:#f2b705;--ir:#c0392b;--lei:#8a5a2b;--str:#2b8a8a;--rad:#d0461c;
+--grid:light-dark(#ebe7e3,#2a2725)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Source Sans 3",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Archivo,system-ui,sans-serif;line-height:1.08;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4vw,40px)}h2{font-size:clamp(24px,3vw,32px)}h3{font-size:18px;margin-bottom:6px}
+header{padding:18px max(4vw,14px) 0;border-bottom:1px solid var(--line)}
+.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.top p{margin:4px 0 0;color:var(--mut);max-width:66ch}
+.tr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.lvl{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:10px}
+.lvl button{border:0;background:none;color:var(--ink);padding:8px 12px;border-radius:7px;font:600 15px "Source Sans 3",sans-serif;cursor:pointer;min-height:40px}
+.lvl button[aria-pressed=true]{background:var(--acc);color:var(--accink)}
+nav.scroll{display:flex;gap:2px;margin-top:14px;overflow-x:auto;scrollbar-width:thin}
+nav a{flex:none;padding:10px 14px;color:var(--mut);text-decoration:none;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap}
+nav a.on{color:var(--ink);border-color:var(--acc)}
+nav a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.st{display:none;padding:22px max(4vw,14px) 40px;max-width:1500px;margin:0 auto}
+.st.on{display:block}
+.lead{color:var(--mut);max-width:78ch;margin:6px 0 16px}
+.work{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+@media(max-width:980px){.work{grid-template-columns:minmax(0,1fr)}}
+.stage{display:grid;gap:12px}
+.fig{position:relative;min-height:220px;background:var(--soft);border-radius:12px;overflow:hidden;touch-action:none}
+.fig>canvas{position:absolute;inset:0;width:100%;height:100%}
+.fig.tall{height:min(64vh,540px)}.fig.mid{height:300px}.fig.low{height:230px}
+.ctrl{display:grid;gap:12px;background:var(--soft);padding:14px;border-radius:12px}
+.ctrl .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ctrl label{font-weight:600;font-size:15px}
+.lab{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-size:15px}
+.ctrl .lab output{font-weight:400;color:var(--mut);white-space:nowrap}
+button.b,select{font:600 15px "Source Sans 3",sans-serif;min-height:44px;padding:8px 13px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button.b.pri{background:var(--acc);border-color:var(--acc);color:var(--accink)}
+button.b.sm{min-height:36px;padding:5px 10px;font-size:14px}
+button.b[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button.b:disabled{opacity:.5;cursor:default}
+select{font-weight:400;font-size:16px;width:100%}
+input[type=range]{width:100%;accent-color:var(--acc);min-height:30px}
+.chk{display:flex;gap:8px;align-items:center;font-weight:400!important;cursor:pointer;min-height:32px}
+.chk input{width:20px;height:20px;accent-color:var(--acc);flex:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px}
+.kpi div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.kpi span{display:block;font-size:13px;color:var(--mut)}.kpi b{font:700 21px/1.15 Archivo,sans-serif;font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--mut)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid rgba(0,0,0,.2)}
+.msg{padding:10px 12px;border-radius:10px;font-weight:600;background:var(--soft)}
+.msg.warn{background:rgba(215,48,31,.13)}.msg.ok{background:rgba(58,164,92,.15)}
+.tasks{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:20px}
+.task{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.task p{margin:0;font-size:15.5px}
+.task .lv{font-size:13px;font-weight:700;color:var(--mut)}
+.task button{align-self:flex-start;margin-top:auto}
+.expl{margin-top:20px;border-top:1px solid var(--line);padding-top:6px}
+details summary{cursor:pointer;font-weight:700;padding:10px 0;font-family:Archivo,sans-serif;font-size:18px}
+details .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px 28px}
+details p{margin:0 0 10px;max-width:70ch}
+body[data-lvl="1"] .l2,body[data-lvl="1"] .l3,body[data-lvl="2"] .l3{display:none!important}
+.note{font-size:14px;color:var(--mut);margin:6px 0 0}
+.mut{color:var(--mut)}.small{font-size:14px}
+.eq{font-family:Archivo,sans-serif;font-size:19px}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.seg{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);padding:4px;border-radius:10px;flex-wrap:wrap}
+.seg button{flex:1;border:0;background:none;color:var(--ink);min-height:40px;border-radius:7px;font:600 15px "Source Sans 3",sans-serif;cursor:pointer;padding:4px 8px;white-space:nowrap}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.slots{display:grid;gap:8px}
+.slots .sl{display:grid;grid-template-columns:24px minmax(0,1fr) minmax(0,1fr);gap:6px;align-items:center}
+.slots .sl b{font-family:Archivo,sans-serif;text-align:center}
+.quiz{display:grid;gap:8px}
+.qi{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.qi .qb{display:flex;gap:4px}
+.qi .qb button{min-height:36px;padding:4px 9px;border-radius:8px;border:1px solid var(--line);background:var(--soft);color:var(--ink);font:600 14px "Source Sans 3",sans-serif;cursor:pointer}
+.qi .qb button.y{background:rgba(58,164,92,.25);border-color:#3aa45c}.qi .qb button.n{background:rgba(215,48,31,.18);border-color:var(--hot)}
+.qi .fb{grid-column:1/-1;font-size:14px;color:var(--mut)}
+.qi .fb:empty{display:none}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 7px;border-radius:99px;color:#fff;vertical-align:1px}
+@media(max-width:600px){.qi{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body data-lvl="1">
+<header>
+ <div class="top">
+  <div><h1><a id="home" href="../index.html" style="color:inherit;text-decoration:none" title="Zur Startseite">Wärmetransportlabor</a></h1><p>Wie Wärme von einem Ort zum anderen kommt: Wärmeleitung, Wärmeströmung und Wärmestrahlung – dazu Absorbieren, Reflektieren und Durchlassen, der Treibhauseffekt und wie man Wärme festhält.</p></div>
+  <div class="tr"><div class="lvl" role="group" aria-label="Niveau"><button data-l="1" aria-pressed="true">Einfach</button><button data-l="2" aria-pressed="false">Mittel</button><button data-l="3" aria-pressed="false">Anspruchsvoll</button></div><button class="b sm" id="fs" title="Vollbild">⛶ Vollbild</button></div>
+ </div>
+ <nav class="scroll" id="nav"><a href="#ueberblick">Drei Wege</a><a href="#teilchen">Temperatur &amp; Teilchen</a><a href="#leitung">Wärmeleitung</a><a href="#stroemung">Wärmeströmung</a><a href="#strahlung">Wärmestrahlung</a><a href="#oberflaechen">Absorbieren &amp; Reflektieren</a><a href="#treibhaus">Treibhauseffekt</a><a href="#daemmen">Dämmen &amp; Thermoskanne</a></nav>
+</header>
+
+<!-- ========== ÜBERBLICK ========== -->
+<section class="st" id="st-ueberblick">
+ <h2>Drei Wege der Wärme</h2>
+ <p class="lead">Am Lagerfeuer kommt die Wärme auf drei Wegen zu dir: durch den Grillspieß (<b>Wärmeleitung</b>), mit der aufsteigenden heißen Luft (<b>Wärmeströmung</b>) und als unsichtbare <b>Wärmestrahlung</b>, die dir ins Gesicht scheint. Wärme fließt dabei immer vom wärmeren zum kälteren Körper.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="uC"></canvas></div>
+   <div class="legend"><span><i style="background:var(--lei)"></i>Wärmeleitung</span><span><i style="background:var(--str)"></i>Wärmeströmung</span><span><i style="background:var(--rad)"></i>Wärmestrahlung</span></div>
+  </div>
+  <div class="ctrl">
+   <label>Zeigen</label>
+   <div class="seg" id="uW"><button data-v="all" aria-pressed="true">Alle</button><button data-v="lei" aria-pressed="false">Leitung</button><button data-v="str" aria-pressed="false">Strömung</button><button data-v="rad" aria-pressed="false">Strahlung</button></div>
+   <div class="card small" id="uInfo"></div>
+   <label class="chk"><input type="checkbox" id="uLab" checked> Beschriftung</label>
+   <label class="chk l2"><input type="checkbox" id="uVac"> Feuer im luftleeren Raum (Gedankenversuch)</label>
+  </div>
+ </div>
+ <div class="card" style="margin-top:18px">
+  <h3>Welcher Weg ist es?</h3>
+  <p class="note" style="margin:0 0 10px">Ordne jedes Beispiel zu. Manchmal sind mehrere Wege beteiligt – wähle den, der die Hauptrolle spielt.</p>
+  <div class="quiz" id="uQ"></div>
+  <p class="msg" id="uQr" style="margin:10px 0 0">Noch nichts beantwortet.</p>
+ </div>
+ <div class="tasks" id="tk-ueberblick"></div>
+ <details class="expl"><summary>Erklärung</summary><div class="cols">
+  <p><b>Wärmeleitung:</b> Die Teilchen eines Stoffes geben ihre Bewegung an die Nachbarn weiter. Die Teilchen selbst bleiben an ihrem Platz – nur die Energie wandert. Metalle leiten gut, Holz, Luft und Styropor schlecht.</p>
+  <p><b>Wärmeströmung (Konvektion):</b> Ein warmer Stoff (Luft oder Wasser) bewegt sich selbst und nimmt seine Energie mit. Warme Luft ist leichter als kalte und steigt auf. In festen Körpern gibt es keine Strömung.</p>
+  <p><b>Wärmestrahlung:</b> Jeder Körper sendet Strahlung aus – je heißer, desto mehr. Sie braucht keinen Stoff und kommt sogar durch den leeren Weltraum. Bis etwa 500 °C ist sie für uns unsichtbar (Infrarot).</p>
+  <p class="l2"><b>Gedankenversuch:</b> Ohne Luft gäbe es keine Strömung und keine Leitung durch die Luft. Die Strahlung käme trotzdem bei dir an – so wärmt die Sonne die Erde. (Ein echtes Feuer bräuchte allerdings Sauerstoff.)</p>
+ </div></details>
+</section>
+
+<!-- ========== TEILCHEN ========== -->
+<section class="st" id="st-teilchen">
+ <h2>Temperatur &amp; Teilchen</h2>
+ <p class="lead">Alle Stoffe bestehen aus Teilchen, die ständig zittern. Je höher die <b>Temperatur</b>, desto heftiger zittern sie. Berühren sich ein heißer und ein kalter Körper, stoßen die Teilchen aneinander und geben Bewegungsenergie weiter – bis beide gleich warm sind. Diese übertragene Energie heißt <b>Wärme</b>.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="pC"></canvas></div>
+   <div class="kpi" id="pK"></div>
+   <div class="card"><h3>Temperaturverlauf</h3><div class="fig low" style="height:210px;min-height:180px"><canvas id="pG"></canvas></div></div>
+  </div>
+  <div class="ctrl">
+   <button class="b pri" id="pGo">Zusammenschieben</button>
+   <div class="row"><button class="b sm" id="pRe">↺ Neu</button><button class="b sm" id="pPause" aria-pressed="false">Pause</button></div>
+   <div class="card" style="display:grid;gap:8px"><h3 style="margin:0">Körper A (links)</h3>
+    <select id="pMa"></select>
+    <div class="lab"><span>Temperatur</span><output id="pTao">80 °C</output></div><input type="range" id="pTa" min="-20" max="100" step="1" value="80">
+    <div class="l2"><div class="lab"><span>Masse</span><output id="pmAo">1 kg</output></div><input type="range" id="pmA" min="0.1" max="3" step="0.1" value="1"></div>
+   </div>
+   <div class="card" style="display:grid;gap:8px"><h3 style="margin:0">Körper B (rechts)</h3>
+    <select id="pMb"></select>
+    <div class="lab"><span>Temperatur</span><output id="pTbo">10 °C</output></div><input type="range" id="pTb" min="-20" max="100" step="1" value="10">
+    <div class="l2"><div class="lab"><span>Masse</span><output id="pmBo">1 kg</output></div><input type="range" id="pmB" min="0.1" max="3" step="0.1" value="1"></div>
+   </div>
+   <label class="chk"><input type="checkbox" id="pIns"> Styroporplatte dazwischen</label>
+   <label class="chk"><input type="checkbox" id="pArr" checked> Energiepfeile zeigen</label>
+   <p class="note">Das Zittern ist stark übertrieben dargestellt. Die Zeit läuft im Zeitraffer.</p>
+  </div>
+ </div>
+ <div class="tasks" id="tk-teilchen"></div>
+ <details class="expl"><summary>Erklärung</summary><div class="cols">
+  <p><b>Temperatur</b> sagt, wie heftig sich die Teilchen bewegen. <b>Wärme</b> ist die Energie, die von selbst vom wärmeren zum kälteren Körper fließt. Es gibt keine „Kälte“, die fließt – der kalte Körper bekommt Energie, der warme verliert sie.</p>
+  <p>Am Ende haben beide Körper dieselbe Temperatur: das <b>thermische Gleichgewicht</b>. Danach fließt keine Wärme mehr, obwohl die Teilchen weiter zittern.</p>
+  <p class="l2"><b>Mischtemperatur:</b> Was der eine Körper abgibt, nimmt der andere auf. Ein Körper mit viel Masse oder großer spezifischer Wärmekapazität c ändert seine Temperatur nur wenig. Wasser hat ein sehr großes c (4,19 kJ/(kg·K)), Blei ein sehr kleines (0,13 kJ/(kg·K)).</p>
+  <p class="l3"><b>Richmann’sche Mischungsregel:</b> Q = m·c·ΔT, abgegebene = aufgenommene Wärme: m<sub>A</sub>c<sub>A</sub>(T<sub>A</sub> − T<sub>M</sub>) = m<sub>B</sub>c<sub>B</sub>(T<sub>M</sub> − T<sub>B</sub>), also T<sub>M</sub> = (m<sub>A</sub>c<sub>A</sub>T<sub>A</sub> + m<sub>B</sub>c<sub>B</sub>T<sub>B</sub>) / (m<sub>A</sub>c<sub>A</sub> + m<sub>B</sub>c<sub>B</sub>). Die Simulation rechnet ohne Verluste an die Umgebung.</p>
+ </div></details>
+</section>
+
+<!-- ========== LEITUNG ========== -->
+<section class="st" id="st-leitung">
+ <h2>Wärmeleitung</h2>
+ <p class="lead">Bei der Wärmeleitung geben die Teilchen ihre Bewegung an die Nachbarn weiter – die Wärme wandert durch den Stoff, der Stoff selbst bleibt, wo er ist. Wie schnell das geht, hängt vom Material ab.</p>
+ <div class="seg" id="lMode" style="max-width:420px;margin-bottom:14px"><button data-v="stab" aria-pressed="true">Stäbe vergleichen</button><button data-v="touch" aria-pressed="false">Anfassen: Metall oder Holz?</button></div>
+ <div id="lStab">
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="lC"></canvas></div>
+   <div class="kpi" id="lK"></div>
+   <div class="card l3"><h3>Temperatur entlang der Stäbe</h3><div class="fig low"><canvas id="lG"></canvas></div><p class="note" id="lGn"></p></div>
+  </div>
+  <div class="ctrl">
+   <div class="row"><button class="b pri" id="lGo">Start</button><button class="b" id="lRe">↺ Zurück</button></div>
+   <label>Zeitraffer</label>
+   <div class="seg" id="lSp"><button data-v="1" aria-pressed="false">1×</button><button data-v="10" aria-pressed="false">10×</button><button data-v="60" aria-pressed="true">60×</button><button data-v="300" aria-pressed="false">300×</button></div>
+   <label for="lSrc">Linkes Ende steckt in …</label>
+   <select id="lSrc"><option value="90">heißem Wasser (90 °C)</option><option value="400">einer Flamme (≈ 400 °C)</option><option value="0">Eiswasser (0 °C)</option></select>
+   <label>Stäbe (30 cm lang, 1 cm dick)</label>
+   <div class="slots" id="lSel"></div>
+   <p class="note">An den Stäben kleben Wachskügelchen. Sie fallen ab, wenn der Stab an dieser Stelle 55 °C warm wird.</p>
+   <p class="note l2">Fahre mit der Maus (oder dem Finger) über einen Stab, um dort die Temperatur abzulesen.</p>
+  </div>
+ </div>
+ </div>
+ <div id="lTouch" hidden>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="aC"></canvas></div>
+   <div class="msg" id="aInfo">Tippe auf einen Gegenstand, um ihn mit der Hand anzufassen.</div>
+  </div>
+  <div class="ctrl">
+   <div class="lab"><span>Temperatur aller Gegenstände</span><output id="aTo">20 °C</output></div>
+   <input type="range" id="aT" min="-20" max="90" step="1" value="20">
+   <div class="row"><button class="b sm" data-at="20">Zimmer (20 °C)</button><button class="b sm" data-at="-10">Winter draußen (−10 °C)</button><button class="b sm" data-at="80">Sauna (80 °C)</button></div>
+   <button class="b" id="aAll">Alle der Reihe nach anfassen</button>
+   <p class="note">Die Haut ist etwa 33 °C warm. Alle Gegenstände haben vorher genau dieselbe Temperatur – das Thermometer zeigt es.</p>
+  </div>
+ </div>
+ </div>
+ <div class="tasks" id="tk-leitung"></div>
+ <details class="expl"><summary>Erklärung</summary><div class="cols">
+  <p><b>Gute Wärmeleiter</b> sind Metalle: Kupfer, Aluminium, Eisen. <b>Schlechte Wärmeleiter</b> (Wärmedämmstoffe) sind Holz, Kunststoff, Glas, Wasser und vor allem eingeschlossene Luft (Styropor, Wolle, Federn).</p>
+  <p><b>Warum fühlt sich Metall kälter an als Holz,</b> obwohl beide 20 °C haben? Metall leitet die Wärme schnell von der Hand weg. Die Haut kühlt stark ab – das fühlen wir als „kalt“. Holz leitet schlecht, die Haut bleibt fast so warm wie vorher. Unsere Haut misst also nicht die Temperatur des Gegenstands, sondern wie schnell sie Wärme verliert.</p>
+  <p class="l2"><b>Wärmeleitfähigkeit λ</b> in W/(m·K): Kupfer 400, Aluminium 237, Stahl 50, Edelstahl 15, Glas 1, Wasser 0,6, Holz 0,13, Styropor 0,035, Luft 0,026.</p>
+  <p class="l3"><b>Fourier’sches Gesetz:</b> P = λ·A·ΔT/d. Die Simulation löst die Wärmeleitungsgleichung ∂T/∂t = a·∂²T/∂x² mit der Temperaturleitfähigkeit a = λ/(ρ·c) und einem Wärmeverlust an die Luft (h = 10 W/(m²·K)). <b>Kontakttemperatur:</b> T<sub>K</sub> = (b<sub>1</sub>T<sub>1</sub> + b<sub>2</sub>T<sub>2</sub>)/(b<sub>1</sub> + b<sub>2</sub>) mit dem Wärmeeindringkoeffizienten b = √(λρc); Haut b ≈ 1100 W·s<sup>½</sup>/(m²·K).</p>
+ </div></details>
+</section>
+
+<!-- ========== STRÖMUNG ========== -->
+<section class="st" id="st-stroemung">
+ <h2>Wärmeströmung</h2>
+ <p class="lead">Bei der Wärmeströmung (Konvektion) bewegt sich der warme Stoff selbst und trägt seine Energie mit. Warme Luft und warmes Wasser dehnen sich aus, werden leichter und steigen auf; kalte sinken ab. So entstehen Kreisläufe – im Kochtopf, im Zimmer und am Strand.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall" id="sF"><canvas id="sC"></canvas></div>
+   <div class="kpi" id="sK"></div>
+   <p class="note" id="sNote"></p>
+  </div>
+  <div class="ctrl">
+   <label for="sSc">Versuch</label>
+   <select id="sSc"></select>
+   <div id="sEx" style="display:grid;gap:8px"></div>
+   <div class="row"><button class="b pri" id="sGo">Pause</button><button class="b" id="sRe">↺ Neu</button><button class="b" id="sClr">Tinte weg</button></div>
+   <label>Zeigen</label>
+   <label class="chk"><input type="checkbox" id="sCol" checked> Temperatur als Farbe</label>
+   <label class="chk"><input type="checkbox" id="sPar" checked> Schwebeteilchen</label>
+   <label class="chk"><input type="checkbox" id="sArr"> Strömungspfeile</label>
+   <p class="note" id="sTap">Tippe ins Bild, um einen Tropfen Tinte (bzw. Rauch) hineinzugeben.</p>
+  </div>
+ </div>
+ <div class="tasks" id="tk-stroemung"></div>
+ <details class="expl"><summary>Erklärung</summary><div class="cols">
+  <p><b>Warum steigt Warmes auf?</b> Wird Luft oder Wasser erwärmt, bewegen sich die Teilchen heftiger und brauchen mehr Platz. Dieselbe Menge nimmt mehr Raum ein – sie ist leichter als die kühlere Umgebung und wird nach oben gedrückt (Auftrieb), so wie ein Korken im Wasser.</p>
+  <p><b>Kreislauf:</b> Oben kühlt der Stoff ab, wird schwerer und sinkt wieder. So entsteht eine Walze. Im Zimmer ist es deshalb unter der Decke am wärmsten. Am Strand weht tagsüber der Wind vom Meer zum Land, nachts umgekehrt.</p>
+  <p class="l2"><b>Dichte:</b> Luft hat bei 0 °C eine Dichte von 1,29 kg/m³, bei 20 °C 1,20 kg/m³, bei 60 °C 1,06 kg/m³. Wasser ist bei 4 °C am dichtesten (Anomalie des Wassers) – darum frieren Seen von oben zu, und am Grund bleibt es 4 °C.</p>
+  <p class="l3"><b>Modell:</b> Die Simulation löst die Strömungsgleichungen für ein inkompressibles Fluid auf einem Gitter (semi-Lagrange-Verfahren mit Druckprojektion, „Stable Fluids“). Der Auftrieb ist proportional zum Temperaturunterschied (Boussinesq-Näherung), beim See ∝ (T − 4 °C)². Geschwindigkeiten und Zeiten sind nur qualitativ.</p>
+ </div></details>
+</section>
+
+<!-- ========== STRAHLUNG ========== -->
+<section class="st" id="st-strahlung">
+ <h2>Wärmestrahlung</h2>
+ <p class="lead">Jeder Körper sendet Strahlung aus – auch ein Eiswürfel. Je heißer er ist, desto mehr. Bei Zimmertemperatur ist diese Strahlung unsichtbar (<b>Infrarot</b>). Eine Wärmebildkamera kann sie sehen. Erst ab etwa 500 °C beginnt ein Körper rot zu glühen.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="rC"></canvas></div>
+   <div class="kpi" id="rK"></div>
+   <div class="card l2"><h3>Spektrum: Welche Strahlung sendet der Körper aus?</h3><div class="fig mid"><canvas id="rG"></canvas></div><p class="note">Waagrecht: Wellenlänge (logarithmisch). Der bunte Streifen ist das sichtbare Licht, rechts davon liegt das Infrarot.</p></div>
+  </div>
+  <div class="ctrl">
+   <label for="rObj">Körper</label>
+   <select id="rObj"></select>
+   <div class="lab"><span>Temperatur</span><output id="rTo"></output></div>
+   <input type="range" id="rT" min="0" max="1000" step="1">
+   <label>Ansicht</label>
+   <div class="seg" id="rView"><button data-v="eye" aria-pressed="true">Auge (dunkler Raum)</button><button data-v="ir" aria-pressed="false">Wärmebildkamera</button></div>
+   <label class="chk"><input type="checkbox" id="rWav" checked> Strahlung als Wellen zeigen</label>
+   <div class="l3"><div class="lab"><span>Emissionsgrad ε</span><output id="rEo">1</output></div><input type="range" id="rE" min="0.05" max="1" step="0.05" value="1"></div>
+   <div class="row l2"><button class="b sm" id="rKeep">Kurve merken</button><button class="b sm" id="rClr">Gemerkte löschen</button></div>
+  </div>
+ </div>
+ <div class="tasks" id="tk-strahlung"></div>
+ <details class="expl"><summary>Erklärung</summary><div class="cols">
+  <p><b>Wärmestrahlung</b> ist elektromagnetische Strahlung wie Licht, nur mit größerer Wellenlänge. Sie breitet sich geradlinig aus, braucht keinen Stoff und ist so schnell wie Licht. Trifft sie auf einen Körper, kann sie ihn erwärmen.</p>
+  <p><b>Je heißer, desto mehr – und desto „blauer“:</b> Mit der Temperatur steigt die ausgesandte Strahlung sehr stark an. Gleichzeitig verschiebt sich das Maximum zu kürzeren Wellenlängen: Ein Körper glüht erst dunkelrot, dann orange, gelb und schließlich weiß.</p>
+  <p class="l2"><b>Wien’sches Verschiebungsgesetz:</b> λ<sub>max</sub> = 2898 µm·K / T. Der Mensch (34 °C) strahlt am stärksten bei etwa 9,4 µm, die Sonne (5500 °C) bei 0,5 µm – mitten im sichtbaren Licht.</p>
+  <p class="l3"><b>Stefan-Boltzmann-Gesetz:</b> M = ε·σ·T⁴ mit σ = 5,67·10⁻⁸ W/(m²·K⁴). Doppelte absolute Temperatur bedeutet 16-mal so viel Strahlung. Das Spektrum folgt dem Planck’schen Strahlungsgesetz M<sub>λ</sub> = ε·2πhc²/λ⁵ · 1/(e<sup>hc/(λkT)</sup> − 1). Ein Körper mit ε &lt; 1 („grauer Strahler“) strahlt bei jeder Wellenlänge weniger.</p>
+ </div></details>
+</section>
+
+<!-- ========== OBERFLÄCHEN ========== -->
+<section class="st" id="st-oberflaechen">
+ <h2>Absorbieren, Reflektieren, Durchlassen</h2>
+ <p class="lead">Trifft Strahlung auf einen Körper, gibt es drei Möglichkeiten: Sie wird <b>absorbiert</b> (verschluckt – der Körper wird warm), <b>reflektiert</b> (zurückgeworfen) oder <b>transmittiert</b> (durchgelassen). Drei Dosen mit Wasser stehen unter einer Lampe, die wie die Sonne strahlt.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="oC"></canvas></div>
+   <div class="legend"><span><i style="background:var(--sun)"></i>Licht der Lampe (sichtbar + nahes Infrarot)</span><span><i style="background:var(--ir)"></i>Wärmestrahlung der Dosen (fernes Infrarot)</span></div>
+   <div class="card"><h3>Temperatur des Wassers in den Dosen</h3><div class="fig mid"><canvas id="oG"></canvas></div></div>
+  </div>
+  <div class="ctrl">
+   <label>Lampe</label>
+   <div class="seg" id="oLamp"><button data-v="1" aria-pressed="true">an</button><button data-v="0" aria-pressed="false">aus</button></div>
+   <label>Dosen: Oberfläche und Abdeckung</label>
+   <div class="slots" id="oSel"></div>
+   <label>Zeitraffer</label>
+   <div class="seg" id="oSp"><button data-v="60" aria-pressed="true">1 min/s</button><button data-v="300" aria-pressed="false">5 min/s</button><button data-v="900" aria-pressed="false">15 min/s</button></div>
+   <div class="row"><button class="b" id="oRe">↺ Alle auf 20 °C</button><button class="b" id="oHot">Heißes Wasser (70 °C)</button></div>
+   <div class="card l2 small" id="oTab"></div>
+  </div>
+ </div>
+ <div class="tasks" id="tk-oberflaechen"></div>
+ <details class="expl"><summary>Erklärung</summary><div class="cols">
+  <p><b>Absorption + Reflexion + Transmission = 100 %.</b> Schwarze, matte Flächen absorbieren fast alles und werden in der Sonne heiß. Weiße und glänzende Flächen reflektieren viel. Glas lässt Sonnenlicht durch.</p>
+  <p><b>Wer gut absorbiert, strahlt auch gut ab.</b> Die schwarze Dose wird in der Sonne am wärmsten – und kühlt im Dunkeln auch am schnellsten ab. Die glänzende Aludose strahlt kaum Wärme ab. Darum sind Rettungsdecken und Thermoskannen verspiegelt.</p>
+  <p class="l2"><b>Es kommt auf die Wellenlänge an.</b> Weiße Farbe reflektiert Sonnenlicht, absorbiert aber Wärmestrahlung fast so gut wie Schwarz. Glas lässt Sonnenlicht durch, schluckt aber die langwellige Wärmestrahlung. So bleibt die Energie unter der Glashaube gefangen – wie im Glashaus oder im Auto in der Sonne.</p>
+  <p class="l3"><b>Kirchhoff’sches Strahlungsgesetz:</b> Bei jeder Wellenlänge ist der Absorptionsgrad gleich dem Emissionsgrad (α<sub>λ</sub> = ε<sub>λ</sub>). <b>Modell:</b> Dose mit 0,1 kg Wasser, Lampe 1000 W/m² (wie die Sonne zu Mittag), Wärmeabgabe durch Luftströmung (h = 6 W/(m²·K)) und Strahlung (σT⁴); Abdeckung als eigener Körper. Wichtig: Ein echtes Glashaus bleibt vor allem warm, weil die warme Luft nicht wegströmen kann (R. W. Wood, 1909) – vergleiche Glas und Folie.</p>
+ </div></details>
+</section>
+
+<!-- ========== TREIBHAUS ========== -->
+<section class="st" id="st-treibhaus">
+ <h2>Treibhauseffekt</h2>
+ <p class="lead">Die Sonne schickt Licht zur Erde. Der Boden wird warm und strahlt Wärmestrahlung (Infrarot) zurück ins All. Treibhausgase wie Kohlenstoffdioxid (CO₂), Wasserdampf und Methan lassen das Sonnenlicht durch, schlucken aber einen Teil der Wärmestrahlung und senden sie in alle Richtungen wieder aus – auch zurück zum Boden. Dadurch ist es auf der Erde wärmer.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="gC"></canvas></div>
+   <div class="kpi" id="gK"></div>
+   <div class="card l2"><h3>Temperatur am Boden und CO₂-Gehalt</h3><div class="fig mid"><canvas id="gG"></canvas></div><p class="note">Die Kurve zeigt, welche Temperatur sich auf Dauer einstellt (Gleichgewicht).</p></div>
+   <div class="card l3"><h3>Strahlungsbilanz (Mittelwerte pro m² Erdoberfläche)</h3><div class="fig mid"><canvas id="gB"></canvas></div></div>
+  </div>
+  <div class="ctrl">
+   <label class="chk"><input type="checkbox" id="gGas" checked> Treibhausgase in der Luft</label>
+   <div class="lab"><span>CO₂ in der Luft</span><output id="gCo">280 ppm</output></div>
+   <input type="range" id="gCO2" min="100" max="1200" step="10" value="280">
+   <div class="row" id="gPre"><button class="b sm" data-c="180">Eiszeit</button><button class="b sm" data-c="280">vor 1850</button><button class="b sm" data-c="420">heute</button><button class="b sm" data-c="560">doppelt</button><button class="b sm" data-c="1000">sehr viel</button></div>
+   <label for="gSurf">Erdoberfläche</label>
+   <select id="gSurf"></select>
+   <div class="lab"><span>Wolken</span><output id="gClo">43 %</output></div>
+   <input type="range" id="gCl" min="0" max="100" step="1" value="43">
+   <div class="row"><button class="b pri" id="gGo">Pause</button><button class="b" id="gFast" aria-pressed="false">Schneller</button></div>
+   <p class="note">Ein Lichtteilchen steht für sehr viel Energie. Die Erwärmung läuft im Zeitraffer – in Wirklichkeit dauert das Jahrzehnte bis Jahrhunderte.</p>
+  </div>
+ </div>
+ <div class="tasks" id="tk-treibhaus"></div>
+ <details class="expl"><summary>Erklärung</summary><div class="cols">
+  <p><b>Natürlicher Treibhauseffekt:</b> Ohne Treibhausgase wäre es auf der Erde im Mittel etwa −18 °C kalt. Mit ihnen sind es rund +14 °C. Der Treibhauseffekt ist also lebenswichtig.</p>
+  <p><b>Zusätzlicher Treibhauseffekt:</b> Durch Verbrennen von Kohle, Erdöl und Erdgas ist der CO₂-Gehalt von 280 ppm (vor 1850) auf über 420 ppm gestiegen. Es wird weniger Wärmestrahlung ins All abgegeben, die Erde erwärmt sich, bis wieder so viel hinaus- wie hereinkommt.</p>
+  <p class="l2"><b>Albedo:</b> Eis und Wolken reflektieren viel Sonnenlicht, Ozean und Wald wenig. Schmilzt Eis, wird mehr absorbiert, und es wird noch wärmer (Eis-Albedo-Rückkopplung). Wolken kühlen in diesem Modell nur durch Reflexion – in Wirklichkeit halten sie auch Wärmestrahlung zurück.</p>
+  <p class="l3"><b>Modell:</b> Einschicht-Modell. Absorbiert: S/4·(1 − α) mit S = 1361 W/m². Boden: σT<sub>B</sub>⁴ = S/4·(1 − α) + εσT<sub>A</sub>⁴, Atmosphäre: 2εσT<sub>A</sub>⁴ = εσT<sub>B</sub>⁴. Daraus T<sub>B</sub> = [S(1 − α)/(4σ(1 − ε/2))]<sup>¼</sup>. Der Absorptionsgrad ε hängt logarithmisch vom CO₂ ab und ist so eingestellt, dass eine Verdopplung auf Dauer etwa 3 °C Erwärmung bringt (Klimasensitivität laut IPCC 2,5–4 °C; Rückkopplungen wie Wasserdampf sind darin enthalten). Die heute gemessene Erwärmung (etwa 1,3 °C) ist kleiner als der Gleichgewichtswert, weil die Ozeane sich nur langsam erwärmen.</p>
+ </div></details>
+</section>
+
+<!-- ========== DÄMMEN ========== -->
+<section class="st" id="st-daemmen">
+ <h2>Dämmen &amp; Thermoskanne</h2>
+ <p class="lead">Wer Wärme festhalten (oder Kälte draußen halten) will, muss alle drei Wege bremsen: Leitung, Strömung und Strahlung. Eine Thermoskanne macht genau das – und ein gut gedämmtes Haus auch.</p>
+ <div class="seg" id="dMode" style="max-width:420px;margin-bottom:14px"><button data-v="th" aria-pressed="true">Thermoskanne bauen</button><button data-v="hs" aria-pressed="false">Hauswand</button></div>
+ <div id="dTh">
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="dC"></canvas></div>
+   <div class="kpi" id="dK"></div>
+   <div class="card"><h3>Temperatur des Inhalts</h3><div class="fig mid"><canvas id="dG"></canvas></div></div>
+  </div>
+  <div class="ctrl">
+   <label for="dIn">Inhalt (0,5 Liter)</label>
+   <select id="dIn"><option value="tee">heißer Tee (90 °C)</option><option value="eis">Eiswürfel (−10 °C)</option></select>
+   <label>Bauteile</label>
+   <label class="chk"><input type="checkbox" id="dDw"> doppelte Wand (Luft dazwischen)</label>
+   <label class="chk"><input type="checkbox" id="dVac"> Luft herauspumpen (Vakuum)</label>
+   <label class="chk"><input type="checkbox" id="dMir"> Wände verspiegeln</label>
+   <label class="chk"><input type="checkbox" id="dLid"> Deckel (Korken)</label>
+   <label class="chk"><input type="checkbox" id="dWool"> Wollpullover herumwickeln</label>
+   <div class="row"><button class="b sm" id="dCup">nur Becher</button><button class="b sm" id="dFull">echte Thermoskanne</button></div>
+   <div class="lab"><span>Temperatur draußen</span><output id="dOuto">20 °C</output></div>
+   <input type="range" id="dOut" min="-10" max="35" step="1" value="20">
+   <div class="row"><button class="b pri" id="dGo">Start</button><button class="b" id="dRe">↺ Neu einfüllen</button><button class="b sm" id="dKeep">Kurve merken</button></div>
+   <label>Zeitraffer</label>
+   <div class="seg" id="dSp"><button data-v="60" aria-pressed="false">1 min/s</button><button data-v="600" aria-pressed="true">10 min/s</button><button data-v="3600" aria-pressed="false">1 h/s</button></div>
+  </div>
+ </div>
+ </div>
+ <div id="dHs" hidden>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="hC"></canvas></div>
+   <div class="kpi" id="hK"></div>
+  </div>
+  <div class="ctrl">
+   <label>Ansicht</label>
+   <div class="seg" id="hView"><button data-v="cut" aria-pressed="true">Schnitt</button><button data-v="ir" aria-pressed="false">Wärmebild</button></div>
+   <label for="hWall">Wand</label>
+   <select id="hWall"><option value="ziegel">Ziegel 25 cm</option><option value="vollziegel">Vollziegel 38 cm (Altbau)</option><option value="beton">Beton 20 cm</option><option value="holz">Holzwand 16 cm</option></select>
+   <div class="lab"><span>Dämmung (Styropor)</span><output id="hIo">0 cm</output></div>
+   <input type="range" id="hIns" min="0" max="30" step="1" value="0">
+   <label for="hWin">Fenster</label>
+   <select id="hWin"><option value="1">Einfachglas</option><option value="2" selected>Zweifachglas</option><option value="3">Dreifachglas</option></select>
+   <div class="lab"><span>Temperatur draußen</span><output id="hOo">−5 °C</output></div>
+   <input type="range" id="hOut" min="-15" max="15" step="1" value="-5">
+   <p class="note">Innen sind es immer 20 °C.</p>
+  </div>
+ </div>
+ </div>
+ <div class="tasks" id="tk-daemmen"></div>
+ <details class="expl"><summary>Erklärung</summary><div class="cols">
+  <p><b>Thermoskanne:</b> Zwischen zwei Glaswänden ist ein Vakuum – ohne Luft gibt es dort weder Leitung noch Strömung. Die Wände sind verspiegelt, damit kaum Wärmestrahlung hinüberkommt. Der Deckel verhindert, dass warme Luft und Dampf oben entweichen. Übrig bleibt etwas Leitung über den Rand und den Deckel.</p>
+  <p><b>Wärmt ein Pullover?</b> Ein Pullover erzeugt keine Wärme. Er enthält viel eingeschlossene Luft und bremst so den Wärmefluss – in beide Richtungen. Darum bleiben Eiswürfel im Pullover länger kalt.</p>
+  <p class="l2"><b>Hauswand:</b> Der U-Wert gibt an, wie viel Wärme pro Sekunde durch 1 m² Wand fließt, wenn innen und außen 1 °C Unterschied herrscht (W/(m²·K)). Je kleiner, desto besser gedämmt. Wärmestrom: q = U·ΔT.</p>
+  <p class="l3"><b>Modell:</b> Wärmewiderstände in Reihe: R = R<sub>si</sub> + Σ d/λ + R<sub>se</sub> mit R<sub>si</sub> = 0,13 und R<sub>se</sub> = 0,04 m²·K/W, U = 1/R. Heizenergie pro Jahr: Q = U·A·HGT mit etwa 3400 Kelvin-Tagen (Heizgradtage, Österreich). Thermoskanne: Wärmeleitwerte für Becher, Luftspalt, Vakuum, Verspiegelung, Deckel und Wolle in W/K; Eis mit Schmelzwärme 334 kJ/kg.</p>
+ </div></details>
+</section>
+
+<script>
+/* ===================== Grundlagen ===================== */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const de=(x,p=3)=>Number(Number(x).toPrecision(p)).toLocaleString("de-AT",{maximumFractionDigits:10});
+const fx=(x,d=1)=>Number(x).toLocaleString("de-AT",{minimumFractionDigits:d,maximumFractionDigits:d});
+const SUPD="⁰¹²³⁴⁵⁶⁷⁸⁹";const sup=n=>String(n).replace(/-/g,"⁻").replace(/\d/g,d=>SUPD[d]);
+function sci(x,p=2){if(x===0)return"0";const e=Math.floor(Math.log10(Math.abs(x)));if(e>=-2&&e<5)return de(x,p);return de(x/10**e,p)+" · 10"+sup(e)}
+const degC=(T,d=0)=>(Math.abs(T)<.5/10**d?0:T).toLocaleString("de-AT",{minimumFractionDigits:d,maximumFractionDigits:d}).replace("-","−")+" °C";
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));const lerp=(a,b,t)=>a+(b-a)*t;
+const SIG=5.670e-8,K0=273.15;
+const probe=document.createElement("i");probe.style.display="none";document.body.appendChild(probe);let CC={};
+function col(v){if(CC[v])return CC[v];probe.style.color=v.startsWith("var")||v.startsWith("#")||v.startsWith("rgb")?v:`var(${v})`;return CC[v]=getComputedStyle(probe).color}
+function alpha(c,a){const m=c.match(/[\d.]+/g);return m?`rgba(${m[0]},${m[1]},${m[2]},${a})`:c}
+const isDark=()=>{const c=col("--bg").match(/\d+/g);return c&&(+c[0]+ +c[1]+ +c[2])<200};
+/* Farbskalen: kalt-warm und Wärmebild (Eisen) */
+const CW=[[0,[40,70,190]],[.25,[110,160,240]],[.5,[226,226,222]],[.75,[245,150,110]],[1,[185,20,30]]];
+const IRON=[[0,[10,6,40]],[.16,[62,14,125]],[.36,[150,30,145]],[.54,[220,62,42]],[.72,[246,150,32]],[.88,[255,224,90]],[1,[255,255,236]]];
+function cA(t,S=CW){t=clamp(isFinite(t)?t:0,0,1);for(let i=1;i<S.length;i++)if(t<=S[i][0]){const a=S[i-1],b=S[i],u=(t-a[0])/(b[0]-a[0]);return[a[1][0]+(b[1][0]-a[1][0])*u,a[1][1]+(b[1][1]-a[1][1])*u,a[1][2]+(b[1][2]-a[1][2])*u]}return S[S.length-1][1]}
+const cS=(t,S=CW,a=1)=>{const c=cA(t,S);return`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${a})`};
+const REG=[];
+function canv(id,draw){const c=document.getElementById(id);const o={c,draw,x:null,w:0,h:0};const fit=()=>{const r=c.getBoundingClientRect();if(!r.width||!r.height)return;const d=devicePixelRatio||1;c.width=Math.round(r.width*d);c.height=Math.round(r.height*d);o.w=r.width;o.h=r.height;o.x=c.getContext("2d");o.x.setTransform(d,0,0,d,0,0);draw(o)};o.fit=fit;o.redraw=()=>{if(o.x&&o.w)draw(o)};new ResizeObserver(fit).observe(c);REG.push(o);return o}
+const redrawAll=()=>{CC={};REG.forEach(o=>o.redraw())};
+new MutationObserver(redrawAll).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme","class","style"]});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",redrawAll);
+function txt(x,s,X,Y,o={}){x.font=`${o.w||400} ${o.size||13}px "Source Sans 3",system-ui,sans-serif`;x.fillStyle=o.c||col("--ink");x.textAlign=o.a||"left";x.textBaseline=o.b||"middle";x.fillText(s,X,Y)}
+function pill(x,s,X,Y,o={}){x.font=`${o.w||700} ${o.size||13}px "Source Sans 3",system-ui,sans-serif`;const tw=x.measureText(s).width,pw=tw+12,ph=(o.size||13)+9;let x0=o.a=="center"?X-pw/2:o.a=="right"?X-pw:X;x.fillStyle=o.bg||alpha(col("--card"),.9);x.beginPath();x.roundRect(x0,Y-ph/2,pw,ph,6);x.fill();if(o.bc){x.strokeStyle=o.bc;x.lineWidth=1.5;x.stroke()}txt(x,s,x0+6,Y+.5,{size:o.size||13,w:o.w||700,c:o.c||col("--ink")})}
+function arrow(x,x1,y1,x2,y2,c,wd=3,head=10){const a=Math.atan2(y2-y1,x2-x1),L=Math.hypot(x2-x1,y2-y1);if(L<2)return;head=Math.min(Math.max(head,wd*2.2),L*.6);x.strokeStyle=c;x.fillStyle=c;x.lineWidth=wd;x.lineCap="round";x.beginPath();x.moveTo(x1,y1);x.lineTo(x2-Math.cos(a)*head*.7,y2-Math.sin(a)*head*.7);x.stroke();x.beginPath();x.moveTo(x2,y2);x.lineTo(x2-Math.cos(a-.45)*head,y2-Math.sin(a-.45)*head);x.lineTo(x2-Math.cos(a+.45)*head,y2-Math.sin(a+.45)*head);x.closePath();x.fill()}
+function wave(x,x1,y1,x2,y2,c,amp=4,wl=12,wd=2,ph=0){const L=Math.hypot(x2-x1,y2-y1);if(L<3)return;const ux=(x2-x1)/L,uy=(y2-y1)/L;x.strokeStyle=c;x.lineWidth=wd;x.beginPath();for(let s=0;s<=L;s+=2){const o=Math.sin(s/wl*2*Math.PI+ph)*amp*Math.min(1,s/6,(L-s)/6+.3);const X=x1+ux*s-uy*o,Y=y1+uy*s+ux*o;s?x.lineTo(X,Y):x.moveTo(X,Y)}x.stroke()}
+function thermo(x,X,Y,H,T,T0,T1,lab){/* kleines Thermometer, Kugel unten bei (X,Y) */const f=clamp((T-T0)/(T1-T0),0,1),r=7;x.fillStyle=col("--card");x.strokeStyle=col("--mut");x.lineWidth=1.5;x.beginPath();x.roundRect(X-4.5,Y-H,9,H,4.5);x.fill();x.stroke();x.beginPath();x.arc(X,Y+r-2,r,0,7);x.fill();x.stroke();const c=cS(f);x.fillStyle=c;x.beginPath();x.arc(X,Y+r-2,r-2.5,0,7);x.fill();const hh=(H-8)*f+4;x.fillRect(X-2,Y-hh,4,hh+2);if(lab!==false)pill(x,lab||degC(T),X+12,Y-H+8,{size:13})}
+function seg(id,cb){const el=document.getElementById(id);el.querySelectorAll("button").forEach(b=>b.onclick=()=>{el.querySelectorAll("button").forEach(q=>q.setAttribute("aria-pressed",q===b));cb(b.dataset.v)});return v=>{el.querySelectorAll("button").forEach(q=>q.setAttribute("aria-pressed",q.dataset.v==v))}}
+function kpi(id,items){document.getElementById(id).innerHTML=items.filter(Boolean).map(([k,v,c])=>`<div${c?` class="${c}"`:""}><span>${k}</span><b>${v}</b></div>`).join("")}
+const TL=["","einfach","mittel","anspruchsvoll"];
+function tasks(id,list){const el=document.getElementById("tk-"+id);el.innerHTML="";list.forEach(t=>{const d=document.createElement("div");d.className="task"+(t.l==2?" l2":t.l==3?" l3":"");d.innerHTML=`<span class="lv">${TL[t.l]}</span><h3>${t.h}</h3><p>${t.p}</p>`;if(t.set){const b=document.createElement("button");b.className="b sm";b.textContent="Einstellen";b.onclick=()=>{t.set();document.getElementById("st-"+id).scrollIntoView({behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"})};d.appendChild(b)}el.appendChild(d)})}
+const lvl=()=>+document.body.dataset.lvl;
+const LVLCB=[];
+function setLvl(l){document.body.dataset.lvl=l;$$(".lvl button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l==l));try{localStorage.setItem("waermelvl",l)}catch(e){}LVLCB.forEach(f=>f());setTimeout(()=>{REG.forEach(o=>o.fit())},20)}
+$$(".lvl button").forEach(b=>b.onclick=()=>setLvl(b.dataset.l));
+const VIEWS=["ueberblick","teilchen","leitung","stroemung","strahlung","oberflaechen","treibhaus","daemmen"];let cur="ueberblick";
+function route(){const h=location.hash.slice(1);cur=VIEWS.includes(h)?h:"ueberblick";$$(".st").forEach(s=>s.classList.toggle("on",s.id=="st-"+cur));$$("#nav a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")=="#"+cur));setTimeout(()=>REG.forEach(o=>o.fit()),10)}
+addEventListener("hashchange",route);
+$("#fs").onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.()};
+function bindRange(id,out,fmt,cb){const r=$("#"+id),o=$("#"+out);const f=()=>{o.textContent=fmt(+r.value);cb&&cb(+r.value)};r.addEventListener("input",f);f();return v=>{r.value=v;o.textContent=fmt(+r.value)}}
+const hhmm=s=>{s=Math.max(0,s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=Math.floor(s%60);return h?`${h} h ${String(m).padStart(2,"0")} min`:m?`${m} min ${String(sec).padStart(2,"0")} s`:`${sec} s`};
+function ptr(c,cb){/* Zeigerereignisse in CSS-Pixeln */const g=e=>{const r=c.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};c.addEventListener("pointerdown",e=>{const[p,q]=g(e);cb("down",p,q,e)});c.addEventListener("pointermove",e=>{const[p,q]=g(e);cb("move",p,q,e)});c.addEventListener("pointerleave",e=>cb("leave",0,0,e));c.addEventListener("pointerup",e=>{const[p,q]=g(e);cb("up",p,q,e)})}
+
+/* ===================== Diagramm ===================== */
+function nice(r){const e=10**Math.floor(Math.log10(r/5));for(const m of[1,2,2.5,5,10])if(r/(m*e)<=6)return m*e;return 10*e}
+function chart(o,c){const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const L=54,R=14,T=14,B=40;
+ const X=v=>L+(v-c.x0)/(c.x1-c.x0)*(w-L-R),Y=v=>h-B-(v-c.y0)/(c.y1-c.y0)*(h-T-B);
+ x.strokeStyle=col("--grid");x.lineWidth=1;
+ const sx=c.sx||nice(c.x1-c.x0),sy=c.sy||nice(c.y1-c.y0);
+ for(let v=Math.ceil(c.x0/sx-1e-9)*sx;v<=c.x1+1e-9;v+=sx){x.beginPath();x.moveTo(X(v),T);x.lineTo(X(v),h-B);x.stroke();txt(x,c.xf?c.xf(v):de(v,3),X(v),h-B+12,{a:"center",c:col("--mut"),size:12})}
+ for(let v=Math.ceil(c.y0/sy-1e-9)*sy;v<=c.y1+1e-9;v+=sy){x.beginPath();x.moveTo(L,Y(v));x.lineTo(w-R,Y(v));x.stroke();txt(x,(c.yf?c.yf(v):de(v,3)).replace("-","−"),L-6,Y(v),{a:"right",c:col("--mut"),size:12})}
+ x.strokeStyle=col("--mut");x.beginPath();x.moveTo(L,T);x.lineTo(L,h-B);x.lineTo(w-R,h-B);x.stroke();
+ txt(x,c.xl,(L+w-R)/2,h-10,{a:"center",c:col("--mut"),size:13,w:600});
+ x.save();x.translate(13,(T+h-B)/2);x.rotate(-Math.PI/2);txt(x,c.yl,0,0,{a:"center",c:col("--mut"),size:13,w:600});x.restore();
+ x.save();x.beginPath();x.rect(L,T,w-L-R,h-T-B);x.clip();
+ (c.extra||(()=>{}))(x,X,Y);
+ for(const s of c.series||[]){const cc=col(s.c);
+  if(s.fn){x.strokeStyle=cc;x.lineWidth=s.lw||2;x.setLineDash(s.dash||[]);x.beginPath();let st=false;for(let i=0;i<=300;i++){const v=c.x0+(c.x1-c.x0)*i/300,y=s.fn(v);if(!isFinite(y)){st=false;continue}st?x.lineTo(X(v),Y(y)):x.moveTo(X(v),Y(y));st=true}x.stroke();x.setLineDash([])}
+  if(s.line&&s.pts&&s.pts.length>1){x.strokeStyle=s.alpha?alpha(cc,s.alpha):cc;x.lineWidth=s.lw||2.2;x.setLineDash(s.dash||[]);x.beginPath();s.pts.forEach((p,i)=>i?x.lineTo(X(p[0]),Y(p[1])):x.moveTo(X(p[0]),Y(p[1])));x.stroke();x.setLineDash([])}
+  if(s.pts&&!s.line){x.fillStyle=cc;for(const p of s.pts){x.beginPath();x.arc(X(p[0]),Y(p[1]),s.r||4,0,7);x.fill()}}}
+ (c.after||(()=>{}))(x,X,Y);
+ x.restore();
+ if(c.legend&&c.legend.length){let yy=T+10;x.font='12px "Source Sans 3",sans-serif';const lw=Math.max(...c.legend.map(l=>x.measureText(l[0]).width))+30;x.fillStyle=alpha(col("--card"),.85);x.fillRect(w-R-lw-4,T+1,lw+2,c.legend.length*17+4);for(const [t,cc,d] of c.legend){x.strokeStyle=col(cc);x.lineWidth=2.5;x.setLineDash(d||[]);x.beginPath();x.moveTo(w-R-lw,yy);x.lineTo(w-R-lw+16,yy);x.stroke();x.setLineDash([]);txt(x,t,w-R-lw+21,yy,{size:12,c:col("--ink")});yy+=17}}}
+
+/* ===================== Station: Drei Wege ===================== */
+let uSel="all";
+const U_INFO={all:"Alle drei Wege gleichzeitig. Wähle oben einen Weg aus, um ihn einzeln zu sehen.",
+ lei:"<b>Wärmeleitung:</b> Die Spitze des Metallspießes steckt im Feuer. Die Teilchen dort zittern stark und stoßen ihre Nachbarn an. So wandert die Energie Stück für Stück bis zur Hand. Die Teilchen selbst bleiben an ihrem Platz.",
+ str:"<b>Wärmeströmung:</b> Die Luft über dem Feuer wird heiß, dehnt sich aus und steigt auf. Sie nimmt ihre Energie mit – und den Rauch. Von der Seite strömt kühlere Luft nach. Darum ist es direkt über dem Feuer am heißesten.",
+ rad:"<b>Wärmestrahlung:</b> Das Feuer sendet in alle Richtungen Strahlung aus, auch zur Seite. Sie wärmt das Gesicht, ohne dass die Luft warm sein muss. Hältst du eine Hand dazwischen, ist es dahinter sofort kühler – wie ein Schatten."};
+seg("uW",v=>{uSel=v;$("#uInfo").innerHTML=U_INFO[v]});$("#uInfo").innerHTML=U_INFO.all;
+const uPar={air:[],smoke:[],waves:[],pulse:[]};let uT=0;
+function uStep(dt,w,h){uT+=dt;const gy=h*.82,fx=w*.44;const vac=$("#uVac").checked&&lvl()>1;
+ if(!vac){if(Math.random()<dt*7)uPar.air.push({x:fx+(Math.random()-.5)*w*.07,y:gy-h*.08,a:0,ph:Math.random()*6,s:.7+Math.random()*.6});
+  if(Math.random()<dt*5)uPar.smoke.push({x:fx+(Math.random()-.5)*w*.04,y:gy-h*.12,a:0,ph:Math.random()*6});}
+ for(const p of uPar.air){p.a+=dt;p.y-=dt*h*.16*p.s;p.x+=Math.sin(p.a*1.7+p.ph)*dt*w*.02}
+ for(const p of uPar.smoke){p.a+=dt;p.y-=dt*h*.13;p.x+=(Math.sin(p.a*1.3+p.ph)*.02+.012)*dt*w}
+ uPar.air=uPar.air.filter(p=>p.y>-20);uPar.smoke=uPar.smoke.filter(p=>p.y>-30);
+ if(Math.random()<dt*9){let a;do{a=-Math.PI*Math.random()*1.04+0.02}while(Math.abs(a+Math.PI/2)<.25&&Math.random()<.5);uPar.waves.push({a,r:w*.05,ph:Math.random()*6})}
+ for(const p of uPar.waves)p.r+=dt*w*.22;uPar.waves=uPar.waves.filter(p=>p.r<w*.75);
+ if(Math.random()<dt*2.2)uPar.pulse.push({s:0});for(const p of uPar.pulse)p.s+=dt*.28;uPar.pulse=uPar.pulse.filter(p=>p.s<1)}
+function uPerson(x,X,Y,s,face){/* einfache Figur, sitzend; face: 1 = schaut nach rechts */x.save();x.translate(X,Y);x.scale(face,1);const c=col("--ink");x.fillStyle=alpha(c,.85);x.strokeStyle=alpha(c,.85);x.lineCap="round";
+ x.beginPath();x.arc(0,-s*1.55,s*.28,0,7);x.fill();x.lineWidth=s*.32;x.beginPath();x.moveTo(0,-s*1.2);x.lineTo(-s*.05,-s*.55);x.stroke();
+ x.lineWidth=s*.2;x.beginPath();x.moveTo(-s*.05,-s*.55);x.lineTo(s*.45,-s*.5);x.lineTo(s*.5,0);x.stroke();x.restore()}
+const uC=canv("uC",o=>{const x=o.x,w=o.w,h=o.h;uStep(0,w,h);x.clearRect(0,0,w,h);const gy=h*.82,fx=w*.44,lab=$("#uLab").checked,vac=$("#uVac").checked&&lvl()>1;
+ const A=k=>uSel=="all"||uSel==k?1:.12;
+ const sky=x.createLinearGradient(0,0,0,gy);sky.addColorStop(0,isDark()?"#0d1424":"#1f2a4a");sky.addColorStop(1,isDark()?"#1d2333":"#3b4a6e");x.fillStyle=vac?"#05070c":sky;x.fillRect(0,0,w,gy);
+ x.fillStyle=isDark()?"#2a2620":"#5b4a36";x.fillRect(0,gy,w,h-gy);
+ if(vac)txt(x,"luftleerer Raum",w-12,18,{a:"right",c:"#9aa",size:14,w:700});
+ /* Strahlung */
+ x.globalAlpha=A("rad");for(const p of uPar.waves){const r0=p.r,r1=p.r+w*.05;wave(x,fx+Math.cos(p.a)*r0,gy-h*.08+Math.sin(p.a)*r0,fx+Math.cos(p.a)*r1,gy-h*.08+Math.sin(p.a)*r1,alpha(col("--rad"),clamp(1.2-p.r/(w*.7),0,1)),3.5,7,2.4,-uT*20)}
+ x.globalAlpha=1;
+ /* Personen */
+ uPerson(x,w*.15,gy,h*.13,1);uPerson(x,w*.8,gy,h*.13,-1);
+ x.fillStyle=isDark()?"#6b4f33":"#7a5532";x.beginPath();x.roundRect(w*.1,gy-h*.018,w*.1,h*.036,6);x.fill();x.beginPath();x.roundRect(w*.75,gy-h*.018,w*.1,h*.036,6);x.fill();
+ /* Gesicht leuchtet (Strahlung) */
+ x.globalAlpha=A("rad")*.6;const gr=x.createRadialGradient(w*.15,gy-h*.2,2,w*.15,gy-h*.2,h*.07);gr.addColorStop(0,"rgba(255,120,60,.8)");gr.addColorStop(1,"rgba(255,120,60,0)");x.fillStyle=gr;x.beginPath();x.arc(w*.15,gy-h*.2,h*.07,0,7);x.fill();x.globalAlpha=1;
+ /* Spieß (Leitung) */
+ const hx=w*.8-h*.075,hy=gy-h*.125,tx=fx+w*.015,ty=gy-h*.07;x.globalAlpha=A("lei");
+ const N=40;for(let i=0;i<N;i++){const u=i/N,u2=(i+1)/N;const t=clamp(1-u*1.15,0,1)**1.6;x.strokeStyle=cS(.5+t*.5);x.lineWidth=5;x.beginPath();x.moveTo(lerp(tx,hx,u),lerp(ty,hy,u));x.lineTo(lerp(tx,hx,u2),lerp(ty,hy,u2));x.stroke()}
+ for(let i=0;i<18;i++){const u=(i+.5)/18,t=clamp(1-u*1.15,0,1)**1.6,a=1+t*4;x.fillStyle=alpha(col("--ink"),.8);x.beginPath();x.arc(lerp(tx,hx,u)+Math.sin(uT*31+i*2.1)*a,lerp(ty,hy,u)-9+Math.cos(uT*27+i)*a,2.2,0,7);x.fill()}
+ for(const p of uPar.pulse){const u=p.s;x.fillStyle=`rgba(255,180,60,${.9*(1-u)})`;x.beginPath();x.arc(lerp(tx,hx,u),lerp(ty,hy,u),6,0,7);x.fill()}
+ x.globalAlpha=1;
+ /* Feuer */
+ x.fillStyle=isDark()?"#5a3b22":"#6b4423";x.save();x.translate(fx,gy-h*.02);for(const r of[-.35,.35]){x.save();x.rotate(r);x.beginPath();x.roundRect(-w*.07,-h*.018,w*.14,h*.036,8);x.fill();x.restore()}x.restore();
+ for(let k=0;k<5;k++){const s=1-k*.17,fl=Math.sin(uT*(9+k)+k)*.12;x.fillStyle=["#c2410c","#ea580c","#f59e0b","#fbbf24","#fef3c7"][k];x.beginPath();const bw=w*.055*s,bh=h*.2*s*(1+fl);x.moveTo(fx-bw,gy-h*.03);x.bezierCurveTo(fx-bw*1.1,gy-bh*.5,fx-bw*.2+fl*20,gy-bh*.8,fx+fl*15,gy-bh);x.bezierCurveTo(fx+bw*.4,gy-bh*.7,fx+bw*1.1,gy-bh*.45,fx+bw,gy-h*.03);x.closePath();x.fill()}
+ /* Strömung */
+ if(!vac){x.globalAlpha=A("str");for(const p of uPar.air){const f=clamp(1-(gy-p.y)/(gy*1.05),0,1);x.fillStyle=cS(.55+f*.45,CW,.28*f+.05);x.beginPath();x.arc(p.x,p.y,10+p.a*7,0,7);x.fill()}
+  for(const p of uPar.smoke){x.fillStyle=`rgba(170,170,175,${clamp(.5-p.a*.08,0,.5)})`;x.beginPath();x.arc(p.x,p.y,4+p.a*4,0,7);x.fill()}
+  for(let i=0;i<3;i++){const yy=gy-h*.3-i*h*.15,ph=(uT*1.2+i*.33)%1;arrow(x,fx,yy+h*.07,fx,yy-h*.02,alpha(col("--str"),.9),4,12)}
+  arrow(x,w*.3,gy-h*.04,w*.37,gy-h*.04,alpha(col("--str"),.8),3,10);arrow(x,w*.6,gy-h*.04,w*.52,gy-h*.04,alpha(col("--str"),.8),3,10);x.globalAlpha=1}
+ if(lab){if(A("lei")>.5)pill(x,"Leitung im Spieß",lerp(tx,hx,.55),lerp(ty,hy,.55)-30,{a:"center",c:"#fff",bg:col("--lei")});
+  if(A("str")>.5&&!vac)pill(x,"Strömung: heiße Luft steigt auf",fx+12,h*.12,{c:"#fff",bg:col("--str")});
+  if(A("rad")>.5)pill(x,"Strahlung wärmt das Gesicht",w*.04,gy-h*.42,{c:"#fff",bg:col("--rad")})}
+});
+$("#uLab").onchange=()=>uC.redraw();
+const UQ=[["Der Löffel im heißen Tee wird am Griff warm.","lei","Das Metall leitet die Wärme vom Tee zum Griff."],
+ ["Über dem Heizkörper steigt warme Luft auf.","str","Die warme Luft bewegt sich selbst und nimmt die Energie mit."],
+ ["Die Sonne wärmt die Erde durch den leeren Weltraum.","rad","Im Weltraum gibt es keinen Stoff – nur Strahlung kommt hindurch."],
+ ["Der Topfboden wird auf der Herdplatte heiß.","lei","Herdplatte und Topf berühren sich, die Wärme wird durch das Metall geleitet."],
+ ["Im Kochtopf steigt das heiße Wasser vom Boden auf.","str","Das Wasser strömt im Kreis und verteilt so die Wärme."],
+ ["Eine Wärmebildkamera sieht Menschen in der Nacht.","rad","Unser Körper sendet Infrarotstrahlung aus, die die Kamera misst."],
+ ["Barfuß auf den Fliesen im Bad bekommt man kalte Füße.","lei","Die Fliesen leiten die Wärme schnell von den Füßen weg."],
+ ["Ein Föhn bläst warme Luft auf die Haare.","str","Die Luft wird erwärmt und weggeblasen – erzwungene Strömung."],
+ ["Vor dem Kachelofen spürt man die Wärme im Gesicht.","rad","Die heiße Ofenwand strahlt. (Dazu kommt etwas aufsteigende warme Luft.)"],
+ ["Der Golfstrom bringt warmes Wasser nach Europa.","str","Eine riesige Meeresströmung transportiert die Wärme."]];
+const UQA=new Array(UQ.length).fill(null);
+function uQuiz(){$("#uQ").innerHTML=UQ.map((q,i)=>`<div class="qi"><span>${q[0]}</span><span class="qb">${[["lei","Leitung"],["str","Strömung"],["rad","Strahlung"]].map(([k,n])=>`<button data-i="${i}" data-k="${k}" class="${UQA[i]==k?(k==q[1]?"y":"n"):""}">${n}</button>`).join("")}</span><span class="fb">${UQA[i]?(UQA[i]==q[1]?"✓ ":"✗ Eher "+({lei:"Leitung",str:"Strömung",rad:"Strahlung"})[q[1]]+". ")+q[2]:""}</span></div>`).join("");
+ $$("#uQ button").forEach(b=>b.onclick=()=>{UQA[+b.dataset.i]=b.dataset.k;uQuiz()});
+ const n=UQA.filter(Boolean).length,r=UQA.filter((a,i)=>a==UQ[i][1]).length;$("#uQr").textContent=n?`${r} von ${n} richtig${n==UQ.length?(r==n?" – alles richtig!":" – schau dir die falschen noch einmal an."):"."}`:"Noch nichts beantwortet."}
+uQuiz();
+tasks("ueberblick",[
+ {l:1,h:"Wege finden",p:"Schau dir die drei Wege einzeln an. Bei welchem Weg bewegt sich der Stoff selbst mit? Bei welchem nicht?",set:()=>{seg("uW",()=>{})("str");uSel="str";$("#uInfo").innerHTML=U_INFO.str}},
+ {l:1,h:"Hand über dem Feuer",p:"Warum ist es über dem Feuer viel heißer als in gleichem Abstand daneben? Welcher Weg kommt über dem Feuer noch dazu?"},
+ {l:2,h:"Ohne Luft",p:"Schalte den luftleeren Raum ein. Welche Wege funktionieren noch, welche nicht? Was bedeutet das für die Wärme, die von der Sonne zu uns kommt?",set:()=>{$("#uVac").checked=true}},
+ {l:3,h:"Beispiele erfinden",p:"Finde für jeden Weg zwei eigene Beispiele aus der Küche. Bei welchem Gerät sind alle drei Wege beteiligt (z. B. Backrohr mit Umluft)?"}]);
+
+/* ===================== Station: Temperatur & Teilchen ===================== */
+const PMAT={kupfer:{n:"Kupfer",c:385,k:400,col:"#c27a45"},alu:{n:"Aluminium",c:897,k:300,col:"#aab3bd"},eisen:{n:"Eisen",c:449,k:150,col:"#73787f"},
+ blei:{n:"Blei",c:129,k:80,col:"#626b80"},glas:{n:"Glas",c:840,k:40,col:"#8fcfc1"},wasser:{n:"Wasser (im Beutel)",c:4186,k:1000,col:"#6fa8dc"}};
+$("#pMa").innerHTML=$("#pMb").innerHTML=Object.entries(PMAT).map(([k,m])=>`<option value="${k}">${m.n}</option>`).join("");
+$("#pMa").value="kupfer";$("#pMb").value="kupfer";
+const PN=10,PR=8;const P={T:new Float64Array(2*PN),C:new Float64Array(2*PN),G:new Float64Array(2*PN-1),pos:0,goal:0,t:0,F:1,hist:[],T0:[80,10],run:true,flux:0,flux0:1,parts:[]};
+for(let i=0;i<2*PN*PR;i++)P.parts.push({ph1:Math.random()*6.3,ph2:Math.random()*6.3,f1:7+Math.random()*6,f2:7+Math.random()*6});
+function pSetup(){const A=PMAT[$("#pMa").value],B=PMAT[$("#pMb").value],mA=+$("#pmA").value,mB=+$("#pmB").value,lv=lvl();
+ const ma=lv>1?mA:1,mb=lv>1?mB:1;P.m=[ma,mb];P.mat=[A,B];P.T0=[+$("#pTa").value,+$("#pTb").value];
+ for(let i=0;i<PN;i++){P.T[i]=P.T0[0];P.T[PN+i]=P.T0[1];P.C[i]=ma*A.c/PN;P.C[PN+i]=mb*B.c/PN}
+ const s=.06;for(let i=0;i<2*PN-1;i++)P.G[i]=i<PN-1?A.k*s:i>PN-1?B.k*s:0;
+ P.Gif=2/(1/(A.k*s)+1/(B.k*s));
+ /* Zeitraffer so wählen, dass der Ausgleich etwa 10 s dauert */
+ const CA=ma*A.c,CB=mb*B.c,tif=CA*CB/(CA+CB)/P.Gif,tA=PN*PN*(CA/PN)/(9.87*A.k*s),tB=PN*PN*(CB/PN)/(9.87*B.k*s);P.F=Math.max(tif,tA/3,tB/3)*3/10;P.lastH=0;
+ P.t=0;P.hist=[[0,P.T0[0],P.T0[1]]];P.flux=0;P.Q=0;P.flux0=Math.abs(P.T0[0]-P.T0[1])*P.Gif+1e-9;P.Tm=(CA*P.T0[0]+CB*P.T0[1])/(CA+CB);pUpd()}
+function pMean(k){let s=0,c=0;for(let i=k*PN;i<(k+1)*PN;i++){s+=P.T[i]*P.C[i];c+=P.C[i]}return s/c}
+function pStep(dt){P.pos+=clamp(P.goal-P.pos,-dt*2.2,dt*2.2);if(!P.run)return;const touch=P.pos>.999;const ins=$("#pIns").checked;
+ P.G[PN-1]=touch?P.Gif*(ins?.025:1):0;
+ const sim=dt*P.F;let Cmin=Infinity,Gmax=1e-9;for(let i=0;i<2*PN;i++)Cmin=Math.min(Cmin,P.C[i]);for(const g of P.G)Gmax=Math.max(Gmax,g);
+ const n=Math.min(800,Math.ceil(sim/(.35*Cmin/Gmax)));const h=sim/n;let fl=0;
+ for(let s=0;s<n;s++){const q=new Float64Array(2*PN-1);for(let i=0;i<2*PN-1;i++)q[i]=P.G[i]*(P.T[i]-P.T[i+1]);for(let i=0;i<2*PN;i++){let d=0;if(i>0)d+=q[i-1];if(i<2*PN-1)d-=q[i];P.T[i]+=d*h/P.C[i]}fl+=q[PN-1]*h}
+ P.flux=fl/sim;P.Q+=fl;if(touch||P.t>0){P.t+=dt;if(!P.lastH||P.t-P.lastH>.1){P.lastH=P.t;P.hist.push([P.t,pMean(0),pMean(1)]);if(P.hist.length>900)P.hist.splice(0,P.hist.length-900)}}}
+function pUpd(){const lv=lvl(),TA=pMean(0),TB=pMean(1);kpi("pK",[["Körper A",degC(TA,1)],["Körper B",degC(TB,1)],lv>1&&["Mischtemperatur (berechnet)",degC(P.Tm,1)],lv>2&&["Wärme von A nach B",de(P.Q/1000,3)+" kJ"],lv>2&&["Wärmekapazität m·c",de(P.m[0]*P.mat[0].c/1000,3)+" | "+de(P.m[1]*P.mat[1].c/1000,3)+" kJ/K"]]);
+ $("#pGo").textContent=P.goal?"Auseinanderziehen":"Zusammenschieben"}
+const pC=canv("pC",o=>{const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const lv=lvl();
+ const bw=Math.min(w*.33,h*.62),bh=bw*.8,gap=lerp(w*.14,$("#pIns").checked?bw*.12:0,P.pos),cx=w/2,y0=h*.3;
+ const xA=cx-gap/2-bw,xB=cx+gap/2,cell=bw/PN,Tr=[-20,100];
+ for(let k=0;k<2;k++){const X0=k?xB:xA,m=P.mat[k];x.fillStyle=alpha(col(m.col),.22);x.strokeStyle=col(m.col);x.lineWidth=2;x.beginPath();x.roundRect(X0,y0,bw,bh,8);x.fill();x.stroke();
+  txt(x,(k?"B: ":"A: ")+m.n+(lv>1?` · ${de(P.m[k],2)} kg`:""),X0+bw/2,y0+bh+20,{a:"center",w:700,size:15});
+  for(let i=0;i<PN;i++){const T=P.T[k*PN+i],f=(T-Tr[0])/(Tr[1]-Tr[0]),amp=(1.2+f*6.5)*cell/26;
+   x.fillStyle=cS(f,CW,.18);x.fillRect(X0+i*cell,y0+2,cell,bh-4);
+   for(let r=0;r<PR;r++){const p=P.parts[(k*PN+i)*PR+r],px=X0+(i+.5)*cell+Math.sin(uT*p.f1+p.ph1)*amp*(m===PMAT.wasser?1.5:1),py=y0+(r+.5)*bh/PR+Math.cos(uT*p.f2+p.ph2)*amp;
+    x.fillStyle=cS(f);x.beginPath();x.arc(px,py,Math.min(cell,bh/PR)*.3,0,7);x.fill();x.strokeStyle="rgba(0,0,0,.25)";x.lineWidth=1;x.stroke()}}
+  thermo(x,X0+bw/2,y0-18,h*.14,pMean(k),-20,100)}
+ if($("#pIns").checked&&P.pos>.5){x.fillStyle=isDark()?"#d9dde3":"#f4f6f8";x.strokeStyle=col("--mut");x.fillRect(cx-gap/2+1,y0-8,gap-2,bh+16);x.strokeRect(cx-gap/2+1,y0-8,gap-2,bh+16);x.save();x.translate(cx,y0+bh/2);x.rotate(-Math.PI/2);txt(x,"Styropor",0,0,{a:"center",size:12,c:col("--mut"),w:700});x.restore()}
+ if($("#pArr").checked&&P.pos>.999&&Math.abs(P.flux)>P.flux0*.004){const s=clamp(Math.sqrt(Math.abs(P.flux)/P.flux0),.12,1),dir=Math.sign(P.flux),yA=y0+bh/2,L=bw*.55;
+  arrow(x,cx-dir*L/2,yA,cx+dir*L/2,yA,alpha(col("--acc"),.92),4+s*16,18+s*14);pill(x,"Wärme",cx,yA-28-s*10,{a:"center",c:"#fff",bg:col("--acc")})}
+ else if(P.pos>.999&&Math.abs(pMean(0)-pMean(1))<.15)pill(x,"Gleich warm – es fließt keine Wärme mehr",cx,y0+bh+48,{a:"center",bg:"rgba(58,164,92,.9)",c:"#fff"});
+ if(P.pos<.01)txt(x,"Die Körper berühren sich nicht.",cx,y0+bh+48,{a:"center",c:col("--mut")})});
+const pG=canv("pG",o=>{const H=P.hist,t1=Math.max(10,H.length?H[H.length-1][0]:10),lv=lvl();let lo=Math.min(...H.map(p=>Math.min(p[1],p[2])),P.Tm),hi=Math.max(...H.map(p=>Math.max(p[1],p[2])),P.Tm);if(hi-lo<5){hi+=3;lo-=3}
+ chart(o,{x0:0,x1:t1,y0:Math.floor(lo-2),y1:Math.ceil(hi+2),xl:"Zeit (Zeitraffer)",yl:"Temperatur in °C",xf:()=>"",series:[{pts:H.map(p=>[p[0],p[1]]),line:true,c:"--hot"},{pts:H.map(p=>[p[0],p[2]]),line:true,c:"--cold"},lv>1&&{fn:()=>P.Tm,c:"--mut",dash:[6,5],lw:1.5}].filter(Boolean),legend:[["A","--hot"],["B","--cold"],...(lv>1?[["Mischtemperatur","--mut",[6,5]]]:[])]})});
+$("#pGo").onclick=()=>{if(!P.goal&&P.t==0)pSetup();P.goal=P.goal?0:1;P.run=true;$("#pPause").setAttribute("aria-pressed",false);pUpd()};
+$("#pRe").onclick=()=>{P.goal=0;P.pos=0;pSetup();pG.redraw()};
+$("#pPause").onclick=()=>{P.run=!P.run;$("#pPause").setAttribute("aria-pressed",!P.run)};
+bindRange("pTa","pTao",v=>degC(v),()=>{P.goal=0;P.pos=0;pSetup()});bindRange("pTb","pTbo",v=>degC(v),()=>{P.goal=0;P.pos=0;pSetup()});
+bindRange("pmA","pmAo",v=>de(v,2)+" kg",()=>{P.goal=0;P.pos=0;pSetup()});bindRange("pmB","pmBo",v=>de(v,2)+" kg",()=>{P.goal=0;P.pos=0;pSetup()});
+["pMa","pMb"].forEach(id=>$("#"+id).onchange=()=>{P.goal=0;P.pos=0;pSetup()});
+LVLCB.push(()=>{if(P.t==0)pSetup();pUpd();pG.redraw()});
+function pSet(a,ta,b,tb,ma=1,mb=1,ins=false){$("#pMa").value=a;$("#pMb").value=b;$("#pTa").value=ta;$("#pTb").value=tb;$("#pmA").value=ma;$("#pmB").value=mb;$("#pIns").checked=ins;["pTa","pTb","pmA","pmB"].forEach(i=>$("#"+i).dispatchEvent(new Event("input")));P.goal=0;P.pos=0;pSetup();setTimeout(()=>$("#pGo").click(),350)}
+pSetup();
+tasks("teilchen",[
+ {l:1,h:"Heiß trifft kalt",p:"Schiebe die beiden Kupferblöcke zusammen. Beobachte die Teilchen an der Berührungsstelle. Was passiert mit dem Zittern links und rechts?",set:()=>pSet("kupfer",80,"kupfer",10)},
+ {l:1,h:"Fließt die Kälte?",p:"Ein Block hat 0 °C, der andere 20 °C. Viele sagen: „Die Kälte fließt in den warmen Block.“ In welche Richtung zeigt der Pfeil wirklich?",set:()=>pSet("eisen",20,"eisen",0)},
+ {l:1,h:"Gleich warm",p:"Warte, bis beide Thermometer dasselbe zeigen. Zittern die Teilchen dann nicht mehr? Fließt noch Wärme?",set:()=>pSet("alu",90,"alu",20)},
+ {l:1,h:"Styropor dazwischen",p:"Lege eine Styroporplatte zwischen die Blöcke. Was ändert sich – die Richtung oder die Geschwindigkeit des Wärmeflusses?",set:()=>pSet("kupfer",80,"kupfer",10,1,1,true)},
+ {l:2,h:"Wasser gegen Blei",p:"1 kg Wasser (20 °C) und 1 kg Blei (90 °C). Wo liegt die Mischtemperatur? Warum ändert sich das Wasser kaum?",set:()=>pSet("blei",90,"wasser",20)},
+ {l:2,h:"Mehr Masse",p:"Stelle A auf 3 kg und B auf 0,5 kg (beide Eisen). Vermute zuerst, ob die Mischtemperatur näher bei A oder bei B liegt.",set:()=>pSet("eisen",80,"eisen",20,3,.5)},
+ {l:3,h:"Mischungsregel",p:"Rechne die Mischtemperatur für 2 kg Aluminium (90 °C) und 0,5 kg Wasser (15 °C) mit der Richmann’schen Regel und prüfe mit der Simulation. Wie viel Wärme fließt?",set:()=>pSet("alu",90,"wasser",15,2,.5)},
+ {l:3,h:"Spezifische Wärmekapazität bestimmen",p:"Ein unbekannter Körper (wähle Glas) mit 1 kg und 100 °C kommt an 1 kg Wasser mit 20 °C. Bestimme aus der Mischtemperatur c des Körpers.",set:()=>pSet("glas",100,"wasser",20)}]);
+
+/* ===================== Station: Wärmeleitung – Stäbe ===================== */
+const LMAT={kupfer:{n:"Kupfer",l:400,r:8960,c:385,col:"#c27a45"},alu:{n:"Aluminium",l:237,r:2700,c:897,col:"#aab3bd"},messing:{n:"Messing",l:110,r:8500,c:380,col:"#c9a43a"},
+ stahl:{n:"Eisen/Stahl",l:50,r:7850,c:460,col:"#73787f"},edel:{n:"Edelstahl",l:15,r:7900,c:500,col:"#9ca3ab"},glas:{n:"Glas",l:1,r:2500,c:840,col:"#8fcfc1"},
+ holz:{n:"Holz",l:.13,r:600,c:1700,col:"#b9874f"},pvc:{n:"Kunststoff (PVC)",l:.17,r:1400,c:1000,col:"#e2e2d8"}};
+const LN=60,LL=.3,LDX=LL/LN,LRAD=.005,LA=Math.PI*LRAD*LRAD,LPER=2*Math.PI*LRAD,LH=10,LTA=20,LIMM=.03,LBEAD=[.06,.1,.14,.18,.22,.26],LMELT=55;
+let lRods=["kupfer","stahl","glas"],lRun=false,lT=0,lSpd=60,lHover=null;
+const lState=[0,1,2].map(()=>({T:new Float64Array(LN).fill(LTA),beads:LBEAD.map(()=>({fall:-1,y:0}))}));
+$("#lSel").innerHTML=[0,1,2].map(i=>`<div class="sl" style="grid-template-columns:24px minmax(0,1fr)"><b>${i+1}</b><select data-i="${i}"><option value="">– kein Stab –</option>${Object.entries(LMAT).map(([k,m])=>`<option value="${k}"${k==lRods[i]?" selected":""}>${m.n}</option>`).join("")}</select></div>`).join("");
+$$("#lSel select").forEach(s=>s.onchange=()=>{lRods[+s.dataset.i]=s.value;lReset()});
+seg("lSp",v=>lSpd=+v);
+function lSrc(){return +$("#lSrc").value}
+function lReset(){lRun=false;lT=0;for(const s of lState){s.T.fill(LTA);s.beads.forEach(b=>{b.fall=-1;b.y=0})}lApplySrc();$("#lGo").textContent="Start";lUpd()}
+function lApplySrc(){const n=Math.round(LIMM/LDX);for(let r=0;r<3;r++)if(lRods[r])for(let i=0;i<n;i++)lState[r].T[i]=lSrc()}
+$("#lSrc").onchange=lReset;
+$("#lGo").onclick=()=>{lRun=!lRun;$("#lGo").textContent=lRun?"Pause":"Weiter"};$("#lRe").onclick=lReset;
+function lStep(dt){if(!lRun)return;const sim=dt*lSpd,nI=Math.round(LIMM/LDX),Ts=lSrc();
+ for(let r=0;r<3;r++){const k=lRods[r];if(!k)continue;const m=LMAT[k],a=m.l/(m.r*m.c),loss=LH*LPER/(m.r*m.c*LA),hmax=.4*LDX*LDX/a,n=Math.max(1,Math.ceil(sim/hmax)),h=sim/n,T=lState[r].T,Tn=new Float64Array(LN);
+  for(let s=0;s<n;s++){for(let i=0;i<LN;i++){if(i<nI){Tn[i]=Ts;continue}const l=T[i-1],rr=i<LN-1?T[i+1]:T[i];Tn[i]=T[i]+h*(a*(l-2*T[i]+rr)/(LDX*LDX)-loss*(T[i]-LTA))}T.set(Tn)}
+  for(let b=0;b<LBEAD.length;b++){const B=lState[r].beads[b];if(B.fall<0&&lTemp(r,LBEAD[b])>=LMELT)B.fall=lT+sim}}
+ lT+=sim}
+function lTemp(r,xm){const T=lState[r].T,u=clamp(xm/LDX-.5,0,LN-1),i=Math.floor(u),f=u-i;return T[i]*(1-f)+(T[Math.min(LN-1,i+1)])*f}
+function lBeadAnim(dt){for(const s of lState)for(const b of s.beads)if(b.fall>=0&&b.y<1)b.y=Math.min(1,b.y+dt*1.6)}
+function lGeom(o){const w=o.w,h=o.h,x0=w*.2,x1=w*.94,ys=[h*.27,h*.53,h*.79];return{x0,x1,ys,sx:(x1-x0)/LL,th:Math.max(10,h*.035)}}
+const lC=canv("lC",o=>{const x=o.x,w=o.w,h=o.h,G=lGeom(o),Ts=lSrc(),Tr=[Math.min(0,Ts,LTA),Math.max(100,Ts)];x.clearRect(0,0,w,h);
+ /* Wärmequelle */
+ const bx=w*.03,bw=G.x0+G.sx*LIMM-bx+8;
+ if(Ts==400){for(const y of G.ys){for(let k=0;k<3;k++){const s=1-k*.25,fl=Math.sin(uT*10+k+y)*.1;x.fillStyle=["#ea580c","#f59e0b","#fde68a"][k];x.beginPath();x.ellipse(G.x0+G.sx*LIMM*.55,y+G.th*1.3-h*.04*s,h*.03*s,h*.06*s*(1+fl),0,0,7);x.fill()}}
+  x.fillStyle=col("--mut");for(const y of G.ys)x.fillRect(G.x0+G.sx*LIMM*.55-6,y+G.th+h*.03,12,h*.06)}
+ else{x.fillStyle=Ts>50?"rgba(220,90,60,.25)":"rgba(90,150,230,.28)";x.strokeStyle=col("--mut");x.lineWidth=2;x.beginPath();x.roundRect(bx,h*.12,bw,h*.8,10);x.fill();x.stroke();
+  txt(x,Ts>50?"heißes Wasser":"Eiswasser",bx+bw/2,h*.95,{a:"center",size:13,w:600,c:col("--mut")});
+  if(Ts<5)for(let i=0;i<5;i++){x.fillStyle="rgba(235,245,255,.9)";x.strokeStyle="rgba(120,160,200,.8)";x.beginPath();x.roundRect(bx+8+((i*37)%(bw-30)),h*.18+i*h*.14,18,14,3);x.fill();x.stroke()}}
+ thermo(x,bx+bw/2,h*.1+4,h*.06,Ts,Tr[0],Tr[1],degC(Ts));
+ for(let r=0;r<3;r++){const k=lRods[r],y=G.ys[r];if(!k){txt(x,"– kein Stab –",G.x0+20,y,{c:col("--mut")});continue}const m=LMAT[k];
+  for(let i=0;i<LN;i++){const T=lState[r].T[i];x.fillStyle=cS((T-Tr[0])/(Tr[1]-Tr[0]));x.fillRect(G.x0+i*LDX*G.sx,y-G.th/2,LDX*G.sx+.6,G.th)}
+  x.strokeStyle=col(m.col);x.lineWidth=2;x.strokeRect(G.x0,y-G.th/2,LL*G.sx,G.th);
+  txt(x,(r+1)+" "+m.n,G.x0+LIMM*G.sx+16,y-G.th/2-12,{w:700,size:14});
+  /* Wachskugeln */
+  for(let b=0;b<LBEAD.length;b++){const B=lState[r].beads[b],bxp=G.x0+LBEAD[b]*G.sx,by=y+G.th/2+6+(B.y>0?B.y*B.y*h*.08:0);if(B.y>=1)continue;x.globalAlpha=B.y>0?1-B.y:1;
+   x.fillStyle="#f4ecd2";x.strokeStyle="#bda968";x.lineWidth=1.2;x.beginPath();x.arc(bxp,by,6,0,7);x.fill();x.stroke();x.fillStyle="#8d8f94";x.fillRect(bxp-1,by+5,2,7);x.globalAlpha=1}
+  /* Pfeile der Wärme (einfach) */
+  if(lvl()==1&&lRun){const T=lState[r].T;for(let q=1;q<5;q++){const i=Math.round(q*LN/5),gr=T[i-2]-T[i+2];if(Math.abs(gr)>.8){const xm=G.x0+i*LDX*G.sx,s=clamp(Math.abs(gr)/8,.3,1);arrow(x,xm-Math.sign(gr)*12*s,y-G.th-10,xm+Math.sign(gr)*12*s,y-G.th-10,alpha(col("--acc"),.85),2+s*2,8)}}}
+  if(lvl()>1)pill(x,"Ende: "+degC(lState[r].T[LN-1],1),G.x1,y-G.th/2-12,{a:"right",size:12})}
+ if(lHover){const r=lHover.r;if(lRods[r]){const X=G.x0+lHover.xm*G.sx,y=G.ys[r];x.strokeStyle=col("--ink");x.lineWidth=1.5;x.beginPath();x.moveTo(X,y-G.th);x.lineTo(X,y+G.th);x.stroke();pill(x,`${de(lHover.xm*100,3)} cm: ${degC(lTemp(r,lHover.xm),1)}`,X,y+G.th+26,{a:"center",bc:col("--ink")})}}
+ /* Skala */
+ const sw=Math.min(180,w*.3),sx0=w-sw-14;for(let i=0;i<sw;i++){x.fillStyle=cS(i/sw);x.fillRect(sx0+i,10,1.2,10)}txt(x,degC(Tr[0]),sx0,30,{size:11,c:col("--mut")});txt(x,degC(Tr[1]),sx0+sw,30,{size:11,a:"right",c:col("--mut")});
+ txt(x,"Zeit: "+hhmm(lT),12,18,{w:700,size:14})});
+ptr($("#lC"),(t,px,py)=>{if(t=="leave"){lHover=null;lC.redraw();return}if(lvl()<2)return;const G=lGeom(lC);let best=null;G.ys.forEach((y,r)=>{if(Math.abs(py-y)<G.th*1.8&&px>=G.x0&&px<=G.x1)best={r,xm:clamp((px-G.x0)/G.sx,0,LL)}});lHover=best;lC.redraw()});
+function lUpd(){const n=lState.map(s=>s.beads.filter(b=>b.fall>=0).length);kpi("lK",[["Zeit",hhmm(lT)],...[0,1,2].filter(r=>lRods[r]).map(r=>[`${r+1} ${LMAT[lRods[r]].n}: Kugeln ab`,`${n[r]} von 6`])])}
+const lG=canv("lG",o=>{const Ts=lSrc(),Tr=[Math.min(0,Ts,LTA)-5,Math.max(100,Ts)+5];const S=[],Lg=[];const cols=["--hot","--acc","--cold"];
+ for(let r=0;r<3;r++){if(!lRods[r])continue;const T=lState[r].T;S.push({pts:[...T].map((v,i)=>[(i+.5)*LDX*100,v]),line:true,c:col(LMAT[lRods[r]].col)});Lg.push([(r+1)+" "+LMAT[lRods[r]].n,col(LMAT[lRods[r]].col)])}
+ chart(o,{x0:0,x1:30,y0:Tr[0],y1:Tr[1],xl:"Ort auf dem Stab in cm",yl:"Temperatur in °C",series:S,legend:Lg,extra:(x,X,Y)=>{x.fillStyle=alpha(col("--mut"),.12);x.fillRect(X(0),Y(Tr[1]),X(LIMM*100)-X(0),Y(Tr[0])-Y(Tr[1]));x.strokeStyle=alpha(col("--ink"),.5);x.setLineDash([4,4]);x.beginPath();x.moveTo(X(0),Y(LMELT));x.lineTo(X(30),Y(LMELT));x.stroke();x.setLineDash([])}});
+ const nI=Math.round(LIMM/LDX);$("#lGn").innerHTML=[0,1,2].filter(r=>lRods[r]).map(r=>{const m=LMAT[lRods[r]],T=lState[r].T,P=m.l*LA*(T[nI-1]-T[nI+1])/(2*LDX);return`${r+1} ${m.n}: Wärmestrom in den Stab P = λ·A·ΔT/Δx ≈ ${de(P,2)} W`}).join(" · ")+" — gestrichelt: Schmelztemperatur des Wachses (55 °C)"});
+tasks("leitung",[
+ {l:1,h:"Wettrennen der Wachskugeln",p:"Kupfer, Stahl und Glas stecken in heißem Wasser. Vermute zuerst: Bei welchem Stab fallen die Kugeln zuerst ab? Starte dann (60×).",set:()=>{lSetRods(["kupfer","stahl","glas"],90)}},
+ {l:1,h:"Holz und Kunststoff",p:"Warum haben Kochlöffel und Topfgriffe oft Holz- oder Kunststoffgriffe? Teste mit der Flamme und 300×.",set:()=>{lSetRods(["alu","holz","pvc"],400)}},
+ {l:1,h:"Kalt wird nicht geleitet",p:"Steck die Stäbe in Eiswasser. Was passiert mit dem Stab? In welche Richtung fließt hier die Wärme – in den Stab oder aus ihm heraus?",set:()=>{lSetRods(["kupfer","alu","stahl"],0)}},
+ {l:1,h:"Metall oder Holz?",p:"Alle Gegenstände sind 20 °C warm – die Thermometer zeigen es. Fasse alle an. Warum fühlt sich Metall trotzdem viel kälter an als Holz?",set:()=>aSet(20,true)},
+ {l:1,h:"In der Sauna",p:"Stelle 80 °C ein. Warum kann man sich in der Sauna auf eine Holzbank setzen, aber nicht auf eine Metallbank?",set:()=>aSet(80,true)},
+ {l:2,h:"Winter im Freien",p:"Bei −10 °C: Welche Gegenstände sind gefährlich, wenn man sie mit nasser oder bloßer Hand anfasst? Begründe mit der Hauttemperatur.",set:()=>aSet(-10,true)},
+ {l:2,h:"Temperatur ablesen",p:"Fahre nach 5 Minuten über die Stäbe und lies die Temperatur in der Mitte (15 cm) ab. Ordne die Materialien nach ihrer Wärmeleitfähigkeit.",set:()=>{lSetRods(["kupfer","messing","edel"],90)}},
+ {l:3,h:"Temperaturprofil",p:"Warte bis sich nichts mehr ändert (300×). Wie verläuft die Temperatur entlang des Stahlstabs? Warum wird das Ende nicht 90 °C warm, obwohl wir lange genug warten?",set:()=>{lSetRods(["kupfer","stahl","edel"],90)}},
+ {l:3,h:"Kontakttemperatur",p:"Rechne die Kontakttemperatur für Stahl und Holz bei 20 °C mit der Formel aus der Erklärung nach und vergleiche. Warum ist für das Gefühl nicht λ allein, sondern b = √(λρc) entscheidend?",set:()=>aSet(20,true)},
+ {l:3,h:"Wärmestrom",p:"Vergleiche den Wärmestrom P in den Kupfer- und den Glasstab. Um welchen Faktor unterscheiden sich P und λ? Warum ist das Verhältnis kleiner als 400?",set:()=>{lSetRods(["kupfer","glas",""],90)}}]);
+function lSetRods(a,src){mSetL("stab");lRods=a.slice();$$("#lSel select").forEach((s,i)=>s.value=lRods[i]);$("#lSrc").value=src;lReset();lRun=true;$("#lGo").textContent="Pause"}
+
+/* ===================== Wärmeleitung – Anfassen ===================== */
+const TMAT=[{n:"Kupfer",l:400,r:8960,c:385,col:"#c27a45"},{n:"Stahl",l:50,r:7850,c:460,col:"#7d838b"},{n:"Fliese (Stein)",l:1.3,r:2300,c:840,col:"#d6d0c4"},{n:"Glas",l:1,r:2500,c:840,col:"#8fcfc1"},
+ {n:"Holz",l:.13,r:600,c:1700,col:"#b9874f"},{n:"Kork",l:.045,r:150,c:1800,col:"#c79a64"},{n:"Styropor",l:.035,r:20,c:1450,col:"#f1f3f5"}].map(m=>Object.assign(m,{b:Math.sqrt(m.l*m.r*m.c)}));
+const BH=1100,THAND=33;let aSel=-1,aT0=0,aAuto=null;const aDone=new Array(TMAT.length).fill(false);
+const aTc=m=>(BH*THAND+m.b*+$("#aT").value)/(BH+m.b);
+function feel(Tc){return Tc<0?"eisig – Vorsicht":Tc<15?"sehr kalt":Tc<24?"kalt":Tc<29?"kühl":Tc<34?"neutral":Tc<40?"warm":Tc<45?"heiß":Tc<55?"sehr heiß – schmerzt":"verbrennt!"}
+function aGeom(o){const n=TMAT.length,w=o.w,h=o.h,bw=Math.min(110,(w-30)/n-10),gap=(w-n*bw)/(n+1);return TMAT.map((m,i)=>({x:gap+i*(bw+gap),y:h*.36,w:bw,h:h*.2}))}
+const aC=canv("aC",o=>{const x=o.x,w=o.w,h=o.h,T=+$("#aT").value,G=aGeom(o),lv=lvl();x.clearRect(0,0,w,h);
+ x.fillStyle=isDark()?"#2c2620":"#e9e1d3";x.fillRect(0,G[0].y+G[0].h,w,h*.03);
+ TMAT.forEach((m,i)=>{const g=G[i];x.fillStyle=m.col;x.strokeStyle="rgba(0,0,0,.35)";x.lineWidth=1.5;x.beginPath();x.roundRect(g.x,g.y,g.w,g.h,6);x.fill();x.stroke();
+  if(m.n=="Kork"){x.fillStyle="rgba(90,60,30,.35)";for(let k=0;k<20;k++){x.beginPath();x.arc(g.x+((k*37)%g.w),g.y+((k*53)%g.h),1.5,0,7);x.fill()}}
+  txt(x,m.n,g.x+g.w/2,g.y+g.h+24,{a:"center",w:700,size:14});
+  thermo(x,g.x+g.w/2,g.y-14,h*.09,T,-20,90,degC(T));
+  if(aDone[i]||i==aSel){const Tc=aTc(m),f=clamp((Tc+20)/110,0,1);const yb=h*.95,yt=h*.68,bh=(yb-yt)*clamp((Tc+20)/110,0,1);
+   x.fillStyle=cS(f);x.fillRect(g.x+g.w*.25,yb-bh,g.w*.5,bh);pill(x,degC(Tc,0),g.x+g.w/2,yb-bh-12,{a:"center",size:13});txt(x,feel(Tc),g.x+g.w/2,yb+12,{a:"center",size:12,c:col("--mut")})}});
+ txt(x,"Hauttemperatur beim Anfassen:",14,h*.65,{size:13,c:col("--mut"),w:600});
+ if(aSel>=0){const m=TMAT[aSel],g=G[aSel],t=uT-aT0,Tc=aTc(m),dn=clamp(t*3,0,1),hx=g.x+g.w/2,hy=g.y-h*.05-(1-dn)*h*.1;
+  /* Hand */
+  x.fillStyle=isDark()?"#d9a77f":"#e8b48c";x.strokeStyle="rgba(0,0,0,.35)";x.lineWidth=1.5;x.beginPath();x.roundRect(hx-g.w*.42,hy-h*.1,g.w*.84,h*.1,10);x.fill();x.stroke();x.beginPath();x.roundRect(hx-g.w*.12,hy-h*.26,g.w*.3,h*.17,8);x.fill();x.stroke();
+  if(dn>=1){const flux=BH*m.b/(BH+m.b)*(THAND-+$("#aT").value),s=clamp(Math.sqrt(Math.abs(flux)/30000),.15,1),dir=Math.sign(flux);
+   for(let k=-1;k<=1;k++){const ax=hx+k*g.w*.25,ph=(t*1.5+k*.2)%1;if(Math.abs(flux)>50)arrow(x,ax,dir>0?hy-6:g.y+18,ax,dir>0?g.y+18:hy-6,alpha(col("--acc"),.9),2+s*6,10+s*6)}
+   pill(x,"Haut: "+degC(Tc,0),hx,hy-h*.29,{a:"center",bg:col("--acc"),c:"#fff",size:14});
+   if(lv>2)txt(x,`b = √(λρc) = ${de(m.b,2)} W·s½/(m²·K)`,w/2,16,{a:"center",size:13,c:col("--mut")})}}});
+ptr($("#aC"),(t,px,py)=>{if(t!="down")return;const G=aGeom(aC);G.forEach((g,i)=>{if(px>g.x-6&&px<g.x+g.w+6&&py>g.y-aC.h*.3&&py<g.y+g.h+30)aTouch(i)})});
+function aTouch(i){aSel=i;aT0=uT;aDone[i]=true;const m=TMAT[i],Tc=aTc(m),T=+$("#aT").value,lv=lvl();
+ const fl=BH*m.b/(BH+m.b)*(THAND-T);
+ $("#aInfo").innerHTML=`<b>${m.n}</b> (${degC(T)}): Die Haut hat an der Berührungsstelle etwa ${degC(Tc)} – ${feel(Tc)}.`+(T>THAND?" Hier fließt die Wärme vom Gegenstand in die Hand.":" Die Wärme fließt von der Hand in den Gegenstand.")+(lv>1?` Je besser der Stoff leitet, desto näher liegt die Hauttemperatur an ${degC(T)}.`:"");aC.redraw()}
+bindRange("aT","aTo",v=>degC(v),()=>{if(aSel>=0)aTouch(aSel);aC.redraw()});
+$$("[data-at]").forEach(b=>b.onclick=()=>{$("#aT").value=b.dataset.at;$("#aT").dispatchEvent(new Event("input"))});
+$("#aAll").onclick=()=>{clearInterval(aAuto);aDone.fill(false);let i=0;aTouch(0);aAuto=setInterval(()=>{i++;if(i>=TMAT.length){clearInterval(aAuto);return}aTouch(i)},1300)};
+function lShow(v){$("#lStab").hidden=v!="stab";$("#lTouch").hidden=v=="stab";lModeSet(v);setTimeout(()=>REG.forEach(o=>o.fit()),10)}
+const lModeSet=seg("lMode",v=>lShow(v));
+function mSetL(v){lShow(v)}
+function aSet(T,all){lShow("touch");$("#aT").value=T;$("#aT").dispatchEvent(new Event("input"));if(all)setTimeout(()=>$("#aAll")?.click(),200)}
+
+/* ===================== Station: Wärmeströmung (2D-Strömung) ===================== */
+class Fluid{
+ constructor(nx,ny){this.nx=nx;this.ny=ny;const n=nx*ny;const F=()=>new Float32Array(n);this.u=F();this.v=F();this.u0=F();this.v0=F();this.T=F();this.T0=F();this.d=F();this.d0=F();this.p=F();this.div=F();
+  this.wall=new Uint8Array(n);this.ice=new Uint8Array(n);this.src=[];this.buoy=T=>T;this.beta=.5;this.damp=.6;this.kappa=.35;this.t=0}
+ solid(k){return this.wall[k]||this.ice[k]}
+ samp(a,x,y){const nx=this.nx,ny=this.ny;x=clamp(x,0,nx-1.001);y=clamp(y,0,ny-1.001);const i=x|0,j=y|0,fx=x-i,fy=y-j,k=j*nx+i;return(a[k]*(1-fx)+a[k+1]*fx)*(1-fy)+(a[k+nx]*(1-fx)+a[k+nx+1]*fx)*fy}
+ advect(dst,srcA,dt){const nx=this.nx,ny=this.ny,u=this.u0,v=this.v0;for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){const k=j*nx+i;if(this.wall[k]){dst[k]=srcA[k];continue}dst[k]=this.samp(srcA,i-dt*u[k],j-dt*v[k])}}
+ step(dt){const nx=this.nx,ny=this.ny,n=nx*ny,u=this.u,v=this.v,T=this.T;this.t+=dt;this.updSrc();
+  /* Auftrieb, relativ zum Mittelwert */
+  const bt=new Float32Array(n),rm=new Float32Array(ny);for(let j=0;j<ny;j++){let s=0,c=0;for(let i=0;i<nx;i++){const k=j*nx+i;if(!this.solid(k)){bt[k]=this.buoy(T[k]);s+=bt[k];c++}}rm[j]=c?s/c:0}
+  for(let k=0;k<n;k++)if(!this.solid(k)){v[k]-=dt*this.beta*(bt[k]-rm[(k/nx)|0])+(Math.random()-.5)*.03;u[k]*=1-this.damp*dt;v[k]*=1-this.damp*dt}
+  this.u0.set(u);this.v0.set(v);this.advect(u,this.u0,dt);this.advect(v,this.v0,dt);
+  for(let k=0;k<n;k++)if(this.solid(k)){u[k]=0;v[k]=0}
+  this.project();
+  this.u0.set(u);this.v0.set(v);
+  this.T0.set(T);this.advect(T,this.T0,dt);this.d0.set(this.d);this.advect(this.d,this.d0,dt);
+  /* Diffusion */
+  this.T0.set(T);const ka=this.kappa*dt;for(let j=1;j<ny-1;j++)for(let i=1;i<nx-1;i++){const k=j*nx+i;if(this.wall[k])continue;let sum=0,cn=0;for(const q of[k-1,k+1,k-nx,k+nx]){if(!this.wall[q]||this.isSrc[q]){sum+=this.T0[q];cn++}}if(cn)T[k]+=ka*(sum-cn*this.T0[k])}
+  /* Quellen */
+  for(const q of this.src){if(!q.on())continue;const r=Math.min(1,q.rate*dt);for(const k of q.cells)T[k]+=(q.T-T[k])*(q.rate>=50?1:r*(.5+Math.random()));if(q.dye)for(const k of q.cells)this.d[k]=Math.min(1,this.d[k]+q.dye*dt)}
+  /* Wände ohne Quelle: Temperatur der Nachbarn (wärmedicht) */
+  for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){const k=j*nx+i;if(!this.wall[k]||this.srcOn[k])continue;let sum=0,cn=0;if(i>0&&!this.wall[k-1]){sum+=T[k-1];cn++}if(i<nx-1&&!this.wall[k+1]){sum+=T[k+1];cn++}if(j>0&&!this.wall[k-nx]){sum+=T[k-nx];cn++}if(j<ny-1&&!this.wall[k+nx]){sum+=T[k+nx];cn++}if(cn)T[k]=sum/cn}
+  if(this.freeze){let sm=0,cn=0;for(let k=0;k<n;k++)if(!this.wall[k]&&!this.ice[k]){sm+=T[k];cn++}this.canFreeze=cn&&sm/cn<5}
+  if(this.freeze)for(let k=0;k<n;k++){if(this.wall[k])continue;if(!this.ice[k]&&T[k]<=.3&&this.canFreeze&&(k<this.nx*3||this.ice[k-this.nx]))this.ice[k]=1;else if(!this.ice[k]&&T[k]<0&&!this.canFreeze)T[k]=0;else if(this.ice[k]&&T[k]>.3)this.ice[k]=0}
+  for(let k=0;k<n;k++)this.d[k]*=1-.004*dt}
+ project(){const nx=this.nx,ny=this.ny,u=this.u,v=this.v,p=this.p,div=this.div;
+  for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){const k=j*nx+i;if(this.solid(k)){div[k]=0;continue}const ur=i<nx-1&&!this.solid(k+1)?u[k+1]:0,ul=i>0&&!this.solid(k-1)?u[k-1]:0,vd=j<ny-1&&!this.solid(k+nx)?v[k+nx]:0,vu=j>0&&!this.solid(k-nx)?v[k-nx]:0;div[k]=-.5*(ur-ul+vd-vu)}
+  for(let it=0;it<36;it++)for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){const k=j*nx+i;if(this.solid(k))continue;let s=div[k],c=0;if(i>0&&!this.solid(k-1)){s+=p[k-1];c++}if(i<nx-1&&!this.solid(k+1)){s+=p[k+1];c++}if(j>0&&!this.solid(k-nx)){s+=p[k-nx];c++}if(j<ny-1&&!this.solid(k+nx)){s+=p[k+nx];c++}p[k]=c?s/c:0}
+  for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){const k=j*nx+i;if(this.solid(k))continue;const pr=i<nx-1&&!this.solid(k+1)?p[k+1]:p[k],pl=i>0&&!this.solid(k-1)?p[k-1]:p[k],pd=j<ny-1&&!this.solid(k+nx)?p[k+nx]:p[k],pu=j>0&&!this.solid(k-nx)?p[k-nx]:p[k];u[k]-=.5*(pr-pl);v[k]-=.5*(pd-pu)}}
+ finish(){const n=this.nx*this.ny;this.isSrc=new Uint8Array(n);this.srcOn=new Uint8Array(n);for(const q of this.src)for(const k of q.cells)if(this.wall[k]){this.isSrc[k]=1}this.updSrc()}
+ updSrc(){this.srcOn.fill(0);for(const q of this.src)if(q.on())for(const k of q.cells)if(this.wall[k])this.srcOn[k]=1}
+ mean(i0,i1,j0,j1){let s=0,c=0;for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){const k=j*this.nx+i;if(!this.wall[k]){s+=this.T[k];c++}}return c?s/c:NaN}
+}
+const SOPT={};
+const SC={
+ topf:{n:"Wasser im Kochtopf",nx:84,ny:60,range:[15,100],T0:20,beta:.22,dye:[123,31,162],dyeN:"Tinte",medium:"w",
+  note:"Herdplatte unten in der Mitte. Gib mit einem Tipp Tinte ins Wasser – oder wirf einen Kaliumpermanganat-Kristall hinein.",
+  ex:`<label class="chk"><input type="checkbox" id="sxHeat" checked> Herdplatte an</label><button class="b" id="sxKr">Kristall auf den Boden legen</button>`,
+  build(f){const nx=f.nx,ny=f.ny;for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){if(i==0||i==nx-1||j==ny-1||j==0)f.wall[j*nx+i]=1}
+   const H=[];for(let i=Math.round(nx*.3);i<=Math.round(nx*.7);i++)H.push((ny-1)*nx+i);f.src.push({cells:H,T:100,rate:99,on:()=>SOPT.heat});
+   const C=[];for(let i=1;i<nx-1;i++)C.push(nx+i);f.src.push({cells:C,T:20,rate:.25,on:()=>true})},
+  bind(){$("#sxHeat").onchange=e=>{SOPT.heat=e.target.checked;FL.updSrc()};$("#sxKr").onclick=()=>{const f=FL;sDrop(f.nx*.5+(Math.random()-.5)*f.nx*.3,f.ny-3,2.2,1)}},
+  opt(){SOPT.heat=true},
+  kpi(f){return[["Wasser oben",degC(f.mean(2,f.nx-3,1,6),0)],["Wasser unten",degC(f.mean(2,f.nx-3,f.ny-7,f.ny-2),0)]]}},
+ zimmer:{n:"Zimmer mit Heizkörper",nx:100,ny:60,spd:1.6,range:[0,40],T0:14,beta:.55,dye:[120,120,128],dyeN:"Rauch",medium:"a",
+  note:"Links ist ein Fenster. Wo ist es im Zimmer am wärmsten, wo am kältesten?",
+  ex:`<label class="chk"><input type="checkbox" id="sxHeat" checked> Heizkörper an</label><label for="sxPos">Heizkörper</label><select id="sxPos"><option value="win">unter dem Fenster</option><option value="in">an der Innenwand (rechts)</option></select><label class="chk"><input type="checkbox" id="sxWin"> Fenster gekippt</label>`,
+  build(f){const nx=f.nx,ny=f.ny;for(let j=0;j<ny;j++)for(let i=0;i<nx;i++)if(i==0||i==nx-1||j==0||j==ny-1)f.wall[j*nx+i]=1;
+   const H=[],x0=SOPT.pos=="win"?3:nx-7;for(let j=Math.round(ny*.58);j<=Math.round(ny*.9);j++)for(let i=x0;i<=x0+3;i++){f.wall[j*nx+i]=1;H.push(j*nx+i)}
+   f.src.push({cells:H,T:55,rate:99,on:()=>SOPT.heat});
+   const W=[];for(let j=Math.round(ny*.12);j<=Math.round(ny*.52);j++)W.push(j*nx+1);f.src.push({cells:W,T:4,rate:.35,on:()=>!SOPT.win});f.src.push({cells:W,T:-4,rate:1.6,on:()=>SOPT.win});
+   const L=[];for(let i=1;i<nx-1;i++){L.push(nx+i);L.push((ny-2)*nx+i)}f.src.push({cells:L,T:12,rate:.01,on:()=>true})},
+  bind(){$("#sxHeat").onchange=e=>{SOPT.heat=e.target.checked;FL.updSrc()};$("#sxPos").value=SOPT.pos;$("#sxPos").onchange=e=>{SOPT.pos=e.target.value;sBuild(true)};$("#sxWin").checked=SOPT.win;$("#sxWin").onchange=e=>{SOPT.win=e.target.checked}},
+  opt(){SOPT.heat=true;SOPT.pos=SOPT.pos||"win";SOPT.win=!!SOPT.win},
+  kpi(f){const a=Math.round(f.nx*.45),b=Math.round(f.nx*.6);return[["Unter der Decke",degC(f.mean(a,b,1,4),1)],["In Kopfhöhe",degC(f.mean(a,b,Math.round(f.ny*.45),Math.round(f.ny*.5)),1)],["Am Boden",degC(f.mean(a,b,f.ny-5,f.ny-2),1)]]}},
+ kerze:{n:"Kerze im Raum",nx:80,ny:70,range:[15,160],T0:20,beta:.07,dye:[110,110,116],dyeN:"Rauch",medium:"a",
+  note:"Über der Flamme steigt heiße Luft mit dem Rauch auf und breitet sich unter der Decke aus.",
+  ex:`<label class="chk"><input type="checkbox" id="sxHeat" checked> Kerze brennt</label><label class="chk"><input type="checkbox" id="sxSm" checked> Rauch</label>`,
+  build(f){const nx=f.nx,ny=f.ny,c=Math.round(nx/2);for(let j=0;j<ny;j++)for(let i=0;i<nx;i++)if(i==0||i==nx-1||j==0||j==ny-1)f.wall[j*nx+i]=1;
+   for(let j=ny-10;j<ny-1;j++)for(let i=c-3;i<=c+3;i++)f.wall[j*nx+i]=1;
+   const F=[];for(let j=ny-14;j<=ny-11;j++)for(let i=c-1;i<=c+1;i++)F.push(j*nx+i);f.src.push({cells:F,T:500,rate:8,on:()=>SOPT.heat,dye:0});f.src.push({cells:F,T:0,rate:0,on:()=>SOPT.heat&&SOPT.smoke,dye:2.5});
+   const C=[];for(let i=1;i<nx-1;i++)C.push(nx+i);f.src.push({cells:C,T:20,rate:.15,on:()=>true})},
+  bind(){$("#sxHeat").onchange=e=>{SOPT.heat=e.target.checked};$("#sxSm").onchange=e=>{SOPT.smoke=e.target.checked}},
+  opt(){SOPT.heat=true;SOPT.smoke=true},
+  kpi(f){const c=Math.round(f.nx/2);return[["Über der Flamme (Mitte)",degC(f.mean(c-2,c+2,Math.round(f.ny*.4),Math.round(f.ny*.45)),0)],["Daneben",degC(f.mean(8,12,Math.round(f.ny*.4),Math.round(f.ny*.45)),0)]]}},
+ strand:{n:"Land und Meer (Tag und Nacht)",nx:110,ny:56,range:[0,40],T0:15,beta:.45,dye:[110,110,116],dyeN:"Rauch",medium:"a",
+  note:"Links ist Land, rechts das Meer. Land erwärmt sich in der Sonne schneller als Wasser – und kühlt nachts schneller ab. Beim Umschalten springt die Simulation einige Stunden weiter.",
+  ex:`<label>Tageszeit</label><div class="seg" id="sxDay"><button data-v="1" aria-pressed="true">☀ Tag</button><button data-v="0" aria-pressed="false">☾ Nacht</button></div>`,
+  build(f){const nx=f.nx,ny=f.ny;for(let j=0;j<ny;j++)for(let i=0;i<nx;i++)if(i==0||i==nx-1||j==0||j>=ny-3)f.wall[j*nx+i]=1;
+   const La=[],Se=[];for(let i=1;i<nx-1;i++)(i<nx/2?La:Se).push((ny-4)*nx+i);
+   f.src.push({cells:La,T:36,rate:.6,on:()=>SOPT.day});f.src.push({cells:Se,T:19,rate:.6,on:()=>SOPT.day});
+   f.src.push({cells:La,T:2,rate:1.2,on:()=>!SOPT.day});f.src.push({cells:Se,T:16,rate:.6,on:()=>!SOPT.day});
+   const C=[];for(let i=1;i<nx-1;i++)C.push(nx+i);f.kappa=2.5;f.src.push({cells:C,T:16,rate:.05,on:()=>SOPT.day});f.src.push({cells:C,T:13,rate:.003,on:()=>!SOPT.day})},
+  bind(){seg("sxDay",v=>{SOPT.day=v=="1";const f=FL;for(let k=0;k<f.T.length;k++)if(!f.wall[k]){f.T[k]=SOPT.day?17:13;f.u[k]=0;f.v[k]=0}})(SOPT.day?"1":"0")},
+  opt(){SOPT.day=SOPT.day===undefined?true:SOPT.day},
+  kpi(f){const nx=f.nx,ny=f.ny,c=Math.round(nx/2);let s=0;for(let j=ny-6;j<=ny-4;j++)for(let i=c-4;i<=c+4;i++)s+=f.u[j*nx+i];s/=27;
+   return[["Land (Boden)",degC(f.mean(2,c-4,ny-6,ny-4),0)],["Meer (Oberfläche)",degC(f.mean(c+4,nx-3,ny-6,ny-4),0)],["Wind am Strand (unten)",Math.abs(s)<.1?"kaum":s<0?"vom Meer → Land":"vom Land → Meer"]]}},
+ kuehl:{n:"Kühlschrank: Kälte sinkt",nx:60,ny:90,spd:2,range:[-8,24],T0:22,beta:.6,dye:[120,120,128],dyeN:"Nebel",medium:"a",
+  note:"Oben hinten sitzt die Kühlfläche. Wohin strömt die kalte Luft?",
+  ex:`<label class="chk"><input type="checkbox" id="sxHeat" checked> Kühlung an</label><label class="chk"><input type="checkbox" id="sxSh"> Ablagen (mit Spalt hinten)</label>`,
+  build(f){const nx=f.nx,ny=f.ny;for(let j=0;j<ny;j++)for(let i=0;i<nx;i++)if(i==0||i==nx-1||j==0||j==ny-1)f.wall[j*nx+i]=1;
+   if(SOPT.shelf)for(const y of[.33,.62])for(let i=9;i<nx-1;i++)f.wall[Math.round(ny*y)*nx+i]=1;
+   const C=[];for(let j=2;j<=Math.round(ny*.3);j++)C.push(j*nx+1),C.push(j*nx+2);f.src.push({cells:C,T:-12,rate:1,on:()=>SOPT.heat});
+   const D=[];for(let j=1;j<ny-1;j++)D.push(j*nx+nx-2);f.src.push({cells:D,T:22,rate:.008,on:()=>true})},
+  bind(){$("#sxHeat").onchange=e=>{SOPT.heat=e.target.checked};$("#sxSh").checked=!!SOPT.shelf;$("#sxSh").onchange=e=>{SOPT.shelf=e.target.checked;sBuild(true)}},
+  opt(){SOPT.heat=true},
+  kpi(f){const ny=f.ny;return[["Oberes Fach",degC(f.mean(8,f.nx-4,3,Math.round(ny*.3)),1)],["Mittleres Fach",degC(f.mean(8,f.nx-4,Math.round(ny*.36),Math.round(ny*.6)),1)],["Unteres Fach",degC(f.mean(8,f.nx-4,Math.round(ny*.65),ny-3),1)]]}},
+ see:{n:"See im Winter (Anomalie des Wassers)",nx:90,ny:60,spd:3,range:[-4,10],T0:7,beta:3,dye:[123,31,162],dyeN:"Tinte",medium:"w",lv:2,
+  note:"Kalte Winterluft kühlt die Oberfläche des Sees ab. Beobachte die Temperatur am Grund.",
+  ex:`<label class="chk"><input type="checkbox" id="sxHeat" checked> Frost (Luft −6 °C)</label><label class="chk l3"><input type="checkbox" id="sxAn"> Gedankenversuch: Wasser ohne Anomalie</label>`,
+  build(f){const nx=f.nx,ny=f.ny;f.freeze=true;for(let j=0;j<ny;j++)for(let i=0;i<nx;i++)if(i==0||i==nx-1||j==ny-1||j==0)f.wall[j*nx+i]=1;
+   for(let j=ny-12;j<ny-1;j++)for(let i=1;i<nx-1;i++)if(i<(ny-1-j)*2.2||nx-1-i<(ny-1-j)*2.2)f.wall[j*nx+i]=1;
+   const C=[];for(let i=1;i<nx-1;i++)C.push(nx+i);f.src.push({cells:C,T:-6,rate:.2,on:()=>SOPT.heat});
+   f.buoy=SOPT.noAn?(T=>T):(T=>Math.abs(T-4));f.kappa=.25;f.damp=.35},
+  bind(){$("#sxHeat").onchange=e=>{SOPT.heat=e.target.checked};$("#sxAn").checked=!!SOPT.noAn;$("#sxAn").onchange=e=>{SOPT.noAn=e.target.checked;FL.buoy=SOPT.noAn?(T=>T):(T=>Math.abs(T-4))}},
+  opt(){SOPT.heat=true},
+  kpi(f){let ice=0;for(let j=1;j<f.ny/2;j++){let any=false;for(let i=f.nx/2-3;i<f.nx/2+3;i++)if(f.ice[j*f.nx+(i|0)])any=true;if(any)ice++}
+   return[["Oberfläche",degC(f.mean(5,f.nx-6,2,4),1)],["Am Grund",degC(f.mean(Math.round(f.nx*.4),Math.round(f.nx*.6),f.ny-4,f.ny-2),1)],["Eis",ice?ice+" Schichten":"noch keins"]]}}};
+/* Auftrieb: warme Stoffe nach oben. buoy(T) groß = leicht */
+let FL,sKey="topf",sRun=true,sPar=[],sAcc=0;
+$("#sSc").innerHTML=Object.entries(SC).map(([k,s])=>`<option value="${k}">${s.n}${s.lv?" (ab „Mittel“)":""}</option>`).join("");
+function sBuild(keepOpt){const S=SC[sKey];if(!keepOpt){for(const k in SOPT)delete SOPT[k]}S.opt();const f=new Fluid(S.nx,S.ny);f.beta=S.beta;S.build(f);f.T.fill(S.T0);f.finish();FL=f;
+ for(const q of f.src)if(q.rate>=50&&q.on())for(const k of q.cells)f.T[k]=q.T;for(let k=0;k<f.T.length;k++)if(!f.wall[k])f.T[k]+=(Math.random()-.5)*.3;
+ if(!keepOpt){$("#sEx").innerHTML=S.ex;S.bind()}else{S.bind()}$("#sNote").textContent=S.note;$("#sTap").textContent=`Tippe ins Bild, um ${S.dyeN=="Tinte"?"einen Tropfen Tinte":S.dyeN=="Nebel"?"etwas Nebel":"etwas Rauch"} hineinzugeben.`;$("#sClr").textContent=S.dyeN+" weg";
+ sPar=[];for(let i=0;i<900;i++)sPar.push(sSpawn());sKpi()}
+function sSpawn(){const f=FL;for(let t=0;t<40;t++){const x=1+Math.random()*(f.nx-2),y=1+Math.random()*(f.ny-2);if(!f.solid((y|0)*f.nx+(x|0)))return{x,y,a:Math.random()*8}}return{x:f.nx/2,y:f.ny/2,a:0}}
+function sDrop(x,y,r=2.5,v=1){const f=FL;for(let j=Math.floor(y-r);j<=Math.ceil(y+r);j++)for(let i=Math.floor(x-r);i<=Math.ceil(x+r);i++){if(i<1||j<1||i>=f.nx-1||j>=f.ny-1)continue;const k=j*f.nx+i;if(f.wall[k])continue;const d=Math.hypot(i-x,j-y);if(d<=r)f.d[k]=Math.min(1,f.d[k]+v*(1-d/(r+1)))}}
+$("#sSc").onchange=e=>{sKey=e.target.value;sBuild(false);sC.fit()};
+$("#sGo").onclick=()=>{sRun=!sRun;$("#sGo").textContent=sRun?"Pause":"Weiter"};
+$("#sRe").onclick=()=>sBuild(true);$("#sClr").onclick=()=>FL.d.fill(0);
+function sStep(dt){if(!sRun)return;const sp=SC[sKey].spd||1;sAcc+=dt*2.2*sp;let n=0;while(sAcc>1/30&&n<3*Math.ceil(sp)){FL.step(1/30*1.6);sAcc-=1/30;n++}if(sAcc>.3)sAcc=0;
+ const f=FL,DT=dt*2.2*1.6*sp;for(const p of sPar){const vx=f.samp(f.u,p.x,p.y),vy=f.samp(f.v,p.x,p.y);p.x+=vx*DT;p.y+=vy*DT;p.a+=dt;const k=(clamp(p.y,0,f.ny-1)|0)*f.nx+(clamp(p.x,0,f.nx-1)|0);if(p.x<1||p.y<1||p.x>f.nx-2||p.y>f.ny-2||f.solid(k)||p.a>10+Math.random()*10)Object.assign(p,sSpawn())}}
+function sKpi(){kpi("sK",SC[sKey].kpi(FL))}
+let sImg=null,sOff=document.createElement("canvas");
+function sRect(o){const f=FL,ar=f.nx/f.ny,pad=10,bot=40;let W=o.w-2*pad,H=W/ar;if(H>o.h-pad-bot){H=o.h-pad-bot;W=H*ar}return{x:(o.w-W)/2,y:pad+(o.h-pad-bot-H)/2,W,H,s:W/f.nx}}
+const sC=canv("sC",o=>{const x=o.x,f=FL,S=SC[sKey],R=sRect(o),nx=f.nx,ny=f.ny,showC=$("#sCol").checked;x.clearRect(0,0,o.w,o.h);
+ if(!sImg||sImg.width!=nx||sImg.height!=ny){sOff.width=nx;sOff.height=ny;sImg=sOff.getContext("2d").createImageData(nx,ny)}
+ const D=sImg.data,[t0,t1]=S.range,base=S.medium=="w"?[205,228,245]:[238,240,243],dc=S.dye;
+ for(let k=0;k<nx*ny;k++){let c;if(f.wall[k]){c=f.srcOn[k]?(f.T[k]>30?[214,68,40]:[90,140,220]):[120,124,130];if(sKey=="strand"&&(k/nx|0)>=ny-3)c=(k%nx)<nx/2?[120,150,70]:[40,100,170];if(sKey=="see"&&(k/nx|0)>1)c=[115,100,80]}
+  else if(f.ice[k])c=[236,246,255];else{c=showC?cA((f.T[k]-t0)/(t1-t0)):base.slice();const a=Math.min(1,f.d[k]*1.1);if(a>.01){c=[lerp(c[0],dc[0],a),lerp(c[1],dc[1],a),lerp(c[2],dc[2],a)]}}
+  D[4*k]=c[0];D[4*k+1]=c[1];D[4*k+2]=c[2];D[4*k+3]=255}
+ sOff.getContext("2d").putImageData(sImg,0,0);x.imageSmoothingEnabled=true;x.drawImage(sOff,R.x,R.y,R.W,R.H);
+ const P=(i,j)=>[R.x+(i+.5)*R.s,R.y+(j+.5)*R.s];
+ if($("#sPar").checked){x.fillStyle=alpha(col("--ink"),.55);for(const p of sPar){const[X,Y]=P(p.x-.5,p.y-.5);x.fillRect(X-1,Y-1,2.2,2.2)}}
+ if($("#sArr").checked){const st=Math.max(4,Math.round(nx/16));for(let j=st/2|0;j<ny;j+=st)for(let i=st/2|0;i<nx;i+=st){const k=j*nx+i;if(f.solid(k))continue;const u=f.u[k],v=f.v[k],sp=Math.hypot(u,v);if(sp<.15)continue;const L=clamp(sp*R.s*.7,4,st*R.s*.9),[X,Y]=P(i,j);arrow(x,X-u/sp*L/2,Y-v/sp*L/2,X+u/sp*L/2,Y+v/sp*L/2,alpha(col("--ink"),.75),1.6,6)}}
+ /* Dekoration */
+ if(sKey=="topf"){x.strokeStyle=col("--ink");x.lineWidth=3;x.strokeRect(R.x,R.y,R.W,R.H);x.fillStyle=SOPT.heat?"#d6452a":"#555";x.fillRect(R.x+R.W*.28,R.y+R.H+2,R.W*.44,8);txt(x,SOPT.heat?"Herdplatte (heiß)":"Herdplatte (aus)",R.x+R.W/2,Math.min(o.h-6,R.y+R.H+18),{a:"center",size:12,c:col("--mut"),w:600})}
+ if(sKey=="zimmer"){const[wx,wy]=P(0,ny*.12),[,wy2]=P(0,ny*.52);x.fillStyle="rgba(160,200,240,.85)";x.fillRect(R.x-2,wy,R.s*1.6,wy2-wy);pill(x,SOPT.win?"Fenster (gekippt)":"Fenster",R.x+R.s*3,wy+12,{size:12});
+  const hx=SOPT.pos=="win"?3:nx-7,[px,py]=P(hx,ny*.56);pill(x,"Heizkörper",px+(SOPT.pos=="win"?0:-50),py-12,{size:12});
+  const[mx,my]=P(nx*.52,ny-2);x.fillStyle=alpha(col("--ink"),.5);x.beginPath();x.arc(mx,my-R.H*.62,R.H*.045,0,7);x.fill();x.fillRect(mx-R.H*.03,my-R.H*.57,R.H*.06,R.H*.57)}
+ if(sKey=="kerze"){const[cx,cy]=P(nx/2,ny-11);x.fillStyle="#f3efe2";x.strokeStyle="#bbb";x.fillRect(cx-3.5*R.s,cy,7*R.s,10*R.s);if(SOPT.heat){for(let k=0;k<3;k++){x.fillStyle=["#f59e0b","#fbbf24","#fff7d6"][k];x.beginPath();x.ellipse(cx,cy-R.s*2.5,R.s*(1.6-k*.4),R.s*(3.2-k*.8)*(1+Math.sin(uT*14)*.08),0,0,7);x.fill()}}}
+ if(sKey=="strand"){const[lx,ly]=P(nx*.22,ny-2),[sx,sy]=P(nx*.75,ny-2);pill(x,"Land",lx,ly-6,{a:"center",size:12});pill(x,"Meer",sx,sy-6,{a:"center",size:12});const[qx,qy]=P(nx*.1,4);
+  if(SOPT.day){x.fillStyle="#f6c343";x.beginPath();x.arc(qx,qy+8,12,0,7);x.fill()}else{x.fillStyle="#d8dce6";x.beginPath();x.arc(qx,qy+8,11,0,7);x.fill();x.fillStyle=cS(.3);x.beginPath();x.arc(qx+5,qy+5,9,0,7);x.fill()}}
+ if(sKey=="kuehl"){x.strokeStyle=col("--ink");x.lineWidth=3;x.strokeRect(R.x,R.y,R.W,R.H);const[a,b]=P(1,ny*.12);pill(x,"Kühlfläche",a+R.s*2,b,{size:12});const[dx,dy]=P(nx-1,ny*.5);x.save();x.translate(dx+12,dy);x.rotate(Math.PI/2);txt(x,"Tür",0,0,{a:"center",size:12,c:col("--mut"),w:700});x.restore()}
+ if(sKey=="see"){const[a,b]=P(nx*.5,0);pill(x,SOPT.heat?"Winterluft −6 °C":"Luft",a,R.y-0+12,{a:"center",size:12})}
+ if($("#sCol").checked){const sw=Math.min(140,o.w*.25),sx0=o.w-sw-52;for(let i=0;i<sw;i++){x.fillStyle=cS(i/sw);x.fillRect(sx0+i,o.h-14,1.2,8)}txt(x,degC(S.range[0]),sx0-4,o.h-10,{size:11,a:"right",c:col("--mut")});txt(x,degC(S.range[1]),sx0+sw+4,o.h-10,{size:11,c:col("--mut")})}});
+ptr($("#sC"),(t,px,py,e)=>{if(t!="down"&&!(t=="move"&&e.buttons))return;const R=sRect(sC);const gx=(px-R.x)/R.s,gy=(py-R.y)/R.s;if(gx<0||gy<0||gx>FL.nx||gy>FL.ny)return;sDrop(gx,gy,t=="down"?2.6:1.6,t=="down"?1:.35)});
+["sCol","sPar","sArr"].forEach(i=>$("#"+i).onchange=()=>sC.redraw());
+function sSet(k,o={}){$("#sSc").value=k;sKey=k;for(const q in SOPT)delete SOPT[q];Object.assign(SOPT,o);SC[k].opt();Object.assign(SOPT,o);$("#sEx").innerHTML=SC[k].ex;sBuild(true);sC.fit()}
+sBuild(false);
+tasks("stroemung",[
+ {l:1,h:"Tinte im Kochtopf",p:"Lege den Kristall auf den Boden über der Herdplatte. Wohin wandert die Farbe? Zeichne den Weg des Wassers in dein Heft.",set:()=>{sSet("topf");setTimeout(()=>$("#sxKr")?.click(),1500)}},
+ {l:1,h:"Wo ist es am wärmsten?",p:"Im Zimmer: Vergleiche die Temperatur unter der Decke und am Boden. Warum hat die Katze lieber den Platz am Kasten oben?",set:()=>sSet("zimmer")},
+ {l:1,h:"Heizkörper unter dem Fenster",p:"Stelle den Heizkörper einmal unter das Fenster, einmal an die Innenwand. Wo strömt kalte Luft am Boden zu den Füßen?",set:()=>sSet("zimmer",{pos:"in"})},
+ {l:1,h:"Seewind",p:"Am Strand: Woher weht der Wind am Tag, woher in der Nacht? Begründe mit der Temperatur von Land und Meer.",set:()=>sSet("strand",{day:true})},
+ {l:1,h:"Kälte sinkt",p:"Im Kühlschrank ist die Kühlfläche oben. Warum funktioniert das? In welchem Fach ist es am kältesten?",set:()=>sSet("kuehl")},
+ {l:2,h:"Kerze und Rauch",p:"Warum steigt der Rauch erst senkrecht auf und breitet sich dann unter der Decke aus? Wo würdest du einen Rauchmelder montieren?",set:()=>sSet("kerze")},
+ {l:2,h:"Der See friert von oben zu",p:"Lass den See abkühlen. Welche Temperatur hat das Wasser am Grund, wenn oben schon Eis ist? Warum überleben die Fische?",set:()=>sSet("see")},
+ {l:3,h:"Ohne Anomalie",p:"Schalte im See die Anomalie aus (Gedankenversuch). Was ändert sich am Grund? Erkläre mit der Dichte, warum Wasser bei 4 °C nach unten sinkt.",set:()=>sSet("see",{noAn:true})}]);
+
+/* ===================== Station: Wärmestrahlung ===================== */
+const C1=3.7418e-16,C2=1.4388e-2;
+const planck=(lum,T,eps=1)=>{const l=lum*1e-6;return eps*C1/(l**5*(Math.exp(C2/(l*T))-1))*1e-6};/* W/(m²·µm) */
+function integ(T,a,b,f=()=>1){let s=0;const n=400,la=Math.log(a),lb=Math.log(b);for(let i=0;i<n;i++){const l=Math.exp(la+(lb-la)*(i+.5)/n),dl=l*(lb-la)/n;s+=planck(l,T)*f(l)*dl}return s}
+const Vlum=l=>Math.exp(-.5*((l-.555)/.045)**2);
+const visFrac=T=>T<350?0:integ(T,.38,.78)/(SIG*T**4);
+const LV=T=>integ(T,.38,.78,Vlum);const LV800=LV(800),LV3000=LV(3000);
+function bbRGB(T){/* Farbe eines glühenden Körpers (Näherung nach T. Helland) */const t=T/100;let r,g,b;if(t<=66){r=255;g=99.47*Math.log(t)-161.12;b=t<=19?0:138.52*Math.log(t-10)-305.04}else{r=329.7*Math.pow(t-60,-.1332);g=288.12*Math.pow(t-60,-.0755);b=255}
+ if(T<1000){const f=clamp((T-750)/250,0,1);r=200+55*f;g=g*f*.6+20*(1-f);b=0}return[clamp(r,0,255),clamp(g,0,255),clamp(b,0,255)]}
+const glow=T=>T<760?0:clamp((Math.log10(LV(T))-Math.log10(LV800))/(Math.log10(LV3000)-Math.log10(LV800)),0,1)**.8;
+const ROBJ={eis:{n:"Eiswürfel",T:-5,sh:"cube",c:"#cfe6f5"},mensch:{n:"Mensch",T:34,sh:"head",c:"#e3b38f"},tee:{n:"Tasse Tee",T:70,sh:"cup",c:"#f2f2f2"},
+ herd:{n:"Herdplatte",T:350,sh:"plate",c:"#3a3a3c"},eisen:{n:"Eisen beim Schmied",T:1000,sh:"bar",c:"#5b5f66"},draht:{n:"Glühdraht (Glühbirne)",T:2500,sh:"bulb",c:"#888"},sonne:{n:"Oberfläche der Sonne",T:5500,sh:"sun",c:"#f6c343"}};
+$("#rObj").innerHTML=Object.entries(ROBJ).map(([k,o])=>`<option value="${k}">${o.n} (${degC(o.T)})</option>`).join("");
+const rTK=v=>230*Math.pow(6500/230,v/1000),rV=TK=>1000*Math.log(TK/230)/Math.log(6500/230);
+let rKey="mensch",rView="eye",rKept=[],rWv=[],rTx=null;
+function rT(){return rTx??rTK(+$("#rT").value)}
+function rSetObj(k,T){rKey=k;$("#rObj").value=k;rTx=(T??ROBJ[k].T)+K0;$("#rT").value=rV(rTx);rUpd()}
+$("#rObj").onchange=e=>rSetObj(e.target.value);
+$("#rT").oninput=()=>{rTx=null;rUpd()};
+seg("rView",v=>{rView=v;rC.redraw()});
+$("#rE").oninput=()=>{$("#rEo").textContent=de(+$("#rE").value,2);rUpd()};
+$("#rKeep").onclick=()=>{if(rKept.length>=4)rKept.shift();rKept.push({T:rT(),e:+$("#rE").value,n:ROBJ[rKey].n});rG.redraw()};$("#rClr").onclick=()=>{rKept=[];rG.redraw()};
+function rUpd(){const TK=rT(),T=TK-K0,lv=lvl(),e=lv>2?+$("#rE").value:1,vf=visFrac(TK);$("#rTo").textContent=degC(T,T<100?1:0)+(lv>2?` (${de(TK,4)} K)`:"");
+ const rel=e*TK**4/307.15**4;
+ kpi("rK",[["Temperatur",degC(T,T<100?1:0)],["Strahlung im Vergleich zum Menschen",rel<.95||rel>1.05?(rel<1?de(rel,2):de(rel,rel<100?2:3))+"-mal so viel":"gleich viel"],["Davon sichtbares Licht",vf<1e-6?"nichts":vf<.001?"fast nichts":de(vf*100,2)+" %"],lv>1&&["Stärkste Strahlung bei λ",de(2898/TK,3)+" µm"],lv>2&&["Ausstrahlung M = εσT⁴",sci(e*SIG*TK**4,3)+" W/m²"],lv>2&&["Netto bei 20 °C Umgebung",sci(e*SIG*(TK**4-293.15**4),3)+" W/m²"]]);rG.redraw();rC.redraw()}
+function rShape(x,sh,cx,cy,s){x.beginPath();if(sh=="cube"){x.roundRect(cx-s*.5,cy-s*.5,s,s,s*.12)}else if(sh=="head"){x.arc(cx,cy-s*.35,s*.32,0,7);x.moveTo(cx-s*.62,cy+s*.75);x.quadraticCurveTo(cx-s*.6,cy+s*.05,cx,cy+s*.03);x.quadraticCurveTo(cx+s*.6,cy+s*.05,cx+s*.62,cy+s*.75);x.closePath()}
+ else if(sh=="cup"){x.moveTo(cx-s*.45,cy-s*.4);x.lineTo(cx+s*.45,cy-s*.4);x.lineTo(cx+s*.36,cy+s*.45);x.lineTo(cx-s*.36,cy+s*.45);x.closePath();x.moveTo(cx+s*.42,cy-s*.2);x.arc(cx+s*.48,cy,s*.18,-1.3,1.3)}
+ else if(sh=="plate"){x.ellipse(cx,cy,s*.7,s*.22,0,0,7)}else if(sh=="bar"){x.roundRect(cx-s*.75,cy-s*.12,s*1.5,s*.24,4)}else if(sh=="bulb"){x.moveTo(cx-s*.04,cy-s*.05);x.lineTo(cx+s*.04,cy-s*.05);x.lineTo(cx+s*.04,cy+s*.05);x.lineTo(cx-s*.04,cy+s*.05);x.closePath();for(let i=0;i<5;i++){x.rect(cx-s*.25+i*s*.1,cy-s*.02,s*.06,s*.04)}}else{x.arc(cx,cy,s*.55,0,7)}}
+function rStepW(dt,o){const TK=rT();const rate=clamp(3*(TK/300)**4,1.5,24);if(Math.random()<rate*dt&&$("#rWav").checked)rWv.push({a:Math.random()*6.283,r:0,vis:Math.random()<visFrac(TK)*1.3});for(const w of rWv)w.r+=dt*Math.max(o.w,o.h)*.3;rWv=rWv.filter(w=>w.r<Math.max(o.w,o.h)*.7)}
+const rC=canv("rC",o=>{const x=o.x,w=o.w,h=o.h,TK=rT(),T=TK-K0,O=ROBJ[rKey],cx=w*.5,cy=h*.5,s=Math.min(w,h)*.36,lv=lvl(),e=lv>2?+$("#rE").value:1;
+ const g=glow(TK)*Math.min(1,e*1.2),rgb=bbRGB(TK);
+ if(rView=="eye"){x.fillStyle="#07080b";x.fillRect(0,0,w,h);
+  if(g>0){const gr=x.createRadialGradient(cx,cy,s*.2,cx,cy,s*1.6);gr.addColorStop(0,`rgba(${rgb[0]|0},${rgb[1]|0},${rgb[2]|0},${.55*g})`);gr.addColorStop(1,"rgba(0,0,0,0)");x.fillStyle=gr;x.fillRect(0,0,w,h)}
+  rShape(x,O.sh,cx,cy,s);x.fillStyle=g>0?`rgba(${rgb[0]|0},${rgb[1]|0},${rgb[2]|0},${.15+.85*g})`:"rgba(255,255,255,.035)";x.fill();if(O.sh=="bulb"){x.strokeStyle=g>0?`rgba(255,240,200,${.2+.5*g})`:"rgba(255,255,255,.06)";x.lineWidth=2;x.beginPath();x.arc(cx,cy-s*.1,s*.5,0,7);x.stroke()}
+  txt(x,g>0?(g<.25?"glüht schwach":g<.6?"glüht":"leuchtet hell"):"Im dunklen Raum unsichtbar – das Auge sieht nur sichtbares Licht.",14,20,{c:"#c9ced6",w:700,size:14})}
+ else{const t0=-20,t1=120,f=v=>(v-t0)/(t1-t0);x.fillStyle=cS(f(20),IRON);x.fillRect(0,0,w,h);
+  rShape(x,O.sh,cx,cy,s);x.fillStyle=cS(f(T)*Math.min(1,e)+(1-Math.min(1,e))*f(20),IRON);x.fill();
+  if(O.sh=="bulb"){x.strokeStyle=cS(f(Math.min(T,120)*.3+20),IRON);x.lineWidth=3;x.beginPath();x.arc(cx,cy-s*.1,s*.5,0,7);x.stroke()}
+  const sw=Math.min(200,w*.4),sx0=w-sw-14;for(let i=0;i<sw;i++){x.fillStyle=cS(i/sw,IRON);x.fillRect(sx0+i,h-24,1.2,11)}txt(x,"−20 °C",sx0,h-34,{size:11,c:"#fff"});txt(x,"120 °C",sx0+sw,h-34,{size:11,a:"right",c:"#fff"});
+  pill(x,"Wärmebild: "+degC(T,0)+(T>120?" (über dem Messbereich)":""),14,20,{size:14})}
+ if($("#rWav").checked){const wl=clamp(5+5*Math.log10((2898/TK)/.3),3.5,16);for(const v of rWv){const r0=s*.55+v.r,r1=r0+wl*4;const vc=v.vis?`rgba(${rgb[0]|0},${rgb[1]|0},${rgb[2]|0},.95)`:rView=="eye"?"rgba(200,60,50,.55)":"rgba(255,255,255,.75)";x.setLineDash(v.vis||rView=="ir"?[]:[5,4]);wave(x,cx+Math.cos(v.a)*r0,cy+Math.sin(v.a)*r0,cx+Math.cos(v.a)*r1,cy+Math.sin(v.a)*r1,vc,3,wl,2,-uT*12)}x.setLineDash([]);
+  if(rView=="eye")txt(x,"gestrichelt: unsichtbare Infrarotstrahlung",14,h-16,{size:12,c:"#9aa3ad"})}
+ if(rView=="eye")txt(x,O.n+" · "+degC(T,0),w-14,20,{a:"right",c:"#c9ced6",size:13})});
+const RLX0=Math.log10(.2),RLX1=Math.log10(50);
+const rG=canv("rG",o=>{const x=o.x,w=o.w,h=o.h,L=58,R=14,T=14,B=40;x.clearRect(0,0,w,h);const lv=lvl(),e=lv>2?+$("#rE").value:1,TK=rT();
+ const curves=[...rKept.map(k=>({T:k.T,e:k.e,n:k.n,c:"--mut"})),{T:TK,e,n:"jetzt",c:"--acc"}];const ymax=Math.max(...curves.map(c=>planck(2898/c.T,c.T,c.e)))*1.12;
+ const X=l=>L+(Math.log10(l)-RLX0)/(RLX1-RLX0)*(w-L-R),Y=v=>h-B-v/ymax*(h-T-B);
+ for(let l=.38;l<.78;l+=.005){const hue=270-(l-.38)/.4*270;x.fillStyle=`hsla(${hue},90%,55%,.35)`;x.fillRect(X(l),T,X(l+.005)-X(l)+.5,h-T-B)}
+ txt(x,"sichtbar",X(.55),T+10,{a:"center",size:11,c:col("--mut"),w:700});txt(x,"Infrarot →",X(3),T+10,{a:"center",size:11,c:col("--mut"),w:700});txt(x,"← UV",X(.27),T+10,{a:"center",size:11,c:col("--mut"),w:700});
+ x.strokeStyle=col("--grid");x.lineWidth=1;for(const l of[.2,.5,1,2,5,10,20,50]){x.beginPath();x.moveTo(X(l),T);x.lineTo(X(l),h-B);x.stroke();txt(x,de(l,2),X(l),h-B+12,{a:"center",size:12,c:col("--mut")})}
+ x.strokeStyle=col("--mut");x.beginPath();x.moveTo(L,T);x.lineTo(L,h-B);x.lineTo(w-R,h-B);x.stroke();
+ txt(x,"Wellenlänge λ in µm",(L+w-R)/2,h-10,{a:"center",size:13,w:600,c:col("--mut")});x.save();x.translate(14,(T+h-B)/2);x.rotate(-Math.PI/2);txt(x,lv>2?"M_λ in W/(m²·µm)":"Stärke der Strahlung",0,0,{a:"center",size:13,w:600,c:col("--mut")});x.restore();
+ if(lv>2)txt(x,sci(ymax/1.12,2),L-4,Y(ymax/1.12),{a:"right",size:11,c:col("--mut")});
+ for(const c of curves){x.strokeStyle=col(c.c);x.lineWidth=c.n=="jetzt"?2.6:1.6;x.beginPath();for(let i=0;i<=300;i++){const l=10**(RLX0+(RLX1-RLX0)*i/300),v=planck(l,c.T,c.e);i?x.lineTo(X(l),Y(v)):x.moveTo(X(l),Y(v))}x.stroke();
+  const lm=2898/c.T;if(lm>.2&&lm<50){const v=planck(lm,c.T,c.e);if(c.n=="jetzt"){x.setLineDash([4,4]);x.beginPath();x.moveTo(X(lm),Y(v));x.lineTo(X(lm),h-B);x.stroke();x.setLineDash([])}txt(x,c.n=="jetzt"?"λmax":c.n+" "+degC(c.T-K0),X(lm)+4,Y(v)-8,{size:11,c:col(c.c),w:700})}}});
+LVLCB.push(rUpd);
+rSetObj("mensch");
+tasks("strahlung",[
+ {l:1,h:"Unsichtbar im Dunkeln",p:"Stelle den Menschen ein. Sieht man ihn im dunklen Raum? Wechsle zur Wärmebildkamera. Warum kann sie ihn sehen?",set:()=>{rSetObj("mensch");seg("rView",()=>{})("eye");rView="eye"}},
+ {l:1,h:"Auch Eis strahlt",p:"Wähle den Eiswürfel und die Wärmebildkamera. Sendet ein Eiswürfel Strahlung aus? Vergleiche mit der Tasse Tee.",set:()=>{rSetObj("eis");seg("rView",()=>{})("ir");rView="ir";rC.redraw()}},
+ {l:1,h:"Glühen",p:"Erhöhe bei der Herdplatte langsam die Temperatur. Ab welcher Temperatur beginnt sie zu glühen? Welche Farben durchläuft sie bis 2500 °C?",set:()=>{rSetObj("herd",200);seg("rView",()=>{})("eye");rView="eye"}},
+ {l:2,h:"Das Maximum wandert",p:"Merke dir die Kurven für 34 °C, 1000 °C und 5500 °C. In welche Richtung wandert das Maximum, wenn der Körper heißer wird?",set:()=>{rSetObj("mensch")}},
+ {l:2,h:"Glühbirne",p:"Welcher Anteil der Strahlung eines Glühdrahts (2500 °C) ist sichtbares Licht? Warum nennt man Glühbirnen „kleine Heizungen“?",set:()=>rSetObj("draht")},
+ {l:3,h:"T hoch vier",p:"Verdopple die absolute Temperatur von 300 K auf 600 K. Um welchen Faktor steigt M? Prüfe mit dem Stefan-Boltzmann-Gesetz.",set:()=>{rSetObj("tee",26.85)}},
+ {l:3,h:"Grauer Strahler",p:"Stelle ε = 0,1 ein (blankes Metall). Wie ändert sich das Spektrum, wie das Wärmebild? Warum zeigt eine Wärmebildkamera blankes Metall oft falsch an?",set:()=>{rSetObj("tee");$("#rE").value=.1;$("#rE").dispatchEvent(new Event("input"))}}]);
+
+/* ===================== Station: Absorbieren, Reflektieren, Durchlassen ===================== */
+const OSURF={schwarz:{n:"schwarz, matt",ak:.95,al:.95,c:"#202225"},weiss:{n:"weiß",ak:.2,al:.9,c:"#f4f4f2"},alu:{n:"Alu, glänzend",ak:.12,al:.05,c:"#c8ced4"},rot:{n:"rot",ak:.6,al:.9,c:"#c23b2e"}};
+const OCOV={no:{n:"ohne Haube"},glas:{n:"Glashaube",ak:.06,rk:.08,tk:.86,al:.9,rl:.1,tl:0,C:756},folie:{n:"Klarsichtfolie",ak:.02,rk:.08,tk:.9,al:.15,rl:.05,tl:.8,C:10}};
+const OI=1000,OAp=.006,OAs=.03,OH=6,OCc=.1*4186+40,OAc=.12,OAcp=.015,OHi=2.5,OTe=20;
+let oSlots=[{s:"schwarz",c:"no"},{s:"weiss",c:"no"},{s:"alu",c:"no"}],oLamp=true,oSpd=60,oT=0;const oSt=[0,1,2].map(()=>({T:20,Tc:20,hist:[[0,20]]}));let oDots=[],oFlash=[];
+$("#oSel").innerHTML=[0,1,2].map(i=>`<div class="sl"><b>${i+1}</b><select data-i="${i}" data-k="s">${Object.entries(OSURF).map(([k,m])=>`<option value="${k}">${m.n}</option>`).join("")}</select><select data-i="${i}" data-k="c">${Object.entries(OCOV).map(([k,m])=>`<option value="${k}">${m.n}</option>`).join("")}</select></div>`).join("");
+function oSync(){$$("#oSel select").forEach(s=>s.value=oSlots[+s.dataset.i][s.dataset.k]);oTab()}
+$$("#oSel select").forEach(s=>s.onchange=()=>{oSlots[+s.dataset.i][s.dataset.k]=s.value;oTab();oG.redraw()});
+seg("oLamp",v=>{oLamp=v=="1"});seg("oSp",v=>oSpd=+v);
+function oReset(T=20){oT=0;for(const s of oSt){s.T=T;s.Tc=20;s.hist=[[0,T]]}oDots=[];oG.redraw()}
+$("#oRe").onclick=()=>oReset(20);$("#oHot").onclick=()=>{oReset(70);oLamp=false;seg("oLamp",()=>{})("0")};
+function oFlux(i,T,Tc){/* liefert dT/dt der Dose und der Abdeckung */const sl=oSlots[i],S=OSURF[sl.s],C=OCOV[sl.c],TK=T+K0,TeK=OTe+K0,TcK=Tc+K0,I=oLamp?OI:0;
+ if(sl.c=="no"){const P=S.ak*I*OAp-OH*OAs*(T-OTe)-S.al*SIG*OAs*(TK**4-TeK**4);return[P/OCc,0]}
+ const Pc=C.tk*S.ak*I*OAp,Pcov=C.ak*I*OAcp;const qIn=OHi*OAs*(T-Tc)+S.al*C.al*SIG*OAs*(TK**4-TcK**4),qDir=S.al*C.tl*SIG*OAs*(TK**4-TeK**4);
+ const qOut=OH*OAc*(Tc-OTe)+C.al*SIG*OAc*(TcK**4-TeK**4);return[(Pc-qIn-qDir)/OCc,(Pcov+qIn-qOut)/C.C]}
+function oStep(dt){const sim=dt*oSpd,n=Math.max(1,Math.ceil(sim/.5)),h=sim/n;for(let k=0;k<n;k++)for(let i=0;i<3;i++){const s=oSt[i],[a,b]=oFlux(i,s.T,s.Tc);s.T+=a*h;if(oSlots[i].c!="no")s.Tc+=b*h;else s.Tc=OTe}
+ oT+=sim;for(const s of oSt){const L=s.hist[s.hist.length-1];if(oT-L[0]>=Math.max(10,oT/300))s.hist.push([oT,s.T])}}
+function oGeom(o){const w=o.w,h=o.h,ty=h*.86,cw=Math.min(70,w*.1),ch=h*.22,xs=[w*.22,w*.5,w*.78];return{ty,cw,ch,xs,lx:w*.5,ly:h*.07}}
+function oDotsStep(dt,o){const G=oGeom(o),sp=o.h*.55;
+ if(oLamp&&Math.random()<dt*30)for(let k=0;k<1;k++){const i=Math.floor(Math.random()*3),tx=G.xs[i]+(Math.random()-.5)*G.cw*1.4;const dx=tx-G.lx,dy=G.ty-G.ch*.5-G.ly,L=Math.hypot(dx,dy);oDots.push({x:G.lx,y:G.ly+14,vx:dx/L*sp,vy:dy/L*sp,k:"s",slot:i,st:0})}
+ for(let i=0;i<3;i++){const s=oSt[i],S=OSURF[oSlots[i].s],r=S.al*Math.max(0,s.T-18)*.16;if(Math.random()<r*dt){const a=-Math.PI/2+(Math.random()-.5)*2.4;oDots.push({x:G.xs[i]+Math.cos(a)*G.cw*.3,y:G.ty-G.ch*.6,vx:Math.cos(a)*sp*.5,vy:Math.sin(a)*sp*.5,k:"l",slot:i,st:1})}}
+ for(const d of oDots){d.x+=d.vx*dt;d.y+=d.vy*dt;const sl=oSlots[d.slot],C=OCOV[sl.c],S=OSURF[sl.s],cx=G.xs[d.slot],covTop=G.ty-G.ch*1.55,canTop=G.ty-G.ch;
+  if(d.k=="s"&&d.st==0&&sl.c!="no"&&d.y>=covTop&&Math.abs(d.x-cx)<G.cw*1.1){const r=Math.random();if(r<C.rk){d.vy=-Math.abs(d.vy);d.vx+=(Math.random()-.5)*sp*.6;d.st=3}else if(r<C.rk+C.ak){d.dead=1;oFlash.push({x:d.x,y:d.y,t:0,c:"--sun"})}else d.st=1}
+  if(d.k=="s"&&d.st<=1&&d.y>=canTop&&Math.abs(d.x-cx)<G.cw*.55){if(Math.random()<S.ak){d.dead=1;oFlash.push({x:d.x,y:d.y,t:0,c:"--sun"})}else{d.vy=-Math.abs(d.vy);d.vx=(Math.random()-.5)*sp*.8;d.st=2}}
+  if(d.k=="s"&&d.y>G.ty)d.dead=1;
+  if(d.k=="l"&&d.st==1&&sl.c!="no"&&d.y<=covTop+4&&Math.abs(d.x-cx)<G.cw*1.1){const r=Math.random();if(r<C.al){d.dead=1;oFlash.push({x:d.x,y:d.y,t:0,c:"--ir"})}else if(r<C.al+C.rl){d.vy=Math.abs(d.vy);d.st=4}else d.st=5}
+  if(d.k=="l"&&d.st==4&&d.y>=canTop){d.dead=1}
+  if(d.y<-10||d.x<-10||d.x>o.w+10||d.y>o.h)d.dead=1}
+ oDots=oDots.filter(d=>!d.dead);for(const f of oFlash)f.t+=dt;oFlash=oFlash.filter(f=>f.t<.35)}
+const oC=canv("oC",o=>{const x=o.x,w=o.w,h=o.h,G=oGeom(o);x.clearRect(0,0,w,h);
+ x.fillStyle=isDark()?"#3a302a":"#d8c7ae";x.fillRect(0,G.ty,w,h-G.ty);
+ /* Lampe */
+ x.fillStyle=col("--mut");x.fillRect(G.lx-3,0,6,G.ly);x.beginPath();x.moveTo(G.lx-40,G.ly+12);x.lineTo(G.lx+40,G.ly+12);x.lineTo(G.lx+22,G.ly-6);x.lineTo(G.lx-22,G.ly-6);x.closePath();x.fill();
+ x.fillStyle=oLamp?"#ffe27a":"#777";x.beginPath();x.ellipse(G.lx,G.ly+13,30,6,0,0,7);x.fill();
+ if(oLamp){const gr=x.createRadialGradient(G.lx,G.ly,10,G.lx,G.ly,h*.8);gr.addColorStop(0,"rgba(255,220,100,.22)");gr.addColorStop(1,"rgba(255,220,100,0)");x.fillStyle=gr;x.fillRect(0,0,w,h)}
+ for(let i=0;i<3;i++){const sl=oSlots[i],S=OSURF[sl.s],C=OCOV[sl.c],cx=G.xs[i],s=oSt[i];
+  /* Dose */
+  const gr=x.createLinearGradient(cx-G.cw/2,0,cx+G.cw/2,0);gr.addColorStop(0,S.c);gr.addColorStop(.35,sl.s=="alu"?"#ffffff":S.c);gr.addColorStop(1,S.c);x.fillStyle=gr;x.strokeStyle="rgba(0,0,0,.4)";x.lineWidth=1.2;x.beginPath();x.roundRect(cx-G.cw/2,G.ty-G.ch,G.cw,G.ch,4);x.fill();x.stroke();
+  thermo(x,cx+G.cw*.08,G.ty-G.ch-8,G.ch*.55,s.T,15,75,degC(s.T,1));
+  if(sl.c!="no"){x.fillStyle=sl.c=="glas"?"rgba(170,220,235,.18)":"rgba(220,230,240,.12)";x.strokeStyle=sl.c=="glas"?"rgba(90,150,170,.9)":"rgba(140,150,160,.8)";x.lineWidth=sl.c=="glas"?3:1.5;x.setLineDash(sl.c=="folie"?[6,3]:[]);x.beginPath();x.moveTo(cx-G.cw*1.1,G.ty);x.lineTo(cx-G.cw*1.1,G.ty-G.ch*1.55);x.lineTo(cx+G.cw*1.1,G.ty-G.ch*1.55);x.lineTo(cx+G.cw*1.1,G.ty);x.fill();x.stroke();x.setLineDash([]);
+   if(lvl()>1)txt(x,"Luft darunter: "+degC(s.Tc,0),cx,G.ty-G.ch*1.55-10,{a:"center",size:11,c:col("--mut")})}
+  txt(x,(i+1)+": "+S.n,cx,G.ty+16,{a:"center",size:13,w:700});if(sl.c!="no")txt(x,C.n,cx,G.ty+32,{a:"center",size:12,c:col("--mut")})}
+ for(const d of oDots){x.fillStyle=col(d.k=="s"?"--sun":"--ir");x.beginPath();x.arc(d.x,d.y,d.k=="s"?3.2:2.8,0,7);x.fill()}
+ for(const f of oFlash){x.strokeStyle=alpha(col(f.c),1-f.t/.35);x.lineWidth=2;x.beginPath();x.arc(f.x,f.y,3+f.t*30,0,7);x.stroke()}
+ txt(x,"Zeit: "+hhmm(oT),12,h-12,{size:13,w:700,c:col("--ink")})});
+const oG=canv("oG",o=>{const t1=Math.max(30,Math.ceil(oT/60/10)*10);const all=oSt.flatMap(s=>s.hist.map(p=>p[1]));const lo=Math.min(18,...all),hi=Math.max(40,...all);
+ chart(o,{x0:0,x1:t1,y0:Math.floor(lo/5)*5,y1:Math.ceil(hi/5)*5,xl:"Zeit in Minuten",yl:"Temperatur in °C",series:oSt.map((s,i)=>({pts:s.hist.map(p=>[p[0]/60,p[1]]),line:true,c:["#202225","#c9a227","#8a96a3"][i]})),
+  legend:oSt.map((s,i)=>[(i+1)+": "+OSURF[oSlots[i].s].n+(oSlots[i].c!="no"?" + "+OCOV[oSlots[i].c].n:""),["#202225","#c9a227","#8a96a3"][i]])})});
+function oTab(){const P=v=>Math.round(v*100);const row=(n,a,r,t)=>`<tr><td>${n}</td><td class="n">${P(a)} · ${P(r)}${t!==undefined?" · "+P(t):""}</td>`;
+ const rows=[...new Set(oSlots.map(s=>s.s))].map(k=>{const S=OSURF[k];return`${row(S.n,S.ak,1-S.ak)}<td class="n">${P(S.al)} · ${P(1-S.al)}</td></tr>`});
+ const cov=[...new Set(oSlots.map(s=>s.c))].filter(c=>c!="no").map(k=>{const C=OCOV[k];return`${row(C.n,C.ak,C.rk,C.tk)}<td class="n">${P(C.al)} · ${P(C.rl)} · ${P(C.tl)}</td></tr>`});
+ $("#oTab").innerHTML=`<table style="font-size:13.5px"><tr><th>in %</th><th class="n">Licht</th><th class="n">Wärme&shy;strahlung</th></tr>${rows.join("")}${cov.join("")}</table><p class="note">Reihenfolge: absorbiert · reflektiert · durchgelassen. Bei der Wärmestrahlung ist „absorbiert“ zugleich der Emissionsgrad ε.</p>`}
+oSync();
+function oSet(sl,lamp=true,T=20,sp=300){seg("oSp",()=>{})(String(sp));oSlots=sl.map(a=>({s:a[0],c:a[1]||"no"}));oSync();oReset(T);oLamp=lamp;seg("oLamp",()=>{})(lamp?"1":"0");oSpd=sp;seg("oSp",()=>{})(String(sp))}
+tasks("oberflaechen",[
+ {l:1,h:"Schwarz, weiß, glänzend",p:"Drei Dosen stehen unter der Lampe. Vermute: Welche wird am wärmsten? Beobachte auch die Lichtteilchen: Wo werden sie verschluckt, wo zurückgeworfen?",set:()=>oSet([["schwarz"],["weiss"],["alu"]])},
+ {l:1,h:"Sommerkleidung",p:"Warum trägt man im Sommer gern helle Kleidung? Warum sind Häuser im Süden oft weiß?",set:()=>oSet([["schwarz"],["weiss"],["rot"]])},
+ {l:1,h:"Unter der Glashaube",p:"Stülpe über die schwarze Dose eine Glashaube. Kommt das Licht durch? Wird die Dose darunter wärmer oder kälter als ohne Haube?",set:()=>oSet([["schwarz"],["schwarz","glas"],["weiss"]])},
+ {l:2,h:"Wer kühlt am schnellsten ab?",p:"Fülle heißes Wasser (70 °C) ein, die Lampe ist aus. Welche Dose kühlt am schnellsten ab, welche am langsamsten? Was hat das mit der Rettungsdecke zu tun?",set:()=>{oSet([["schwarz"],["weiss"],["alu"]],false,70)}},
+ {l:2,h:"Weiß ist nicht gleich weiß",p:"Vergleiche Weiß und Alu beim Abkühlen. Beide reflektieren das Lampenlicht gut. Warum kühlt die weiße Dose trotzdem fast so schnell ab wie die schwarze?",set:()=>{oSet([["weiss"],["alu"],["schwarz"]],false,70)}},
+ {l:3,h:"Glas oder Folie? (Woods Versuch)",p:"Folie lässt Wärmestrahlung durch, Glas nicht. Vergleiche schwarze Dosen unter Glas und unter Folie mit einer offenen. Ist der Unterschied zwischen Glas und Folie groß? Was hält ein Glashaus also hauptsächlich warm?",set:()=>oSet([["schwarz"],["schwarz","glas"],["schwarz","folie"]])}]);
+
+/* ===================== Station: Treibhauseffekt ===================== */
+const GS=1361,GQ=GS/4;
+const GSURF={misch:{n:"Erde, gemischt (Meer, Land, etwas Eis)",a:.15},ozean:{n:"nur Ozean",a:.06},wald:{n:"nur Wald",a:.12},wueste:{n:"nur Wüste",a:.35},eis:{n:"alles Eis und Schnee",a:.8}};
+$("#gSurf").innerHTML=Object.entries(GSURF).map(([k,s])=>`<option value="${k}">${s.n}</option>`).join("");
+const gAlb=()=>{const c=+$("#gCl").value/100;return c*.5+(1-c)*GSURF[$("#gSurf").value].a};
+const epsFor=(T,alb)=>2*(1-GQ*(1-alb)/(SIG*T**4));
+const GE0=epsFor(287.15,.2995),GK=(epsFor(290.15,.2995)-GE0)/Math.log(2);
+const gEps=()=>$("#gGas").checked?clamp(GE0+GK*Math.log(+$("#gCO2").value/280),0,.97):0;
+const gTeq=(eps,alb)=>Math.pow(GQ*(1-alb)/(SIG*(1-eps/2)),.25);
+let gTs=gTeq(GE0,.2995),gRun=true,gFast=false,gPh=[],gMol=[],gFl=[],gCnt={in:[],out:[]};
+function gMols(){const n=$("#gGas").checked?Math.round(+$("#gCO2").value/35):0;const R=rngG(7);gMol=[];for(let i=0;i<40;i++){const m={x:R(),y:.16+R()*.6,k:i<n?"co2":"no",f:0};if(i<n)gMol.push(m)}
+ if($("#gGas").checked)for(let i=0;i<9;i++)gMol.push({x:R(),y:.4+R()*.36,k:"h2o",f:0});gBg=[];for(let i=0;i<26;i++)gBg.push({x:R(),y:.14+R()*.62})}
+let gBg=[];function rngG(seed){let s=seed;return()=>{s=(s*16807)%2147483647;return(s-1)/2147483646}}
+function gUpd(){const C=+$("#gCO2").value,lv=lvl(),eps=gEps(),alb=gAlb(),Teq=gTeq(eps,alb),T0=gTeq(0,alb);$("#gCo").textContent=C+" ppm";$("#gClo").textContent=$("#gCl").value+" %";
+ $("#gCO2").disabled=!$("#gGas").checked;
+ kpi("gK",[["Temperatur am Boden",degC(gTs-K0,1)],["Ohne Treibhausgase wären es",degC(T0-K0,0)],lv>1&&["Auf Dauer (Gleichgewicht)",degC(Teq-K0,1)],lv>1&&["Albedo (Rückstrahlung)",Math.round(alb*100)+" %"],lv>2&&["Absorptionsgrad ε der Luft",de(eps,3)]]);gG.redraw();gB.redraw()}
+["gGas","gCO2","gSurf","gCl"].forEach(i=>$("#"+i).addEventListener("input",()=>{if(i!="gCl"&&i!="gSurf")gMols();gUpd()}));$("#gSurf").onchange=gUpd;
+$$("#gPre button").forEach(b=>b.onclick=()=>{$("#gGas").checked=true;$("#gCO2").value=b.dataset.c;gMols();gUpd()});
+$("#gGo").onclick=()=>{gRun=!gRun;$("#gGo").textContent=gRun?"Pause":"Weiter"};$("#gFast").onclick=()=>{gFast=!gFast;$("#gFast").setAttribute("aria-pressed",gFast)};
+function gStep(dt,o){if(!gRun)return;const f=gFast?4:1,eps=gEps(),alb=gAlb(),w=o.w,h=o.h;
+ const Fin=GQ*(1-alb),Fout=SIG*gTs**4*(1-eps/2);gTs+=(Fin-Fout)/20*dt*f;
+ const sp=h*.42*f,top=h*.12,atB=h*.8,cl=+$("#gCl").value/100,sa=GSURF[$("#gSurf").value].a;const Rin=9*f;
+ if(Math.random()<Rin*dt){gPh.push({x:Math.random()*w*1.1-w*.1,y:0,vx:sp*.25,vy:sp,k:"s",c:0});gCnt.in.push(uT)}
+ const Rout=Rin*SIG*gTs**4/GQ;if(Math.random()<Rout*dt){const a=-Math.PI/2+(Math.random()-.5)*2;gPh.push({x:Math.random()*w,y:atB-2,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,k:"l"})}
+ const kab=eps>0?-Math.log(1-eps)/((atB-top)/(sp*.8)):0;
+ for(const p of gPh){p.x+=p.vx*dt;p.y+=p.vy*dt;if(p.x<0)p.x+=w;if(p.x>w)p.x-=w;
+  if(p.k=="s"){if(!p.c&&p.vy>0&&p.y>h*.33&&gCloudAt(p.x/w,cl)){p.c=1;if(Math.random()<.5){p.vy=-p.vy;p.vx=(Math.random()-.5)*sp}}
+   if(p.vy>0&&p.y>=atB){if(Math.random()<sa){p.vy=-Math.abs(p.vy);p.vx=(Math.random()-.5)*sp}else{p.dead=1;gFl.push({x:p.x,y:atB,t:0,c:"--sun"})}}}
+  else{if(p.y>top&&p.y<atB&&Math.random()<kab*dt){let best=null,bd=1e9;for(const m of gMol){const d=(m.x*w-p.x)**2+(m.y*h-p.y)**2;if(d<bd){bd=d;best=m}}p.dead=1;if(best){best.f=1;const a=Math.random()*6.283;gPh.push({x:best.x*w,y:best.y*h,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,k:"l",re:1})}}
+   if(p.vy>0&&p.y>=atB){p.dead=1;gFl.push({x:p.x,y:atB,t:0,c:"--ir"})}}
+  if(p.y<-5){p.dead=1;if(p.k=="l")gCnt.out.push(uT)}}
+ gPh=gPh.filter(p=>!p.dead);for(const m of gMol)m.f=Math.max(0,m.f-dt*2.5);for(const q of gFl)q.t+=dt;gFl=gFl.filter(q=>q.t<.4);
+ gCnt.in=gCnt.in.filter(t=>t>uT-10);gCnt.out=gCnt.out.filter(t=>t>uT-10)}
+function gCloudAt(u,cl){/* Wolken: Anteil cl der Breite, in 5 Stücken */if(cl<=0)return false;for(let i=0;i<5;i++){const c=(i+.5)/5,hw=cl/10;if(Math.abs(u-c)<hw)return true}return false}
+const gC=canv("gC",o=>{const x=o.x,w=o.w,h=o.h,top=h*.12,atB=h*.8,eps=gEps(),cl=+$("#gCl").value/100,sk=GSURF[$("#gSurf").value];x.clearRect(0,0,w,h);
+ x.fillStyle="#0a0e1a";x.fillRect(0,0,w,top);const gr=x.createLinearGradient(0,top,0,atB);gr.addColorStop(0,isDark()?"#1b2a44":"#9cc3ea");gr.addColorStop(1,isDark()?"#2c4566":"#d7e9f7");x.fillStyle=gr;x.fillRect(0,top,w,atB-top);
+ if(eps>0){x.fillStyle=`rgba(210,120,60,${eps*.18})`;x.fillRect(0,top,w,atB-top)}
+ x.fillStyle="#ffd34d";x.beginPath();x.arc(w*.05,top*.5,top*.32,0,7);x.fill();txt(x,"Weltall",w*.05+top*.45,top/2,{c:"#cfd6e4",w:700,size:13});
+ const gc={misch:"#4e8a4a",ozean:"#2d6fa8",wald:"#2f6b34",wueste:"#d6b26e",eis:"#eef4fa"}[$("#gSurf").value];x.fillStyle=gc;x.fillRect(0,atB,w,h-atB);
+ if($("#gSurf").value=="misch"){x.fillStyle="#2d6fa8";x.fillRect(w*.45,atB,w*.4,h-atB);x.fillStyle="#eef4fa";x.fillRect(w*.9,atB,w*.1,h-atB)}
+ const Tg=clamp((gTs-K0+30)/70,0,1);x.fillStyle=cS(Tg,CW,.22);x.fillRect(0,atB,w,h-atB);
+ for(const m of gBg){x.fillStyle=alpha(col("--mut"),.45);x.beginPath();x.arc(m.x*w-2.5,m.y*h,2.3,0,7);x.arc(m.x*w+2.5,m.y*h,2.3,0,7);x.fill()}
+ for(const m of gMol){const X=m.x*w+(m.f?Math.sin(uT*60)*2*m.f:0),Y=m.y*h;if(m.k=="co2"){x.fillStyle="#d33";x.beginPath();x.arc(X-6,Y,3.2,0,7);x.arc(X+6,Y,3.2,0,7);x.fill();x.fillStyle="#333";x.beginPath();x.arc(X,Y,3.8,0,7);x.fill()}else{x.fillStyle="#d33";x.beginPath();x.arc(X,Y,3.8,0,7);x.fill();x.fillStyle="#f3f3f3";x.strokeStyle="#888";x.lineWidth=.8;x.beginPath();x.arc(X-4.5,Y+3.5,2.4,0,7);x.arc(X+4.5,Y+3.5,2.4,0,7);x.fill();x.stroke()}
+  if(m.f>0){x.strokeStyle=`rgba(220,60,40,${m.f})`;x.lineWidth=2;x.beginPath();x.arc(X,Y,8+(1-m.f)*8,0,7);x.stroke()}}
+ if(cl>0)for(let i=0;i<5;i++){const c=(i+.5)/5*w,hw=cl/10*w;if(hw<2)continue;x.fillStyle="rgba(255,255,255,.88)";x.beginPath();x.ellipse(c,h*.35,hw,h*.035,0,0,7);x.ellipse(c-hw*.4,h*.33,hw*.5,h*.03,0,0,7);x.ellipse(c+hw*.35,h*.325,hw*.45,h*.03,0,0,7);x.fill()}
+ for(const p of gPh){if(p.k=="s"){x.fillStyle=col("--sun");x.beginPath();x.arc(p.x,p.y,3.3,0,7);x.fill()}else{const L=Math.hypot(p.vx,p.vy);x.strokeStyle=col("--ir");x.lineWidth=2.2;x.beginPath();const ux=p.vx/L,uy=p.vy/L;for(let s=0;s<14;s+=1.5){const o2=Math.sin(s*.9+uT*20)*2.5;const X=p.x-ux*s-uy*o2,Y=p.y-uy*s+ux*o2;s?x.lineTo(X,Y):x.moveTo(X,Y)}x.stroke()}}
+ for(const q of gFl){x.strokeStyle=alpha(col(q.c),1-q.t/.4);x.lineWidth=2;x.beginPath();x.arc(q.x,q.y,3+q.t*25,Math.PI,0);x.stroke()}
+ thermo(x,w-80,h-14,h*.2,gTs-K0,-30,40,degC(gTs-K0,1));
+ const lg=[["Sonnenlicht","--sun"],["Wärmestrahlung","--ir"]];let yy=top+16;for(const [t,c] of lg){x.fillStyle=col(c);x.beginPath();x.arc(w-150,yy,4,0,7);x.fill();txt(x,t,w-140,yy,{size:12,w:600,c:isDark()?"#e9ecf1":"#15181d"});yy+=17}
+ if($("#gGas").checked){txt(x,"CO₂ und H₂O (bunt) = Treibhausgase · graue Paare = Stickstoff und Sauerstoff, lassen alles durch",12,atB-12,{size:12,c:isDark()?"#cfd6e4":"#36404d"})}else txt(x,"keine Treibhausgase – nur Stickstoff und Sauerstoff",12,atB-12,{size:12,c:isDark()?"#cfd6e4":"#36404d"})});
+const gG=canv("gG",o=>{const alb=gAlb(),gas=$("#gGas").checked;const f=C=>gTeq(gas?clamp(GE0+GK*Math.log(C/280),0,.97):0,alb)-K0;const lo=Math.floor(Math.min(f(100),gTs-K0)-2),hi=Math.ceil(Math.max(f(1200),gTs-K0)+2);
+ chart(o,{x0:100,x1:1200,y0:lo,y1:hi,xl:"CO₂ in ppm",yl:"Temperatur in °C",series:[{fn:f,c:"--acc"}],after:(x,X,Y)=>{for(const [c,n] of[[180,"Eiszeit"],[280,"1850"],[420,"heute"],[560,"doppelt"]]){x.fillStyle=col("--ink");x.beginPath();x.arc(X(c),Y(f(c)),4,0,7);x.fill();txt(x,n,X(c)+6,Y(f(c))+12,{size:11,c:col("--mut")})}
+  const C=+$("#gCO2").value;x.strokeStyle=col("--hot");x.lineWidth=2.5;x.beginPath();x.arc(X(gas?C:100),Y(gTs-K0),6,0,7);x.stroke()}})});
+const gB=canv("gB",o=>{const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const eps=gEps(),alb=gAlb(),Ts=gTs,Bs=SIG*Ts**4,Ta=Ts/Math.pow(2,.25),Ba=eps*SIG*Ta**4,inn=GQ,refl=GQ*alb,abs=GQ-refl,up=Bs,absA=eps*Bs,through=(1-eps)*Bs,space=through+Ba;
+ const yS=h*.1,yA=h*.48,yG=h*.86;x.fillStyle=alpha(col("--cold"),.08);x.fillRect(0,yS+12,w,yG-yS-12);x.fillStyle=alpha(col("--ink"),.06);x.fillRect(0,yG,w,h-yG);
+ txt(x,"Weltall",8,yS,{size:12,c:col("--mut"),w:700});txt(x,"Atmosphäre",8,yA-8,{size:12,c:col("--mut"),w:700});if(eps>0)txt(x,`T ≈ ${degC(Ta-K0,0)}`,8,yA+8,{size:12,c:col("--mut")});txt(x,`Boden (${degC(Ts-K0,1)})`,8,yG+14,{size:12,c:col("--mut"),w:700});
+ const S=v=>clamp(v/40,1.5,12),A=(X,y1,y2,v,c,lab)=>{arrow(x,X,y1,X,y2,col(c),S(v),12);txt(x,lab+": "+Math.round(v),X+10,(y1+y2)/2,{size:12,c:col("--ink")})};
+ const X0=Math.max(150,w*.2),dx=(w-X0)/5;A(X0,yS+16,yG-4,inn,"--sun","Sonne");A(X0+dx,yG-4,yS+16,refl,"--sun","zurückgestreut");A(X0+2*dx,yG-4,yA+10,up,"--ir","Boden strahlt");
+ if(eps>0){A(X0+3*dx,yA+10,yG-4,Ba,"--ir","Gegenstrahlung");A(X0+4*dx,yA-10,yS+16,Ba,"--ir","Luft ins All")}A(X0+2*dx,yA-10,yS+16,through,"--ir","durch die Luft");
+ txt(x,`absorbiert vom Boden: ${Math.round(abs)} · ins All: ${Math.round(refl+space)} von ${Math.round(inn)} W/m²`,w-8,h-10,{a:"right",size:12,w:700,c:Math.abs(refl+space-inn)<2?"#2f8a4a":col("--hot")})});
+LVLCB.push(gUpd);
+gMols();gUpd();
+function gSet(C,gas=true,surf="misch",cl=43){$("#gGas").checked=gas;$("#gCO2").value=C;$("#gSurf").value=surf;$("#gCl").value=cl;gMols();gUpd()}
+tasks("treibhaus",[
+ {l:1,h:"Der Weg des Lichts",p:"Verfolge ein gelbes Sonnenlichtteilchen und ein rotes Wärmestrahlungsteilchen. Was passiert jeweils mit ihnen in der Luft?",set:()=>gSet(280)},
+ {l:1,h:"Ohne Treibhausgase",p:"Schalte die Treibhausgase aus und warte. Wie kalt wird es? Könnte es so Leben auf der Erde geben?",set:()=>gSet(280,false)},
+ {l:1,h:"Mehr CO₂",p:"Erhöhe das CO₂ von 280 ppm (vor 1850) auf heute und auf das Doppelte. Was passiert mit den roten Teilchen und mit der Temperatur?",set:()=>gSet(280)},
+ {l:2,h:"Eis und Albedo",p:"Stelle die Erdoberfläche auf „alles Eis“. Warum wird es so kalt? Was passiert umgekehrt, wenn Eis schmilzt? (Rückkopplung)",set:()=>gSet(280,true,"eis")},
+ {l:2,h:"Glashaus und Treibhaus",p:"Vergleiche mit der Glashaube in der Station „Absorbieren & Reflektieren“. Was ist gleich, was ist anders?"},
+ {l:3,h:"Strahlungsbilanz",p:"Erhöhe das CO₂ plötzlich auf 560 ppm. Beobachte die Bilanz: Was ist anfangs aus dem Gleichgewicht, und wie stellt es sich wieder ein?",set:()=>{gSet(280);setTimeout(()=>{$("#gCO2").value=560;gMols();gUpd()},2500)}},
+ {l:3,h:"Einschicht-Modell nachrechnen",p:"Berechne mit der Formel aus der Erklärung die Temperatur ohne Atmosphäre (ε = 0) und mit ε = 0,78. Vergleiche mit der Simulation."}]);
+
+/* ===================== Station: Dämmen – Thermoskanne ===================== */
+const DM=.5,CW_=4186,CI=2100,LF=334000;
+let dRun=false,dT=0,dSpd=600,dH=0,dKept=[],dHist=[],dLoss={L:0,S:0,R:0,P:0};
+function dTemp(H){if(H<0)return H/(DM*CI);if(H<DM*LF)return 0;return(H-DM*LF)/(DM*CW_)}
+function dHof(T,ice){if(ice)return T<0?DM*CI*T:0;return DM*LF+DM*CW_*T}
+function dCfg(){return{dw:$("#dDw").checked,vac:$("#dVac").checked&&$("#dDw").checked,mir:$("#dMir").checked&&$("#dDw").checked,lid:$("#dLid").checked,wool:$("#dWool").checked}}
+function dCond(){const c=dCfg();/* Leitwerte in W/K mit Aufteilung nach Wegen */
+ const top=c.lid?{L:.015,S:0,R:0}:{L:0,S:.5,R:.08};
+ const layers=[{L:6,S:0,R:0}];
+ if(c.dw)layers.push({L:c.vac?0:.17,S:c.vac?0:.04,R:c.mir?.007:.2});
+ if(c.wool)layers.push({L:.16,S:0,R:0});
+ layers.push({L:0,S:.32,R:c.wool?.24:.22});
+ let Rs=0;for(const l of layers){l.G=l.L+l.S+l.R;l.Rr=1/l.G;Rs+=l.Rr}const Gs=1/Rs;const sh={L:0,S:0,R:0};for(const l of layers)for(const k of"LSR")sh[k]+=Gs*(l.Rr/Rs)*(l[k]/l.G);
+ const neck=c.dw?{L:.008}:{L:0};const G={L:sh.L+top.L+neck.L,S:sh.S+top.S,R:sh.R+top.R};G.tot=G.L+G.S+G.R;return G}
+function dReset(){dT=0;dRun=false;$("#dGo").textContent="Start";const ice=$("#dIn").value=="eis";dH=dHof(ice?-10:90,ice);dHist=[[0,dTemp(dH)]];dUpd();dG.redraw()}
+function dStep(dt){if(!dRun)return;const sim=dt*dSpd,n=Math.max(1,Math.ceil(sim/20)),h=sim/n,G=dCond(),To=+$("#dOut").value;for(let k=0;k<n;k++){const T=dTemp(dH);dH-=G.tot*(T-To)*h}
+ dT+=sim;const T=dTemp(dH);dLoss={L:G.L*(T-To),S:G.S*(T-To),R:G.R*(T-To),P:G.tot*(T-To)};if(dT-dHist[dHist.length-1][0]>=60)dHist.push([dT,T]);if(dT>=12*3600){dRun=false;$("#dGo").textContent="Fertig (12 h)"}}
+function dUpd(){const G=dCond(),T=dTemp(dH),To=+$("#dOut").value,lv=lvl(),ice=$("#dIn").value=="eis";const tau=DM*CW_/G.tot;
+ const melt=ice?clamp(dH/(DM*LF),0,1):1;
+ kpi("dK",[["Inhalt",degC(T,1)],["Zeit",hhmm(dT)],ice?["Eis geschmolzen",Math.round(melt*100)+" %"]:["Wärmeverlust jetzt",de(Math.abs(G.tot*(T-To)),2)+" W"],lv>1&&(ice?["Schmelzen dauert etwa",hhmm(DM*LF/(G.tot*Math.max(.5,To)))]:["Bis 60 °C dauert es etwa",T>60&&To<60?hhmm(tau*Math.log((T-To)/(60-To))):"–"]),lv>2&&["Wärmeleitwert G",de(G.tot,2)+" W/K"]]);dC.redraw()}
+["dDw","dVac","dMir","dLid","dWool"].forEach(i=>$("#"+i).onchange=()=>{if((i=="dVac"||i=="dMir")&&$("#"+i).checked)$("#dDw").checked=true;if(i=="dDw"&&!$("#dDw").checked){$("#dVac").checked=false;$("#dMir").checked=false}dUpd()});
+$("#dIn").onchange=dReset;
+$("#dGo").onclick=()=>{if(dT>=12*3600)dReset();dRun=!dRun;$("#dGo").textContent=dRun?"Pause":"Weiter"};$("#dRe").onclick=dReset;seg("dSp",v=>dSpd=+v);
+$("#dKeep").onclick=()=>{if(dHist.length<2)return;const c=dCfg();const n=[c.dw&&"Doppelwand",c.vac&&"Vakuum",c.mir&&"Spiegel",c.lid&&"Deckel",c.wool&&"Wolle"].filter(Boolean).join(" + ")||"Becher";if(dKept.length>=4)dKept.shift();dKept.push({n,pts:dHist.slice()});dG.redraw()};
+function dPreset(c){$("#dDw").checked=c[0];$("#dVac").checked=c[1];$("#dMir").checked=c[2];$("#dLid").checked=c[3];$("#dWool").checked=c[4];dUpd()}
+$("#dCup").onclick=()=>dPreset([0,0,0,0,0]);$("#dFull").onclick=()=>dPreset([1,1,1,1,0]);
+const dC=canv("dC",o=>{const x=o.x,w=o.w,h=o.h,c=dCfg(),T=dTemp(dH),To=+$("#dOut").value,ice=$("#dIn").value=="eis",G=dCond();x.clearRect(0,0,w,h);
+ const nar=w<600,cx=nar?w*.42:w*.34,bw=nar?Math.min(w*.3,h*.22):Math.min(w*.2,h*.34),bh=nar?h*.42:h*.62,by=nar?h*.15:h*.2,g=c.dw?bw*.12:0,ww=c.wool?bw*.16:0;
+ /* Wolle */
+ if(c.wool){x.fillStyle="#c45c66";x.beginPath();x.roundRect(cx-bw/2-g-ww,by+bh*.08,bw+2*(g+ww),bh*.92+ww*.6,12);x.fill();x.strokeStyle="rgba(255,255,255,.35)";x.lineWidth=2;for(let yy=by+bh*.12;yy<by+bh+ww*.5;yy+=9){x.beginPath();x.moveTo(cx-bw/2-g-ww+4,yy);x.lineTo(cx+bw/2+g+ww-4,yy);x.stroke()}}
+ /* Außenwand */
+ x.fillStyle=c.mir?"#d6dbe0":"rgba(200,225,240,.5)";x.strokeStyle=col("--ink");x.lineWidth=2;x.beginPath();x.roundRect(cx-bw/2-g,by,bw+2*g,bh+g,10);x.fill();x.stroke();
+ if(c.dw){x.fillStyle=c.vac?(isDark()?"#0c0e12":"#f7f8fa"):"rgba(230,240,250,.9)";x.fillRect(cx-bw/2-g+3,by+3,bw+2*g-6,bh+g-6);if(c.mir){const mg=x.createLinearGradient(cx-bw/2-g,0,cx+bw/2+g,0);mg.addColorStop(0,"#9aa3ab");mg.addColorStop(.3,"#ffffff");mg.addColorStop(.6,"#aeb6bd");mg.addColorStop(1,"#e9edf0");x.strokeStyle=mg;x.lineWidth=4;x.strokeRect(cx-bw/2-g+3,by+3,bw+2*g-6,bh+g-6)}
+  txt(x,"zwischen den Wänden: "+(c.vac?"Vakuum":"Luft")+(c.mir?", verspiegelt":""),cx,by+bh+g+40,{a:"center",size:12,c:col("--mut"),w:700})}
+ /* Innenbehälter und Inhalt */
+ const fill=by+bh*.18;x.fillStyle=cS(clamp((T+10)/100,0,1),CW,.9);x.fillRect(cx-bw/2,fill,bw,by+bh-fill);
+ if(ice){const melt=clamp(dH/(DM*LF),0,1),n=Math.ceil((1-melt)*9);for(let i=0;i<n;i++){const ix=cx-bw/2+8+(i%3)*bw*.3,iy=fill+6+Math.floor(i/3)*bw*.28;x.fillStyle="rgba(240,248,255,.95)";x.strokeStyle="rgba(120,160,200,.9)";x.lineWidth=1.2;x.beginPath();x.roundRect(ix,iy,bw*.24,bw*.22,4);x.fill();x.stroke()}}
+ else if(T>45&&!c.lid){for(let i=0;i<4;i++){const sx=cx-bw*.3+i*bw*.2,ph=(uT*.6+i*.27)%1;x.strokeStyle=`rgba(160,170,180,${.6*(1-ph)})`;x.lineWidth=2;x.beginPath();x.moveTo(sx,fill-4-ph*40);x.quadraticCurveTo(sx+8,fill-14-ph*40,sx,fill-24-ph*40);x.stroke()}}
+ x.strokeStyle=col("--ink");x.lineWidth=2;x.strokeRect(cx-bw/2,by,bw,bh);
+ if(c.lid){x.fillStyle="#b9874f";x.beginPath();x.roundRect(cx-bw/2+2,by-14,bw-4,26,5);x.fill()}
+ thermo(x,cx,by+bh-14,bh*.55,T,-15,95,degC(T,1));
+ /* Wege */
+ const tot=Math.abs(dLoss.P)||Math.abs(G.tot*(T-To)),dir=Math.sign(T-To)||1,share={L:G.L/G.tot,S:G.S/G.tot,R:G.R/G.tot};
+ const Wd=k=>clamp(Math.sqrt(share[k]*Math.abs(G.tot*(T-To))/40)*14,0,14);
+ const ox=cx+bw/2+g+ww;if(Wd("R")>.6){for(let i=0;i<3;i++){const yy=by+bh*(.35+i*.22),a=dir>0?ox+6:ox+70,b=dir>0?ox+70:ox+6;x.globalAlpha=clamp(Wd("R")/6,.25,1);wave(x,a,yy,b,yy,col("--rad"),3,9,1.5+Wd("R")*.3,-uT*12*dir);x.globalAlpha=1}}
+ if(Wd("S")>.6){const yy=c.lid?by+bh*.2:by-10;x.globalAlpha=clamp(Wd("S")/6,.25,1);if(c.lid||!dir)arrow(x,cx-bw/2-g-ww-12,by+bh*.8,cx-bw/2-g-ww-12,by+bh*.2,col("--str"),2+Wd("S")*.5,10);else{arrow(x,cx,by-10,cx,by-60,col("--str"),2+Wd("S"),12);arrow(x,cx-bw/2-g-ww-12,by+bh*.8,cx-bw/2-g-ww-12,by+bh*.2,col("--str"),2+Wd("S")*.4,10)}x.globalAlpha=1}
+ if(Wd("L")>.6){x.globalAlpha=clamp(Wd("L")/6,.25,1);arrow(x,cx-bw*.2,by+bh+g+4,cx-bw*.2,by+bh+g+30,col("--lei"),2+Wd("L")*.6,10);if(c.lid)arrow(x,cx+bw*.2,by-16,cx+bw*.2,by-46,col("--lei"),2+Wd("L")*.4,10);x.globalAlpha=1}
+ /* Balken */
+ const bx=nar?w*.06:w*.62,bwid=nar?w*.88:w*.33,yb=nar?h*.68:h*.2;txt(x,dir>0?"Wohin geht die Wärme verloren?":"Wie kommt die Wärme hinein?",bx,yb-20,{w:700,size:14});
+ [["L","Leitung","--lei"],["S","Strömung","--str"],["R","Strahlung","--rad"]].forEach(([k,n,cc],i)=>{const yy=yb+i*(nar?36:46);txt(x,n,bx,yy,{size:13,w:600});x.fillStyle=alpha(col("--mut"),.15);x.fillRect(bx,yy+10,bwid,16);x.fillStyle=col(cc);x.fillRect(bx,yy+10,bwid*share[k],16);txt(x,Math.round(share[k]*100)+" %"+(lvl()>1?` · ${de(Math.abs(G[k]*(T-To)),2)} W`:""),bx+bwid,yy,{a:"right",size:12,c:col("--mut")})});
+ txt(x,"Gesamt: "+de(Math.abs(G.tot*(T-To)),2)+" W · draußen: "+degC(To),bx,yb+(nar?122:150),{w:700,size:14})});
+const dG=canv("dG",o=>{const S=[...dKept.map((k,i)=>({pts:k.pts.map(p=>[p[0]/3600,p[1]]),line:true,c:["#8a96a3","#b58b4c","#7a5fb0","#4f9a8f"][i]})),{pts:dHist.map(p=>[p[0]/3600,p[1]]),line:true,c:"--hot"}];const ice=$("#dIn").value=="eis";
+ chart(o,{x0:0,x1:12,y0:ice?-12:0,y1:ice?40:100,sx:2,xl:"Zeit in Stunden",yl:"Temperatur in °C",series:S,legend:[...dKept.map((k,i)=>[k.n,["#8a96a3","#b58b4c","#7a5fb0","#4f9a8f"][i]]),["jetzt","--hot"]]})});
+LVLCB.push(dUpd);dReset();bindRange("dOut","dOuto",v=>degC(v),()=>dUpd());
+/* Hauswand */
+const HW={ziegel:{n:"Ziegel",d:.25,l:.45,c:"#b5543a"},vollziegel:{n:"Vollziegel",d:.38,l:.8,c:"#a4452e"},beton:{n:"Beton",d:.2,l:2.1,c:"#9a9a96"},holz:{n:"Holz",d:.16,l:.13,c:"#c29a64"}},HWIN={1:{n:"Einfachglas",U:5.8},2:{n:"Zweifachglas (alt)",U:2.8},3:{n:"Dreifachglas",U:.7}};
+let hView="cut";seg("hView",v=>{hView=v;hC.redraw()});
+function hCalc(){const W=HW[$("#hWall").value],di=+$("#hIns").value/100,To=+$("#hOut").value,Ti=20;const L=[{n:"Innenputz",d:.015,l:.7,c:"#e9e4da"},{n:W.n,d:W.d,l:W.l,c:W.c}];if(di>0)L.push({n:"Styropor",d:di,l:.035,c:"#f6f7f8"});L.push({n:"Außenputz",d:.01,l:.9,c:"#dcd6cc"});
+ const R=.13+.04+L.reduce((s,l)=>s+l.d/l.l,0),U=1/R,q=U*(Ti-To);let T=Ti-q*.13;const pts=[[0,T]];let xx=0;for(const l of L){xx+=l.d;T-=q*l.d/l.l;pts.push([xx,T])}const Uw=HWIN[$("#hWin").value].U;
+ return{L,U,q,Tsi:Ti-q*.13,Tse:To+q*.04,pts,Uw,qw:Uw*(Ti-To),Twi:Ti-Uw*(Ti-To)*.13,Twe:To+Uw*(Ti-To)*.04,To,Ti,dTot:xx}}
+function hUpd(){const c=hCalc(),lv=lvl();kpi("hK",[["Wärmeverlust Wand",de(c.q,3)+" W pro m²"],["Wand innen",degC(c.Tsi,1)],["Fenster innen",degC(c.Twi,1)],lv>1&&["U-Wert Wand",de(c.U,2)+" W/(m²·K)"],lv>1&&["U-Wert Fenster",de(c.Uw,2)+" W/(m²·K)"],lv>2&&["Heizenergie für 100 m² Wand",de(c.U*100*3400*24/1000,3)+" kWh/Jahr"]]);hC.redraw()}
+["hWall","hWin"].forEach(i=>$("#"+i).onchange=hUpd);
+const hC=canv("hC",o=>{const x=o.x,w=o.w,h=o.h,c=hCalc();x.clearRect(0,0,w,h);
+ if(hView=="cut"){const x0=w*.3,sc=(w*.4)/Math.max(.45,c.dTot),y0=h*.12,y1=h*.82;x.fillStyle="rgba(240,140,90,.15)";x.fillRect(0,y0,x0,y1-y0);x.fillStyle="rgba(90,140,230,.15)";x.fillRect(x0+c.dTot*sc,y0,w,y1-y0);
+  txt(x,"innen 20 °C",x0/2,y0+16,{a:"center",w:700,size:14});txt(x,"außen "+degC(c.To),(x0+c.dTot*sc+w)/2,y0+16,{a:"center",w:700,size:14});
+  let xx=x0;for(const l of c.L){const W=l.d*sc;x.fillStyle=l.c;x.fillRect(xx,y0,W,y1-y0);if(l.n=="Styropor"){x.fillStyle="rgba(0,0,0,.08)";for(let k=0;k<W*(y1-y0)/90;k++){x.beginPath();x.arc(xx+((k*37)%W),y0+((k*61)%(y1-y0)),2,0,7);x.fill()}}
+   if(l.n=="Ziegel"||l.n=="Vollziegel"){x.strokeStyle="rgba(255,255,255,.35)";x.lineWidth=1;for(let yy=y0;yy<y1;yy+=18){x.beginPath();x.moveTo(xx,yy);x.lineTo(xx+W,yy);x.stroke()}}
+   x.strokeStyle="rgba(0,0,0,.3)";x.strokeRect(xx,y0,W,y1-y0);if(W>26){x.save();x.translate(xx+W/2,y1-12);x.rotate(-Math.PI/2);txt(x,l.n+" "+de(l.d*100,3)+" cm",0,0,{size:12,w:600,c:l.n=="Styropor"||l.n.includes("putz")?"#333":"#fff"});x.restore()}xx+=W}
+  const TY=T=>y0+30+(20-T)/(20-Math.min(-15,c.To))*(y1-y0-60);x.strokeStyle=col("--ink");x.lineWidth=3;x.beginPath();x.moveTo(x0-60,TY(20));x.lineTo(x0,TY(c.Tsi));c.pts.forEach(p=>x.lineTo(x0+p[0]*sc,TY(p[1])));x.lineTo(x0+c.dTot*sc+60,TY(c.To));x.stroke();
+  for(const p of c.pts){x.fillStyle=col("--ink");x.beginPath();x.arc(x0+p[0]*sc,TY(p[1]),3.5,0,7);x.fill()}
+  pill(x,degC(c.Tsi,1),x0-6,TY(c.Tsi)-14,{a:"right",size:12});pill(x,degC(c.Tse,1),x0+c.dTot*sc+6,TY(c.Tse)+14,{size:12});
+  const s=clamp(Math.sqrt(c.q/90),.1,1);for(let k=0;k<3;k++){const yy=y0+(y1-y0)*(.45+k*.15);arrow(x,x0-50,yy,x0+c.dTot*sc+50,yy,alpha(col("--acc"),.55),3+s*12,14+s*10)}
+  txt(x,"Temperaturverlauf (schwarze Linie)",12,h-14,{size:12,c:col("--mut")});if(c.Tsi<12.6)pill(x,"Wand innen unter 12,6 °C: Schimmelgefahr!",w/2,h*.91,{a:"center",bg:col("--hot"),c:"#fff"})}
+ else{const t0=c.To-1,t1=c.To+5,f=T=>(T-t0)/(t1-t0);x.fillStyle=cS(f(c.To-.5),IRON);x.fillRect(0,0,w,h);const hx=w*.18,hw=w*.64,hy=h*.3,hh=h*.6;
+  x.fillStyle=cS(f(c.To+(c.Tse-c.To)*.6),IRON);x.beginPath();x.moveTo(hx-14,hy);x.lineTo(hx+hw/2,h*.06);x.lineTo(hx+hw+14,hy);x.closePath();x.fill();
+  x.fillStyle=cS(f(c.Tse),IRON);x.fillRect(hx,hy,hw,hh);
+  for(let r=0;r<2;r++)for(let k=0;k<3;k++){const wx=hx+hw*(.1+k*.3),wy=hy+hh*(.12+r*.45),ww=hw*.18,wh=hh*.28;if(r==1&&k==1){x.fillStyle=cS(f(c.Tse+(c.Twe-c.Tse)*.5),IRON);x.fillRect(wx+ww*.15,wy,ww*.7,hh-(wy-hy));continue}x.fillStyle=cS(f(c.Twe),IRON);x.fillRect(wx,wy,ww,wh);x.fillStyle=cS(f(c.Twe+.8),IRON);x.fillRect(wx-3,wy+wh,ww+6,5)}
+  const sw=Math.min(200,w*.4),sx0=w-sw-14;for(let i=0;i<sw;i++){x.fillStyle=cS(i/sw,IRON);x.fillRect(sx0+i,h-24,1.2,11)}txt(x,degC(t0),sx0,h-34,{size:11,c:"#fff"});txt(x,degC(t1),sx0+sw,h-34,{size:11,a:"right",c:"#fff"});
+  pill(x,`Wand außen ${degC(c.Tse,1)} · Fenster außen ${degC(c.Twe,1)}`,14,20,{size:13})}});
+LVLCB.push(hUpd);bindRange("hIns","hIo",v=>v+" cm",hUpd);bindRange("hOut","hOo",v=>degC(v),hUpd);hUpd();
+const dShow=v=>{$("#dTh").hidden=v!="th";$("#dHs").hidden=v=="th";dModeSet(v);setTimeout(()=>REG.forEach(o=>o.fit()),10)};const dModeSet=seg("dMode",v=>dShow(v));
+function hSet(wall,ins,win,out){dShow("hs");$("#hWall").value=wall;$("#hIns").value=ins;$("#hIns").dispatchEvent(new Event("input"));$("#hWin").value=win;$("#hOut").value=out;$("#hOut").dispatchEvent(new Event("input"));hUpd()}
+function dSet(inh,c,sp=600){dShow("th");$("#dIn").value=inh;dPreset(c);dReset();dSpd=sp;seg("dSp",()=>{})(String(sp));dRun=true;$("#dGo").textContent="Pause"}
+tasks("daemmen",[
+ {l:1,h:"Becher gegen Thermoskanne",p:"Starte mit dem Becher und merke dir die Kurve. Baue dann Schritt für Schritt die Thermoskanne. Welches Bauteil bringt am meisten?",set:()=>dSet("tee",[0,0,0,0,0])},
+ {l:1,h:"Was bremst welchen Weg?",p:"Schalte Vakuum, Spiegel und Deckel einzeln ein und beobachte die Balken. Welches Bauteil bremst die Leitung, welches die Strömung, welches die Strahlung?",set:()=>dSet("tee",[1,0,0,0,0])},
+ {l:1,h:"Wärmt ein Pullover?",p:"Eiswürfel in einem Becher mit Deckel: Merke dir die Kurve, wickle dann den Pullover herum und starte neu. Wo schmilzt das Eis schneller? Wärmt der Pullover also?",set:()=>dSet("eis",[0,0,0,1,0],3600)},
+ {l:2,h:"Eis in der Thermoskanne",p:"Kann man in einer Thermoskanne auch Eis kalt halten? Begründe, warum das genauso funktioniert wie mit heißem Tee.",set:()=>dSet("eis",[1,1,1,1,0],3600)},
+ {l:2,h:"Altbau und Dämmung",p:"Hauswand: Vergleiche eine Betonwand ohne Dämmung mit 16 cm Styropor. Wie ändern sich Wärmeverlust und Temperatur an der Innenseite?",set:()=>hSet("beton",0,2,-5)},
+ {l:2,h:"Das Wärmebild verrät es",p:"Wechsle zum Wärmebild. Warum leuchten die Fenster heller als die Wand? Was sieht man bei Einfachglas?",set:()=>{hSet("ziegel",16,1,-5);seg("hView",()=>{})("ir");hView="ir";hC.redraw()}},
+ {l:3,h:"U-Wert berechnen",p:"Berechne den U-Wert der Ziegelwand mit 10 cm Styropor von Hand (R = R_si + Σ d/λ + R_se) und vergleiche. Wie viel Heizenergie spart die Dämmung pro Jahr?",set:()=>hSet("ziegel",10,2,-5)},
+ {l:3,h:"Abkühlgesetz",p:"Lies aus der Kurve des Bechers ab, wann der Tee von 90 °C auf 55 °C abgekühlt ist. Zeige mit T(t) = T_u + (T₀ − T_u)·e^(−t/τ), dass τ = m·c/G ist.",set:()=>dSet("tee",[0,0,0,0,0],60)}]);
+
+/* ===================== Schleife ===================== */
+let last=performance.now(),slow=0;
+function loop(now){const dt=clamp((now-last)/1000,0,.05);last=now;uT+=0;
+ if(cur=="ueberblick"){uStep(dt,uC.w,uC.h);uC.redraw()}
+ else{uT+=dt}
+ if(cur=="teilchen"){pStep(dt);pC.redraw();if((slow+=dt)>.15){slow=0;pUpd();pG.redraw()}}
+ else if(cur=="leitung"){if(!$("#lStab").hidden){lStep(dt);lBeadAnim(dt);lC.redraw();if((slow+=dt)>.25){slow=0;lUpd();if(lvl()>2)lG.redraw()}}else aC.redraw()}
+ else if(cur=="stroemung"){sStep(dt);sC.redraw();if((slow+=dt)>.4){slow=0;sKpi()}}
+ else if(cur=="strahlung"){rStepW(dt,rC);rC.redraw()}
+ else if(cur=="oberflaechen"){oStep(dt);oDotsStep(dt,oC);oC.redraw();if((slow+=dt)>.3){slow=0;oG.redraw()}}
+ else if(cur=="treibhaus"){gStep(dt,gC);gC.redraw();if((slow+=dt)>.3){slow=0;gUpd()}}
+ else if(cur=="daemmen"){if(!$("#dTh").hidden){dStep(dt);dC.redraw();if((slow+=dt)>.25){slow=0;dUpd();dG.redraw()}}}
+ requestAnimationFrame(loop)}
+try{const l=localStorage.getItem("waermelvl");if(l)setLvl(l)}catch(e){}
+addEventListener("keydown",e=>{if(e.target.closest("input,select,textarea"))return;if(e.code=="Space"){const b={teilchen:"#pGo",leitung:"#lGo",stroemung:"#sGo",oberflaechen:null,treibhaus:"#gGo",daemmen:"#dGo"}[cur];if(b){e.preventDefault();$(b).click()}}});
+route();requestAnimationFrame(loop);
+</script>
+</body>
+</html>

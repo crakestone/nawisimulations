@@ -30,6 +30,7 @@ Schlagwörter. Ist nicht klar, in welches Fach eine neue Simulation gehört: nac
 | `Quantenphysik/` | `Quantenlabor.html` | Photoeffekt, Spektren, Doppelspalt mit Einzelobjekten (mit Zeigermodell) und Mach-Zehnder-Interferometer mit Quantenradierer |
 | `Schall/` | `Schalllabor.html` | Schallwelle im Rohr (Teilchen, Druck, λ), 2D-Raum mit Reflexion, Absorption, Echo, Echolot, Beugung, Interferenz, Doppler; Nachhall nach Sabine mit Hörbeispielen |
 | `Klang/` | `Klanglabor.html` | Saite (Monochord, Flageolett), Pfeife (offen/gedackt, Panflöte), Klangfarbe aus Teiltönen, Schwebung & Intervalle, Resonanz (Weinglas), Spektrum und Stimmgerät |
+| `Wärme/` | `Waermetransportlabor.html` | Drei Wege der Wärme (Lagerfeuer, Quiz), Teilchen & Temperatur (Mischtemperatur), Wärmeleitung (Wachskugeln, Metall oder Holz anfassen), Wärmeströmung (2D-Strömung: Kochtopf, Zimmer, Kerze, Land-Seewind, Kühlschrank, See im Winter), Wärmestrahlung (Wärmebild, Planck-Spektrum), Absorption/Reflexion/Transmission (Dosen unter der Lampe, Glashaube), Treibhauseffekt, Thermoskanne und Hauswand |
 | `Relativitätstheorie/` | `Relativitaetslabor.html` | Lichtuhr und Myonen, Gleichzeitigkeit, Längenkontraktion (Leiter-Garage), Geschwindigkeitsaddition, Zwillingsparadoxon, Raumzeit-Diagramm, Lichtmauer & E = mc², GPS, Doppler-Effekt; Wechsel des Bezugssystems |
 | `Radioaktivität/` | `Radioaktivitaetslabor.html` | Atomkern & Isotope mit Periodensystem, Nuklidkarte (Z 0–118), Zerfallsarten, Zerfallsgesetz (Würfelmodell), Zerfallsreihen & Gleichgewicht, Strahlung messen & abschirmen, Nebelkammer, C-14-Datierung, Strahlung im Alltag (Österreich) |
 | `Kernenergie/` | `Kernenergielabor.html` | Kernspaltung, Kettenreaktion, Kernreaktor (Fukushima/Tschernobyl-Szenario), Kernfusion (Tokamak, Lawson), Sonne, Energie aus Masse, Tschernobyl & Fukushima, Cäsium in Österreich; Reaktor und Fusion anschaulich oder mit Zahlen |
@@ -253,9 +254,41 @@ Sechs Stationen (auch direkt über `#saite`, `#pfeife`, `#farbe`, `#schwebung`, 
 Modell: Töne werden additiv aus Sinustönen erzeugt (Web Audio). Saite ideal ohne Inharmonizität,
 Pfeifen ohne Mündungskorrektur, Instrumentenspektren vereinfacht.
 
+## Wärme – Waermetransportlabor.html
+
+Acht Stationen (auch direkt über `#ueberblick`, `#teilchen`, `#leitung`, `#stroemung`, `#strahlung`, `#oberflaechen`, `#treibhaus`, `#daemmen`),
+jeweils mit Aufträgen, Erklärungen und drei Niveaustufen. Schwerpunkt: qualitatives Verständnis für die Unterstufe, Zahlen und Formeln ab *Mittel*.
+
+- **Drei Wege:** Lagerfeuer mit Grillspieß (Leitung), aufsteigender heißer Luft (Strömung) und Strahlung zum Gesicht; einzeln zeigbar,
+  Gedankenversuch „luftleerer Raum“; Zuordnungsquiz mit zehn Alltagsbeispielen.
+- **Temperatur & Teilchen:** zwei Körper (Kupfer, Aluminium, Eisen, Blei, Glas, Wasser) mit zitternden Teilchen zusammenschieben;
+  Wärmepfeil von warm nach kalt („Kälte fließt nicht“), Styroporplatte dazwischen; ab *Mittel* Masse und Mischtemperatur, *Anspruchsvoll* übertragene Wärme.
+- **Wärmeleitung:** drei Stäbe (Kupfer, Aluminium, Messing, Stahl, Edelstahl, Glas, Holz, PVC) in heißem Wasser, Flamme oder Eiswasser;
+  Wachskugeln fallen bei 55 °C ab; Temperatur zum Abtasten, Temperaturprofil und Wärmestrom. **Anfassen:** sieben Gegenstände gleicher Temperatur
+  mit der Hand berühren – Kontakttemperatur der Haut (Metall fühlt sich kalt an, Sauna, Winter).
+- **Wärmeströmung:** 2D-Strömungssimulation mit Temperaturfarben, Schwebeteilchen, Pfeilen und Tinte bzw. Rauch zum Antippen.
+  Versuche: Kochtopf (Kaliumpermanganat-Kristall), Zimmer mit Heizkörper (unter dem Fenster oder an der Innenwand, Fenster gekippt),
+  Kerze im Raum, Land und Meer bei Tag und Nacht, Kühlschrank, See im Winter (Anomalie des Wassers, Gedankenversuch ohne Anomalie).
+- **Wärmestrahlung:** Eiswürfel, Mensch, Tee, Herdplatte, glühendes Eisen, Glühdraht, Sonne; Ansicht Auge (dunkler Raum, Glühfarbe) oder
+  Wärmebildkamera; Wellen werden mit der Temperatur kürzer; ab *Mittel* Planck-Spektrum mit sichtbarem Bereich, λ<sub>max</sub>, Kurven merken;
+  *Anspruchsvoll* M = εσT⁴ und Emissionsgrad.
+- **Absorbieren & Reflektieren:** drei Dosen (schwarz, weiß, Alu, rot) unter einer Lampe, wahlweise mit Glashaube oder Klarsichtfolie;
+  Lichtteilchen werden absorbiert, reflektiert oder durchgelassen; Temperaturkurven; Abkühlen mit heißem Wasser (Kirchhoff);
+  Woods Versuch Glas gegen Folie.
+- **Treibhauseffekt:** Sonnenlicht- und Wärmestrahlungsteilchen, CO₂- und H₂O-Moleküle, die Infrarot schlucken und in alle Richtungen
+  wieder aussenden; CO₂ 100–1200 ppm (Eiszeit, 1850, heute, doppelt), Albedo der Oberfläche, Wolken; Gleichgewichtskurve und Strahlungsbilanz.
+- **Dämmen:** Thermoskanne aus Becher, Doppelwand, Vakuum, Verspiegelung, Deckel und Wollpullover bauen; heißer Tee oder Eiswürfel;
+  Anteile von Leitung, Strömung und Strahlung; Abkühlkurven über 12 Stunden. **Hauswand:** Ziegel, Vollziegel, Beton oder Holz mit Styropor,
+  Fenster; Temperaturverlauf im Schnitt, Schimmelgefahr, Wärmebild des Hauses, U-Wert und Heizenergie pro Jahr.
+
+Modell: Wärmeleitung explizit nach Fourier mit Wärmeverlust an die Luft (h = 10 W/(m²·K)); Kontakttemperatur mit b = √(λρc).
+Strömung: inkompressibles Fluid mit Boussinesq-Auftrieb (semi-Lagrange, Druckprojektion), nur qualitativ. Treibhauseffekt: Einschicht-Modell,
+ε(CO₂) logarithmisch, 3 °C pro CO₂-Verdopplung, −18,6 °C ohne Treibhausgase. Dosen und Thermoskanne: Wärmeleitwerte (Strömung h = 6 W/(m²·K),
+Strahlung nach σT⁴); Eis mit Schmelzwärme. Hauswand: U = 1/(R<sub>si</sub> + Σ d/λ + R<sub>se</sub>), 3400 Heizgradtage.
+
 ## Navigation
 
-In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“, „Stromkreislabor“, „Quantenlabor“, „Halbleiterlabor“, „Bandstrukturlabor“, „Relativitätslabor“, „Schalllabor“ oder „Klanglabor“) zurück zur Startseite `index.html`.
+In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“, „Stromkreislabor“, „Quantenlabor“, „Halbleiterlabor“, „Bandstrukturlabor“, „Relativitätslabor“, „Schalllabor“, „Klanglabor“ oder „Wärmetransportlabor“) zurück zur Startseite `index.html`.
 
 ## Radioaktivität – Radioaktivitaetslabor.html
 
