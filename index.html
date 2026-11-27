@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Physik-Simulationen</title>
-<meta name="description" content="Interaktive Simulationen für den Physikunterricht – direkt im Browser, ohne Installation.">
+<title>NaWi zum Ausprobieren</title>
+<meta name="description" content="Interaktive Simulationen für den naturwissenschaftlichen Unterricht – direkt im Browser, ohne Installation.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%230f766e'/%3E%3Cpath d='M12 38c10-18 30-18 40 0' stroke='white' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='26' r='6' fill='%23fbbf24'/%3E%3C/svg%3E">
 <style>
   :root{
@@ -56,6 +56,10 @@
   .dl:hover{color:var(--ink)}
   .soon{border-style:dashed;background:transparent;justify-content:center;align-items:center;text-align:center;padding:2rem;color:var(--muted);min-height:160px}
   .soon:hover{transform:none;box-shadow:none}
+  section.subject[hidden]{display:none}
+  .filters button small{font-size:.75rem;opacity:.65}
+  .filters button.empty{opacity:.6;border-style:dashed}
+  .filters button.empty.on{opacity:1}
 
   /* Animationen in den Vorschaubildern */
   @keyframes carL{0%{transform:translateX(-70px)}45%,55%{transform:translateX(0)}100%{transform:translateX(-46px)}}
@@ -109,9 +113,9 @@
 <section class="hero">
   <canvas id="flow" aria-hidden="true"></canvas>
   <div class="hero-inner">
-    <span class="kicker">● Physikunterricht</span>
-    <h1>Physik zum <span>Ausprobieren</span></h1>
-    <p class="lead">Interaktive Simulationen für den Unterricht: Werte verändern, zuschauen, verstehen.</p>
+    <span class="kicker">● Naturwissenschaften im Unterricht</span>
+    <h1>NaWi zum <span>Ausprobieren</span></h1>
+    <p class="lead">Interaktive Simulationen für Physik, Chemie, Biologie und mehr: Werte verändern, zuschauen, verstehen.</p>
     <div class="facts"><span>🖥️ läuft direkt im Browser</span><span>📽️ beamertauglich</span><span>📱 auch auf dem Tablet</span><span>💾 auch offline nutzbar</span></div>
   </div>
 </section>
@@ -120,25 +124,38 @@
 
 <footer>
   <span>Tipp: Mit „Herunterladen“ bekommst du die Simulation als einzelne Datei, die auch ohne Internet per Doppelklick startet.</span>
-  <span>Simulationen für den Physikunterricht</span>
+  <span>NaWi zum Ausprobieren</span>
 </footer>
 
 <script>
 "use strict";
 /* =====================================================================
-   Liste der Simulationen – neue Simulationen hier eintragen.
-   Bereich (topic) bestimmt die Gruppe auf der Startseite.
+   Fächer = Planeten auf der Tafel. Jede Simulation gehört zu genau
+   einem Fach (subject) und wird dort als Mond angezeigt.
+   Fächer ohne Simulation erscheinen trotzdem (als „noch leer“).
+   Neues Fach: hier ergänzen – es wird automatisch ein neuer Planet.
    ===================================================================== */
-const TOPICS = [
-  { id:'mechanik', name:'Mechanik',            color:'#e8741e' },
-  { id:'felder',   name:'Felder & Elektrizität', color:'#2a6fdb' },
-  { id:'quanten',  name:'Quanten & Atome',     color:'#8b5cf6' },
-  { id:'halbleiter', name:'Festkörper & Halbleiter', color:'#d97706' },
-  { id:'relativ',  name:'Raum & Zeit',         color:'#4f46e5' }
+const SUBJECTS = [
+  { id:'physik',     name:'Physik',      color:'#2a6fdb' },
+  { id:'chemie',     name:'Chemie',      color:'#e8741e' },
+  { id:'biologie',   name:'Biologie',    color:'#16a34a' },
+  { id:'mathematik', name:'Mathematik',  color:'#8b5cf6' },
+  { id:'informatik', name:'Informatik',  color:'#0891b2' },
+  { id:'geographie', name:'Geographie',  color:'#b45309' }
 ];
+/* Themengebiete innerhalb eines Fachs (erscheinen als Etikett auf der Karte) */
+const TOPICS = [
+  { id:'mechanik',   subject:'physik', name:'Mechanik',                color:'#e8741e' },
+  { id:'felder',     subject:'physik', name:'Felder & Elektrizität',   color:'#2a6fdb' },
+  { id:'quanten',    subject:'physik', name:'Quanten & Atome',         color:'#8b5cf6' },
+  { id:'halbleiter', subject:'physik', name:'Festkörper & Halbleiter', color:'#d97706' },
+  { id:'relativ',    subject:'physik', name:'Raum & Zeit',             color:'#4f46e5' }
+];
+/* Liste der Simulationen – neue Simulationen hier eintragen.
+   subject = Fach (Pflicht), topic = Themengebiet innerhalb des Fachs (optional). */
 const SIMS = [
   {
-    topic:'mechanik',
+    subject:'physik', topic:'mechanik',
     title:'Stoßprozesse',
     file:'Stoßprozesse/Stoss-Simulation.html',
     text:'Zwei Autos stoßen zusammen – elastisch, plastisch oder irgendwo dazwischen. Mit Impuls, Energie und v‑t‑Diagrammen.',
@@ -146,7 +163,7 @@ const SIMS = [
     thumb:'stoss'
   },
   {
-    topic:'felder',
+    subject:'physik', topic:'felder',
     title:'Feldlabor',
     file:'Vektorfelder/Feldlabor.html',
     text:'Elektrische, magnetische und Gravitationsfelder als strömende Teilchen und Feldlinien – in 2D und 3D, mit Baukasten.',
@@ -154,7 +171,7 @@ const SIMS = [
     thumb:'feld'
   },
   {
-    topic:'felder',
+    subject:'physik', topic:'felder',
     title:'Stromkreislabor',
     file:'Stromkreise/Stromkreislabor.html',
     text:'Stromkreise bauen und das Potenzial sichtbar machen – als Farbe, als Höhe oder als Elektronendruck. Mit 12 Versuchen.',
@@ -162,7 +179,7 @@ const SIMS = [
     thumb:'strom'
   },
   {
-    topic:'quanten',
+    subject:'physik', topic:'quanten',
     title:'Quantenlabor',
     file:'Quantenphysik/Quantenlabor.html',
     text:'Photoeffekt, Spektren, Doppelspalt mit einzelnen Photonen und Elektronen sowie ein Interferometer mit Quantenradierer.',
@@ -170,7 +187,7 @@ const SIMS = [
     thumb:'quant'
   },
   {
-    topic:'halbleiter',
+    subject:'physik', topic:'halbleiter',
     title:'Halbleiterlabor',
     file:'Halbleiter/Halbleiterlabor.html',
     text:'Vom Bändermodell über Dotierung und Diode zur Solarzelle und LED – mit innerem Photoeffekt, Kennlinien und Verlustbilanz.',
@@ -178,7 +195,7 @@ const SIMS = [
     thumb:'halb'
   },
   {
-    topic:'halbleiter',
+    subject:'physik', topic:'halbleiter',
     title:'Bandstrukturlabor',
     file:'Bandstruktur/Bandstrukturlabor.html',
     text:'Wie Energiebänder entstehen: freies Elektron, reziproker Raum und Brillouin-Zonen, Kronig-Penney, Bragg-Reflexion, Tight-Binding, Si und GaAs.',
@@ -186,7 +203,7 @@ const SIMS = [
     thumb:'band'
   },
   {
-    topic:'relativ',
+    subject:'physik', topic:'relativ',
     title:'Relativitätslabor',
     file:'Relativitätstheorie/Relativitaetslabor.html',
     text:'Lichtuhr und Myonen, Gleichzeitigkeit, Längenkontraktion, Geschwindigkeitsaddition, Zwillinge, Minkowski-Diagramm, E = mc², GPS und Doppler-Effekt – mit Wechsel des Bezugssystems.',
@@ -329,15 +346,20 @@ const THUMBS = {
 /* --- Seite aufbauen --- */
 function esc(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 const list = document.getElementById('list');
-const usedTopics = TOPICS.filter(t => SIMS.some(s => s.topic === t.id));
-let html = `<div class="filters" role="group" aria-label="Themenbereich"><button class="on" data-t="">Alle</button>` +
-  usedTopics.map(t => `<button data-t="${t.id}"><i style="background:${t.color}"></i>${esc(t.name)}</button>`).join('') + `</div><div class="grid">`;
-{
-  for (const s of SIMS){
-    const t = TOPICS.find(x => x.id === s.topic) || {name:'', color:'#5b6477'};
+const simsOf = id => SIMS.filter(s => s.subject === id);
+/* Fächer mit Simulationen zuerst, leere Fächer dahinter (Reihenfolge sonst wie in SUBJECTS) */
+const usedSubjects = [...SUBJECTS].sort((a,b) => (simsOf(b.id).length > 0) - (simsOf(a.id).length > 0));
+let html = `<div class="filters" role="group" aria-label="Fach"><button class="on" data-s="">Alle Fächer</button>` +
+  usedSubjects.map(f => { const n = simsOf(f.id).length;
+    return `<button data-s="${f.id}"${n ? '' : ' class="empty"'}><i style="background:${f.color}"></i>${esc(f.name)}${n ? ` <small>${n}</small>` : ''}</button>`; }).join('') + `</div>`;
+for (const f of usedSubjects){
+  const sims = simsOf(f.id);
+  html += `<section class="topic subject${sims.length ? '' : ' empty'}" data-subject="${f.id}"><h2><i style="background:${f.color}"></i>${esc(f.name)}</h2><div class="grid">`;
+  for (const s of sims){
+    const t = TOPICS.find(x => x.id === s.topic) || {name:f.name, color:f.color};
     const href = encodeURI(s.file);
     const fname = s.file.split('/').pop();
-    html += `<article class="card" data-topic="${s.topic}">
+    html += `<article class="card">
       <a class="thumb" href="${href}" aria-label="${esc(s.title)} starten" tabindex="-1">${THUMBS[s.thumb] || ''}<span class="chip" style="background:${t.color}">${esc(t.name)}</span></a>
       <div class="body">
         <h3>${esc(s.title)}</h3>
@@ -347,21 +369,22 @@ let html = `<div class="filters" role="group" aria-label="Themenbereich"><button
       </div>
     </article>`;
   }
+  html += `<div class="card soon">${sims.length ? 'Weitere Simulationen folgen …' : `Für ${esc(f.name)} gibt es noch keine Simulationen – sie folgen bald.`}</div></div></section>`;
 }
-html += `<div class="card soon">Weitere Simulationen folgen …</div></div>`;
 list.innerHTML = html;
-function setFilter(topic){
-  for (const x of list.querySelectorAll('.filters button')) x.classList.toggle('on', x.dataset.t === topic);
-  for (const c of list.querySelectorAll('article.card')) c.hidden = !!topic && c.dataset.topic !== topic;
+function setFilter(subject){
+  for (const x of list.querySelectorAll('.filters button')) x.classList.toggle('on', x.dataset.s === subject);
+  for (const c of list.querySelectorAll('section.subject')) c.hidden = subject ? c.dataset.subject !== subject : c.classList.contains('empty');
 }
+setFilter('');
 list.querySelector('.filters').addEventListener('click', e => {
-  const b = e.target.closest('button'); if (b) setFilter(b.dataset.t);
+  const b = e.target.closest('button'); if (b) setFilter(b.dataset.s);
 });
 
 /* =====================================================================
-   Tafel: Sonnensystem der Themengebiete (mit Kreide gezeichnet)
-   Jedes Themengebiet ist ein Planet, jede Simulation ein Mond.
-   Neue Simulationen bzw. Themen erscheinen automatisch.
+   Tafel: Sonnensystem der Fächer (mit Kreide gezeichnet)
+   Jedes Fach ist ein Planet, jede Simulation ein Mond.
+   Neue Simulationen bzw. Fächer erscheinen automatisch.
    Klick auf einen Planeten filtert die Liste darunter.
    ===================================================================== */
 (() => {
@@ -372,9 +395,9 @@ list.querySelector('.filters').addEventListener('click', e => {
   const mix = (hex, f) => { const n = parseInt(hex.slice(1),16); const c = [n>>16,(n>>8)&255,n&255].map(v => Math.round(v + (255-v)*f)); return `rgb(${c})`; };
   let ecc = 0.5;                         /* Neigung der Bahnen: Höhe/Breite der Ellipse, passt sich dem freien Platz an */
   const ECC = () => ecc;
-  const planets = usedTopics.map((t,i) => ({
-    t, sims: SIMS.filter(s => s.topic === t.id), R: 0.72 + 0.34*i, speed: 0.16/(1 + 0.55*i), ph: 0.7 + i*2.3,
-    col: mix(t.color, 0.35), pos:[0,0], r:0, cand:-1, off:null, boxes:[]
+  const planets = usedSubjects.map((t,i) => ({
+    t, sims: simsOf(t.id), R: 1.0 + 0.30*i, speed: 0.16/(1 + 0.55*i), ph: 0.7 + i*2.3,
+    col: mix(t.color, simsOf(t.id).length ? 0.35 : 0.62), pos:[0,0], r:0, cand:-1, off:null, boxes:[]
   }));
   let w = 0, h = 0, dust = [], hover = -1, textRects = [], free = {x0:0,y0:0,x1:0,y1:0}, narrow = false;
   /* Freien Bereich neben bzw. unter dem Text bestimmen, damit Bahnen und Beschriftungen nichts verdecken */
@@ -479,16 +502,16 @@ list.querySelector('.filters').addEventListener('click', e => {
     for (const d of dust){ ctx.fillStyle = `rgba(255,255,255,${d[3]})`; ctx.fillRect(d[0], d[1], d[2], d[2]); }
     ctx.save();
     /* Sonne mit Strahlen */
-    const sr = S*0.17;
+    const sr = S*0.23;
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(t*0.08);
     ctx.strokeStyle = 'rgba(253,230,138,0.8)'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
     for (let k=0;k<12;k++){ const a = k/12*Math.PI*2, l = k%2 ? 0.45 : 0.75; ctx.beginPath(); ctx.moveTo(Math.cos(a)*sr*1.25, Math.sin(a)*sr*1.25); ctx.lineTo(Math.cos(a)*sr*(1.25+l), Math.sin(a)*sr*(1.25+l)); ctx.stroke(); }
     ctx.restore();
     ctx.fillStyle = 'rgba(253,230,138,0.88)'; ctx.beginPath(); ctx.arc(cx, cy, sr, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx+0.8, cy-0.6, sr, 0, Math.PI*2); ctx.stroke();
-    {  /* Schrift so groß, dass „Physik“ in die Sonne passt */
-      ctx.font = `700 20px ${CHALK}`; const fs = Math.min(sr*0.42, 20*1.7*sr/ctx.measureText('Physik').width);
-      if (fs >= 7){ ctx.fillStyle = '#26483a'; ctx.font = `700 ${fs}px ${CHALK}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('Physik', cx, cy+1); }
+    {  /* Schrift so groß, dass „NaWi“ in die Sonne passt */
+      ctx.font = `700 20px ${CHALK}`; const fs = Math.min(sr*0.42, 20*1.7*sr/ctx.measureText('NaWi').width);
+      if (fs >= 6){ ctx.fillStyle = '#26483a'; ctx.font = `700 ${fs}px ${CHALK}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('NaWi', cx, cy+1); }
     }
     /* Bahnen */
     ctx.lineWidth = 1.6; ctx.setLineDash([7,6]);
@@ -498,9 +521,9 @@ list.querySelector('.filters').addEventListener('click', e => {
     planets.forEach((p, i) => {
       const a = p.ph + t*p.speed*(hover === i ? 0.12 : 1);
       p.pos = [cx + S*p.R*Math.cos(a), cy + S*p.R*ECC()*Math.sin(a)];
-      p.r = (Math.min(S*0.065, 11) + 2.5*p.sims.length) * (hover === i ? 1.25 : 1);
+      p.r = (Math.min(S*0.09, 12) + 3.2*Math.sqrt(p.sims.length)) * (hover === i ? 1.25 : 1);   /* mehr Simulationen → größerer Planet */
       ctx.font = `700 ${hover === i ? 17 : 15}px ${CHALK}`; p.nw = ctx.measureText(p.t.name).width;
-      p.sub = p.sims.length === 1 ? '1 Simulation' : p.sims.length + ' Simulationen';
+      p.sub = p.sims.length === 0 ? 'noch leer' : p.sims.length === 1 ? '1 Simulation' : p.sims.length + ' Simulationen';
       ctx.font = `13px ${CHALK}`; p.sw = ctx.measureText(p.sub).width;
     });
     /* Planeten von hinten nach vorne zeichnen (wer weiter unten steht, ist näher) */
@@ -528,7 +551,7 @@ list.querySelector('.filters').addEventListener('click', e => {
     });
     {
       ctx.font = `13px ${CHALK}`; ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-      ctx.fillText('Planet anklicken → Themengebiet anzeigen', cx, h - 6);
+      ctx.fillText('Planet anklicken → Fach anzeigen', cx, h - 6);
     }
     ctx.restore();
   }

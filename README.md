@@ -6,12 +6,17 @@ und keine Internetverbindung nötig.
 
 ## Startseite
 
-`index.html` ist die Startseite (Tafel & Heft mit einem Sonnensystem der Themengebiete). Mit GitHub Pages ist sie unter
-`https://crakestone.github.io/physicssimulations/` erreichbar.
+`index.html` ist die Startseite „NaWi zum Ausprobieren“ (Tafel & Heft mit einem Sonnensystem der Fächer). Mit GitHub Pages
+ist sie unter `https://crakestone.github.io/physicssimulations/` erreichbar.
 
-**Neue Simulation eintragen:** In `index.html` in der Liste `SIMS` einen Eintrag ergänzen (Themengebiet, Titel,
-Dateipfad, Kurztext, Schlagwörter). Ein neues Themengebiet kommt in die Liste `TOPICS` und erscheint automatisch als
-neuer Planet. Jede Simulation ist ein Mond ihres Themen-Planeten.
+Jedes **Fach** ist ein Planet (Physik, Chemie, Biologie, Mathematik, Informatik, Geographie), jede Simulation ein Mond
+ihres Fach-Planeten. Fächer ohne Simulation werden als „noch leer“ angezeigt. Ein Klick auf einen Planeten zeigt darunter
+nur die Simulationen dieses Fachs.
+
+**Neue Simulation eintragen:** In `index.html` in der Liste `SIMS` einen Eintrag ergänzen: Fach (`subject`, Pflicht),
+Themengebiet innerhalb des Fachs (`topic`, optional, erscheint als Etikett auf der Karte), Titel, Dateipfad, Kurztext,
+Schlagwörter. Ist nicht klar, in welches Fach eine neue Simulation gehört: nachfragen. Ein neues Fach kommt in die Liste
+`SUBJECTS` und erscheint automatisch als neuer Planet; neue Themengebiete kommen in `TOPICS`.
 
 ## Übersicht
 
