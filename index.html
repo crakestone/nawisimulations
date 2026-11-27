@@ -150,7 +150,8 @@ const TOPICS = [
   { id:'quanten',    subject:'physik', name:'Quanten & Atome',         color:'#8b5cf6' },
   { id:'halbleiter', subject:'physik', name:'Festkörper & Halbleiter', color:'#d97706' },
   { id:'relativ',    subject:'physik', name:'Raum & Zeit',             color:'#4f46e5' },
-  { id:'kern',       subject:'physik', name:'Kerne & Strahlung',       color:'#ca8a04' }
+  { id:'kern',       subject:'physik', name:'Kerne & Strahlung',       color:'#ca8a04' },
+  { id:'akustik',    subject:'physik', name:'Schwingungen & Akustik',  color:'#df4329' }
 ];
 /* Liste der Simulationen – neue Simulationen hier eintragen.
    subject = Fach (Pflicht), topic = Themengebiet innerhalb des Fachs (optional). */
@@ -226,6 +227,22 @@ const SIMS = [
     text:'Kernspaltung und Kettenreaktion, Reaktor mit Fukushima- und Tschernobyl-Szenario, Kernfusion in Tokamak und Sonne, E = mc² und Tschernobyl-Cäsium in Österreich.',
     tags:['Kettenreaktion','Reaktorsimulator','Kernfusion','Tschernobyl & Fukushima','3 Niveaustufen'],
     thumb:'kern'
+  },
+  {
+    subject:'physik', topic:'akustik',
+    title:'Schalllabor',
+    file:'Schall/Schalllabor.html',
+    text:'Schallwellen sehen: Teilchen im Rohr, Reflexion, Absorption, Echo und Echolot, Beugung, Interferenz, Doppler-Effekt und Nachhall in Räumen – mit Mikrofonen und Ton.',
+    tags:['Längswelle','Reflexion & Absorption','Echo','Nachhall','Doppler-Effekt'],
+    thumb:'schall'
+  },
+  {
+    subject:'physik', topic:'akustik',
+    title:'Klanglabor',
+    file:'Klang/Klanglabor.html',
+    text:'Saite und Pfeife mit Obertönen, Klangfarbe selbst mischen, Schwebung und Intervalle, Resonanz bis das Weinglas bricht, Spektrum und Stimmgerät – die Brücke zur Musik.',
+    tags:['Obertöne','Klangfarbe','Intervalle','Resonanz','Spektrum','3 Niveaustufen'],
+    thumb:'klang'
   }
 ];
 
@@ -343,6 +360,27 @@ const THUMBS = {
       <g stroke="#4f46e5" stroke-width="3"><line x1="230" y1="22" x2="300" y2="22"/></g><path d="M300 15 L314 22 L300 29 z" fill="#4f46e5"/>
       <text x="322" y="27" font-size="14" font-weight="700" fill="#4f46e5" font-family="system-ui">0,8 c</text>
     </svg>`;
+  })(),
+  schall: (() => {
+    /* Kreiswellen: Überdruck rot, Unterdruck blau, Wand rechts */
+    let r='';for(let k=0;k<9;k++){const rr=22+k*24;r+=`<circle cx="90" cy="85" r="${rr}" fill="none" stroke="${k%2?'#2762c9':'#df4329'}" stroke-width="9" opacity="${(0.55-k*0.05).toFixed(2)}"/>`;}
+    return `<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice">
+      <rect width="400" height="170" fill="#fff"/>${r}
+      <rect x="330" y="0" width="70" height="170" fill="#8f979d"/>
+      <rect x="70" y="73" width="14" height="24" rx="2" fill="#14212b"/><path d="M84 77 L100 64 V106 L84 93 z" fill="#14212b"/>
+      <rect x="250" y="60" width="14" height="22" rx="7" fill="#7b3cc4"/><rect x="255.5" y="82" width="3" height="16" fill="#7b3cc4"/>
+    </svg>`;
+  })(),
+  klang: (() => {
+    /* Saite mit Teiltönen und Spektrum */
+    const W=400;let s='';const y0=62;
+    let d='';for(let i=0;i<=100;i++){const u=i/100;let y=0;for(let n=1;n<=8;n++)y+=2*Math.sin(n*Math.PI*.22)/(n*n*Math.PI*Math.PI*.22*.78)*Math.sin(n*Math.PI*u);d+=(i?' L':'M')+(30+u*220).toFixed(1)+' '+(y0-y*20).toFixed(1);}
+    s+=`<path d="${d}" fill="none" stroke="#14212b" stroke-width="3"/>`;
+    for(let n=1;n<=3;n++){let p='';for(let i=0;i<=100;i++){const u=i/100;p+=(i?' L':'M')+(30+u*220).toFixed(1)+' '+(y0+18+n*20-Math.sin(n*Math.PI*u)*8/n).toFixed(1);}s+=`<path d="${p}" fill="none" stroke="${n===1?'#df4329':'#7b3cc4'}" stroke-width="2.2"/>`;}
+    const a=[1,.55,.3,.18,.12,.08,.05,.03];a.forEach((v,i)=>{s+=`<rect x="${280+i*14}" y="${150-v*110}" width="9" height="${v*110}" fill="${i?'#7b3cc4':'#df4329'}"/>`;});
+    return `<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice"><rect width="${W}" height="170" fill="#faf7ff"/>
+      <path d="M22 ${y0+12} L30 ${y0} L38 ${y0+12} z M242 ${y0+12} L250 ${y0} L258 ${y0+12} z" fill="#14212b"/>${s}
+      <line x1="276" y1="150" x2="398" y2="150" stroke="#5a6772" stroke-width="1.5"/></svg>`;
   })(),
   halb: `<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice">
     <rect width="400" height="170" fill="#fffbeb"/>

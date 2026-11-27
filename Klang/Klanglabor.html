@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Klanglabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday school lab between physics and music, legible on a projector
+   IDEA a music room workbench: monochord, organ pipe, synthesizer, tuning forks, wine glass, spectrum analyser
+   PICTURE the live canvas (vibrating string, pipe, waveform, beats, resonance, spectrogram)
+   COLOUR white ground, dark ink, signal red and blue as in the Schalllabor, violet for partials
+   TYPE Atkinson Hyperlegible
+   LAYOUT laptop: experiments | stage | panel; phone: stage, panel, experiments */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#10161b);--ink:light-dark(#14212b,#e6ecf1);--mut:light-dark(#5a6772,#9babb7);--line:light-dark(#dde3e8,#29343d);--pan:light-dark(#f2f5f7,#18212a);--red:light-dark(#df4329,#ff6b4f);--blue:light-dark(#2762c9,#6198ff);--vio:light-dark(#7b3cc4,#bb90ff);--fld:light-dark(#ffffff,#0c1115);--ok:light-dark(#1f7a4d,#53c98a)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 "Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:clip}
+button,select,input{font:inherit;color:inherit}
+#app{display:grid;grid-template-rows:auto minmax(0,1fr);height:100%}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand svg{flex:none}
+h1{font-size:26px;line-height:1.05;margin:0;letter-spacing:-.02em}
+h1 a{color:inherit;text-decoration:none}
+h1 a:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+.tabs{display:flex;gap:3px;background:var(--pan);padding:4px;border-radius:12px;flex-wrap:wrap}
+.tabs button{border:0;background:none;padding:8px 11px;border-radius:9px;cursor:pointer;font-weight:700;min-height:40px}
+.tabs button[aria-selected=true]{background:var(--ink);color:var(--bg)}
+.btn{border:1px solid var(--line);background:var(--bg);padding:7px 12px;border-radius:9px;cursor:pointer;min-height:38px;white-space:nowrap}
+.btn:hover{border-color:var(--mut)}
+.btn[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.hot{background:var(--red);border-color:var(--red);color:#fff;font-weight:700}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.lvl{display:flex;gap:3px;background:var(--pan);padding:4px;border-radius:12px}
+.lvl button{border:0;background:none;padding:6px 9px;border-radius:8px;cursor:pointer;font-size:14px;min-height:34px}
+.lvl button[aria-pressed=true]{background:var(--bg);box-shadow:0 0 0 1px var(--line);font-weight:700}
+main{display:grid;grid-template-columns:250px minmax(0,1fr) 320px;min-height:0}
+#lib{overflow:auto;border-right:1px solid var(--line);padding:12px}
+#lib h2{font-size:13px;color:var(--mut);margin:14px 4px 6px;font-weight:700}
+#lib h2:first-child{margin-top:2px}
+.pre{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:10px;cursor:pointer;margin-bottom:2px}
+.pre b{display:block;font-size:15px}
+.pre span{display:block;font-size:13px;color:var(--mut);line-height:1.3}
+.pre:hover{background:var(--pan)}
+.pre[aria-current=true]{background:var(--pan);box-shadow:inset 3px 0 0 var(--red)}
+#stage{display:flex;flex-direction:column;min-height:0}
+#tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line);min-height:55px}
+#tools .sep{width:1px;height:26px;background:var(--line);margin:0 4px}
+#cvw{position:relative;flex:1;min-height:320px;background:var(--fld)}
+#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+#status{font-size:13px;color:var(--mut);padding:5px 12px;border-top:1px solid var(--line);min-height:28px}
+#panel{overflow:auto;border-left:1px solid var(--line);padding:6px 14px 20px}
+.card{border-bottom:1px solid var(--line);padding:10px 0 12px}
+.card:last-child{border-bottom:0}
+.card h3{font-size:17px;margin:0 0 6px;line-height:1.2}
+.card p{margin:4px 0}
+.obs{background:var(--pan);border-radius:10px;padding:9px 11px;margin:6px 0}
+details summary{cursor:pointer;font-weight:700;margin-top:6px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;align-items:center;margin:8px 0 2px;font-size:14px}
+.row output{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--red);height:26px;margin:0}
+.seg{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
+.seg button{flex:1 1 auto;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:6px 8px;cursor:pointer;min-height:36px;font-size:14px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chk{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px}
+.chk label{display:flex;align-items:center;gap:6px;min-height:32px;cursor:pointer}
+.chk input{width:18px;height:18px;accent-color:var(--red)}
+select.full{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px;background:var(--bg);font-size:15px;min-height:40px}
+.kv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;font-size:14px;margin-top:6px}
+.kv b{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.formel{background:var(--pan);border-radius:10px;padding:9px 11px;font-size:15px;line-height:1.6;margin-top:6px}
+.small{font-size:13px;color:var(--mut)}
+.big{font-size:clamp(30px,4vw,44px);font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums}
+.keys{position:relative;height:96px;margin:8px 0;user-select:none;touch-action:manipulation}
+.keys button{position:absolute;top:0;border:1px solid var(--ink);border-radius:0 0 6px 6px;cursor:pointer;padding:0;font-size:11px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px}
+.keys .w{height:96px;background:#fff;color:#333;z-index:1}
+.keys .b{height:58px;background:#1d242b;color:#ddd;z-index:2}
+.keys button[aria-pressed=true]{background:var(--red);color:#fff}
+.tuner{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;align-items:center}
+.gauge{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--red),#e9c46a 40%,var(--ok) 50%,#e9c46a 60%,var(--red));position:relative;margin:8px 0 2px}
+.gauge i{position:absolute;top:-5px;width:4px;height:24px;background:var(--ink);border-radius:2px;transform:translateX(-2px)}
+.quiz{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:6px}
+#probe{display:none}
+@media(max-width:1150px){main{grid-template-columns:215px minmax(0,1fr) 290px}.tabs button{padding:8px 8px}}
+@media(max-width:900px){
+  html,body,#app{height:auto}
+  main{grid-template-columns:minmax(0,1fr)}
+  #stage{order:1}
+  #cvw{flex:none;height:min(64vh,560px)}
+  #panel{order:2;border:0;border-top:1px solid var(--line);overflow:visible}
+  #lib{order:3;border:0;border-top:1px solid var(--line);overflow:visible}
+  h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div class="brand">
+    <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><path d="M9 3v13a6 6 0 0 0 12 0V3" stroke="currentColor" stroke-width="3.2" fill="none" stroke-linecap="round"/><path d="M15 22v10" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/><path d="M25 8q4 5 0 10" stroke="#df4329" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M29 5q6 8 0 16" stroke="#2762c9" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".7"/></svg>
+    <h1><a href="../index.html" title="Zur Startseite">Klanglabor</a></h1>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Stationen">
+    <button role="tab" data-mode="saite">Saite</button>
+    <button role="tab" data-mode="pfeife">Pfeife</button>
+    <button role="tab" data-mode="farbe">Klangfarbe</button>
+    <button role="tab" data-mode="schwebung">Schwebung & Intervalle</button>
+    <button role="tab" data-mode="resonanz">Resonanz</button>
+    <button role="tab" data-mode="spektrum">Spektrum</button>
+  </nav>
+  <div class="lvl" role="group" aria-label="Niveau"><button data-lvl="1">Einfach</button><button data-lvl="2">Mittel</button><button data-lvl="3">Anspruchsvoll</button></div>
+  <button class="btn" id="bTon" aria-pressed="true">Ton an</button>
+  <button class="btn" id="bFull">Vollbild</button>
+</header>
+<main>
+  <aside id="lib" aria-label="Versuche"></aside>
+  <section id="stage">
+    <div id="tools"></div>
+    <div id="cvw"><canvas id="cv" aria-label="Simulation"></canvas></div>
+    <div id="status"></div>
+  </section>
+  <aside id="panel" aria-label="Einstellungen"></aside>
+</main>
+</div>
+<div id="probe"></div>
+<script>
+{
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const cv=$('#cv'),ctx=cv.getContext('2d');
+let CW=1,CH=1;
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const fmt=(v,d=0)=>Number.isFinite(v)?v.toLocaleString('de-AT',{minimumFractionDigits:d,maximumFractionDigits:d}):'–';
+const nice=x=>{const p=10**Math.floor(Math.log10(x)),m=x/p;return (m<1.5?1:m<3.5?2:m<7.5?5:10)*p};
+const FONT='"Atkinson Hyperlegible",system-ui,sans-serif';
+const MODES={},APP={mode:'',frame:0,lvl:2};
+const TAU=Math.PI*2;
+
+/* ---------- Farben ---------- */
+const C={};
+const rgb=s=>{const m=s.match(/[\d.]+/g)||[0,0,0];return [+m[0],+m[1],+m[2]]};
+const cs=(k,a)=>a==null?`rgb(${C[k].join(',')})`:`rgba(${C[k].join(',')},${a})`;
+function readCols(){const pr=$('#probe');for(const k of ['bg','ink','mut','line','pan','red','blue','vio','fld','ok']){pr.style.color=`var(--${k})`;C[k]=rgb(getComputedStyle(pr).color)}}
+function txt(s,x,y,col,al='left',size=13,bold=false){ctx.font=`${bold?'700 ':''}${size}px ${FONT}`;ctx.textAlign=al;ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle=cs('fld',.9);ctx.strokeText(s,x,y);ctx.fillStyle=col;ctx.fillText(s,x,y)}
+function line(x1,y1,x2,y2,col,w=1,dash){ctx.strokeStyle=col;ctx.lineWidth=w;if(dash)ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();if(dash)ctx.setLineDash([])}
+
+/* ---------- Noten ---------- */
+const NN=['C','Cis','D','Dis','E','F','Fis','G','Gis','A','B','H'];
+function note(f){if(!(f>0))return {name:'–',cents:0,midi:0};const m=69+12*Math.log2(f/440),r=Math.round(m);return {name:NN[(r%12+12)%12]+(Math.floor(r/12)-1),cents:(m-r)*100,midi:r}}
+const mf=m=>440*2**((m-69)/12);
+
+/* ---------- Ton ---------- */
+const AU={ctx:null,muted:false,voices:new Set()};
+function ac(){
+  if(!AU.ctx){try{const A=window.AudioContext||window.webkitAudioContext,c=new A();AU.ctx=c;
+    AU.m=c.createGain();AU.m.gain.value=AU.muted?0:.8;AU.comp=c.createDynamicsCompressor();AU.an=c.createAnalyser();AU.an.fftSize=8192;AU.an.smoothingTimeConstant=.5;
+    AU.m.connect(AU.comp);AU.comp.connect(AU.an);AU.an.connect(c.destination);}catch(e){AU.ctx=null}}
+  if(AU.ctx&&AU.ctx.state==='suspended')AU.ctx.resume().catch(()=>{});
+  return AU.ctx;
+}
+function setMute(m){AU.muted=m;if(AU.ctx)AU.m.gain.setTargetAtTime(m?0:.8,AU.ctx.currentTime,.02);const b=$('#bTon');b.setAttribute('aria-pressed',String(!m));b.textContent=m?'Ton aus':'Ton an'}
+function stopAll(){for(const v of AU.voices)v.stop();AU.voices.clear()}
+/* Teiltöne spielen: parts=[{f,a,T}] T = Abklingzeit (s), 0 = gehalten */
+function playParts(parts,o={}){
+  const c=ac();if(!c)return null;const dur=o.dur||2.5,att=o.att??.006,t0=c.currentTime+.02+(o.delay||0),out=c.createGain();out.connect(o.dest||AU.m);
+  const sum=parts.reduce((s,p)=>s+Math.abs(p.a),0)||1,sc=(o.vol??.5)/Math.max(1,sum);const oscs=[];
+  for(const p of parts){if(!p.a||p.f>18000||p.f<15)continue;const os=c.createOscillator(),g=c.createGain();os.frequency.value=p.f;
+    g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(Math.abs(p.a)*sc,t0+att);
+    if(p.T)g.gain.setTargetAtTime(0,t0+att,p.T/3);else{g.gain.setValueAtTime(Math.abs(p.a)*sc,t0+dur-.12);g.gain.linearRampToValueAtTime(0,t0+dur)}
+    os.connect(g);g.connect(out);os.start(t0);os.stop(t0+dur+.05);oscs.push(os)}
+  const v={stop(){const t=c.currentTime;out.gain.setTargetAtTime(0,t,.02);for(const o of oscs){try{o.stop(t+.1)}catch(e){}}AU.voices.delete(v)},t0};
+  AU.voices.add(v);setTimeout(()=>AU.voices.delete(v),(dur+(o.delay||0)+.3)*1000);return v;
+}
+/* gehaltener Ton aus Teiltönen (PeriodicWave), live veränderbar */
+function holdTone(f,amps,phs){
+  const c=ac();if(!c)return null;const os=c.createOscillator(),g=c.createGain();
+  const set=(f,amps,phs)=>{const N=amps.length+1,re=new Float32Array(N),im=new Float32Array(N);let s=0;
+    amps.forEach((a,i)=>{const ph=phs?phs[i]:0;re[i+1]=a*Math.sin(ph);im[i+1]=a*Math.cos(ph);s+=Math.abs(a)});
+    os.setPeriodicWave(c.createPeriodicWave(re,im,{disableNormalization:true}));os.frequency.setTargetAtTime(f,c.currentTime,.01);g.gain.setTargetAtTime(s?.45/Math.max(1,s):0,c.currentTime,.03)};
+  set(f,amps,phs);g.gain.value=0;os.connect(g);g.connect(AU.m);os.start();
+  const v={set,stop(){g.gain.setTargetAtTime(0,c.currentTime,.03);try{os.stop(c.currentTime+.2)}catch(e){}AU.voices.delete(v)}};AU.voices.add(v);return v;
+}
+
+/* ---------- Bedienfeld ---------- */
+const range=(id,label,min,max,step,val)=>`<div class="row"><label for="${id}">${label}</label><output id="${id}-o"></output></div><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}">`;
+const seg=(key,opts,cur)=>`<div class="seg" role="group">${opts.map(([l,v])=>`<button data-${key}="${v}" aria-pressed="${String(v)===String(cur)}">${l}</button>`).join('')}</div>`;
+const infoCard=p=>`<div class="card"><h3>${p.t}</h3><div class="obs"><b>Beobachte:</b> ${p.obs}</div><details><summary>Was passiert?</summary><p>${p.why}</p></details></div>`;
+const setOut=(id,t)=>{const o=$('#'+id+'-o');if(o)o.textContent=t};
+const setTxt=(id,t)=>{const o=$('#'+id);if(o)o.textContent=t};
+function groupBy(arr){const g=[];for(const p of arr){let x=g.find(q=>q.h===p.g);if(!x)g.push(x={h:p.g,items:[]});x.items.push(p)}return g}
+function renderLib(title,arr,cur,pick){let i=0;
+  $('#lib').innerHTML=`<h2>${title}</h2>`+groupBy(arr).map(g=>`<h2>${g.h}</h2>`+g.items.map(p=>`<button class="pre" data-i="${i++}" aria-current="${i-1===cur}"><b>${p.t}</b><span>${p.d}</span></button>`).join('')).join('');
+  $('#lib').onclick=e=>{const b=e.target.closest('.pre');if(b){pick(+b.dataset.i);if(innerWidth<900)$('#stage').scrollIntoView({behavior:'smooth'})}}}
+function bars(x0,y0,w,h,vals,o={}){ // Spektrum-Balken
+  const n=vals.length,bw=w/n,col=o.col||cs('vio');
+  line(x0,y0+h,x0+w,y0+h,cs('line'));
+  vals.forEach((v,i)=>{const bh=clamp(v,0,1)*(h-18),x=x0+i*bw+bw*.18,ww=bw*.64;ctx.fillStyle=o.cols?o.cols[i]:col;ctx.globalAlpha=o.dim&&o.dim[i]?.25:1;ctx.fillRect(x,y0+h-bh,ww,bh);ctx.globalAlpha=1;
+    if(bw>16||i%2===0)txt(o.lab?o.lab(i):String(i+1),x+ww/2,y0+h+15,cs('mut'),'center',12)});
+}
+function lvlShow(n){return APP.lvl>=n}
+
+/* =====================================================================
+   STATION 1: SAITE (Monochord)
+   ===================================================================== */
+const STR={e:{n:'Stahl dünn (e-Saite)',mu:.000401,T1:3.2},E:{n:'Stahl dick, umsponnen (tiefe E-Saite)',mu:.00616,T1:4.5},ny:{n:'Nylon (Konzertgitarre)',mu:.000375,T1:1.6},darm:{n:'Darm (Barockgeige)',mu:.0006,T1:1.2}};
+const TEIL=[['ganze Saite',1],['1/2 (Oktave)',1/2],['2/3 (Quinte)',2/3],['3/4 (Quarte)',3/4],['4/5 (große Terz)',4/5],['5/6 (kleine Terz)',5/6],['8/9 (Ganzton)',8/9],['15/16 (Halbton)',15/16]];
+const NP=24;
+const S1={pi:0,L:.648,F:73,str:'e',exc:'zupfen',p:.2,flag:0,teil:1,a:new Float32Array(NP+1),T:new Float32Array(NP+1),tp:-99,tv:0,drag:null,amp:1,hold:0};
+const SP=[
+ {g:'Saite',t:'Gitarrensaite zupfen',d:'Ziehen, loslassen, hören',s:{str:'e',L:.648,F:73,exc:'zupfen',p:.2,flag:0,teil:1},
+  obs:'Ziehe die Saite mit der Maus oder dem Finger zur Seite und lass los. Beobachte, wie die Form der Saite aus den einzelnen Teiltönen entsteht.',
+  why:'Eine gezupfte Saite schwingt nicht nur als Ganzes (Grundton), sondern gleichzeitig in 2, 3, 4 … Teilen (Obertöne). Ihre Frequenzen sind ganzzahlige Vielfache des Grundtons. Die hohen Teiltöne klingen schneller ab, darum wird der Ton mit der Zeit weicher.'},
+ {g:'Saite',t:'Zupfstelle und Klang',d:'Mitte oder nahe am Steg?',s:{str:'e',L:.648,F:73,exc:'zupfen',p:.5,flag:0,teil:1},
+  obs:'Zupfe genau in der Mitte, dann ganz nahe am Steg. Welche Teiltöne fehlen in der Mitte? Wie unterscheidet sich der Klang?',
+  why:'Wo man zupft, entsteht ein Bauch. Teiltöne, die genau dort einen Knoten hätten, werden nicht angeregt: In der Mitte fehlen alle geraden Teiltöne, der Klang ist weich und hohl. Nahe am Steg entstehen viele hohe Teiltöne, der Klang wird hell und scharf (Gitarre: „sul ponticello“).'},
+ {g:'Tonhöhe',t:'Monochord: Saite teilen',d:'Pythagoras und die Intervalle',s:{str:'e',L:.648,F:73,exc:'zupfen',p:.25,flag:0,teil:.5},
+  obs:'Stelle unter „Teilung“ verschiedene Saitenlängen ein und spiele „ganz, dann geteilt“. Welche Intervalle hörst du?',
+  why:'Halbe Saite: doppelte Frequenz, eine Oktave. 2/3 der Saite: Quinte, 3/4: Quarte. Schon Pythagoras hat mit dem Monochord entdeckt, dass einfache Zahlenverhältnisse gut zusammenklingen. Die Bünde einer Gitarre teilen die Saite in Halbtonschritte.'},
+ {g:'Tonhöhe',t:'Spannung, Länge, Dicke',d:'Wovon hängt die Tonhöhe ab?',s:{str:'E',L:.648,F:70,exc:'zupfen',p:.2,flag:0,teil:1},
+  obs:'Verändere Spannkraft, Länge und Saitenart. Wie musst du die Spannkraft ändern, damit der Ton eine Oktave höher wird?',
+  why:'Kürzere, straffere und leichtere Saiten schwingen schneller. Die Frequenz ist f = 1/(2L) · √(F/μ). Für die doppelte Frequenz braucht man die vierfache Spannkraft. Deshalb sind tiefe Saiten dick und umsponnen statt sehr lang oder sehr locker.'},
+ {g:'Spieltechnik',t:'Flageolett-Töne',d:'Finger leicht auf einen Knoten',s:{str:'e',L:.648,F:73,exc:'zupfen',p:.15,flag:2,teil:1},
+  obs:'Lege den Finger leicht auf 1/2, 1/3 oder 1/4 der Saite und zupfe. Welche Teiltöne bleiben übrig? Wie hoch klingt der Ton?',
+  why:'Der Finger erzwingt an dieser Stelle einen Knoten. Nur Teiltöne mit einem Knoten an dieser Stelle können weiterschwingen: bei 1/2 der 2., 4., 6. …, bei 1/3 der 3., 6., 9. … Teilton. Man hört einen hellen, glockigen Ton, eine Oktave bzw. eine Oktave plus Quinte höher.'},
+ {g:'Spieltechnik',t:'Zupfen, Anschlagen, Streichen',d:'Gitarre, Klavier, Geige',s:{str:'darm',L:.33,F:58,exc:'streichen',p:.12,flag:0,teil:1},
+  obs:'Vergleiche die drei Anregungen. Wie unterscheiden sich die Teiltöne und das Abklingen?',
+  why:'Beim Zupfen entsteht ein Knick, die Teiltöne werden mit 1/n² schwächer. Der Hammer beim Klavier stößt die Saite an, die Teiltöne nehmen nur mit 1/n ab: heller. Der Geigenbogen hält die Saite dauernd in Schwingung (Haften und Gleiten), der Ton klingt nicht ab und ist sehr obertonreich.'}
+];
+const sF0=()=>Math.sqrt(S1.F/STR[S1.str].mu)/(2*S1.L*S1.teil);
+function sAmps(p,exc){const a=new Float32Array(NP+1);
+  for(let n=1;n<=NP;n++){const sn=Math.sin(n*Math.PI*p);a[n]=exc==='zupfen'?2*sn/(n*n*Math.PI*Math.PI*p*(1-p)):exc==='anschlagen'?.5*sn/n:.5/n}
+  if(S1.flag)for(let n=1;n<=NP;n++)if(n%S1.flag)a[n]=0;return a}
+function sPluck(amp=1){
+  const f0=sF0(),a=sAmps(S1.p,S1.exc),T1=STR[S1.str].T1;S1.a=a;S1.amp=amp;
+  for(let n=1;n<=NP;n++)S1.T[n]=S1.exc==='streichen'?0:T1/(1+.35*(n-1))*(S1.flag?1.2:1);
+  S1.tp=performance.now()/1000;S1.tv=0;stopAll();
+  const parts=[];for(let n=1;n<=NP;n++)parts.push({f:n*f0,a:a[n]*(S1.exc==='zupfen'?n:1)*amp,T:S1.T[n]});
+  playParts(parts,{dur:S1.exc==='streichen'?2.5:Math.min(6,T1*1.6),att:S1.exc==='streichen'?.08:.004,vol:.55});
+}
+function sAmpNow(n){const t=performance.now()/1000-S1.tp;if(t<0)return 0;if(S1.exc==='streichen')return S1.a[n]*S1.amp*(t<2.5?1:Math.exp(-(t-2.5)/.25));return S1.a[n]*S1.amp*Math.exp(-t/S1.T[n])}
+function sLoad(i){const p=SP[i];S1.pi=i;Object.assign(S1,p.s);S1.a=new Float32Array(NP+1);S1.tp=-99;sTools();sPanel();renderLib('Versuche: Saite',SP,i,sLoad)}
+function sTools(){
+  $('#tools').innerHTML=`<button class="btn hot" id="sPl">${S1.exc==='streichen'?'Streichen':S1.exc==='anschlagen'?'Anschlagen':'Zupfen'}</button>`+seg('exc',[['Zupfen','zupfen'],['Anschlagen','anschlagen'],['Streichen','streichen']],S1.exc)+
+   `<span class="sep"></span><span class="small">Finger auf</span>`+seg('flag',[['–',0],['1/2',2],['1/3',3],['1/4',4],['1/5',5]],S1.flag);
+  $('#tools').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+    if(b.id==='sPl')sPluck();else if(b.dataset.exc){S1.exc=b.dataset.exc;sTools();sPluck()}else if(b.dataset.flag){S1.flag=+b.dataset.flag;sTools();sPluck()}};
+  $('#status').textContent='Ziehe die Saite zur Seite und lass los. Die Bewegung ist stark verlangsamt, der Ton ist echt.';
+}
+function sPanel(){
+  const p=SP[S1.pi];
+  $('#panel').innerHTML=infoCard(p)+`<div class="card"><h3>Saite</h3><div class="big" id="sNote"></div><p class="small" id="sF"></p>
+   ${range('sL','Länge L',.2,1.2,.001,S1.L)}${range('sFk','Spannkraft F',10,200,.5,S1.F)}${range('sP','Zupfstelle',.03,.5,.01,S1.p)}
+   <label class="small" for="sStr" style="display:block;margin-top:8px">Saitenart</label><select class="full" id="sStr">${Object.entries(STR).map(([k,s])=>`<option value="${k}" ${k===S1.str?'selected':''}>${s.n}</option>`).join('')}</select>
+   <label class="small" for="sTe" style="display:block;margin-top:8px">Teilung (Steg verschieben)</label><select class="full" id="sTe">${TEIL.map(([l,v])=>`<option value="${v}" ${Math.abs(v-S1.teil)<1e-6?'selected':''}>${l}</option>`).join('')}</select>
+   <div class="seg"><button data-act="cmp">Ganz, dann geteilt</button></div></div>
+   <div class="card"><h3>Messwerte</h3><div class="kv" id="sKV"></div>${lvlShow(2)?'<div class="formel" id="sForm"></div>':''}</div>`;
+  const P=$('#panel');
+  P.oninput=e=>{const el=e.target;if(el.id==='sL')S1.L=+el.value;else if(el.id==='sFk')S1.F=+el.value;else if(el.id==='sP')S1.p=+el.value;sOuts()};
+  P.onchange=e=>{const el=e.target;if(el.id==='sStr'){S1.str=el.value;sPluck()}else if(el.id==='sTe'){S1.teil=+el.value;sPluck()}else if(['sL','sFk','sP'].includes(el.id))sPluck();sOuts()};
+  P.onclick=e=>{const b=e.target.closest('button');if(b&&b.dataset.act==='cmp'){const t=S1.teil;S1.teil=1;const f1=sF0();S1.teil=t;const f2=sF0();stopAll();
+    const mk=f=>Array.from({length:12},(_,i)=>({f:f*(i+1),a:Math.sin((i+1)*Math.PI*S1.p)/((i+1)**1.4),T:STR[S1.str].T1/(1+.35*i)}));
+    playParts(mk(f1),{dur:1.2,vol:.45});playParts(mk(f2),{dur:1.2,vol:.45,delay:1.2});playParts(mk(f1),{dur:2.5,vol:.4,delay:2.5});playParts(mk(f2),{dur:2.5,vol:.4,delay:2.5});S1.tp=-99}};
+  sOuts();
+}
+function sOuts(){
+  const f0=sF0(),n=note(f0),mu=STR[S1.str].mu,c=Math.sqrt(S1.F/mu),L=S1.L*S1.teil;
+  setOut('sL',fmt(S1.L*100,1)+' cm');setOut('sFk',fmt(S1.F,1)+' N');setOut('sP',S1.p>=.495?'Mitte':fmt(S1.p*100)+' % der Länge');
+  setTxt('sNote',`${fmt(f0,1)} Hz`);setTxt('sF',`Ton ${n.name}${lvlShow(3)?` (${n.cents>=0?'+':''}${fmt(n.cents)} Cent)`:''}`);
+  const kv=$('#sKV');if(kv)kv.innerHTML=`<span>schwingende Länge</span><b>${fmt(L*100,1)} cm</b><span>Grundton f₁</span><b>${fmt(f0,1)} Hz</b><span>2. / 3. Teilton</span><b>${fmt(2*f0)} / ${fmt(3*f0)} Hz</b>`+
+    (lvlShow(2)?`<span>Wellenlänge auf der Saite λ₁ = 2L</span><b>${fmt(2*L*100,1)} cm</b>`:'')+(lvlShow(3)?`<span>Wellengeschwindigkeit auf der Saite</span><b>${fmt(c)} m/s</b><span>Masse pro Länge μ</span><b>${fmt(mu*1000,2)} g/m</b>`:'');
+  const fo=$('#sForm');if(fo)fo.innerHTML=lvlShow(3)?`f₁ = 1/(2L) · √(F/μ) = 1/(2 · ${fmt(L,3)} m) · √(${fmt(S1.F,1)} N / ${fmt(mu,6)} kg/m) = <b>${fmt(f0,1)} Hz</b><br>Teiltöne: fₙ = n · f₁`:`f₁ = 1/(2L) · √(F/μ)<br>doppelte Länge → halbe Frequenz; vierfache Spannkraft → doppelte Frequenz`;
+}
+function sGeo(){const X0=50,X1=CW-(CW>700?190:50),ys=clamp(CH*.2,70,150);return {X0,X1,ys,amp:clamp(CH*.12,30,80)}}
+function sDraw(){
+  const {X0,X1,ys,amp}=sGeo(),W=X1-X0,now=performance.now()/1000;ctx.fillStyle=cs('fld');ctx.fillRect(0,0,CW,CH);
+  const Lp=W*S1.teil,XE=X0+Lp,tv=(now-S1.tp)*.9;
+  // Brett und Stege
+  ctx.fillStyle=cs('pan');ctx.fillRect(X0-30,ys+amp+16,W+60,16);
+  const bridge=(x,lab)=>{ctx.fillStyle=cs('ink');ctx.beginPath();ctx.moveTo(x-9,ys+amp+16);ctx.lineTo(x,ys-2);ctx.lineTo(x+9,ys+amp+16);ctx.fill();if(lab)txt(lab,x,ys+amp+48,cs('mut'),'center',12)};
+  bridge(X0,'Steg');bridge(XE,S1.teil<1?'verschobener Steg':'Steg');
+  if(S1.teil<1){line(XE,ys,X1,ys,cs('mut',.5),2);txt(TEIL.find(t=>Math.abs(t[1]-S1.teil)<1e-6)?.[0]||'',(X0+XE)/2,ys+amp+48,cs('ink'),'center',13,true)}
+  // Saite
+  ctx.strokeStyle=cs('ink');ctx.lineWidth=S1.str==='E'?4:2.5;ctx.beginPath();
+  if(S1.drag){const d=S1.drag;ctx.moveTo(X0,ys);ctx.lineTo(d.x,d.y);ctx.lineTo(XE,ys)}
+  else for(let i=0;i<=200;i++){const u=i/200;let y=0;for(let n=1;n<=12;n++){const a=sAmpNow(n);if(a)y+=a*Math.sin(n*Math.PI*u)*Math.cos(TAU*n*.45*tv)}i?ctx.lineTo(X0+u*Lp,ys-y*amp):ctx.moveTo(X0,ys-y*amp)}
+  ctx.stroke();
+  if(S1.flag){const xf=X0+Lp/S1.flag;ctx.fillStyle=cs('red');ctx.beginPath();ctx.ellipse(xf,ys-16,8,12,0,0,TAU);ctx.fill();txt('Finger: 1/'+S1.flag,xf,ys-34,cs('red'),'center',13,true)}
+  if(!S1.drag&&S1.tp<0)txt('↔ Saite ziehen und loslassen',(X0+XE)/2,ys-amp-6,cs('mut'),'center',14,true);
+  // Teiltöne
+  const top=ys+amp+66,nrow=6,bottomH=clamp(CH*.24,90,170),rh=(CH-top-bottomH-20)/nrow;
+  if(rh>14){txt('Teiltöne (Eigenschwingungen der Saite)',X0,top-6,cs('ink'),'left',13,true);
+    for(let n=1;n<=nrow;n++){const y0=top+(n-.5)*rh+6,a=sAmpNow(n),f=n*sF0(),A=Math.min(1,Math.abs(a))*rh*.42;
+      line(X0,y0,X0+Lp,y0,cs('line'));ctx.strokeStyle=n===1?cs('red'):cs('vio');ctx.lineWidth=2;ctx.globalAlpha=Math.abs(a)>.01?1:.25;ctx.beginPath();
+      for(let i=0;i<=120;i++){const u=i/120,y=y0-Math.sign(a||1)*Math.max(A,1.5)*Math.sin(n*Math.PI*u)*Math.cos(TAU*n*.45*tv);i?ctx.lineTo(X0+u*Lp,y):ctx.moveTo(X0,y)}ctx.stroke();ctx.globalAlpha=1;
+      txt(`${n}. Teilton · ${fmt(f)} Hz${lvlShow(2)?' · '+note(f).name:''}`,X0+Lp+10<CW-150?X0+Lp+10:X0+4,X0+Lp+10<CW-150?y0+4:y0-rh*.3,n===1?cs('red'):cs('vio'),'left',12,true);
+    }}
+  // Spektrum
+  const by=CH-bottomH,vals=[],lab=[];for(let n=1;n<=16;n++)vals.push(Math.abs(sAmpNow(n)));const mx=Math.max(.05,...vals);
+  txt('Spektrum: Stärke der Teiltöne',X0,by+4,cs('ink'),'left',13,true);
+  bars(X0,by+10,W,bottomH-34,vals.map(v=>v/mx),{cols:vals.map((_,i)=>i?cs('vio'):cs('red')),lab:i=>lvlShow(2)?(i<9||i%2?fmt((i+1)*sF0()):''):String(i+1)});
+  if(lvlShow(2))txt('Hz',X1+8,CH-8,cs('mut'),'left',12);
+}
+function sDown(X,Y){const {X0,X1,ys}=sGeo(),XE=X0+(X1-X0)*S1.teil;if(X>X0+4&&X<XE-4&&Math.abs(Y-ys)<70){stopAll();S1.tp=-99;S1.drag={x:X,y:Y}}}
+function sMove(X,Y){if(!S1.drag)return;const {X0,X1,ys,amp}=sGeo(),XE=X0+(X1-X0)*S1.teil;S1.drag={x:clamp(X,X0+6,XE-6),y:clamp(Y,ys-amp*1.2,ys+amp*1.2)}}
+function sUp(){if(!S1.drag)return;const {X0,X1,ys,amp}=sGeo(),XE=X0+(X1-X0)*S1.teil,d=S1.drag;S1.drag=null;
+  S1.p=clamp((d.x-X0)/(XE-X0),.03,.97);if(S1.p>.5)S1.p=1-S1.p;const a=Math.abs(ys-d.y)/amp;if(a<.05)return;sPluck(clamp(a,.15,1.2)*Math.sign(ys-d.y));const el=$('#sP');if(el)el.value=S1.p;sOuts()}
+MODES.saite={enter(){sLoad(S1.pi)},frame(){},draw:sDraw,upd:sOuts,down:sDown,move:sMove,up:sUp,key(k){if(k===' ')sPluck()}};
+
+/* =====================================================================
+   STATION 2: PFEIFE (Luftsäule)
+   ===================================================================== */
+const P2={pi:0,L:.6,typ:'offen',T:20,n:1,pan:false,hl:-1,tp:-99,parts:[]};
+const PP=[
+ {g:'Pfeifen',t:'Offene Pfeife (Flöte)',d:'beide Enden offen',s:{L:.6,typ:'offen',n:1,pan:false},
+  obs:'Blase die Pfeife an und schalte die Schwingungsformen 1 bis 4 durch. Wo bewegen sich die Luftteilchen am stärksten, wo ändert sich der Druck am stärksten?',
+  why:'In der Pfeife bildet sich eine stehende Schallwelle. An den offenen Enden kann sich kein Druck aufbauen (Druckknoten), dafür schwingen die Teilchen dort am stärksten (Bewegungsbauch). Die Pfeife ist eine halbe Wellenlänge lang: f₁ = c / (2L). Alle Vielfachen des Grundtons sind möglich.'},
+ {g:'Pfeifen',t:'Gedackte Pfeife',d:'ein Ende geschlossen',s:{L:.6,typ:'gedackt',n:1,pan:false},
+  obs:'Vergleiche mit der offenen Pfeife gleicher Länge: Wie hoch klingt die gedackte Pfeife? Welche Obertöne fehlen?',
+  why:'Am geschlossenen Ende können sich die Teilchen nicht bewegen (Bewegungsknoten, Druckbauch). Die Pfeife ist nur eine Viertelwellenlänge lang: f₁ = c / (4L), eine Oktave tiefer als die offene Pfeife. Es passen nur ungerade Vielfache hinein (1, 3, 5 …). Ein ähnliches Spektrum hat die Klarinette, darum klingt sie „hohl“.'},
+ {g:'Pfeifen',t:'Überblasen: Obertöne',d:'stärker blasen, höherer Ton',s:{L:.6,typ:'offen',n:2,pan:false},
+  obs:'Wähle die Schwingungsform 2, 3 und 4 und spiele jeweils „nur diesen Teilton“. Welche Intervalle entstehen zum Grundton?',
+  why:'Wer bei Flöte oder Blechblasinstrument stärker bläst, regt eine höhere Eigenschwingung an. Bei der offenen Pfeife sind das Oktave (2·f₁), Oktave + Quinte (3·f₁), Doppeloktave (4·f₁). Ein Naturhorn ohne Ventile kann nur diese Naturtöne spielen.'},
+ {g:'Instrumente',t:'Panflöte',d:'Länge und Tonhöhe',s:{L:.2,typ:'gedackt',n:1,pan:true},
+  obs:'Tippe auf die Pfeifen der Panflöte. Wie hängen Länge und Tonhöhe zusammen? Wie lang ist die Pfeife eine Oktave höher?',
+  why:'Die Pfeifen einer Panflöte sind unten geschlossen (gedackt): L = c / (4f). Eine Oktave höher ist die Pfeife halb so lang. Die Längen der C-Dur-Tonleiter berechnet die Simulation für die eingestellte Temperatur.'},
+ {g:'Instrumente',t:'Temperatur und Stimmung',d:'Warum Bläser sich einspielen',s:{L:.6,typ:'offen',n:1,pan:false,T:5},
+  obs:'Erhöhe die Temperatur der Luft von 5 °C auf 30 °C. Was passiert mit der Tonhöhe der Pfeife?',
+  why:'In warmer Luft ist der Schall schneller (c ≈ 331 m/s + 0,6 m/s pro °C). Bei gleicher Länge steigt deshalb die Frequenz. Blasinstrumente werden beim Spielen durch den Atem wärmer und klingen höher. Saiteninstrumente werden dagegen in der Wärme eher tiefer, weil die Saiten nachgeben.'}
+];
+const pc=()=>331.3+.606*P2.T;
+const pF=(L=P2.L,typ=P2.typ,k=1)=>typ==='offen'?k*pc()/(2*L):(2*k-1)*pc()/(4*L);
+function pBlow(only){stopAll();const f1=pF();P2.tp=performance.now()/1000;let parts=[];
+  if(only)parts=[{f:pF(P2.L,P2.typ,P2.n),a:1}];
+  else for(let k=1;k<=10;k++)parts.push({f:pF(P2.L,P2.typ,k),a:(P2.typ==='offen'?1/k**1.4:1/k**1.1)*(k===1?1:.7)});
+  parts.forEach(p=>p.f=p.f);playParts(parts,{dur:1.8,att:.06,vol:.5});P2.parts=parts.map(p=>({...p}));
+  void f1}
+function panLen(){const base=mf(72),steps=[0,2,4,5,7,9,11,12];return steps.map(s=>({f:base*2**(s/12),L:pc()/(4*base*2**(s/12)),name:note(base*2**(s/12)).name}))}
+function pLoad(i){const p=PP[i];P2.pi=i;P2.T=20;Object.assign(P2,p.s);P2.tp=-99;pTools();pPanel();renderLib('Versuche: Pfeife',PP,i,pLoad)}
+function pTools(){
+  $('#tools').innerHTML=(P2.pan?'<span class="small">Tippe auf eine Pfeife der Panflöte.</span>':`<button class="btn hot" id="pBl">Anblasen</button><button class="btn" id="pOn">Nur diesen Teilton</button><span class="sep"></span>`+seg('typ',[['offen','offen'],['gedackt','gedackt']],P2.typ)+`<span class="sep"></span><span class="small">Schwingungsform</span>`+seg('n',[[1,1],[2,2],[3,3],[4,4],[5,5]],P2.n));
+  $('#tools').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='pBl')pBlow();else if(b.id==='pOn')pBlow(true);else if(b.dataset.typ){P2.typ=b.dataset.typ;pTools();pOuts();pBlow()}else if(b.dataset.n){P2.n=+b.dataset.n;pTools();pOuts();pBlow(true)}};
+  $('#status').textContent=P2.pan?'Panflöte: unten geschlossene Pfeifen, gestimmt auf C-Dur.':'Rot = Überdruck, blau = Unterdruck. Die Bewegung ist stark verlangsamt.';
+}
+function pPanel(){
+  const p=PP[P2.pi];
+  $('#panel').innerHTML=infoCard(p)+`<div class="card"><h3>Pfeife</h3><div class="big" id="pBig"></div><p class="small" id="pNote"></p>
+   ${P2.pan?'':range('pL','Länge L',.05,2,.005,P2.L)}${range('pT','Temperatur der Luft',-10,40,1,P2.T)}</div>
+   <div class="card"><h3>Messwerte</h3><div class="kv" id="pKV"></div>${lvlShow(2)?'<div class="formel" id="pForm"></div>':''}</div>`;
+  $('#panel').oninput=e=>{const el=e.target;if(el.id==='pL')P2.L=+el.value;else if(el.id==='pT')P2.T=+el.value;pOuts()};
+  $('#panel').onchange=e=>{if(['pL','pT'].includes(e.target.id)&&!P2.pan)pBlow()};
+  pOuts();
+}
+function pOuts(){
+  const f1=pF(),n=note(f1),fn=pF(P2.L,P2.typ,P2.n);setOut('pL',fmt(P2.L*100,1)+' cm');setOut('pT',fmt(P2.T)+' °C');
+  if(P2.pan){setTxt('pBig','C-Dur');setTxt('pNote','Pfeifenlängen für c² bis c³');}else{setTxt('pBig',fmt(f1,1)+' Hz');setTxt('pNote',`Grundton ${n.name}; gewählte Schwingungsform: ${fmt(fn)} Hz (${note(fn).name})`)}
+  const kv=$('#pKV');if(!kv)return;
+  if(P2.pan){kv.innerHTML=panLen().map(q=>`<span>${q.name} · ${fmt(q.f)} Hz</span><b>${fmt(q.L*100,1)} cm</b>`).join('')}
+  else kv.innerHTML=`<span>Schallgeschwindigkeit c</span><b>${fmt(pc(),1)} m/s</b><span>Wellenlänge des Grundtons</span><b>${fmt((P2.typ==='offen'?2:4)*P2.L*100,1)} cm</b><span>mögliche Teiltöne</span><b>${P2.typ==='offen'?'1, 2, 3, 4 …':'1, 3, 5, 7 …'}</b>`;
+  const fo=$('#pForm');if(fo)fo.innerHTML=P2.typ==='offen'?`offen: L = λ/2 → f₁ = c / (2L)${lvlShow(3)&&!P2.pan?` = ${fmt(pc(),1)} / (2 · ${fmt(P2.L,3)}) = <b>${fmt(f1,1)} Hz</b>`:''}<br>fₙ = n · f₁ (n = 1, 2, 3 …)`:`gedackt: L = λ/4 → f₁ = c / (4L)${lvlShow(3)&&!P2.pan?` = ${fmt(pc(),1)} / (4 · ${fmt(P2.L,3)}) = <b>${fmt(f1,1)} Hz</b>`:''}<br>fₙ = (2n − 1) · f₁ (nur ungerade)`;
+}
+function pDraw(){
+  ctx.fillStyle=cs('fld');ctx.fillRect(0,0,CW,CH);if(P2.pan)return panDraw();
+  const X0=60,X1=CW-50,tT=40,tH=clamp(CH*.26,70,160),tB=tT+tH,W=X1-X0,now=performance.now()/1000,ph=TAU*.5*now,k=P2.n;
+  const off=P2.typ==='offen',kk=off?k*Math.PI:(2*k-1)*Math.PI/2;
+  const sx=u=>off?Math.cos(kk*u):Math.sin(kk*u),px=u=>off?Math.sin(kk*u):Math.cos(kk*u);
+  // Druckfarbe
+  const cp=Math.cos(ph);for(let X=X0;X<X1;X+=3){const v=px((X-X0)/W)*cp,r=C.red,b=C.blue,f=C.fld,t=v>0?r:b,w=Math.min(1,Math.abs(v))**.8;ctx.fillStyle=`rgb(${f.map((c,i)=>Math.round(c+(t[i]-c)*w)).join(',')})`;ctx.fillRect(X,tT,3.5,tH)}
+  // Teilchen
+  ctx.fillStyle=cs('ink',.7);ctx.beginPath();const A=W/(kk/Math.PI*2+1)*.18*Math.sin(ph);
+  for(let c=0;c<90;c++)for(let r=0;r<7;r++){const u=(c+.5+((c*7+r*13)%5-2)*.08)/90,x=X0+u*W+sx(u)*A,y=tT+(r+.5)/7*tH;ctx.moveTo(x+2.3,y);ctx.arc(x,y,2.3,0,TAU)}ctx.fill();
+  ctx.strokeStyle=cs('ink');ctx.lineWidth=3;line(X0,tT,X1,tT,cs('ink'),3);line(X0,tB,X1,tB,cs('ink'),3);
+  if(!off){ctx.fillStyle=cs('ink');ctx.fillRect(X0-12,tT-4,12,tH+8);txt('geschlossen',X0-6,tB+22,cs('mut'),'left',12)}else txt('offen',X0,tB+22,cs('mut'),'left',12);
+  txt('offen',X1,tB+22,cs('mut'),'right',12);
+  // Hüllkurven
+  const gT=tB+50,gH=clamp(CH*.26,60,170),gM=gT+gH/2;txt('Stehende Welle: Schwingungsform '+k,X0,gT-14,cs('ink'),'left',13,true);
+  line(X0,gM,X1,gM,cs('line'));
+  const curve=(f,col,dash)=>{for(const s of [1,-1]){ctx.strokeStyle=col;ctx.lineWidth=2.2;if(dash)ctx.setLineDash(dash);ctx.beginPath();for(let i=0;i<=200;i++){const u=i/200,y=gM-s*Math.abs(f(u))*gH*.45;i?ctx.lineTo(X0+u*W,y):ctx.moveTo(X0,y)}ctx.stroke();ctx.setLineDash([])}};
+  curve(sx,cs('ink'));curve(px,cs('red'),[6,4]);
+  txt('Bewegung der Teilchen',X1,gT-14,cs('ink'),'right',12,true);txt('Druckschwankung (gestrichelt)',X1,gT+gH+16,cs('red'),'right',12,true);
+  if(lvlShow(2)){const nod=[];for(let i=0;i<=400;i++){const u=i/400;if(Math.abs(px(u))<.008)nod.push(u)}let last=-1;for(const u of nod){if(u-last<.02)continue;last=u;line(X0+u*W,tT,X0+u*W,gT+gH,cs('red',.6),1,[2,3]);txt('DK',X0+u*W,gT-2,cs('red'),'center',11,true)}
+    txt('DK = Druckknoten (dort schwingen die Teilchen am stärksten)',X0,gT+gH+16,cs('mut'),'left',12)}
+  // Spektrum
+  const by=gT+gH+34,bh=CH-by-26;if(bh>50){const vals=[],dim=[];for(let n=1;n<=10;n++){const ok=off||n%2===1;vals.push(ok?1/n**(off?1.4:1.1):0);dim.push(!ok)}
+    txt('Mögliche Teiltöne (Vielfache der Grundfrequenz)',X0,by,cs('ink'),'left',13,true);
+    bars(X0,by+6,W,bh,vals.map(v=>v||.04),{dim,cols:vals.map((_,i)=>{const m=off?i+1:2*P2.n-1;return i+1===m?cs('red'):cs('vio')}),lab:i=>`${i+1}·f₁`});
+    if(!off)txt('gerade Vielfache fehlen',X1,by,cs('mut'),'right',12)}
+}
+function panDraw(){
+  const ps=panLen(),n=ps.length,gap=CW*.035,pw=Math.min(70,(CW-120-gap*(n-1))/n),x0=(CW-(pw*n+gap*(n-1)))/2,maxL=ps[0].L,hmax=CH*.62,y0=CH*.12;
+  txt('Panflöte (unten geschlossen): Länge L = c / (4f)',CW/2,y0-18,cs('ink'),'center',15,true);
+  ps.forEach((q,i)=>{const x=x0+i*(pw+gap),h=hmax*q.L/maxL,hot=P2.hl===i&&performance.now()/1000-P2.tp<1.2;
+    ctx.fillStyle=hot?cs('red'):`hsl(${30+i*3},45%,${62-i*2}%)`;ctx.strokeStyle=cs('ink',.6);ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(x,y0,pw,h,[4,4,10,10]);ctx.fill();ctx.stroke();
+    ctx.fillStyle=cs('ink');ctx.fillRect(x,y0+h-6,pw,6);txt(q.name,x+pw/2,y0+h+20,cs('ink'),'center',14,true);txt(fmt(q.L*100,1)+' cm',x+pw/2,y0+h+38,cs('mut'),'center',12);if(lvlShow(2))txt(fmt(q.f)+' Hz',x+pw/2,y0+h+54,cs('mut'),'center',12)});
+  P2.panGeo={x0,pw,gap,y0,hmax,maxL};
+}
+function pDown(X,Y){if(!P2.pan||!P2.panGeo)return;const g=P2.panGeo,i=Math.floor((X-g.x0)/(g.pw+g.gap));if(i<0||i>7||X-g.x0-i*(g.pw+g.gap)>g.pw)return;const q=panLen()[i];if(Y<g.y0||Y>g.y0+g.hmax*q.L/g.maxL+60)return;
+  P2.hl=i;P2.tp=performance.now()/1000;stopAll();playParts([1,3,5,7].map((k,j)=>({f:q.f*k,a:[1,.25,.1,.05][j]})),{dur:1.1,att:.05,vol:.55})}
+MODES.pfeife={enter(){pLoad(P2.pi)},frame(){},draw:pDraw,upd(){},down:pDown,move(){},up(){},key(k){if(k===' ')pBlow()}};
+
+/* =====================================================================
+   STATION 3: KLANGFARBE (Teiltöne mischen)
+   ===================================================================== */
+const NH=16;
+const odd=(f)=>Array.from({length:NH},(_,i)=>(i+1)%2?f(i+1):0);
+const INST={
+  sinus:{n:'Sinuston (Stimmgabel)',a:[1]},
+  floete:{n:'Flöte',a:[1,.42,.16,.09,.05,.03,.02,.01]},
+  klarinette:{n:'Klarinette',a:[1,.04,.78,.03,.52,.03,.36,.02,.24,.02,.15,.01,.09]},
+  oboe:{n:'Oboe',a:[.45,.85,1,.72,.55,.5,.36,.28,.22,.17,.12,.09,.07,.05]},
+  geige:{n:'Geige',a:[1,.62,.55,.48,.52,.42,.31,.3,.22,.18,.17,.13,.11,.09,.08,.06]},
+  trompete:{n:'Trompete',a:[.55,.85,1,.95,.82,.66,.52,.4,.3,.22,.16,.12,.09,.07,.05,.04]},
+  orgel:{n:'Orgel (Prinzipal)',a:[1,.55,.32,.2,.13,.08,.05,.03]},
+  rechteck:{n:'Rechteck',a:odd(n=>1/n)},
+  saege:{n:'Sägezahn',a:Array.from({length:NH},(_,i)=>1/(i+1))},
+  dreieck:{n:'Dreieck',a:odd(n=>1/(n*n)),ph:odd(n=>((n-1)/2)%2?Math.PI:0)},
+  ohne:{n:'Grundton fehlt',a:[0,.8,.62,.48,.35,.25,.18,.12]}
+};
+const QUIZ=['floete','klarinette','oboe','geige','trompete','orgel'];
+const K3={pi:0,f0:261.63,a:new Array(NH).fill(0),ph:new Array(NH).fill(0),att:.03,hold:null,inst:'floete',quiz:null,drag:false,comp:false};
+const KP=[
+ {g:'Klangfarbe',t:'Instrumente im Spektrum',d:'gleicher Ton, andere Farbe',inst:'floete',
+  obs:'Wähle nacheinander Flöte, Klarinette, Oboe, Geige und Trompete. Alle spielen denselben Ton. Was unterscheidet die Spektren und die Wellenformen?',
+  why:'Die Tonhöhe hängt vom Grundton ab, die Klangfarbe von der Mischung der Obertöne. Flöte: fast nur Grundton, weich. Klarinette: vor allem ungerade Teiltöne, hohl. Oboe und Trompete: kräftige mittlere Teiltöne, hell und scharf. Echte Instrumente ändern ihr Spektrum zusätzlich beim Einschwingen.'},
+ {g:'Klangfarbe',t:'Eigenen Klang mischen',d:'Balken ziehen',inst:'sinus',
+  obs:'Schalte den Dauerton ein und ziehe die Balken der Teiltöne nach oben. Kannst du eine Flöte, eine Orgel oder einen „Roboter“ bauen?',
+  why:'Jeder periodische Klang lässt sich aus Sinustönen mit den Frequenzen f₁, 2f₁, 3f₁ … zusammensetzen (Fourier). Synthesizer und elektronische Orgeln (Zugriegel) arbeiten genau so: additive Synthese.'},
+ {g:'Klangfarbe',t:'Rechteck, Sägezahn, Dreieck',d:'Grundformen der Synthesizer',inst:'rechteck',
+  obs:'Vergleiche Rechteck, Sägezahn und Dreieck: Welche Teiltöne sind vorhanden, wie schnell werden sie schwächer? Wie klingt das?',
+  why:'Rechteck: nur ungerade Teiltöne mit 1/n (ähnlich der Klarinette). Sägezahn: alle Teiltöne mit 1/n (ähnlich Geige und Blechbläsern). Dreieck: nur ungerade mit 1/n², fast wie ein Sinus. Je mehr starke Obertöne, desto heller und schärfer der Klang.'},
+ {g:'Hören',t:'Phasen würfeln',d:'andere Wellenform, gleicher Klang?',inst:'saege',
+  obs:'Schalte den Dauerton ein und drücke mehrmals „Phasen würfeln“. Die Wellenform ändert sich stark. Hörst du einen Unterschied?',
+  why:'Das Ohr zerlegt den Schall in seine Teiltöne und achtet fast nur auf deren Stärke, kaum auf die Phase (Ohm’sches Gesetz der Akustik). Zwei sehr verschiedene Wellenformen können deshalb gleich klingen.'},
+ {g:'Hören',t:'Der fehlende Grundton',d:'man hört, was nicht da ist',inst:'ohne',
+  obs:'Hier fehlt der Grundton ganz (Balken 1 ist null). Welche Tonhöhe hörst du trotzdem? Schalte Balken 1 dazu und wieder weg.',
+  why:'Das Gehirn erkennt im Muster 2f, 3f, 4f … den gemeinsamen Grundton f und hört ihn mit (Residualton). Darum erkennt man tiefe Stimmen auch am Telefon und kleine Lautsprecher klingen nicht ganz bassfrei.'},
+ {g:'Hören',t:'Hörrätsel',d:'Welches Instrument ist das?',inst:'floete',quiz:true,
+  obs:'Drücke „Neues Rätsel“. Ein Instrument spielt, das Spektrum ist verdeckt. Welches ist es? Danach wird aufgedeckt.',
+  why:'Ohne Einschwingvorgang und Vibrato ist das Erkennen schwer. Hier hast du nur die Obertöne als Hinweis: Ungerade Teiltöne deuten auf die Klarinette, ein fast reiner Grundton auf die Flöte, viele starke mittlere Teiltöne auf Oboe oder Trompete.'}
+];
+function kSet(inst){const I=INST[inst];K3.inst=inst;K3.a=Array.from({length:NH},(_,i)=>I.a[i]||0);K3.ph=Array.from({length:NH},(_,i)=>I.ph?I.ph[i]:0);kLive()}
+function kLive(){if(K3.hold)K3.hold.set(K3.f0,K3.a,K3.ph)}
+function kPlay(){stopAll();K3.hold=null;playParts(K3.a.map((a,i)=>({f:(i+1)*K3.f0,a,T:0})),{dur:1.6,att:K3.att,vol:.5});updHold()}
+function kHold(on){if(on){stopAll();K3.hold=holdTone(K3.f0,K3.a,K3.ph)}else if(K3.hold){K3.hold.stop();K3.hold=null}updHold()}
+function updHold(){const b=$('#kHold');if(b){b.setAttribute('aria-pressed',String(!!K3.hold));b.textContent=K3.hold?'Dauerton aus':'Dauerton an'}}
+function kLoad(i){const p=KP[i];K3.pi=i;kHold(false);kSet(p.inst);K3.quiz=p.quiz?{ans:null,shown:false}:null;kTools();kPanel();renderLib('Versuche: Klangfarbe',KP,i,kLoad)}
+function kTools(){
+  $('#tools').innerHTML=`<button class="btn hot" id="kPl">Spielen</button><button class="btn" id="kHold" aria-pressed="false">Dauerton an</button><button class="btn" id="kRnd">Phasen würfeln</button><button class="btn" id="kRes">Phasen zurücksetzen</button>`+(K3.quiz?`<span class="sep"></span><button class="btn" id="kQ">Neues Rätsel</button>`:'');
+  $('#tools').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+    if(b.id==='kPl')kPlay();else if(b.id==='kHold')kHold(!K3.hold);else if(b.id==='kRnd'){K3.ph=K3.ph.map(()=>Math.random()*TAU);kLive()}else if(b.id==='kRes'){K3.ph=K3.ph.map((_,i)=>INST[K3.inst].ph?INST[K3.inst].ph[i]:0);kLive()}
+    else if(b.id==='kQ'){const k=QUIZ[Math.floor(Math.random()*QUIZ.length)];kSet(k);K3.quiz={ans:k,shown:false};kPanel();kPlay()}};
+  updHold();$('#status').textContent='Ziehe die Balken der Teiltöne mit Maus oder Finger. Die Tastatur rechts ändert die Tonhöhe.';
+}
+const KEYS=[[0,'C'],[1,'Cis'],[2,'D'],[3,'Dis'],[4,'E'],[5,'F'],[6,'Fis'],[7,'G'],[8,'Gis'],[9,'A'],[10,'B'],[11,'H'],[12,'C']];
+function keyboard(id,cur){const wh=KEYS.filter(k=>![1,3,6,8,10].includes(k[0])),ww=100/wh.length;let wi=0,h='';
+  for(const [s,n] of KEYS){const blk=[1,3,6,8,10].includes(s);if(!blk){h+=`<button class="w" data-key="${s}" style="left:${wi*ww}%;width:${ww}%" aria-pressed="${s===cur}">${n}</button>`;wi++}else h+=`<button class="b" data-key="${s}" style="left:${wi*ww-ww*.3}%;width:${ww*.6}%" aria-pressed="${s===cur}" aria-label="${n}"></button>`}
+  return `<div class="keys" id="${id}">${h}</div>`}
+function kPanel(){
+  const p=KP[K3.pi],semi=Math.round(12*Math.log2(K3.f0/261.63));
+  $('#panel').innerHTML=infoCard(p)+(K3.quiz?`<div class="card"><h3>Rätsel</h3>${K3.quiz.ans?`<p>Welches Instrument spielt?</p><div class="quiz">${QUIZ.map(k=>`<button class="btn" data-guess="${k}">${INST[k].n}</button>`).join('')}</div><p id="kQr" style="font-weight:700"></p>`:'<p class="small">Drücke oben „Neues Rätsel“.</p>'}</div>`:'')+
+  `<div class="card"><h3>Ton</h3><div class="big" id="kBig"></div>${keyboard('kKeys',semi)}${range('kAtt','Einschwingzeit',.005,.4,.005,K3.att)}
+   <label class="small" for="kInst" style="display:block;margin-top:8px">Vorlage</label><select class="full" id="kInst">${Object.entries(INST).map(([k,v])=>`<option value="${k}" ${k===K3.inst?'selected':''}>${v.n}</option>`).join('')}</select>
+   ${lvlShow(3)?'<div class="chk" style="margin-top:6px"><label><input type="checkbox" id="kComp" '+(K3.comp?'checked':'')+'>Teilschwingungen einzeln zeigen</label></div>':''}</div>
+   ${lvlShow(2)?`<div class="card"><h3>Fourier</h3><div class="formel">y(t) = a₁·sin(2π·f₁·t) + a₂·sin(2π·2f₁·t) + a₃·sin(2π·3f₁·t) + …</div>${lvlShow(3)?'<p class="small">Jeder Teilton hat eine Amplitude aₙ und eine Phase φₙ. Das Ohr hört fast nur die Amplituden.</p>':''}</div>`:''}`;
+  const P=$('#panel');
+  P.onclick=e=>{const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.key!=null){K3.f0=261.63*2**(+b.dataset.key/12);$$('#kKeys button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));if(K3.hold)kLive();else kPlay();kOuts()}
+    else if(b.dataset.guess&&K3.quiz&&K3.quiz.ans){const ok=b.dataset.guess===K3.quiz.ans;K3.quiz.shown=true;setTxt('kQr',ok?'Richtig: '+INST[K3.quiz.ans].n+'!':'Leider nicht. Es war: '+INST[K3.quiz.ans].n+'.');$('#kQr').style.color=ok?cs('ok'):cs('red')}};
+  P.oninput=e=>{const el=e.target;if(el.id==='kAtt')K3.att=+el.value;else if(el.id==='kComp')K3.comp=el.checked;kOuts()};
+  P.onchange=e=>{if(e.target.id==='kInst'){kSet(e.target.value);if(!K3.hold)kPlay()}};
+  kOuts();
+}
+function kOuts(){setTxt('kBig',`${note(K3.f0).name} · ${fmt(K3.f0,1)} Hz`);setOut('kAtt',fmt(K3.att*1000)+' ms')}
+function kWave(t){let y=0;for(let i=0;i<NH;i++)if(K3.a[i])y+=K3.a[i]*Math.sin(TAU*(i+1)*t+K3.ph[i]);return y}
+function kGeo(){const X0=60,X1=CW-30,wT=34,wH=clamp(CH*.4,110,300),bT=wT+wH+54,bH=CH-bT-36;return {X0,X1,wT,wH,bT,bH}}
+function kDraw(){
+  ctx.fillStyle=cs('fld');ctx.fillRect(0,0,CW,CH);const {X0,X1,wT,wH,bT,bH}=kGeo(),W=X1-X0,mid=wT+wH/2,hide=K3.quiz&&K3.quiz.ans&&!K3.quiz.shown;
+  txt('Wellenform (2 Perioden)',X0,wT-12,cs('ink'),'left',13,true);if(lvlShow(2))txt(`Periodendauer T = ${fmt(1000/K3.f0,2)} ms`,X1,wT-12,cs('mut'),'right',12);
+  line(X0,mid,X1,mid,cs('line'));line(X0+W/2,wT,X0+W/2,wT+wH,cs('line'),1,[3,4]);
+  let mx=.001;const N=400,ys=[];for(let i=0;i<=N;i++){const y=kWave(2*i/N);ys.push(y);mx=Math.max(mx,Math.abs(y))}
+  if(hide){txt('?',X0+W/2,mid+20,cs('mut'),'center',56,true)}else{
+    if(K3.comp&&lvlShow(3))for(let k=0;k<NH;k++){if(!K3.a[k])continue;ctx.strokeStyle=cs('vio',.35);ctx.lineWidth=1;ctx.beginPath();for(let i=0;i<=N;i++){const y=mid-K3.a[k]*Math.sin(TAU*(k+1)*2*i/N+K3.ph[k])/mx*wH*.46;i?ctx.lineTo(X0+i/N*W,y):ctx.moveTo(X0,y)}ctx.stroke()}
+    ctx.strokeStyle=cs('ink');ctx.lineWidth=2.6;ctx.beginPath();ys.forEach((y,i)=>{const Y=mid-y/mx*wH*.46;i?ctx.lineTo(X0+i/N*W,Y):ctx.moveTo(X0,Y)});ctx.stroke()}
+  txt('Spektrum: Teiltöne (Balken ziehen)',X0,bT-14,cs('ink'),'left',13,true);
+  if(hide){ctx.fillStyle=cs('pan');ctx.fillRect(X0,bT,W,bH);txt('verdeckt',X0+W/2,bT+bH/2,cs('mut'),'center',18,true);return}
+  bars(X0,bT,W,bH,K3.a,{cols:K3.a.map((_,i)=>i?cs('vio'):cs('red')),lab:i=>lvlShow(2)&&(W>560||i%2===0)?fmt((i+1)*K3.f0):String(i+1)});
+  if(lvlShow(2))txt(lvlShow(2)?'Hz':'',X1+4,bT+bH+15,cs('mut'),'left',12);
+}
+function kBarAt(X,Y){const {X0,X1,bT,bH}=kGeo();if(Y<bT-10||Y>bT+bH+6||X<X0||X>X1)return -1;return Math.floor((X-X0)/((X1-X0)/NH))}
+function kDown(X,Y){if(K3.quiz&&K3.quiz.ans&&!K3.quiz.shown)return;const i=kBarAt(X,Y);if(i>=0){K3.drag=true;kMove(X,Y)}}
+function kMove(X,Y){if(!K3.drag)return;const {X0,X1,bT,bH}=kGeo(),i=clamp(Math.floor((X-X0)/((X1-X0)/NH)),0,NH-1);K3.a[i]=clamp((bT+bH-Y)/(bH-18),0,1);if(K3.a[i]<.03)K3.a[i]=0;kLive()}
+function kUp(){if(K3.drag&&!K3.hold)kPlay();K3.drag=false}
+MODES.farbe={enter(){kLoad(K3.pi)},frame(){},draw:kDraw,upd:kOuts,down:kDown,move:kMove,up:kUp,key(k){if(k===' ')kHold(!K3.hold)},leave(){kHold(false)}};
+
+/* =====================================================================
+   STATION 4: SCHWEBUNG & INTERVALLE
+   ===================================================================== */
+const IV=[['Prime',0,1,1],['kleine Sekunde',1,16,15],['große Sekunde',2,9,8],['kleine Terz',3,6,5],['große Terz',4,5,4],['Quarte',5,4,3],['Tritonus',6,45,32],['Quinte',7,3,2],['kleine Sexte',8,8,5],['große Sexte',9,5,3],['kleine Septime',10,16,9],['große Septime',11,15,8],['Oktave',12,2,1]];
+const B4={pi:0,f1:440,f2:443,mode:'sch',iv:7,rein:true,ober:false,hold:null,secret:0,show:false};
+const BP=[
+ {g:'Schwebung',t:'Zwei Stimmgabeln',d:'fast gleiche Töne',s:{mode:'sch',f1:440,f2:443,ober:false},
+  obs:'Schalte den Ton ein. Zwei Stimmgabeln mit 440 Hz und 443 Hz klingen gleichzeitig. Was hörst du? Zähle die Lautstärkeschwankungen pro Sekunde.',
+  why:'Die beiden Schwingungen sind mal im Gleichtakt (laut) und mal im Gegentakt (leise). Die Lautstärke schwankt mit der Schwebungsfrequenz f_S = |f₁ − f₂|, hier 3 Mal pro Sekunde. Der Ton selbst liegt dazwischen (441,5 Hz).'},
+ {g:'Schwebung',t:'Instrument stimmen',d:'die Schwebung muss verschwinden',s:{mode:'stimm',f1:440,ober:true},
+  obs:'Der zweite Ton ist verstimmt. Schalte den Ton ein und verschiebe den Regler, bis die Schwebung verschwindet. Drücke dann „Auflösen“.',
+  why:'So stimmen Musikerinnen und Musiker ohne Stimmgerät: Zwei Töne sind gleich hoch, wenn keine Schwebung mehr zu hören ist. Je näher man kommt, desto langsamer wird die Schwebung.'},
+ {g:'Intervalle',t:'Reine und temperierte Quinte',d:'warum Klaviere minimal schweben',s:{mode:'iv',f1:220,iv:7,rein:true,ober:true},
+  obs:'Spiele die Quinte rein (3 : 2) und temperiert (wie am Klavier). Achte im Spektrum auf den 3. Teilton des unteren und den 2. Teilton des oberen Tons. Hörst du die langsame Schwebung?',
+  why:'Bei der reinen Quinte fallen der 3. Teilton des unteren und der 2. Teilton des oberen Tons genau zusammen. Die gleichstufige Stimmung teilt die Oktave in 12 gleiche Halbtöne (Faktor ¹²√2). Dadurch ist die Quinte 2 Cent zu klein und diese Teiltöne schweben langsam. Dafür kann man in allen Tonarten spielen.'},
+ {g:'Intervalle',t:'Konsonanz im Spektrum',d:'gemeinsame Obertöne',s:{mode:'iv',f1:220,iv:4,rein:true,ober:true},
+  obs:'Probiere Oktave, Quinte, Quarte, große Terz, kleine Sekunde und Tritonus. Wie viele Teiltöne treffen sich (grüne Kreise)? Wie klingt das Intervall?',
+  why:'Je einfacher das Zahlenverhältnis, desto mehr Teiltöne fallen zusammen und desto weniger Teiltöne liegen knapp nebeneinander und erzeugen rauhe Schwebungen. Wir empfinden das als konsonant (Oktave, Quinte). Bei der kleinen Sekunde reiben sich viele Teiltöne: dissonant.'},
+ {g:'Intervalle',t:'Lissajous-Figuren',d:'Verhältnis als Bild',s:{mode:'iv',f1:220,iv:7,rein:true,ober:false},
+  obs:'Wähle verschiedene Intervalle, rein und temperiert. Was zeigt die Figur bei 2 : 1, 3 : 2 oder 5 : 4? Was passiert, wenn das Verhältnis nicht ganz stimmt?',
+  why:'Ein Ton bewegt den Punkt nach rechts und links, der andere nach oben und unten. Bei einfachen Verhältnissen entsteht eine stehende Figur mit so vielen Bögen, wie das Verhältnis angibt. Ist das Verhältnis nicht genau, dreht sich die Figur langsam (wie die Schwebung).'}
+];
+function bF2(){if(B4.mode==='iv'){const v=IV.find(x=>x[1]===B4.iv);return B4.rein?B4.f1*v[2]/v[3]:B4.f1*2**(v[1]/12)}if(B4.mode==='stimm')return B4.f1+B4.secret+B4.adj;return B4.f2}
+function bAmps(){return B4.ober?[1,.6,.45,.3,.22,.15,.1,.07]:[1]}
+function bHold(on){if(on){stopAll();B4.ht=performance.now()/1000;B4.hold=[holdTone(B4.f1,bAmps()),holdTone(bF2(),bAmps())]}else if(B4.hold){B4.hold.forEach(h=>h&&h.stop());B4.hold=null}
+  const b=$('#bHold');if(b){b.setAttribute('aria-pressed',String(!!B4.hold));b.textContent=B4.hold?'Ton aus':'Ton an'}}
+function bLive(){if(B4.hold){B4.hold[0]&&B4.hold[0].set(B4.f1,bAmps());B4.hold[1]&&B4.hold[1].set(bF2(),bAmps())}}
+function bLoad(i){const p=BP[i];bHold(false);B4.pi=i;Object.assign(B4,p.s);B4.adj=0;B4.show=false;if(B4.mode==='stimm'){B4.secret=(Math.random()<.5?-1:1)*(2+Math.random()*4)}bTools();bPanel();renderLib('Versuche: Schwebung & Intervalle',BP,i,bLoad)}
+function bTools(){
+  $('#tools').innerHTML=`<button class="btn hot" id="bHold" aria-pressed="false">Ton an</button><button class="btn" id="bSeq">Nacheinander</button>`+(B4.mode==='iv'?`<span class="sep"></span>`+seg('rein',[['rein','1'],['temperiert','0']],B4.rein?'1':'0'):'')+`<span class="sep"></span>`+seg('ober',[['Sinustöne','0'],['mit Obertönen','1']],B4.ober?'1':'0');
+  $('#tools').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+    if(b.id==='bHold')bHold(!B4.hold);else if(b.id==='bSeq'){bHold(false);const mk=f=>bAmps().map((a,i)=>({f:f*(i+1),a}));playParts(mk(B4.f1),{dur:.9,att:.02});playParts(mk(bF2()),{dur:.9,att:.02,delay:.9});playParts(mk(B4.f1),{dur:2,att:.02,delay:1.9});playParts(mk(bF2()),{dur:2,att:.02,delay:1.9})}
+    else if(b.dataset.rein!=null){B4.rein=b.dataset.rein==='1';bTools();bLive();bOuts()}else if(b.dataset.ober!=null){B4.ober=b.dataset.ober==='1';bTools();bLive()}};
+  $('#status').textContent=B4.mode==='iv'?'Oben: Lissajous-Figur und Teiltöne beider Töne. Grüne Kreise: Teiltöne, die zusammenfallen.':'Oben: beide Töne im Zeitlupen-Ausschnitt; unten: die Summe über eine Sekunde.';
+}
+function bPanel(){
+  const p=BP[B4.pi];let c='';
+  if(B4.mode==='sch')c=range('bf1','Ton 1',200,1000,1,B4.f1)+range('bf2','Ton 2',200,1000,.1,B4.f2);
+  else if(B4.mode==='stimm')c=`<p>Ton 1: <b>${fmt(B4.f1)} Hz</b> (Stimmgabel a¹)</p>`+range('badj','Ton 2 stimmen',-10,10,.1,B4.adj)+`<div class="seg"><button data-act="solve">Auflösen</button><button data-act="new">Neu verstimmen</button></div><p id="bSol" style="font-weight:700"></p>`;
+  else c=`<div class="seg" role="group">${IV.map(v=>`<button data-iv="${v[1]}" aria-pressed="${v[1]===B4.iv}">${v[0]}</button>`).join('')}</div>`+range('bf1','Grundton',110,440,1,B4.f1);
+  $('#panel').innerHTML=infoCard(p)+`<div class="card"><h3>Töne</h3>${c}</div><div class="card"><h3>Messwerte</h3><div class="kv" id="bKV"></div>${lvlShow(2)?'<div class="formel" id="bForm"></div>':''}</div>`;
+  const P=$('#panel');
+  P.oninput=e=>{const el=e.target;if(el.id==='bf1')B4.f1=+el.value;else if(el.id==='bf2')B4.f2=+el.value;else if(el.id==='badj')B4.adj=+el.value;bLive();bOuts()};
+  P.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.iv!=null){B4.iv=+b.dataset.iv;$$('[data-iv]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));bLive();bOuts();if(!B4.hold)$('#bSeq').click()}
+    else if(b.dataset.act==='solve'){B4.show=true;bOuts()}else if(b.dataset.act==='new'){B4.secret=(Math.random()<.5?-1:1)*(2+Math.random()*4);B4.adj=0;B4.show=false;bPanel();bLive()}};
+  bOuts();
+}
+function bOuts(){
+  const f2=bF2(),d=Math.abs(f2-B4.f1);setOut('bf1',fmt(B4.f1,0)+' Hz');setOut('bf2',fmt(B4.f2,1)+' Hz');setOut('badj',(B4.adj>=0?'+':'')+fmt(B4.adj,1)+' Hz');
+  const kv=$('#bKV');if(!kv)return;
+  if(B4.mode==='iv'){const v=IV.find(x=>x[1]===B4.iv),r=f2/B4.f1,ct=1200*Math.log2(r/(v[2]/v[3]));
+    kv.innerHTML=`<span>Ton 1 / Ton 2</span><b>${fmt(B4.f1,1)} / ${fmt(f2,1)} Hz</b><span>Verhältnis f₂ : f₁</span><b>${fmt(r,4)}</b><span>reines Verhältnis</span><b>${v[2]} : ${v[3]}</b>`+(lvlShow(2)?`<span>Abweichung von rein</span><b>${fmt(ct,1)} Cent</b>`:'');
+    const fo=$('#bForm');if(fo)fo.innerHTML=`rein: f₂ = f₁ · ${v[2]}/${v[3]}<br>temperiert: f₂ = f₁ · 2^(${v[1]}/12)${lvlShow(3)?` = f₁ · ${fmt(2**(v[1]/12),5)}<br>100 Cent = 1 Halbton`:''}`}
+  else{const hide=B4.mode==='stimm'&&!lvlShow(2)&&!B4.show;
+    kv.innerHTML=`<span>Ton 1</span><b>${fmt(B4.f1,1)} Hz</b><span>Ton 2</span><b>${B4.mode==='stimm'&&!B4.show?'?':fmt(f2,1)+' Hz'}</b><span>Schwebungsfrequenz</span><b>${hide?'hinhören!':fmt(d,1)+' Hz'}</b>`;
+    const fo=$('#bForm');if(fo)fo.innerHTML=`f_S = |f₁ − f₂|${lvlShow(3)?'<br>sin(a) + sin(b) = 2 · cos((a−b)/2) · sin((a+b)/2)':''}`;
+    const s=$('#bSol');if(s)s.textContent=B4.show?(d<.3?'Super, fast genau gestimmt!':`Noch ${fmt(d,1)} Hz daneben (Ton 2 ist ${f2>B4.f1?'zu hoch':'zu tief'}).`):''}
+}
+function bDraw(){
+  ctx.fillStyle=cs('fld');ctx.fillRect(0,0,CW,CH);const X0=60,X1=CW-30,W=X1-X0,f1=B4.f1,f2=bF2(),now=performance.now()/1000;
+  if(B4.mode!=='iv'){
+    const zH=clamp(CH*.16,50,110),z1=40,z2=z1+zH+30,sT=z2+zH+56,sH=CH-sT-40,win=.012,t0=now%1;
+    const wave=(y0,h,f,col,lab)=>{txt(lab,X0,y0-8,col,'left',13,true);line(X0,y0+h/2,X1,y0+h/2,cs('line'));ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();for(let i=0;i<=400;i++){const t=i/400*win,y=y0+h/2-Math.sin(TAU*f*(t+t0*.0))*h*.42;i?ctx.lineTo(X0+i/400*W,y):ctx.moveTo(X0,y)}ctx.stroke()};
+    const hid=B4.mode==='stimm'&&!B4.show;
+    wave(z1,zH,f1,cs('blue'),`Ton 1: ${fmt(f1,1)} Hz (Ausschnitt ${fmt(win*1000)} ms)`);wave(z2,zH,f2,cs('red'),hid?'Ton 2: ? Hz':`Ton 2: ${fmt(f2,1)} Hz`);
+    txt('Summe beider Töne über 1 Sekunde',X0,sT-10,cs('ink'),'left',13,true);const mid=sT+sH/2;line(X0,mid,X1,mid,cs('line'));
+    ctx.fillStyle=cs('vio',.75);for(let px=0;px<W;px++){let mn=9,mx=-9;for(let k=0;k<12;k++){const t=(px+k/12)/W;const y=Math.sin(TAU*f1*t)+Math.sin(TAU*f2*t);mn=Math.min(mn,y);mx=Math.max(mx,y)}ctx.fillRect(X0+px,mid-mx*sH*.23,1,(mx-mn)*sH*.23+1)}
+    ctx.strokeStyle=cs('ink');ctx.lineWidth=1.6;ctx.setLineDash([5,4]);for(const s of [1,-1]){ctx.beginPath();for(let px=0;px<=W;px+=2){const t=px/W,y=mid-s*2*Math.abs(Math.cos(Math.PI*(f1-f2)*t))*sH*.23;px?ctx.lineTo(X0+px,y):ctx.moveTo(X0,y)}ctx.stroke()}ctx.setLineDash([]);
+    for(let i=0;i<=10;i++)txt(fmt(i/10,1)+' s',X0+i/10*W,sT+sH+16,cs('mut'),'center',12);
+    if(B4.hold){const x=X0+(((now-(B4.ht||now))%1+1)%1)*W;line(x,sT,x,sT+sH,cs('red'),2)}
+    return;
+  }
+  // Intervall: Lissajous + Teiltöne
+  const lsz=clamp(Math.min(CH*.42,W*.36),120,280),lx=X0,ly=36;
+  txt('Lissajous-Figur',lx,ly-12,cs('ink'),'left',13,true);ctx.strokeStyle=cs('line');ctx.strokeRect(lx,ly,lsz,lsz);
+  ctx.strokeStyle=cs('vio');ctx.lineWidth=1.8;ctx.beginPath();const T0=now%1000;
+  for(let i=0;i<=1600;i++){const t=T0+i/1600*20/f1,x=lx+lsz/2+Math.sin(TAU*f1*t)*lsz*.45,y=ly+lsz/2-Math.sin(TAU*f2*t+.3)*lsz*.45;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.stroke();
+  const v=IV.find(x=>x[1]===B4.iv);txt(`${v[0]} · ${B4.rein?'rein '+v[2]+' : '+v[3]:'temperiert'}`,lx,ly+lsz+20,cs('ink'),'left',14,true);
+  // Teiltöne auf logarithmischer Achse
+  const sx=lx+lsz+40,sw=X1-sx,fmin=f1*.8,fmax=f1*8.5,lg=f=>sx+Math.log(f/fmin)/Math.log(fmax/fmin)*sw;
+  if(sw>160){const y1=ly+lsz*.28,y2=ly+lsz*.72;txt('Teiltöne von Ton 1 (blau) und Ton 2 (rot)',sx,ly-12,cs('ink'),'left',13,true);
+    line(sx,y1,X1,y1,cs('line'));line(sx,y2,X1,y2,cs('line'));
+    const p1=[],p2=[];for(let n=1;n<=8;n++){p1.push(n*f1);p2.push(n*f2)}
+    p1.forEach((f,i)=>{const x=lg(f);if(x<=X1){line(x,y1-30*(1-i*.08),x,y1,cs('blue'),3);txt(String(i+1),x,y1+14,cs('blue'),'center',11)}});
+    p2.forEach((f,i)=>{const x=lg(f);if(x<=X1){line(x,y2-30*(1-i*.08),x,y2,cs('red'),3);txt(String(i+1),x,y2+14,cs('red'),'center',11)}});
+    let nC=0,nR=0;for(const a of p1)for(const b of p2){if(a>fmax||b>fmax)continue;const r=Math.abs(b/a-1);const xa=lg(a),xb=lg(b);
+      if(r<.004){nC++;ctx.strokeStyle=cs('ok');ctx.lineWidth=2.5;ctx.beginPath();ctx.arc((xa+xb)/2,(y1+y2)/2,12,0,TAU);ctx.stroke();line(xa,y1,xb,y2,cs('ok'),1.5,[3,3]);if(lvlShow(2)&&Math.abs(a-b)>.05)txt(`schwebt ${fmt(Math.abs(a-b),1)} Hz`,(xa+xb)/2+16,(y1+y2)/2+4,cs('ok'),'left',11)}
+      else if(r<.06){nR++;line(xa,y1,xb,y2,cs('red',.5),1.5,[2,3])}}
+    txt(`${nC} gemeinsame Teiltöne · ${nR} reibende Paare`,sx,y2+38,cs('ink'),'left',14,true);
+    for(const f of [f1,2*f1,4*f1,8*f1])if(lg(f)<=X1)txt(fmt(f)+' Hz',lg(f),ly+lsz+20,cs('mut'),'center',11)}
+  // Zeitverlauf
+  const sT=ly+lsz+56,sH=CH-sT-30;if(sH>50){txt('Summe beider Töne (Ausschnitt 20 ms)',X0,sT-8,cs('ink'),'left',13,true);const mid=sT+sH/2;line(X0,mid,X1,mid,cs('line'));ctx.strokeStyle=cs('vio');ctx.lineWidth=1.8;ctx.beginPath();const A=bAmps();
+    for(let i=0;i<=600;i++){const t=i/600*.02;let y=0;A.forEach((a,k)=>{y+=a*(Math.sin(TAU*(k+1)*f1*t)+Math.sin(TAU*(k+1)*f2*t))});const Y=mid-y/(2*A.reduce((s,a)=>s+a,0))*sH*.46;i?ctx.lineTo(X0+i/600*W,Y):ctx.moveTo(X0,Y)}ctx.stroke()}
+}
+MODES.schwebung={enter(){bLoad(B4.pi)},frame(){},draw:bDraw,upd:bOuts,down(){},move(){},up(){},key(k){if(k===' ')bHold(!B4.hold)},leave(){bHold(false)}};
+
+/* =====================================================================
+   STATION 5: RESONANZ
+   ===================================================================== */
+const R5={pi:0,obj:'feder',Q:8,r:.5,F0:1,x:0,v:0,t:0,A:0,sweep:false,pts:[],broken:false,fA:520,W0:TAU*.8,sing:null,ring:null,lastPt:-1};
+const RP5=[
+ {g:'Federpendel',t:'Federpendel anregen',d:'Wann schwingt es am stärksten?',s:{obj:'feder',Q:8,r:.5,F0:1},
+  obs:'Die Hand bewegt das obere Ende der Feder auf und ab. Verändere die Anregungsfrequenz langsam. Bei welcher Frequenz schwingt die Masse am stärksten? Warte nach jeder Änderung, bis die Schwingung gleichmäßig ist.',
+  why:'Jeder schwingungsfähige Körper hat eine Eigenfrequenz. Regt man ihn genau mit dieser Frequenz an, kommt jeder Anstoß im richtigen Moment, und die Schwingung wird sehr groß: Resonanz. Langsame Anregung: Die Masse macht einfach mit. Sehr schnelle Anregung: Die Masse bleibt fast in Ruhe.'},
+ {g:'Federpendel',t:'Resonanzkurve aufnehmen',d:'automatischer Frequenzdurchlauf',s:{obj:'feder',Q:8,r:.2,F0:1,sweep:true},
+  obs:'Der Durchlauf erhöht die Anregungsfrequenz langsam und speichert Messpunkte. Vergleiche die Messpunkte mit der berechneten Kurve.',
+  why:'Die Resonanzkurve zeigt die Amplitude über der Anregungsfrequenz. Ihr Maximum liegt bei der Eigenfrequenz. Wird zu schnell durchgefahren, hinkt die Schwingung hinterher, weil sie Zeit zum Aufschaukeln braucht.'},
+ {g:'Federpendel',t:'Starke und schwache Dämpfung',d:'Güte Q',s:{obj:'feder',Q:2,r:1,F0:1},
+  obs:'Stelle die Dämpfung von stark (Q = 2) auf schwach (Q = 30). Wie ändern sich die Höhe und die Breite der Resonanzkurve? Wie lange dauert das Aufschaukeln?',
+  why:'Je schwächer die Dämpfung, desto höher und schmaler die Resonanzspitze und desto länger dauert das Ein- und Ausschwingen. Stoßdämpfer im Auto sorgen für starke Dämpfung. Resonanzkörper von Instrumenten sind dagegen breitbandig, damit alle Töne gleichmäßig verstärkt werden.'},
+ {g:'Klang',t:'Weinglas zersingen',d:'Resonanz kann zerstören',s:{obj:'glas',Q:80,r:.9,F0:.6},
+  obs:'Schalte den Ton ein. Ein Lautsprecher singt das Weinglas an. Suche die Eigenfrequenz des Glases (Ton beim Anstoßen). Mit welcher Lautstärke und Frequenz zerbricht es?',
+  why:'Ein Weinglas ist kaum gedämpft (hohe Güte). Trifft der Ton genau seine Eigenfrequenz, schaukelt sich die Schwingung so weit auf, dass das Glas bricht. Schon wenige Hertz daneben passiert fast nichts. Opernsängerinnen schaffen das nur mit sehr lauter, sehr genauer Stimme.'}
+];
+const rTh=(r,Q)=>1/Math.sqrt((1-r*r)**2+(r/Q)**2);
+const rF0=()=>R5.obj==='glas'?R5.fA:.8;
+function rLoad(i){const p=RP5[i];R5.pi=i;rSound(false);Object.assign(R5,{sweep:false},p.s);R5.W0=TAU*(R5.obj==='glas'?6:.8);R5.x=0;R5.v=0;R5.A=0;R5.pts=[];R5.broken=false;R5.lastPt=-1;rTools();rPanel();renderLib('Versuche: Resonanz',RP5,i,rLoad)}
+function rSound(on){if(on&&R5.obj==='glas'&&!R5.broken){stopAll();R5.sing=holdTone(R5.r*R5.fA,[.8*R5.F0,.25*R5.F0,.1*R5.F0]);R5.ring=holdTone(R5.fA,[0])}else{R5.sing&&R5.sing.stop();R5.ring&&R5.ring.stop();R5.sing=R5.ring=null}
+  const b=$('#rTon');if(b){b.setAttribute('aria-pressed',String(!!R5.sing));b.textContent=R5.sing?'Ton aus':'Ton an'}}
+function rTools(){
+  $('#tools').innerHTML=(R5.obj==='glas'?`<button class="btn hot" id="rTon" aria-pressed="false">Ton an</button><button class="btn" id="rTap">Glas anstoßen</button><button class="btn" id="rNew">Neues Glas</button>`:`<button class="btn hot" id="rSw">${R5.sweep?'Durchlauf stoppen':'Durchlauf starten'}</button><button class="btn" id="rPt">Messpunkt speichern</button><button class="btn" id="rClr">Messpunkte löschen</button>`)+
+   `<span class="sep"></span><span class="small">Dämpfung</span>`+seg('q',R5.obj==='glas'?[['stark',15],['mittel',40],['schwach',80],['sehr schwach',200]]:[['stark',2],['mittel',8],['schwach',30]],R5.Q);
+  $('#tools').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+    if(b.id==='rTon')rSound(!R5.sing);else if(b.id==='rTap'){R5.x+=R5.broken?0:3;playParts([{f:R5.fA,a:1,T:2.5},{f:R5.fA*2.32,a:.3,T:.8},{f:R5.fA*4.1,a:.15,T:.4}],{dur:3,vol:.4})}
+    else if(b.id==='rNew'){R5.broken=false;R5.x=0;R5.v=0;R5.A=0;rTools()}
+    else if(b.id==='rSw'){R5.sweep=!R5.sweep;if(R5.sweep&&R5.r>1.9){R5.r=.2;R5.pts=[]}rTools();rPanel()}else if(b.id==='rPt')R5.pts.push([R5.r,R5.A]);else if(b.id==='rClr')R5.pts=[];
+    else if(b.dataset.q){R5.Q=+b.dataset.q;rTools()}};
+  $('#status').textContent=R5.obj==='glas'?'Das Glas schwingt sehr schnell; die Verformung ist stark vergrößert gezeichnet.':'Die Bewegung ist in Echtzeit. Nach einer Änderung braucht die Schwingung Zeit, bis sie gleichmäßig ist.';
+}
+function rPanel(){
+  const p=RP5[R5.pi],g=R5.obj==='glas';
+  $('#panel').innerHTML=infoCard(p)+`<div class="card"><h3>Anregung</h3><div class="big" id="rBig"></div>${range('rR','Anregungsfrequenz',g?.85:.1,g?1.15:2.2,g?.0005:.01,R5.r)}${range('rF','Stärke der Anregung',.1,1,.05,R5.F0)}${g?range('rFA','Eigenfrequenz des Glases',300,900,1,R5.fA):''}</div>
+   <div class="card"><h3>Messwerte</h3><div class="kv" id="rKV"></div>${lvlShow(2)?'<div class="formel" id="rForm"></div>':''}</div>`;
+  $('#panel').oninput=e=>{const el=e.target;if(el.id==='rR'){R5.r=+el.value;R5.sweep=false}else if(el.id==='rF')R5.F0=+el.value;else if(el.id==='rFA')R5.fA=+el.value;
+    if(R5.sing){R5.sing.set(R5.r*R5.fA,[.8*R5.F0,.25*R5.F0,.1*R5.F0])}rOuts()};
+  rOuts();
+}
+function rOuts(){const f0=rF0(),g=R5.obj==='glas';setOut('rR',fmt(R5.r*f0,g?1:2)+' Hz');setOut('rF',fmt(R5.F0*100)+' %');setOut('rFA',fmt(R5.fA)+' Hz');
+  setTxt('rBig',fmt(R5.r*f0,g?1:2)+' Hz');const ph=Math.atan2(R5.r/R5.Q,1-R5.r*R5.r)*180/Math.PI,kv=$('#rKV');
+  if(kv)kv.innerHTML=`<span>Eigenfrequenz f₀</span><b>${fmt(f0,g?0:2)} Hz</b><span>Anregung f / f₀</span><b>${fmt(R5.r,3)}</b><span>Amplitude (gemessen)</span><b>${fmt(R5.A,1)} ×</b>`+(lvlShow(2)?`<span>Amplitude (berechnet)</span><b>${fmt(rTh(R5.r,R5.Q),1)} ×</b><span>Güte Q</span><b>${fmt(R5.Q)}</b>`:'')+(lvlShow(3)?`<span>Phasenverschiebung</span><b>${fmt(ph)}°</b>`:'');
+  const fo=$('#rForm');if(fo)fo.innerHTML=`Amplitude ⁄ statische Auslenkung = 1 / √((1 − r²)² + (r/Q)²), r = f / f₀${lvlShow(3)?'<br>bei Resonanz (r = 1): Amplitude = Q':''}`}
+function rFrame(dt){
+  const w0=R5.W0,N=30,h=dt/N;
+  if(R5.sweep){R5.r=Math.min(2.2,R5.r+dt*.022);const el=$('#rR');if(el)el.value=R5.r;if(R5.r>=2.2)R5.sweep=false;
+    if(Math.floor(R5.r/.05)!==R5.lastPt){R5.lastPt=Math.floor(R5.r/.05);R5.pts.push([R5.r,R5.A])}}
+  const w=R5.r*w0;
+  if(!R5.broken)for(let i=0;i<N;i++){R5.t+=h;const a=-w0*w0*R5.x-(w0/R5.Q)*R5.v+w0*w0*R5.F0*Math.cos(w*R5.t);R5.v+=a*h;R5.x+=R5.v*h}
+  const Ae=Math.sqrt(R5.x**2+(R5.v/w)**2)/R5.F0;R5.A+=(Ae-R5.A)*Math.min(1,dt*3);
+  if(R5.obj==='glas'&&!R5.broken&&R5.A*R5.F0>22){R5.broken=true;rSound(false);playParts([...Array(14)].map(()=>({f:1500+Math.random()*7000,a:Math.random(),T:.15+Math.random()*.4})),{dur:1.2,att:.002,vol:.7});rTools()}
+  if(R5.ring)R5.ring.set(R5.fA,[clamp(R5.A*R5.F0/22,0,1)*.9]);
+}
+function rDraw(){
+  ctx.fillStyle=cs('fld');ctx.fillRect(0,0,CW,CH);const wide=CW>700,aw=wide?CW*.4:CW,ah=wide?CH:CH*.5;
+  const now=R5.t,g=R5.obj==='glas',cx=aw/2;
+  if(!g){const top=50,sc=clamp(ah/50,5,11),yT=top+Math.cos(R5.r*R5.W0*now)*R5.F0*sc,rest=top+ah*.42,yM=rest+(R5.x)*sc;
+    ctx.fillStyle=cs('pan');ctx.fillRect(cx-70,18,140,12);txt('Antrieb (Hand)',cx+80,28,cs('mut'),'left',12);
+    ctx.fillStyle=cs('red');ctx.fillRect(cx-40,yT-8,80,10);line(cx,30,cx,yT-8,cs('red'),3);
+    ctx.strokeStyle=cs('ink');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,yT);const nz=16;for(let i=1;i<nz;i++){const y=yT+(yM-28-yT)*i/nz;ctx.lineTo(cx+(i%2?14:-14),y)}ctx.lineTo(cx,yM-28);ctx.stroke();
+    ctx.fillStyle=cs('ink');ctx.beginPath();ctx.roundRect(cx-30,yM-28,60,56,8);ctx.fill();txt('Masse',cx,yM+5,cs('fld'),'center',13,true);
+    line(cx-80,rest,cx-40,rest,cs('mut'),1,[4,4]);txt('Ruhelage',cx-84,rest+4,cs('mut'),'right',12);
+  }else{
+    const by=ah*.55,bw=clamp(aw*.17,40,80),def=clamp(R5.x/22,-1.3,1.3)*.14;
+    // Lautsprecher
+    ctx.fillStyle=cs('ink');ctx.fillRect(24,by-22,22,44);ctx.beginPath();ctx.moveTo(46,by-14);ctx.lineTo(70,by-34);ctx.lineTo(70,by+34);ctx.lineTo(46,by+14);ctx.fill();
+    if(R5.sing)for(let k=0;k<3;k++){ctx.strokeStyle=cs('red',.6*R5.F0);ctx.lineWidth=2;ctx.beginPath();ctx.arc(70,by,22+k*16+(now*40)%16,-.6,.6);ctx.stroke()}
+    const gx=Math.max(cx+30,aw*.62);
+    if(!R5.broken){ctx.strokeStyle=cs('ink');ctx.lineWidth=2.5;ctx.fillStyle=cs('blue',.08);
+      const wv=Math.cos(R5.fA*0+now*40)*0,w1=bw*(1+def+wv),ws=bw*(1-def);ctx.beginPath();ctx.moveTo(gx-w1,by-bw*1.6);ctx.bezierCurveTo(gx-w1,by,gx-ws*.5,by+bw*.35,gx,by+bw*.4);ctx.bezierCurveTo(gx+ws*.5,by+bw*.35,gx+w1,by,gx+w1,by-bw*1.6);ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.ellipse(gx,by-bw*1.6,w1,6,0,0,TAU);ctx.stroke();line(gx,by+bw*.4,gx,by+bw*1.5,cs('ink'),3);ctx.beginPath();ctx.ellipse(gx,by+bw*1.55,bw*.6,6,0,0,TAU);ctx.stroke();
+      txt('Weinglas',gx,by+bw*1.55+28,cs('mut'),'center',12)}
+    else{ctx.fillStyle=cs('blue',.25);ctx.strokeStyle=cs('ink',.6);let s=7;const r=()=>(s=s*16807%2147483647)/2147483647;
+      for(let i=0;i<16;i++){const x=gx-bw*1.5+r()*bw*3,y=by+bw*1.5-r()*20,a=r()*TAU,l=6+r()*18;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a)*l,y+Math.sin(a)*l);ctx.lineTo(x+Math.cos(a+1.8)*l*.6,y+Math.sin(a+1.8)*l*.6);ctx.closePath();ctx.fill();ctx.stroke()}
+      txt('Zerbrochen!',gx,by-bw,cs('red'),'center',24,true)}
+    const fill=clamp(R5.A*R5.F0/22,0,1);ctx.fillStyle=cs('pan');ctx.fillRect(24,ah-40,aw-48,12);ctx.fillStyle=fill>.8?cs('red'):cs('vio');ctx.fillRect(24,ah-40,(aw-48)*fill,12);txt('Belastung des Glases',24,ah-48,cs('mut'),'left',12)}
+  // Resonanzkurve
+  const px=wide?aw+30:50,py=wide?40:ah+30,pw=(wide?CW-aw-60:CW-80),ph=wide?CH*(lvlShow(3)?.55:.8):CH-ah-70;
+  const rmin=g?.85:0,rmax=g?1.15:2.2,amax=Math.max(rTh(1,R5.Q),...R5.pts.map(p=>p[1]),R5.A)*1.12;
+  const X=r=>px+(r-rmin)/(rmax-rmin)*pw,Y=a=>py+ph-a/amax*ph;
+  txt('Resonanzkurve: Amplitude über der Anregungsfrequenz',px,py-14,cs('ink'),'left',13,true);
+  line(px,py+ph,px+pw,py+ph,cs('ink'));line(px,py,px,py+ph,cs('ink'));
+  const st=g?.05:.5;for(let r=Math.ceil(rmin/st)*st;r<=rmax+1e-9;r+=st)txt(fmt(r*rF0(),g?0:2)+(r+st>rmax?' Hz':''),X(r),py+ph+16,cs('mut'),'center',12);
+  const as=nice(amax/4);for(let a=0;a<=amax;a+=as){line(px-4,Y(a),px+pw,Y(a),cs('line'));txt(fmt(a)+' ×',px-6,Y(a)+4,cs('mut'),'right',12)}
+  line(X(1),py,X(1),py+ph,cs('ok'),1.5,[4,4]);txt('f₀',X(1)+4,py+12,cs('ok'),'left',13,true);
+  if(lvlShow(2)||R5.obj==='glas'){ctx.strokeStyle=cs('ink',.55);ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.beginPath();for(let i=0;i<=300;i++){const r=rmin+(rmax-rmin)*i/300,y=Y(rTh(r,R5.Q));i?ctx.lineTo(X(r),y):ctx.moveTo(X(r),y)}ctx.stroke();ctx.setLineDash([])}
+  ctx.fillStyle=cs('vio');for(const [r,a] of R5.pts){if(r<rmin||r>rmax)continue;ctx.beginPath();ctx.arc(X(r),Y(a),4,0,TAU);ctx.fill()}
+  if(R5.r>=rmin&&R5.r<=rmax){ctx.fillStyle=cs('red');ctx.beginPath();ctx.arc(X(R5.r),Y(R5.A),7,0,TAU);ctx.fill();line(X(R5.r),Y(R5.A)+8,X(R5.r),py+ph,cs('red',.4),1)}
+  if(lvlShow(3)&&wide){const qy=py+ph+46,qh=CH-qy-28;if(qh>50){txt('Phasenverschiebung',px,qy-8,cs('ink'),'left',13,true);line(px,qy+qh,px+pw,qy+qh,cs('ink'));
+    ctx.strokeStyle=cs('blue');ctx.lineWidth=2;ctx.beginPath();for(let i=0;i<=300;i++){const r=rmin+(rmax-rmin)*i/300,p=Math.atan2(r/R5.Q,1-r*r)/Math.PI,y=qy+qh-p*qh;i?ctx.lineTo(X(r),y):ctx.moveTo(X(r),y)}ctx.stroke();
+    txt('0°',px-6,qy+qh+4,cs('mut'),'right',12);txt('180°',px-6,qy+4,cs('mut'),'right',12);txt('90°',px-6,qy+qh/2+4,cs('mut'),'right',12)}}
+}
+MODES.resonanz={enter(){rLoad(R5.pi)},frame:rFrame,draw:rDraw,upd:rOuts,down(){},move(){},up(){},key(k){if(k===' '&&R5.obj==='glas')rSound(!R5.sing)},leave(){rSound(false);R5.sweep=false}};
+
+/* =====================================================================
+   STATION 6: SPEKTRUM (Analyse)
+   ===================================================================== */
+const SP6={pi:0,frozen:false,mic:null,micAn:null,msg:'',spec:null,buf:null,td:null,pitch:0,file:null,fname:''};
+const SPP=[
+ {g:'Analyse',t:'Stimmgerät',d:'Tonhöhe erkennen',
+  obs:'Singe, pfeife oder spiele einen Ton ins Mikrofon. Das Stimmgerät zeigt den Ton und wie viel Cent er zu hoch oder zu tief ist. Ohne Mikrofon: Beispielklänge.',
+  why:'Das Stimmgerät sucht die Periode, mit der sich die Schwingung wiederholt (Autokorrelation), und berechnet daraus die Frequenz. 100 Cent sind ein Halbton. Das Mikrofon funktioniert auf der Website und in der heruntergeladenen Datei, in der Vorschau hier im Chat ist es gesperrt.'},
+ {g:'Analyse',t:'Instrumente im Spektrogramm',d:'Teiltöne als Linien',
+  obs:'Spiele nacheinander Gitarre, Flöte, Klarinette und Trompete. Im Spektrogramm (oben) ist jeder Teilton eine waagrechte Linie. Wie viele Linien siehst du? Wie lange halten sie?',
+  why:'Das Spektrogramm zeigt die Zeit nach rechts, die Frequenz nach oben und die Stärke als Farbe. Bei der Gitarre verschwinden die hohen Teiltöne zuerst. Die Klarinette hat Lücken (gerade Teiltöne schwach), die Trompete viele helle Linien.'},
+ {g:'Analyse',t:'Vokale: a, e, i, o, u',d:'Formanten der Stimme',
+  obs:'Spiele die Vokale. Der Grundton (die Tonhöhe) bleibt gleich. Wo im Spektrum werden die Teiltöne stärker?',
+  why:'Die Stimmbänder erzeugen einen obertonreichen Klang. Mund- und Rachenraum verstärken je nach Stellung bestimmte Frequenzbereiche, die Formanten. Am ersten und zweiten Formanten erkennt man den Vokal: beim „i“ liegen sie weit auseinander (etwa 300 und 2300 Hz), beim „a“ nahe beieinander (etwa 700 und 1200 Hz).'},
+ {g:'Analyse',t:'Akkord, Glissando, Rauschen',d:'verschiedene Spektren',
+  obs:'Vergleiche einen C-Dur-Akkord, einen gleitenden Ton und Rauschen. Wie sieht das jeweils im Spektrum und im Spektrogramm aus?',
+  why:'Ein Akkord hat die Teiltöne aller drei Töne, manche fallen zusammen. Beim Glissando wandert die Linie nach oben. Rauschen hat kein Linienspektrum, sondern enthält alle Frequenzen: Es hat keine Tonhöhe.'},
+ {g:'Analyse',t:'Eigene Aufnahme',d:'Audiodatei untersuchen',
+  obs:'Wähle eine Audiodatei (z. B. eine Aufnahme vom Handy) oder ziehe sie ins Bild. Untersuche Instrumente, Stimmen oder Geräusche.',
+  why:'Die Datei wird nur in deinem Browser abgespielt und analysiert, sie wird nirgends hochgeladen. Gut geeignet: einzelne Töne von Instrumenten, gesungene Vokale, Vogelstimmen.'}
+];
+const FMIN=50,FMAX=8000;
+function demo(k){const c=ac();if(!c)return;stopAll();stopFile();const t0=c.currentTime+.03;
+  const inst=(name,f,dur)=>playParts(INST[name].a.map((a,i)=>({f:(i+1)*f,a,T:0})),{dur,att:.05,vol:.5});
+  if(k==='gitarre'){const f=329.63;playParts(Array.from({length:20},(_,i)=>{const n=i+1;return {f:n*f,a:Math.sin(n*Math.PI*.2)/n,T:3/(1+.35*i)}}),{dur:4,att:.003,vol:.55})}
+  else if(k==='floete'||k==='klarinette'||k==='trompete'||k==='geige'||k==='oboe')inst(k,k==='klarinette'?196:392,2.5);
+  else if(k==='akkord'){[261.63,329.63,392].forEach(f=>playParts([1,.5,.33,.25,.2,.16].map((a,i)=>({f:f*(i+1),a,T:0})),{dur:2.5,att:.03,vol:.35}))}
+  else if(k==='gliss'){const o=c.createOscillator(),g=c.createGain();o.frequency.setValueAtTime(200,t0);o.frequency.exponentialRampToValueAtTime(2400,t0+3);g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(.3,t0+.05);g.gain.setValueAtTime(.3,t0+2.9);g.gain.linearRampToValueAtTime(0,t0+3);o.connect(g);g.connect(AU.m);o.start(t0);o.stop(t0+3.1);const v={stop(){try{o.stop()}catch(e){}}};AU.voices.add(v)}
+  else if(k==='rauschen'){const n=c.sampleRate*2,b=c.createBuffer(1,n,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*.25;const s=c.createBufferSource();s.buffer=b;s.connect(AU.m);s.start(t0);AU.voices.add({stop(){try{s.stop()}catch(e){}}})}
+  else if(k.startsWith('v-')){const F={a:[730,1090,2440],e:[530,1840,2480],i:[300,2290,3010],o:[570,840,2410],u:[300,870,2240]}[k[2]];
+    const o=c.createOscillator(),g=c.createGain(),mix=c.createGain();o.type='sawtooth';o.frequency.value=130;mix.gain.value=1;
+    F.forEach((f,j)=>{const bp=c.createBiquadFilter();bp.type='bandpass';bp.frequency.value=f;bp.Q.value=f/80;const gg=c.createGain();gg.gain.value=[2.2,1.4,.8][j];o.connect(bp);bp.connect(gg);gg.connect(g)});
+    g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(1.2,t0+.05);g.gain.setValueAtTime(1.2,t0+1.8);g.gain.linearRampToValueAtTime(0,t0+2);g.connect(AU.m);o.start(t0);o.stop(t0+2.1);AU.voices.add({stop(){try{o.stop()}catch(e){}}})}
+}
+function stopFile(){if(SP6.file){try{SP6.file.stop()}catch(e){}SP6.file=null}}
+async function playFile(f){const c=ac();if(!c||!f)return;stopAll();stopFile();try{const buf=await c.decodeAudioData(await f.arrayBuffer());const s=c.createBufferSource();s.buffer=buf;s.connect(AU.m);s.start();SP6.file=s;SP6.fname=f.name;SP6.msg='Spielt: '+f.name}catch(e){SP6.msg='Diese Datei kann der Browser nicht lesen.'}spMsg()}
+async function micToggle(){
+  if(SP6.mic){SP6.mic.getTracks().forEach(t=>t.stop());SP6.mic=null;SP6.micAn=null;SP6.msg='Mikrofon aus.';spMsg();return}
+  const c=ac();if(!c)return;
+  try{const st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});SP6.mic=st;const src=c.createMediaStreamSource(st),an=c.createAnalyser();an.fftSize=8192;an.smoothingTimeConstant=.5;src.connect(an);SP6.micAn=an;SP6.msg='Mikrofon an.'}
+  catch(e){SP6.msg='Das Mikrofon ist hier nicht erlaubt. In der Vorschau im Chat ist es gesperrt; auf der Website oder in der heruntergeladenen Datei funktioniert es (Zugriff im Browser erlauben). Die Beispielklänge funktionieren überall.'}
+  spMsg()}
+function spMsg(){setTxt('spMsg',SP6.msg);const b=$('#spMic');if(b){b.textContent=SP6.mic?'Mikrofon aus':'Mikrofon an';b.setAttribute('aria-pressed',String(!!SP6.mic))}}
+function spLoad(i){SP6.pi=i;spTools();spPanel();renderLib('Versuche: Spektrum',SPP,i,spLoad)}
+function spTools(){
+  $('#tools').innerHTML=`<button class="btn hot" id="spMic" aria-pressed="${!!SP6.mic}">${SP6.mic?'Mikrofon aus':'Mikrofon an'}</button><label class="btn" for="spFile" style="display:inline-flex;align-items:center">Audiodatei wählen</label><input type="file" id="spFile" accept="audio/*" hidden><button class="btn" id="spStop">Stopp</button><button class="btn" id="spFr" aria-pressed="${SP6.frozen}">${SP6.frozen?'Weiter':'Bild anhalten'}</button>`;
+  $('#tools').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='spMic')micToggle();else if(b.id==='spStop'){stopAll();stopFile()}else if(b.id==='spFr'){SP6.frozen=!SP6.frozen;spTools()}};
+  $('#spFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)playFile(f)};
+  $('#status').textContent='Oben: Spektrogramm (Zeit nach rechts, Frequenz nach oben). Unten: Spektrum im Moment. Audiodateien können auch ins Bild gezogen werden.';
+}
+function spPanel(){
+  const p=SPP[SP6.pi],D=[['Gitarre','gitarre'],['Flöte','floete'],['Klarinette','klarinette'],['Trompete','trompete'],['Geige','geige'],['Oboe','oboe'],['Vokal a','v-a'],['Vokal e','v-e'],['Vokal i','v-i'],['Vokal o','v-o'],['Vokal u','v-u'],['C-Dur-Akkord','akkord'],['Glissando','gliss'],['Rauschen','rauschen']];
+  $('#panel').innerHTML=infoCard(p)+`<div class="card"><h3>Stimmgerät</h3><div class="tuner"><div class="big" id="spNote">–</div><div><div id="spHz" style="font-weight:700">kein Ton</div><div class="small" id="spC"></div></div></div><div class="gauge"><i id="spG" style="left:50%"></i></div><div class="small" style="display:flex;justify-content:space-between"><span>−50 Cent</span><span>genau</span><span>+50 Cent</span></div></div>
+   <div class="card"><h3>Beispielklänge</h3><div class="quiz">${D.map(([l,k])=>`<button class="btn" data-demo="${k}">${l}</button>`).join('')}</div><p class="small" id="spMsg">${SP6.msg}</p></div>
+   ${lvlShow(2)?'<div class="card"><h3>Stärkste Teiltöne</h3><div class="kv" id="spPk"></div></div>':''}`;
+  $('#panel').onclick=e=>{const b=e.target.closest('button');if(b&&b.dataset.demo)demo(b.dataset.demo)};
+}
+function autoCorr(buf,sr){let rms=0;for(const v of buf)rms+=v*v;rms=Math.sqrt(rms/buf.length);if(rms<.01)return 0;
+  const N=buf.length,minL=Math.floor(sr/1500),maxL=Math.floor(sr/60),c=new Float32Array(maxL+2);
+  for(let l=minL;l<=maxL+1;l++){let s=0;for(let i=0;i<N-l;i++)s+=buf[i]*buf[i+l];c[l]=s}
+  let best=-1,bl=0;const c0=buf.reduce((s,v)=>s+v*v,0);for(let l=minL+1;l<=maxL;l++){if(c[l]>c[l-1]&&c[l]>=c[l+1]&&c[l]>best){best=c[l];bl=l}}
+  if(bl<=0||best<c0*.35)return 0;let l=bl;for(let k=2;k<=6;k++){const l2=Math.round(bl/k);if(l2>=minL&&c[l2]>best*.9)l=l2}
+  const a=c[l-1],b=c[l],d=c[l+1],sh=(a-d)/(2*(a-2*b+d))||0;return sr/(l+sh)}
+function spDraw(){
+  const an=SP6.micAn||AU.an;ctx.fillStyle=cs('fld');ctx.fillRect(0,0,CW,CH);
+  const X0=56,X1=CW-16,W=X1-X0,sT=28,sH=clamp(CH*.5,120,420),fT=sT+sH+44,fH=CH-fT-30;
+  if(!SP6.spec||SP6.spec.height!==256){SP6.spec=document.createElement('canvas');SP6.spec.width=600;SP6.spec.height=256;const g=SP6.spec.getContext('2d');g.fillStyle=cs('fld');g.fillRect(0,0,600,256)}
+  let data=null,sr=44100;
+  if(an){sr=AU.ctx.sampleRate;if(!SP6.buf||SP6.buf.length!==an.frequencyBinCount){SP6.buf=new Float32Array(an.frequencyBinCount);SP6.td=new Float32Array(2048)}
+    if(!SP6.frozen){an.getFloatFrequencyData(SP6.buf);an.getFloatTimeDomainData(SP6.td);SP6.pitch=autoCorr(SP6.td,sr);
+      const g=SP6.spec.getContext('2d');g.drawImage(SP6.spec,-2,0);const col=g.createImageData(2,256),d=col.data,bw=sr/an.fftSize;
+      for(let y=0;y<256;y++){const f=FMIN*(FMAX/FMIN)**(1-y/255),db=SP6.buf[Math.round(f/bw)]||-140,t=clamp((db+100)/70,0,1),c=heat(t);for(let k=0;k<2;k++){const o=(y*2+k)*4;d[o]=c[0];d[o+1]=c[1];d[o+2]=c[2];d[o+3]=255}}
+      g.putImageData(col,598,0)}data=SP6.buf}
+  ctx.imageSmoothingEnabled=true;ctx.drawImage(SP6.spec,X0,sT,W,sH);ctx.strokeStyle=cs('line');ctx.strokeRect(X0,sT,W,sH);
+  txt('Spektrogramm',X0,sT-10,cs('ink'),'left',13,true);txt('Zeit →',X1,sT+sH+16,cs('mut'),'right',12);
+  const fy=f=>sT+sH-Math.log(f/FMIN)/Math.log(FMAX/FMIN)*sH;
+  for(const f of [100,200,500,1000,2000,5000])txt(f>=1000?fmt(f/1000)+' kHz':fmt(f)+' Hz',X0-6,fy(f)+4,cs('mut'),'right',11);
+  // Spektrum
+  txt('Spektrum im Moment',X0,fT-10,cs('ink'),'left',13,true);const fx=f=>X0+Math.log(f/FMIN)/Math.log(FMAX/FMIN)*W;
+  for(let o=1;o<=8;o++){const f=mf(12*(o+1));if(f<FMIN||f>FMAX)continue;line(fx(f),fT,fx(f),fT+fH,cs('line'));txt('C'+o,fx(f),fT+fH+14,cs('mut'),'center',11)}
+  line(X0,fT+fH,X1,fT+fH,cs('ink'));
+  if(data&&!AU.ctx)return;
+  if(data){const bw=sr/(2*data.length);ctx.beginPath();ctx.moveTo(X0,fT+fH);for(let x=0;x<=W;x+=2){const f=FMIN*(FMAX/FMIN)**(x/W),i=Math.round(f/bw);let m=-140;for(let k=-1;k<=1;k++)m=Math.max(m,data[i+k]??-140);const y=fT+fH-clamp((m+100)/75,0,1)*fH;ctx.lineTo(X0+x,y)}ctx.lineTo(X1,fT+fH);ctx.closePath();ctx.fillStyle=cs('vio',.25);ctx.fill();ctx.strokeStyle=cs('vio');ctx.lineWidth=1.6;ctx.stroke();
+    // Spitzen
+    const pk=[];for(let i=3;i<data.length-3;i++){const f=i*bw;if(f<FMIN||f>FMAX)continue;if(data[i]>-75&&data[i]>=data[i-1]&&data[i]>=data[i+1]&&data[i]>=data[i-2]&&data[i]>=data[i+2])pk.push([f,data[i]])}
+    pk.sort((a,b)=>b[1]-a[1]);const top=[];for(const p of pk){if(top.every(q=>Math.abs(Math.log2(q[0]/p[0]))>.04))top.push(p);if(top.length>=6)break}
+    top.forEach(([f,d])=>{ctx.fillStyle=cs('red');ctx.beginPath();ctx.arc(fx(f),fT+fH-clamp((d+100)/75,0,1)*fH,4,0,TAU);ctx.fill();if(lvlShow(2))txt(fmt(f)+' Hz',fx(f),fT+fH-clamp((d+100)/75,0,1)*fH-8,cs('red'),'center',11,true)});
+    SP6.top=top.sort((a,b)=>a[0]-b[0])}
+  else txt('Spiele einen Beispielklang, schalte das Mikrofon ein oder ziehe eine Audiodatei hierher.',X0+W/2,fT+fH/2,cs('mut'),'center',14,true);
+}
+function heat(t){const st=[C.fld,[255,232,160],[246,160,77],C.red,[112,20,58]],x=t*4,k=Math.min(3,Math.floor(x)),u=x-k;return st[k].map((c,i)=>c+(st[k+1][i]-c)*u)}
+function spUpd(){const f=SP6.pitch;if(f>0){const n=note(f);setTxt('spNote',n.name);setTxt('spHz',fmt(f,1)+' Hz');setTxt('spC',(n.cents>=0?'+':'')+fmt(n.cents)+' Cent');const g=$('#spG');if(g)g.style.left=clamp(50+n.cents,0,100)+'%'}
+  else{setTxt('spNote','–');setTxt('spHz','kein Ton');setTxt('spC','')}
+  const pk=$('#spPk');if(pk&&SP6.top){const f0=SP6.pitch;pk.innerHTML=SP6.top.map(([f])=>`<span>${fmt(f)} Hz${f0>0&&lvlShow(3)?` ≈ ${fmt(f/f0,1)} · f₁`:''}</span><b>${note(f).name}</b>`).join('')||'<span class="small">–</span>'}}
+MODES.spektrum={enter(){spLoad(SP6.pi)},frame(){},draw:spDraw,upd:spUpd,down(){},move(){},up(){},key(){},leave(){}};
+
+/* =====================================================================
+   Start, Umschalten, Schleife
+   ===================================================================== */
+function fit(){const r=$('#cvw').getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1);CW=Math.max(50,r.width);CH=Math.max(50,r.height);cv.width=Math.round(CW*d);cv.height=Math.round(CH*d);ctx.setTransform(d,0,0,d,0,0)}
+const ro=new ResizeObserver(()=>fit());ro.observe($('#cvw'));
+const thObs=new MutationObserver(()=>{readCols();SP6.spec=null});thObs.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{readCols();SP6.spec=null})}catch(e){}
+function setMode(m){if(!MODES[m])m='saite';if(m===APP.mode)return;const old=MODES[APP.mode];if(old&&old.leave)old.leave();stopAll();APP.mode=m;
+  $$('.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.mode===m)));MODES[m].enter()}
+function setLvl(l){APP.lvl=l;try{localStorage.setItem('klang-lvl',String(l))}catch(e){}$$('.lvl button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.lvl===l)));
+  const m=APP.mode;if(m==='saite')sPanel();else if(m==='pfeife')pPanel();else if(m==='farbe'){kPanel()}else if(m==='schwebung')bPanel();else if(m==='resonanz')rPanel();else spPanel()}
+$$('.tabs button').forEach(b=>b.onclick=()=>{location.hash=b.dataset.mode;setMode(b.dataset.mode)});
+$$('.lvl button').forEach(b=>b.onclick=()=>setLvl(+b.dataset.lvl));
+addEventListener('hashchange',()=>setMode(location.hash.slice(1)));
+$('#bTon').onclick=()=>{ac();setMute(!AU.muted)};
+$('#bFull').onclick=()=>{const d=document;try{if(d.fullscreenElement)d.exitFullscreen();else d.documentElement.requestFullscreen().catch(()=>{})}catch(e){}};
+const pos=e=>{const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top]};
+cv.addEventListener('pointerdown',e=>{ac();try{cv.setPointerCapture(e.pointerId)}catch(_){}MODES[APP.mode].down(...pos(e))});
+cv.addEventListener('pointermove',e=>MODES[APP.mode].move(...pos(e)));
+const up=()=>MODES[APP.mode].up();cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+const cvw=$('#cvw');cvw.addEventListener('dragover',e=>{e.preventDefault()});cvw.addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f){setMode('spektrum');location.hash='spektrum';playFile(f)}});
+document.addEventListener('click',()=>{if(AU.ctx&&AU.ctx.state==='suspended')AU.ctx.resume().catch(()=>{})},true);
+addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;if(e.key===' '&&e.target.tagName==='BUTTON')return;if(e.key===' '){e.preventDefault();ac();MODES[APP.mode].key(' ')}});
+let lv=2;try{lv=+localStorage.getItem('klang-lvl')||2}catch(e){}APP.lvl=clamp(lv,1,3);$$('.lvl button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.lvl===APP.lvl)));
+readCols();fit();setMode(location.hash.slice(1)||'saite');
+let last=performance.now();
+function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;APP.frame++;const M=MODES[APP.mode];try{M.frame(dt);M.draw();if(APP.frame%6===0)M.upd()}catch(err){console.error(err)}requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Schalllabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday school lab, calm and legible on a classroom projector
+   IDEA a wave tank and a Kundt tube on a lab bench: pressure painted red (Überdruck) and blue (Unterdruck)
+   PICTURE the live simulation canvas fills the centre; the field itself is the picture
+   COLOUR white ground, dark ink, signal red and blue from the pressure map, violet for microphones
+   TYPE Atkinson Hyperlegible for everything (made for readability)
+   LAYOUT laptop: library | stage | panel; phone: stage, panel, library stacked */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#10161b);--ink:light-dark(#14212b,#e6ecf1);--mut:light-dark(#5a6772,#9babb7);--line:light-dark(#dde3e8,#29343d);--pan:light-dark(#f2f5f7,#18212a);--red:light-dark(#df4329,#ff6b4f);--blue:light-dark(#2762c9,#6198ff);--mic:light-dark(#7b3cc4,#bb90ff);--fld:light-dark(#ffffff,#0c1115);--ok:light-dark(#1f7a4d,#53c98a)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 "Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:clip}
+button,select,input{font:inherit;color:inherit}
+#app{display:grid;grid-template-rows:auto minmax(0,1fr);height:100%}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand svg{flex:none}
+h1{font-size:26px;line-height:1.05;margin:0;letter-spacing:-.02em}
+h1 a{color:inherit;text-decoration:none}
+h1 a:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+.tabs{display:flex;gap:4px;background:var(--pan);padding:4px;border-radius:12px;flex-wrap:wrap}
+.tabs button{border:0;background:none;padding:8px 14px;border-radius:9px;cursor:pointer;font-weight:700;min-height:40px}
+.tabs button[aria-selected=true]{background:var(--ink);color:var(--bg)}
+.btn{border:1px solid var(--line);background:var(--bg);padding:7px 12px;border-radius:9px;cursor:pointer;min-height:38px;white-space:nowrap}
+.btn:hover{border-color:var(--mut)}
+.btn[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.hot{background:var(--red);border-color:var(--red);color:#fff;font-weight:700}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+main{display:grid;grid-template-columns:250px minmax(0,1fr) 320px;min-height:0}
+#lib{overflow:auto;border-right:1px solid var(--line);padding:12px}
+#lib h2,#panel h2{font-size:13px;color:var(--mut);margin:14px 4px 6px;font-weight:700}
+#lib h2:first-child{margin-top:2px}
+.pre{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:10px;cursor:pointer;margin-bottom:2px}
+.pre b{display:block;font-size:15px}
+.pre span{display:block;font-size:13px;color:var(--mut);line-height:1.3}
+.pre:hover{background:var(--pan)}
+.pre[aria-current=true]{background:var(--pan);box-shadow:inset 3px 0 0 var(--red)}
+#stage{display:flex;flex-direction:column;min-height:0}
+#tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line)}
+#tools .sep{width:1px;height:26px;background:var(--line);margin:0 4px}
+#tools select{border:1px solid var(--line);border-radius:9px;padding:7px 8px;min-height:38px;background:var(--bg)}
+#cvw{position:relative;flex:1;min-height:320px;background:var(--fld)}
+#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+#status{font-size:13px;color:var(--mut);padding:5px 12px;border-top:1px solid var(--line);min-height:28px}
+#panel{overflow:auto;border-left:1px solid var(--line);padding:6px 14px 20px}
+.card{border-bottom:1px solid var(--line);padding:10px 0 12px}
+.card:last-child{border-bottom:0}
+.card h3{font-size:17px;margin:0 0 6px;line-height:1.2}
+.card p{margin:4px 0}
+.obs{background:var(--pan);border-radius:10px;padding:9px 11px;margin:6px 0}
+details summary{cursor:pointer;font-weight:700;margin-top:6px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;align-items:center;margin:8px 0 2px;font-size:14px}
+.row output{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--red);height:26px;margin:0}
+.seg{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
+.seg button{flex:1 1 auto;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:6px 8px;cursor:pointer;min-height:36px;font-size:14px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chk{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px}
+.chk label{display:flex;align-items:center;gap:6px;min-height:32px;cursor:pointer}
+.chk input{width:18px;height:18px;accent-color:var(--red)}
+select.full{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px;background:var(--bg);font-size:15px;min-height:40px}
+.kv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;font-size:14px;margin-top:6px}
+.kv b{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.scope{width:100%;height:150px;display:block;border:1px solid var(--line);border-radius:8px;background:var(--fld)}
+.mics{font-size:14px;margin-top:6px}
+.mics div{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;padding:2px 0}
+.mics i{display:inline-block;width:11px;height:11px;border-radius:50%;flex:none;transform:translateY(1px)}
+.small{font-size:13px;color:var(--mut)}
+.big{font-size:clamp(28px,4vw,40px);font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--mut)}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:4px;transform:translateY(1px)}
+table.bands{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px;font-variant-numeric:tabular-nums}
+table.bands th,table.bands td{padding:3px 4px;text-align:right;border-bottom:1px solid var(--line)}
+table.bands th:first-child,table.bands td:first-child{text-align:left}
+.grid2{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.grid2 label{font-size:13px;color:var(--mut)}
+.grid2 input{width:100%;border:1px solid var(--line);border-radius:8px;padding:7px;background:var(--bg);font-size:16px}
+#probe{display:none}
+@media(max-width:1150px){main{grid-template-columns:215px minmax(0,1fr) 290px}}
+@media(max-width:900px){
+  html,body,#app{height:auto}
+  main{grid-template-columns:minmax(0,1fr)}
+  #stage{order:1}
+  #cvw{flex:none;height:min(64vh,560px)}
+  #panel{order:2;border:0;border-top:1px solid var(--line);overflow:visible}
+  #lib{order:3;border:0;border-top:1px solid var(--line);overflow:visible}
+  h1{font-size:22px}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div class="brand">
+    <svg width="38" height="30" viewBox="0 0 38 30" aria-hidden="true"><rect x="1" y="9" width="7" height="12" rx="1.5" fill="currentColor"/><path d="M8 9 L15 3 V27 L8 21 Z" fill="currentColor"/><path d="M20 9 q4 6 0 12" stroke="#df4329" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M25 5 q7 10 0 20" stroke="#df4329" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/><path d="M30 2 q9 13 0 26" stroke="#2762c9" stroke-width="3" fill="none" stroke-linecap="round" opacity=".6"/></svg>
+    <h1><a href="../index.html" title="Zur Startseite">Schalllabor</a></h1>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Bereiche">
+    <button role="tab" data-mode="welle" id="tab-welle">Schallwelle</button>
+    <button role="tab" data-mode="raum" id="tab-raum">Raum</button>
+    <button role="tab" data-mode="hall" id="tab-hall">Nachhall</button>
+  </nav>
+  <button class="btn" id="bTon" aria-pressed="false">Ton aus</button>
+  <button class="btn" id="bFull">Vollbild</button>
+</header>
+<main>
+  <aside id="lib" aria-label="Versuche"></aside>
+  <section id="stage">
+    <div id="tools"></div>
+    <div id="cvw"><canvas id="cv" aria-label="Simulation"></canvas></div>
+    <div id="status"></div>
+  </section>
+  <aside id="panel" aria-label="Einstellungen"></aside>
+</main>
+</div>
+<div id="probe"></div>
+<script id="core">
+// ===== Simulationskern (ohne DOM) =====
+const S=0.5;            // Courant-Zahl c·dt/dx
+const AMP=3;            // Einspeisung Punktquelle
+const BEAMF=0.05;       // Einspeisung pro Punkt einer Lautsprecherzeile
+const GAIN=4;           // Farbskala
+const DBREF=100;        // dB-Bezug (≈ 80 dB in 1 m)
+const IREF=0.02;        // Bezug Lautstärke-Ansicht
+const MAT=[null,
+  {k:'beton',n:'Beton',a:.02,col:'#8f979d'},
+  {k:'holz',n:'Holz',a:.12,col:'#b8875a'},
+  {k:'vorhang',n:'Vorhang',a:.5,col:'#a24a6c'},
+  {k:'schaum',n:'Schaumstoff',a:.9,col:'#55616b'},
+  {k:'fels',n:'Fels',a:.03,col:'#86735f'}];
+const IZ=new Float32Array(8);
+MAT.forEach((m,i)=>{if(m){const R=Math.sqrt(1-m.a);IZ[i]=(1-R)/(1+R)}});
+
+class Ring{
+  constructor(n){this.n=n;this.t=new Float64Array(n);this.v=new Float32Array(n);this.i=0;this.len=0}
+  push(t,v){this.t[this.i]=t;this.v[this.i]=v;this.i=(this.i+1)%this.n;if(this.len<this.n)this.len++}
+  clear(){this.i=0;this.len=0}
+  at(k){const j=(this.i-this.len+k+this.n)%this.n;return j}
+}
+class Detector{
+  constructor(){this.reset()}
+  reset(){this.ev=[];this.cur=null;this.qs=0}
+  feed(t,v,thr,quiet,cen){
+    const a=Math.abs(v);
+    if(this.cur){
+      if(a>this.cur.pk){this.cur.pk=a;if(!cen)this.cur.tp=t}
+      if(cen&&!this.qs){this.cur.se+=v*v;this.cur.st+=t*v*v;this.cur.tp=this.cur.st/this.cur.se}
+      if(a<Math.max(thr*.3,this.cur.pk*.12)){if(!this.qs)this.qs=t;if(t-this.qs>quiet){this.cur.done=true;this.cur=null;this.qs=0}}else this.qs=0;
+    }else if(a>thr){this.cur={t,tp:t,pk:a,se:v*v,st:t*v*v};this.ev.push(this.cur);if(this.ev.length>8)this.ev.shift();this.qs=0}
+  }
+}
+
+function makeSim(nx,ny,M){
+  const NX=nx+2*M,NY=ny+2*M,N=NX*NY;
+  const s={nx,ny,M,NX,NY,N,p:new Float32Array(N),vx:new Float32Array((NX+1)*NY),vy:new Float32Array(NX*(NY+1)),
+    mat:new Uint8Array(N),dp:new Float32Array(N),dvx:new Float32Array((NX+1)*NY),dvy:new Float32Array(NX*(NY+1)),
+    I:new Float32Array(N),n:0,t:0,h:.05,c:343,dt:0,src:[],mic:[],beta:1/200,lastTrig:-1,trigOff:0};
+  for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){
+    const dx=i<M?M-i:(i>=M+nx?i-(M+nx)+1:0),dy=j<M?M-j:(j>=M+ny?j-(M+ny)+1:0);
+    const d=Math.max(dx,dy);s.dp[j*NX+i]=1-(d>0?0.3*(d/M)**2:0);
+  }
+  const FX=NX+1;
+  for(let j=0;j<NY;j++)for(let i=0;i<=NX;i++){
+    const a=Math.max(0,i-1),b=Math.min(NX-1,i);s.dvx[j*FX+i]=Math.min(s.dp[j*NX+a],s.dp[j*NX+b]);
+  }
+  for(let j=0;j<=NY;j++)for(let i=0;i<NX;i++){
+    const a=Math.max(0,j-1),b=Math.min(NY-1,j);s.dvy[j*NX+i]=Math.min(s.dp[a*NX+i],s.dp[b*NX+i]);
+  }
+  return s;
+}
+function setScale(s,h,c){s.h=h;s.c=c;s.dt=S*h/c}
+function clearWave(s){s.p.fill(0);s.vx.fill(0);s.vy.fill(0);s.I.fill(0);s.n=0;s.t=0;s.lastTrig=-1;
+  for(const q of s.src){q.ts=0;if(q.x0!=null)q.x=q.x0}
+  for(const m of s.mic)resetMic(m)}
+
+function srcSig(q,t){
+  const tt=t-q.ts;if(tt<0)return 0;
+  if(q.type==='sinus'){const T=1/q.f,e=tt<T?0.5-0.5*Math.cos(Math.PI*tt/T):1;return e*Math.sin(2*Math.PI*q.f*tt+(q.ph?Math.PI:0))}
+  if(q.type==='puls'){const D=4/q.f;if(tt>D)return 0;return Math.sin(2*Math.PI*q.f*tt+(q.ph?Math.PI:0))*(0.5-0.5*Math.cos(2*Math.PI*tt/D))}
+  const fp=q.fp,sg=.8/fp;if(tt>5*sg)return 0;const d=tt-2.5*sg;return Math.sin(2*Math.PI*fp*d)*Math.exp(-((d/sg)**2))*(q.ph?-1:1)*1.6;
+}
+function sigLen(q){return q.type==='puls'?4/q.f:q.type==='knall'?4/q.fp:Infinity}
+
+function addAt(s,x,y,val){
+  const gx=x+s.M-0.5,gy=y+s.M-0.5,i=Math.floor(gx),j=Math.floor(gy),fx=gx-i,fy=gy-j;
+  if(i<0||j<0||i>=s.NX-1||j>=s.NY-1)return;
+  const c=j*s.NX+i,p=s.p,m=s.mat;
+  if(!m[c])p[c]+=val*(1-fx)*(1-fy);
+  if(!m[c+1])p[c+1]+=val*fx*(1-fy);
+  if(!m[c+s.NX])p[c+s.NX]+=val*(1-fx)*fy;
+  if(!m[c+s.NX+1])p[c+s.NX+1]+=val*fx*fy;
+}
+function addSmooth(s,x,y,val){
+  const gx=x+s.M-0.5,gy=y+s.M-0.5,i0=Math.floor(gx)-1,j0=Math.floor(gy)-1,w=[];let ws=0;
+  for(let j=0;j<4;j++)for(let i=0;i<4;i++){const v=Math.max(0,1-Math.abs(i0+i-gx)/2)*Math.max(0,1-Math.abs(j0+j-gy)/2);w.push(v);ws+=v}
+  let k=0;for(let j=0;j<4;j++)for(let i=0;i<4;i++,k++){const c=(j0+j)*s.NX+i0+i;if(c>=0&&c<s.N&&!s.mat[c])s.p[c]+=val*w[k]/ws}
+}
+function trigOff(q){return q.type==='knall'?2/q.fp:q.type==='puls'?2/q.f:0}
+function readAt(s,x,y){
+  const gx=x+s.M-0.5,gy=y+s.M-0.5,i=Math.floor(gx),j=Math.floor(gy),fx=gx-i,fy=gy-j;
+  if(i<0||j<0||i>=s.NX-1||j>=s.NY-1)return 0;
+  const c=j*s.NX+i,p=s.p;
+  return p[c]*(1-fx)*(1-fy)+p[c+1]*fx*(1-fy)+p[c+s.NX]*(1-fx)*fy+p[c+s.NX+1]*fx*fy;
+}
+
+function emit(s){
+  const t=s.t;
+  for(let k=s.src.length-1;k>=0;k--){
+    const q=s.src[k];
+    if(q.once&&t-q.ts>sigLen(q)){s.src.splice(k,1);continue}
+    if(q.on===false)continue;
+    if(q.type!=='sinus'&&q.rep>0&&t-q.ts>=q.rep){q.ts=t;s.lastTrig=t;s.trigOff=trigOff(q);for(const m of s.mic)trigMic(m,s)}
+    const fr=q.type==='knall'?q.fp:q.f;
+    if(q.w>0){
+      const n=Math.max(2,Math.round(q.w/s.h)),ex=Math.cos(q.ang),ey=Math.sin(q.ang),px=-ey,py=ex;
+      const tau=s.h/s.c,comp=1/Math.max(0.25,2*Math.sin(2*Math.PI*fr*tau));
+      const g=q.amp*AMP*BEAMF*comp,v1=srcSig(q,t)*g,v2=-srcSig(q,t-tau)*g;
+      if(v1||v2)for(let i=0;i<n;i++){const o=i-(n-1)/2,x=q.x+px*o,y=q.y+py*o;addAt(s,x,y,v1);addAt(s,x-ex,y-ey,v2)}
+    }else{
+      const v=srcSig(q,t)*q.amp*AMP;if(v){if(q.v)addSmooth(s,q.x,q.y,v);else addAt(s,q.x,q.y,v)}
+    }
+    if(q.v){q.x+=q.v/s.c*S;if(q.x>q.x1){q.x=q.x0}else if(q.x<q.x0&&q.v<0){q.x=q.x1}}
+  }
+}
+
+function step(s){
+  const NX=s.NX,NY=s.NY,FX=NX+1,p=s.p,vx=s.vx,vy=s.vy,mat=s.mat,dvx=s.dvx,dvy=s.dvy,dp=s.dp,I=s.I,b=s.beta;
+  for(let j=0;j<NY;j++){const rp=j*NX,rf=j*FX;
+    for(let i=1;i<NX;i++){const a=rp+i-1,ma=mat[a],mb=mat[a+1],f=rf+i;
+      if(ma===0&&mb===0)vx[f]=vx[f]*dvx[f]-S*(p[a+1]-p[a]);
+      else if(ma===0)vx[f]=p[a]*IZ[mb];
+      else if(mb===0)vx[f]=-p[a+1]*IZ[ma];
+      else vx[f]=0;}}
+  for(let j=1;j<NY;j++){const rp=j*NX;
+    for(let i=0;i<NX;i++){const c=rp+i,a=c-NX,ma=mat[a],mb=mat[c];
+      if(ma===0&&mb===0)vy[c]=vy[c]*dvy[c]-S*(p[c]-p[a]);
+      else if(ma===0)vy[c]=p[a]*IZ[mb];
+      else if(mb===0)vy[c]=-p[c]*IZ[ma];
+      else vy[c]=0;}}
+  for(let j=0;j<NY;j++){const rp=j*NX,rf=j*FX;
+    for(let i=0;i<NX;i++){const c=rp+i;
+      if(mat[c]){p[c]=0;I[c]=0;continue}
+      const v=p[c]*dp[c]-S*(vx[rf+i+1]-vx[rf+i]+vy[c+NX]-vy[c]);p[c]=v;I[c]+=b*(v*v-I[c]);}}
+  s.n++;s.t=s.n*s.dt;
+  emit(s);
+  for(const m of s.mic)sampleMic(s,m);
+}
+
+function newMic(x,y){return {x,y,ring:new Ring(8000),ms:0,det:new Detector(),zc:[],pos:false,env:0,dec:{pk:0,tpk:0,t15:0}}}
+function resetMic(m){m.prev=null;m.z=null;m.ring.clear();m.ms=0;m.det.reset();m.zc=[];m.env=0;m.dec={pk:0,tpk:0,t15:0}}
+function trigMic(m,s){if(m.det.ev.some(e=>e.done)){m.prev=m.det.ev.filter(e=>e.done);m.prevZ=m.z??s.trigOff}m.z=s.lastTrig+s.trigOff;m.det.reset();m.dec={pk:0,tpk:0,t15:0}}
+function sampleMic(s,m){
+  const v=readAt(s,m.x,m.y),t=s.t;m.ring.push(t,v);
+  m.ms+=s.beta*(v*v-m.ms);
+  const hy=Math.sqrt(m.ms)*0.25+1e-6;
+  if(!m.pos&&v>hy){m.pos=true;m.zc.push(t);if(m.zc.length>16)m.zc.shift()}else if(m.pos&&v<-hy)m.pos=false;
+  m.det.feed(t,v,s.thr||0.002,s.quiet||0.01,true);
+  m.env+=(s.be||0.05)*(v*v-m.env);
+  const d=m.dec;if(m.env>d.pk){d.pk=m.env;d.tpk=t;d.t15=0}else if(!d.t15&&d.pk>1e-9&&m.env<d.pk*0.0316)d.t15=t;
+}
+function micDb(m){return m.ms>1e-14?10*Math.log10(m.ms)+DBREF:-Infinity}
+function micFreq(m,t){const z=m.zc;if(z.length<4)return 0;const k=z.length-1,f=k/(z[k]-z[0]);if(t-z[k]>3/f)return 0;return f}
+
+</script>
+<script>
+{
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const cv=$('#cv'),ctx=cv.getContext('2d');
+let CW=1,CH=1,DPR=1;
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const fmt=(v,d=0)=>Number.isFinite(v)?v.toLocaleString('de-AT',{minimumFractionDigits:d,maximumFractionDigits:d}):'–';
+const nice=x=>{const p=10**Math.floor(Math.log10(x)),m=x/p;return (m<1.5?1:m<3.5?2:m<7.5?5:10)*p};
+const MICCOL=['#7b3cc4','#0f8b8d','#d9822b','#5a6772'];
+const MODES={},APP={mode:'',frame:0};
+const FONT='"Atkinson Hyperlegible",system-ui,sans-serif';
+
+/* ---------- Farben ---------- */
+const C={};
+const rgb=s=>{const m=s.match(/[\d.]+/g)||[0,0,0];return [+m[0],+m[1],+m[2]]};
+const cs=(k,a)=>a==null?`rgb(${C[k].join(',')})`:`rgba(${C[k].join(',')},${a})`;
+const hex=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+let LUTP=null,LUTI=null;
+function readCols(){
+  const pr=$('#probe');
+  for(const k of ['bg','ink','mut','line','pan','red','blue','mic','fld','ok']){pr.style.color=`var(--${k})`;C[k]=rgb(getComputedStyle(pr).color)}
+  const f=C.fld,r=C.red,b=C.blue;LUTP=new Uint8ClampedArray(513*3);
+  for(let i=0;i<=512;i++){const v=i/256-1,w=Math.abs(v)**0.75,t=v>0?r:b;for(let c=0;c<3;c++)LUTP[i*3+c]=f[c]+(t[c]-f[c])*w}
+  const st=[f,[255,232,160],[246,160,77],r,[112,20,58]];LUTI=new Uint8ClampedArray(257*3);
+  for(let i=0;i<=256;i++){const x=i/256*4,k=Math.min(3,Math.floor(x)),u=x-k;for(let c=0;c<3;c++)LUTI[i*3+c]=st[k][c]+(st[k+1][c]-st[k][c])*u}
+  if(window.__R)window.__R.wdirty=true;
+}
+
+/* ---------- Ton ---------- */
+const AU={ctx:null,on:false,nodes:[]};
+function auInit(){
+  if(!AU.ctx){try{const A=window.AudioContext||window.webkitAudioContext,c=new A();AU.ctx=c;
+    AU.m=c.createGain();AU.m.gain.value=.8;AU.m.connect(c.destination);
+    AU.o=c.createOscillator();AU.og=c.createGain();AU.og.gain.value=0;AU.o.connect(AU.og);AU.og.connect(AU.m);AU.o.start();
+    AU.conv=c.createConvolver();AU.wet=c.createGain();AU.dry=c.createGain();AU.conv.connect(AU.wet);AU.wet.connect(AU.m);AU.dry.connect(AU.m);
+  }catch(e){AU.ctx=null}}
+  if(AU.ctx&&AU.ctx.state==='suspended')AU.ctx.resume().catch(()=>{});
+  return !!AU.ctx;
+}
+function setTon(on){AU.on=!!(on&&auInit());const b=$('#bTon');b.setAttribute('aria-pressed',AU.on);b.textContent=AU.on?'Ton an':'Ton aus';if(!AU.on)tone(0,0)}
+function tone(f,lev){if(!AU.ctx)return;const t=AU.ctx.currentTime;if(f>20)AU.o.frequency.setTargetAtTime(f,t,.02);AU.og.gain.setTargetAtTime(AU.on&&f>20?clamp(lev,0,1)*.2:0,t,.04)}
+function click(lev){if(!AU.on||!AU.ctx)return;const c=AU.ctx,n=Math.floor(c.sampleRate*.05),b=c.createBuffer(1,n,c.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(c.sampleRate*.005));
+  const s=c.createBufferSource(),g=c.createGain();g.gain.value=clamp(lev,0,1)*.9;s.buffer=b;s.connect(g);g.connect(AU.m);s.start()}
+
+/* ---------- Bausteine für das Bedienfeld ---------- */
+const range=(id,label,min,max,step,val)=>`<div class="row"><label for="${id}">${label}</label><output id="${id}-o"></output></div><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}">`;
+const seg=(key,opts,cur)=>`<div class="seg" role="group">${opts.map(([l,v])=>`<button data-${key}="${v}" aria-pressed="${String(v)===String(cur)}">${l}</button>`).join('')}</div>`;
+const infoCard=p=>`<div class="card"><h3>${p.t}</h3><div class="obs"><b>Beobachte:</b> ${p.obs}</div><details><summary>Was passiert?</summary><p>${p.why}</p></details></div>`;
+const setOut=(id,txt)=>{const o=$('#'+id+'-o');if(o)o.textContent=txt};
+function renderLib(title,groups,cur,pick){
+  let i=0;$('#lib').innerHTML=`<h2>${title}</h2>`+groups.map(g=>`<h2>${g.h}</h2>`+g.items.map(p=>`<button class="pre" data-i="${i++}" aria-current="${i-1===cur}"><b>${p.t}</b><span>${p.d}</span></button>`).join('')).join('');
+  $('#lib').onclick=e=>{const b=e.target.closest('.pre');if(b){pick(+b.dataset.i);if(innerWidth<900)$('#stage').scrollIntoView({behavior:'smooth'})}};
+}
+function drawScope(el,series,t0,t1,evs,zero){if(zero==null)zero=t0;
+  if(!el)return;const r=el.getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1),W=Math.max(20,r.width),H=Math.max(20,r.height);
+  if(el.width!==Math.round(W*d)||el.height!==Math.round(H*d)){el.width=Math.round(W*d);el.height=Math.round(H*d)}
+  const g=el.getContext('2d');g.setTransform(d,0,0,d,0,0);g.clearRect(0,0,W,H);
+  const L=8,T=8,B=22,pw=W-16,ph=H-T-B,mid=T+ph/2,span=Math.max(1e-6,t1-t0);
+  let mx=1e-4;for(const s of series){const rg=s.ring;for(let k=0;k<rg.len;k++){const j=rg.at(k),t=rg.t[j];if(t>=t0&&t<=t1){const a=Math.abs(rg.v[j]);if(a>mx)mx=a}}}
+  g.strokeStyle=cs('line');g.lineWidth=1;g.beginPath();g.moveTo(L,mid);g.lineTo(L+pw,mid);g.stroke();
+  g.font=`12px ${FONT}`;g.fillStyle=cs('mut');g.textAlign='center';
+  const ms=span*1000,st=nice(ms/4),z=(zero-t0)*1000;for(let v=Math.ceil(-z/st)*st;v+z<=ms+1e-9;v+=st){const x=L+(v+z)/ms*pw;g.beginPath();g.moveTo(x,T+ph);g.lineTo(x,T+ph+4);g.stroke();g.fillText(fmt(Math.abs(v)<1e-9?0:v,st<1?1:0)+' ms',clamp(x,22,W-22),H-5)}
+  if(evs)for(const e of evs){if(e.t<t0||e.t>t1)continue;const x=L+(e.t-t0)/span*pw;g.strokeStyle=e.col;g.setLineDash([3,3]);g.beginPath();g.moveTo(x,T);g.lineTo(x,T+ph);g.stroke();g.setLineDash([])}
+  for(const s of series){const rg=s.ring;g.strokeStyle=s.col;g.lineWidth=1.6;g.beginPath();let on=false;
+    const stp=Math.max(1,Math.floor(rg.len/(pw*2)));
+    for(let k=0;k<rg.len;k+=stp){const j=rg.at(k),t=rg.t[j];if(t<t0||t>t1)continue;const x=L+(t-t0)/span*pw,y=mid-rg.v[j]/mx*ph*.46;if(on)g.lineTo(x,y);else{g.moveTo(x,y);on=true}}
+    g.stroke()}
+}
+function txt(s,x,y,col,al='left',size=13,bold=false){ctx.font=`${bold?'700 ':''}${size}px ${FONT}`;ctx.textAlign=al;ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle=cs('fld',.9);ctx.strokeText(s,x,y);ctx.fillStyle=col;ctx.fillText(s,x,y)}
+
+/* =====================================================================
+   BEREICH 1: SCHALLWELLE (Rohr, eindimensional)
+   ===================================================================== */
+const MED={luft:{n:'Luft',c:T=>331.3+0.606*T},helium:{n:'Helium',c:()=>1007},wasser:{n:'Wasser',c:()=>1483},stahl:{n:'Stahlstab',c:()=>5100}};
+const ENDS={frei:{n:'kein Ende (Rohr geht weiter)',R:0},beton:{n:'Betonwand',R:-0.99,col:'#8f979d'},holz:{n:'Holzplatte',R:-Math.sqrt(.88),col:'#b8875a'},
+  vorhang:{n:'Vorhang',R:-Math.sqrt(.5),col:'#a24a6c'},schaum:{n:'Schaumstoff',R:-Math.sqrt(.1),col:'#55616b'},offen:{n:'offenes Rohrende',R:0.96}};
+const WP=[
+ {g:'Grundlagen',t:'Schallwelle im Rohr',d:'Teilchen schwingen, die Welle wandert',set:{sig:'sinus',f:343,end:'frei',med:'luft',sh:{col:1,par:1,p:1,s:0,lam:0}},
+  obs:'Die Membran des Lautsprechers schiebt die Luftteilchen an. Verfolge ein rotes Teilchen: Wandert es mit der Welle mit?',
+  why:'Jedes Teilchen schwingt nur hin und her um seinen Platz. Weiter wandern die Verdichtung (Überdruck, rot) und die Verdünnung (Unterdruck, blau). Schall ist eine Längswelle (Longitudinalwelle): Die Teilchen schwingen in Ausbreitungsrichtung. Ohne Teilchen, also im Vakuum, gibt es keinen Schall.'},
+ {g:'Grundlagen',t:'Wellenlänge und Frequenz',d:'λ = c / f ausprobieren',set:{sig:'sinus',f:343,end:'frei',med:'luft',sh:{col:1,par:1,p:1,s:0,lam:1}},
+  obs:'Verändere die Frequenz. Wie ändert sich der Abstand zwischen zwei Verdichtungen (die Wellenlänge λ)?',
+  why:'Es gilt c = λ · f. Bei 343 Hz ist λ in Luft genau 1 m. Doppelte Frequenz (höherer Ton) bedeutet halbe Wellenlänge. Die Schallgeschwindigkeit c bleibt dabei gleich, sie hängt nur vom Stoff und von der Temperatur ab.'},
+ {g:'Grundlagen',t:'Druck und Auslenkung',d:'zwei Beschreibungen derselben Welle',set:{sig:'sinus',f:343,end:'frei',med:'luft',sh:{col:1,par:1,p:1,s:1,lam:0}},
+  obs:'Vergleiche die Druckkurve (Fläche) mit der Auslenkungskurve (gestrichelt). Wo ist der Druck am größten?',
+  why:'Wo sich die Teilchen gerade am wenigsten bewegt haben (Auslenkung null), drängen sie sich von beiden Seiten zusammen oder ziehen sich auseinander. Deshalb ist die Druckkurve gegenüber der Auslenkung um eine Viertelwellenlänge verschoben.'},
+ {g:'Messen',t:'Ein Knall wandert',d:'Schallgeschwindigkeit messen',set:{sig:'knall',f:343,end:'frei',med:'luft',sh:{col:1,par:1,p:1,s:0,lam:0},xm:.67},
+  obs:'Ein Knall startet am Lautsprecher. Lies am Mikrofon die Laufzeit ab und miss den Abstand mit der Skala. Berechne c = s / t.',
+  why:'In Luft (20 °C) legt Schall rund 343 m pro Sekunde zurück, das sind 1 m in knapp 3 ms. Die Simulation läuft in Zeitlupe; die angezeigten Zeiten sind echte Zeiten.'},
+ {g:'Reflexion',t:'Echo am Rohrende',d:'Hin- und Rückweg',set:{sig:'knall',f:343,end:'beton',med:'luft',sh:{col:1,par:1,p:1,s:0,lam:0},xm:.33},
+  obs:'Das Mikrofon hört den Knall zweimal. Miss die Zeit zwischen beiden Signalen und berechne, wie weit das Mikrofon von der Wand entfernt ist.',
+  why:'Der Knall wird an der Wand reflektiert. Der zusätzliche Weg ist zweimal der Abstand Mikrofon–Wand: Abstand = c · Δt / 2. Echolot, Ultraschall und Fledermäuse nutzen genau das.'},
+ {g:'Reflexion',t:'Stehende Welle vor einer Wand',d:'Knoten und Bäuche',set:{sig:'sinus',f:343,end:'beton',med:'luft',sh:{col:1,par:1,p:1,s:0,lam:1}},
+  obs:'Schalte den Ton ein und schiebe das Mikrofon durch das Rohr. Wo ist es laut, wo ist es fast still? Wie weit liegen die stillen Stellen auseinander?',
+  why:'Hinlaufende und reflektierte Welle überlagern sich. Es entstehen Stellen, an denen sich der Druck nie ändert (Druckknoten), und Stellen mit großer Druckschwankung (Druckbäuche). Zwei Knoten liegen λ/2 auseinander. Direkt an der Wand ist ein Druckbauch, die Teilchen dort stehen still.'},
+ {g:'Reflexion',t:'Offenes Rohrende',d:'Reflexion ohne Wand',set:{sig:'sinus',f:343,end:'offen',med:'luft',sh:{col:1,par:1,p:1,s:1,lam:0}},
+  obs:'Vergleiche mit der Betonwand: Was passiert jetzt direkt am Rohrende mit dem Druck und mit den Teilchen?',
+  why:'Am offenen Ende kann sich kein Druck aufstauen, dort liegt ein Druckknoten. Die Teilchen schwingen dafür besonders stark. Auch hier wird Schall reflektiert, darum funktionieren Flöten und Orgelpfeifen.'},
+ {g:'Absorption',t:'Schaumstoff schluckt Schall',d:'Absorptionsgrad α',set:{sig:'sinus',f:686,end:'schaum',med:'luft',sh:{col:1,par:1,p:1,s:0,lam:0}},
+  obs:'Wechsle das Rohrende zwischen Betonwand, Holzplatte, Vorhang und Schaumstoff. Was passiert mit den stillen Stellen? Probiere auch einen Knall.',
+  why:'Ein Absorber wandelt Schallenergie in Wärme um, die Luft reibt sich in seinen Poren. Die reflektierte Welle wird schwächer, die Knoten sind nicht mehr still. Der Absorptionsgrad α gibt an, welcher Anteil der Energie nicht zurückkommt: Beton etwa 0,02, Vorhang 0,5, Schaumstoff 0,9.'},
+ {g:'Stoffe',t:'Schall in Helium, Wasser, Stahl',d:'c hängt vom Stoff ab',set:{sig:'sinus',f:1000,end:'frei',med:'wasser',sh:{col:1,par:1,p:1,s:0,lam:1}},
+  obs:'Wähle unter „Stoff“ Luft, Helium, Wasser oder Stahl. Was passiert bei gleicher Frequenz mit der Wellenlänge? Ändere bei Luft auch die Temperatur.',
+  why:'In Wasser ist Schall etwa 4-mal, in Stahl etwa 15-mal so schnell wie in Luft. Bei gleicher Frequenz wird die Wellenlänge deshalb größer. In warmer Luft ist Schall schneller: c ≈ 331 m/s + 0,6 m/s pro °C.'}
+];
+const W1={pi:0,f:343,A:.8,med:'luft',T:20,end:'frei',sig:'sinus',tempo:1,t:0,t0:0,run:true,xm:.5,L:3,auto:true,
+  sh:{col:1,par:1,p:1,s:0,lam:0},ring:new Ring(1500),det:new Detector(),ne:0,parts:[],mark:[]};
+{let sd=11;const rnd=()=>(sd=sd*16807%2147483647)/2147483647;const NC=120,NR=9;
+ for(let c=0;c<NC;c++)for(let r=0;r<NR;r++)W1.parts.push({x:(c+.5+(rnd()-.5)*.6)/NC,y:(r+.5+(rnd()-.5)*.5)/NR});
+ W1.mark=[30,60,90].map(c=>({x:(c+.5)/NC,y:.5}));}
+const wC=()=>MED[W1.med].c(W1.T);
+function wPrep(){const c=wC();W1.c=c;W1.k=2*Math.PI*W1.f/c;W1.R=ENDS[W1.end].R;W1.Av=.55*W1.A/W1.k;W1.sg=W1.L/c*.012;W1.Ak=.55*W1.A*c*W1.sg/.4605}
+function wu(tt){
+  if(tt<0)return 0;const f=W1.f;
+  if(W1.sig==='sinus'){const T=1/f,e=tt<T?.5-.5*Math.cos(Math.PI*tt/T):1;return W1.Av*e*Math.sin(2*Math.PI*f*tt)}
+  if(W1.sig==='puls'){const D=3/f;if(tt>D)return 0;return W1.Av*Math.sin(2*Math.PI*f*tt)*(.5-.5*Math.cos(2*Math.PI*tt/D))}
+  const x=tt/W1.sg;return W1.Ak*x*x*Math.exp(-x);
+}
+const wS=(x,tt)=>wu(tt-x/W1.c)+(W1.R?W1.R*wu(tt-(2*W1.L-x)/W1.c):0);
+const wP=(x,tt)=>{const e=W1.L/3000;return -(wS(x+e,tt)-wS(x-e,tt))/(2*e)/.55};
+const wOff=()=>W1.sig==='knall'?.586*W1.sg:W1.sig==='puls'?1.5/W1.f:0;
+const wSnorm=()=>W1.sig==='knall'?W1.Ak:W1.Av;
+function wRestart(){W1.t=0;W1.t0=0;W1.ring.clear();W1.det.reset();W1.ne=0}
+function wTrigger(){W1.t0=W1.t;W1.det.reset();W1.ne=0}
+function wLoad(i){
+  const p=WP[i];W1.pi=i;Object.assign(W1,{sig:p.set.sig,f:p.set.f,end:p.set.end,med:p.set.med,xm:p.set.xm||.5,T:20});W1.sh={...p.set.sh};
+  wRestart();wPanel();wTools();renderLib('Versuche: Schallwelle',groupBy(WP),i,wLoad);
+}
+function groupBy(arr){const g=[];for(const p of arr){let x=g.find(q=>q.h===p.g);if(!x)g.push(x={h:p.g,items:[]});x.items.push(p)}return g}
+function wTools(){
+  $('#tools').innerHTML=seg('sig',[['Dauerton','sinus'],['Tonpuls','puls'],['Knall','knall']],W1.sig)+
+   `<span class="sep"></span><button class="btn" id="wRun">${W1.run?'Pause':'Weiter'}</button><button class="btn" id="wNew">Neu starten</button>`+
+   (W1.sig!=='sinus'?`<button class="btn hot" id="wTrig">${W1.sig==='knall'?'Knall':'Tonpuls'} auslösen</button>`:'');
+  $('#tools').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.sig){W1.sig=b.dataset.sig;wRestart();wTools();wPanel()}
+    else if(b.id==='wRun'){W1.run=!W1.run;b.textContent=W1.run?'Pause':'Weiter'}
+    else if(b.id==='wNew')wRestart();
+    else if(b.id==='wTrig')wTrigger();};
+  $('#status').textContent='Ziehe das Mikrofon im Bild. Rot = Überdruck (Verdichtung), blau = Unterdruck (Verdünnung).';
+}
+function wPanel(){
+  const p=WP[W1.pi],ck=(k,l)=>`<label><input type="checkbox" data-sh="${k}" ${W1.sh[k]?'checked':''}>${l}</label>`;
+  $('#panel').innerHTML=infoCard(p)+
+  `<div class="card"><h3>Ton</h3>${range('wf','Frequenz',50,2000,1,W1.f)}${range('wa','Lautstärke (Amplitude)',.2,1,.05,W1.A)}${range('wt','Tempo der Zeitlupe',.25,2,.05,W1.tempo)}
+   ${W1.sig!=='sinus'?`<div class="chk"><label><input type="checkbox" id="wAuto" ${W1.auto?'checked':''}>automatisch wiederholen</label></div>`:''}</div>
+  <div class="card"><h3>Stoff und Rohrende</h3><label class="small" for="wMed">Stoff im Rohr</label><select class="full" id="wMed">${Object.entries(MED).map(([k,m])=>`<option value="${k}" ${k===W1.med?'selected':''}>${m.n}</option>`).join('')}</select>
+   ${W1.med==='luft'?range('wT','Temperatur der Luft',-20,40,1,W1.T):''}
+   <label class="small" for="wEnd" style="display:block;margin-top:8px">Am Ende des Rohrs</label><select class="full" id="wEnd">${Object.entries(ENDS).map(([k,m])=>`<option value="${k}" ${k===W1.end?'selected':''}>${m.n}</option>`).join('')}</select></div>
+  <div class="card"><h3>Anzeigen</h3><div class="chk">${ck('par','Teilchen')}${ck('col','Druckfarben')}${ck('p','Druckkurve')}${ck('s','Auslenkung')}${ck('lam','Wellenlänge')}</div></div>
+  <div class="card"><h3>Messwerte</h3><div class="kv"><span>Schallgeschwindigkeit c</span><b id="mc"></b><span>Wellenlänge λ = c / f</span><b id="ml"></b><span>Periodendauer T = 1 / f</span><b id="mT"></b><span>Mikrofon: Abstand zum Lautsprecher</span><b id="mx"></b><span>Zeitlupe</span><b id="mz"></b></div></div>
+  <div class="card"><h3>Mikrofon</h3><canvas class="scope" id="scope"></canvas><p class="small" id="scap"></p><div class="mics" id="wEv"></div></div>`;
+  const P=$('#panel');
+  P.oninput=e=>{const el=e.target;
+    if(el.id==='wf'){W1.f=+el.value}else if(el.id==='wa'){W1.A=+el.value}else if(el.id==='wt'){W1.tempo=+el.value}
+    else if(el.id==='wT'){W1.T=+el.value}else if(el.dataset.sh){W1.sh[el.dataset.sh]=el.checked?1:0}
+    else if(el.id==='wAuto'){W1.auto=el.checked}wOuts()};
+  P.onchange=e=>{const el=e.target;if(el.id==='wMed'){W1.med=el.value;wPanel()}else if(el.id==='wEnd'){W1.end=el.value;W1.det.reset();W1.ne=0}};
+  wOuts();
+}
+function wOuts(){setOut('wf',fmt(W1.f)+' Hz');setOut('wa',fmt(W1.A*100)+' %');setOut('wt',fmt(W1.tempo,2)+' ×');setOut('wT',fmt(W1.T)+' °C')}
+function wFrame(dt){
+  wPrep();
+  if(W1.run){
+    const dts=dt*(W1.L/W1.c)/(4.5/W1.tempo),n=8,xm=W1.xm*W1.L;
+    for(let i=0;i<n;i++){W1.t+=dts/n;const v=wP(xm,W1.t-W1.t0);W1.ring.push(W1.t,v);if(W1.sig!=='sinus')W1.det.feed(W1.t,v,.12*W1.A,W1.sig==='knall'?8*W1.sg:1.5/W1.f)}
+    if(W1.sig!=='sinus'&&W1.auto&&W1.t-W1.t0>2.4*W1.L/W1.c)wTrigger();
+  }
+  if(W1.sig==='sinus'&&W1.run){let s2=0,n=0;const rg=W1.ring,tmin=W1.t-2/W1.f;for(let k=rg.len-1;k>=0;k--){const j=rg.at(k);if(rg.t[j]<tmin)break;s2+=rg.v[j]**2;n++}
+    tone(W1.f,n?Math.sqrt(s2/n)*.9:0)}else tone(0,0);
+  if(W1.det.ev.length>W1.ne){for(let k=W1.ne;k<W1.det.ev.length;k++)click(W1.det.ev[k].pk*.9);W1.ne=W1.det.ev.length}
+}
+function wMix(v){const i=Math.round((clamp(v,-1,1)+1)*256)*3;return `rgb(${LUTP[i]},${LUTP[i+1]},${LUTP[i+2]})`}
+function wGeo(){const X0=16+Math.min(96,CW*.13),X1=CW-(W1.end==='frei'?16:44),tT=34,tH=clamp(CH*.34,80,190);return {X0,X1,tT,tH,tB:tT+tH,gT:tT+tH+86,gB:CH-34}}
+function wDraw(){
+  const W=CW,H=CH,L=W1.L,tt=W1.t-W1.t0,G=wGeo(),{X0,X1,tT,tH,tB}=G,sx=(X1-X0)/L,xp=x=>X0+x*sx;
+  ctx.fillStyle=cs('fld');ctx.fillRect(0,0,W,H);
+  if(W1.sh.col){for(let X=X0;X<X1;X+=3){ctx.fillStyle=wMix(wP((X+1.5-X0)/sx,tt)/1.3);ctx.fillRect(X,tT,3.6,tH)}}
+  // Rohr
+  ctx.strokeStyle=cs('ink');ctx.lineWidth=2.5;ctx.beginPath();
+  const xe=W1.end==='frei'?W:X1;ctx.moveTo(X0,tT);ctx.lineTo(xe,tT);ctx.moveTo(X0,tB);ctx.lineTo(xe,tB);ctx.stroke();
+  const E=ENDS[W1.end];
+  if(E.col){ctx.fillStyle=E.col;ctx.fillRect(X1,tT-10,18,tH+20);txt(E.n,X1+18,tB+28,cs('mut'),'right')}
+  else if(W1.end==='offen'){ctx.beginPath();ctx.moveTo(X1,tT);ctx.lineTo(X1+10,tT-8);ctx.moveTo(X1,tB);ctx.lineTo(X1+10,tB+8);ctx.stroke();txt('offenes Ende',X1+10,tB+28,cs('mut'),'right')}
+  else txt('Rohr geht weiter …',W-16,tB+28,cs('mut'),'right');
+  // Teilchen
+  if(W1.sh.par){ctx.fillStyle=cs('ink',.72);ctx.beginPath();
+    for(const q of W1.parts){const x=q.x*L,X=xp(x+wS(x,tt)),Y=tT+q.y*tH;if(X<X0||X>(W1.end==='frei'?W:X1+6))continue;ctx.moveTo(X+2.4,Y);ctx.arc(X,Y,2.4,0,6.283)}ctx.fill();
+    for(const q of W1.mark){const x=q.x*L,X=xp(x+wS(x,tt)),Y=tT+q.y*tH,X0r=xp(x);
+      ctx.strokeStyle=cs('red',.8);ctx.lineWidth=1.5;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(X0r,tT-8);ctx.lineTo(X0r,tT+4);ctx.moveTo(X0r,tB-4);ctx.lineTo(X0r,tB+8);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle=cs('red');ctx.strokeStyle=cs('fld');ctx.lineWidth=2;ctx.beginPath();ctx.arc(X,Y,6,0,6.283);ctx.fill();ctx.stroke()}}
+  // Lautsprecher
+  const u=wS(0,tt)*sx,cy=tT+tH/2,bw=Math.min(34,(X0-16)*.4),mb=clamp(u,-14,14);
+  ctx.fillStyle=cs('ink');ctx.fillRect(16,cy-tH*.28,bw,tH*.56);
+  ctx.beginPath();ctx.moveTo(16+bw,cy-tH*.22);ctx.lineTo(X0-4+mb,tT+3);ctx.lineTo(X0-4+mb,tB-3);ctx.lineTo(16+bw,cy+tH*.22);ctx.closePath();ctx.fill();
+  ctx.strokeStyle=cs('red');ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(X0-2+mb,tT+3);ctx.lineTo(X0-2+mb,tB-3);ctx.stroke();
+  txt('Lautsprecher',16,tB+28,cs('mut'));
+  // Mikrofon
+  const XM=xp(W1.xm*L);ctx.strokeStyle=cs('mic');ctx.lineWidth=2;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(XM,tT-8);ctx.lineTo(XM,G.gB);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=cs('mic');ctx.beginPath();ctx.roundRect(XM-8,tT-30,16,22,8);ctx.fill();ctx.fillRect(XM-1.5,tT-9,3,8);txt('Mikrofon',XM+12,tT-14,cs('mic'),'left',13,true);
+  // Skala
+  ctx.strokeStyle=cs('mut');ctx.lineWidth=1;ctx.font=`12px ${FONT}`;
+  for(let x=0;x<=L+1e-9;x+=.25){const X=xp(x),big=Math.abs(x-Math.round(x*2)/2)<1e-6;ctx.beginPath();ctx.moveTo(X,tB+2);ctx.lineTo(X,tB+(big?10:6));ctx.stroke();if(Math.abs(x-Math.round(x))<1e-6)txt(fmt(x)+' m',X,tB+44,cs('mut'),'center',12)}
+  // Diagramm
+  const {gT,gB}=G,gM=(gT+gB)/2,gh=(gB-gT)/2,two=Math.abs(W1.R)>.05&&W1.sig==='sinus',ys=gh/(two?2.1:1.15);
+  if(gB-gT>40&&(W1.sh.p||W1.sh.s)){
+    ctx.strokeStyle=cs('line');ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(X0,gM);ctx.lineTo(X1,gM);ctx.stroke();
+    txt('Überdruck',X0,gT+2,cs('red'),'left',12);txt('Unterdruck',X0,gB+4,cs('blue'),'left',12);
+    const N=Math.max(60,Math.floor((X1-X0)/2)),pts=[];for(let i=0;i<=N;i++){const x=i/N*L;pts.push(wP(x,tt))}
+    if(W1.sh.p){const path=new Path2D();path.moveTo(X0,gM);pts.forEach((v,i)=>path.lineTo(X0+i/N*(X1-X0),gM-v*ys));path.lineTo(X1,gM);path.closePath();
+      ctx.save();ctx.beginPath();ctx.rect(X0,gT-20,X1-X0,gM-gT+20);ctx.clip();ctx.fillStyle=cs('red',.35);ctx.fill(path);ctx.restore();
+      ctx.save();ctx.beginPath();ctx.rect(X0,gM,X1-X0,gB-gM+20);ctx.clip();ctx.fillStyle=cs('blue',.35);ctx.fill(path);ctx.restore();
+      ctx.strokeStyle=cs('ink',.8);ctx.lineWidth=1.8;ctx.beginPath();pts.forEach((v,i)=>{const X=X0+i/N*(X1-X0),Y=gM-v*ys;i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)});ctx.stroke();
+      txt('Druck',X1,gT+2,cs('ink'),'right',13,true)}
+    if(W1.sh.s){const nn=wSnorm()||1;ctx.strokeStyle=cs('ink');ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.beginPath();
+      for(let i=0;i<=N;i++){const x=i/N*L,Y=gM-wS(x,tt)/nn*W1.A*ys;i?ctx.lineTo(X0+i/N*(X1-X0),Y):ctx.moveTo(X0,Y)}ctx.stroke();ctx.setLineDash([]);
+      txt('Auslenkung (gestrichelt)',X1,gB+4,cs('ink'),'right',12)}
+    if(W1.sh.lam&&W1.sig==='sinus'){const lam=W1.c/W1.f,lpx=lam*sx;
+      if(lpx>X1-X0-10)txt('λ = '+fmt(lam,2)+' m, länger als das Rohr',X0+8,gT-12,cs('ink'),'left',13,true);
+      else{let a=-1;for(let i=1;i<N;i++){if(pts[i]>.25*W1.A&&pts[i]>=pts[i-1]&&pts[i]>=pts[i+1]){a=i;break}}
+        if(a>=0){const xa=X0+a/N*(X1-X0);if(xa+lpx<=X1+2){const y=gT-12;ctx.strokeStyle=cs('ink');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xa,y-6);ctx.lineTo(xa,y+6);ctx.moveTo(xa,y);ctx.lineTo(xa+lpx,y);ctx.moveTo(xa+lpx,y-6);ctx.lineTo(xa+lpx,y+6);ctx.stroke();
+          ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(xa,y);ctx.lineTo(xa,gM-pts[a]*ys);ctx.moveTo(xa+lpx,y);ctx.lineTo(xa+lpx,gM);ctx.stroke();ctx.setLineDash([]);
+          txt('λ = '+fmt(lam,2)+' m',xa+lpx/2,y-8,cs('ink'),'center',14,true)}}}}
+  }
+}
+function wUpd(){
+  const c=W1.c,el=$('#mc');if(!el)return;
+  el.textContent=fmt(c)+' m/s';$('#ml').textContent=fmt(c/W1.f,c/W1.f<1?3:2)+' m';$('#mT').textContent=fmt(1000/W1.f,2)+' ms';
+  $('#mx').textContent=fmt(W1.xm*W1.L,2)+' m';$('#mz').textContent='1 s im Bild ≙ '+fmt((W1.L/c)/(4.5/W1.tempo)*1000,2)+' ms';
+  const trig=W1.sig!=='sinus',win=2.4*W1.L/c,t0=trig?W1.t0:W1.t-win,t1=trig?W1.t0+win:W1.t;
+  const evs=W1.det.ev.map(e=>({t:e.tp,col:cs('red')})),z0=W1.t0+wOff();
+  drawScope($('#scope'),[{ring:W1.ring,col:cs('mic')}],t0,t1,evs,trig?z0:null);
+  $('#scap').textContent=trig?`Druck am Mikrofon, Zeit seit dem ${W1.sig==='knall'?'Knall':'Tonpuls'}`:'Druck am Mikrofon (die letzten '+fmt(win*1000,1)+' ms)';
+  let h='';if(trig){const ev=W1.det.ev.filter(e=>e.t>=W1.t0);
+    ev.forEach((e,i)=>{h+=`<div><b>Signal ${i+1}:</b> ${fmt((e.tp-z0)*1000,2)} ms</div>`});
+    if(ev.length>=2){const d=ev[1].tp-ev[0].tp;h+=`<div>Zeitunterschied Δt = <b>${fmt(d*1000,2)} ms</b> → Weg c · Δt = <b>${fmt(c*d,2)} m</b></div>`}
+    if(!ev.length)h='<div class="small">Warte auf das Signal …</div>'}
+  else h=`<div class="small">${AU.on?'Du hörst den Ton so laut, wie er am Mikrofon ankommt.':'Tipp: „Ton aus“ oben einschalten, dann hörst du, was das Mikrofon hört.'}</div>`;
+  $('#wEv').innerHTML=h;
+}
+function wDown(X,Y){const G=wGeo();if(X>=G.X0-10&&X<=G.X1+10){W1.drag=true;wMove(X,Y)}}
+function wMove(X){if(!W1.drag)return;const G=wGeo();W1.xm=clamp((X-G.X0)/(G.X1-G.X0),0.02,.995)}
+MODES.welle={enter(){wLoad(W1.pi)},frame:wFrame,draw:wDraw,upd:wUpd,down:wDown,move:wMove,up(){W1.drag=false},key(k){if(k===' '){W1.run=!W1.run;wTools()}}};
+
+/* =====================================================================
+   BEREICH 2: RAUM (zweidimensionale Wellensimulation)
+   ===================================================================== */
+const R={sim:null,pi:0,opt:{},view:'p',contrast:1,tempo:1,run:true,tool:'move',wmat:1,wth:.3,sel:null,drag:null,paint:null,undo:[],
+  off:null,octx:null,img:null,offW:null,wdirty:true,guides:[],scopeMs:30,spf:4,Wm:12,Hm:8,listen:0,decay:false,medium:'Luft',sc:1,ox:0,oy:0};
+window.__R=R;
+function sceneNew(Wm,Hm,nx,o={}){
+  const h=Wm/nx,ny=Math.round(Hm/h),s=makeSim(nx,ny,20);setScale(s,h,o.c||343);
+  const fp=s.c/(20*h);s.thr=.01;s.quiet=1/fp;s.be=clamp(s.dt*fp*2,.01,.5);
+  Object.assign(R,{sim:s,guides:[],medium:o.medium||'Luft',scopeMs:o.scope||30,spf:o.spf||4,Wm,Hm:ny*h,decay:!!o.decay,wdirty:true,sel:null,undo:[],view:o.view||'p',listen:0});
+  R.off=document.createElement('canvas');R.off.width=nx;R.off.height=ny;R.octx=R.off.getContext('2d');R.img=R.octx.createImageData(nx,ny);
+  R.offW=document.createElement('canvas');R.offW.width=nx;R.offW.height=ny;
+  return s;
+}
+function fillW(pred,m){const s=R.sim,h=s.h;for(let j=0;j<s.ny;j++)for(let i=0;i<s.nx;i++){const x=(i+.5)*h,y=(j+.5)*h;if(pred(x,y))s.mat[(j+s.M)*s.NX+i+s.M]=m}R.wdirty=true}
+const rect=(x0,y0,x1,y1,m)=>fillW((x,y)=>x>=x0&&x<=x1&&y>=y0&&y<=y1,m);
+function segD(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy,t=l?clamp(((px-ax)*dx+(py-ay)*dy)/l,0,1):0;return Math.hypot(px-ax-t*dx,py-ay-t*dy)}
+const frame=(x0,y0,x1,y1,th,m)=>{rect(x0,y0,x1,y0+th,m);rect(x0,y1-th,x1,y1,m);rect(x0,y0,x0+th,y1,m);rect(x1-th,y0,x1,y1,m)};
+function addSrc(o){const s=R.sim,h=s.h,q={x:o.x/h,y:o.y/h,type:o.type||'sinus',f:o.f||343,amp:o.amp||1,ph:o.ph||0,w:o.w||0,ang:(o.ang||0)*Math.PI/180,v:o.v||0,rep:o.rep||0,fp:s.c/(20*h),ts:0,on:true};
+  if(q.v){q.x0=(o.x0??1)/h;q.x1=(o.x1??R.Wm-1)/h}s.src.push(q);if(q.type!=='sinus'){s.lastTrig=0;s.trigOff=trigOff(q)}return q}
+function addMic(x,y){const s=R.sim;if(s.mic.length>=4)return null;const m=newMic(x/s.h,y/s.h);s.mic.push(m);return m}
+const gl=(x1,y1,x2,y2,label)=>R.guides.push({k:'l',x1,y1,x2,y2,label});
+const gp=(x,y,label)=>R.guides.push({k:'p',x,y,label});
+function setBeta(){const s=R.sim;let fmin=0;for(const q of s.src)if(q.type==='sinus'&&(!fmin||q.f<fmin))fmin=q.f;
+  const per=fmin?s.c/fmin/s.h/S:200;s.beta=clamp(1/(3*per),1/3000,1/20)}
+
+const RP=[
+ {g:'Ausbreitung',t:'Lautsprecher im Freien',d:'Kreiswellen, Pegel und Abstand',build(){sceneNew(12,8,240);addSrc({x:3,y:4});addMic(4,4);addMic(5,4);addMic(7,4);gp(3,4.75,'Lautsprecher')},
+  obs:'Rot ist Überdruck, blau Unterdruck. Die Mikrofone stehen 1 m, 2 m und 4 m vom Lautsprecher entfernt. Vergleiche ihre Pegel.',
+  why:'Der Schall breitet sich in alle Richtungen aus und verteilt sich auf eine immer größere Fläche, deshalb wird er mit dem Abstand leiser. Die Simulation ist zweidimensional (wie ein Schnitt durch den Raum). Darum nimmt der Pegel hier pro Abstandsverdopplung nur um 3 dB ab, im echten Raum um 6 dB.'},
+ {g:'Ausbreitung',t:'Schallgeschwindigkeit messen',d:'Klatschen und zwei Mikrofone',build(){sceneNew(12,8,240,{scope:22});addSrc({x:2,y:4,type:'knall',rep:.04});addMic(4,4);addMic(7,4);gl(2,4.9,4,4.9,'2 m');gl(2,5.6,7,5.6,'5 m');gp(2,3.25,'Klatschen')},
+  obs:'Alle 40 ms wird geklatscht. M1 steht 2 m, M2 5 m entfernt. Lies die Ankunftszeiten ab und berechne c = Δs / Δt.',
+  why:'Δs = 3 m und Δt ≈ 8,7 ms ergeben c ≈ 343 m/s. Mit dem Werkzeug „Klatschen“ kannst du auch selbst irgendwo ins Feld tippen.'},
+ {g:'Reflexion',t:'Reflexion an einer Wand',d:'Einfallswinkel = Reflexionswinkel',vars:[{k:'a',n:'Einfallswinkel',o:[['30°',30],['45°',45],['60°',60]],v:45}],
+  build(o){sceneNew(12,8,240);rect(0,7.5,12,8,1);const a=o.a*Math.PI/180,d=4.4,hx=6,hy=7.5,sx=hx-d*Math.sin(a),sy=hy-d*Math.cos(a);
+   addSrc({x:sx,y:sy,w:1.4,ang:Math.atan2(Math.cos(a),Math.sin(a))*180/Math.PI,f:686});addMic(hx+3*Math.sin(a),hy-3*Math.cos(a));
+   gl(hx,hy,hx,2.4,'Lot');gl(sx,sy,hx,hy,'');gl(hx,hy,hx+d*Math.sin(a),hy-d*Math.cos(a),'');gp(hx-1.2*Math.sin(a/2),hy-1.2*Math.cos(a/2),'α');gp(hx+1.2*Math.sin(a/2),hy-1.2*Math.cos(a/2),'β');gp(10.5,7.25,'Betonwand')},
+  obs:'Ein gebündelter Schallstrahl trifft auf eine Betonwand. Vergleiche den Einfallswinkel α mit dem Reflexionswinkel β (beide zum Lot gemessen). Ändere den Winkel.',
+  why:'Es gilt das Reflexionsgesetz: Einfallswinkel = Reflexionswinkel. Das funktioniert, wenn die Wand groß gegenüber der Wellenlänge ist (hier λ = 0,5 m). Kleine Hindernisse reflektieren Schall nicht gerichtet, sondern streuen ihn.'},
+ {g:'Reflexion',t:'Echo: Abstand messen',d:'Klatschen vor einer Felswand',vars:[{k:'d',n:'Felswand',o:[['nah',50],['weit',85]],v:85}],
+  build(o){sceneNew(120,50,240,{scope:o.d>60?620:380,spf:10});rect(10+o.d,0,120,50,5);addSrc({x:10,y:30,type:'knall',rep:2*o.d/343*1.25});addMic(12,30);gp(10,26.5,'Person');gl(10,42,10+o.d,42,'Abstand ?');gp(10+o.d+8,25,'Fels')},
+  obs:'Die Person klatscht, das Mikrofon neben ihr hört den Klatscher und danach das Echo von der Felswand. Bestimme mit der Laufzeit den Abstand zur Wand und prüfe mit dem Maßstab.',
+  why:'Der Schall muss hin und zurück: Abstand = c · t / 2. Erst ab etwa 17 m Abstand (0,1 s Laufzeit) hört man das Echo getrennt. Bei kürzeren Wegen verschmilzt es mit dem Original zum Nachhall.'},
+ {g:'Reflexion',t:'Echolot: Wie tief ist das Meer?',d:'Schall in Wasser, c ≈ 1480 m/s',vars:[{k:'f',n:'Unter dem Schiff',o:[['Meeresboden',0],['Fischschwarm',1]],v:0}],
+  build(o){sceneNew(160,100,200,{c:1480,medium:'Wasser',scope:140,spf:10});fillW((x,y)=>y>78+7*Math.sin((x-80)/18)**2,5);
+   if(o.f){for(const [fx,fy] of [[76,40],[83,37],[88,42],[79,45],[85,47]])fillW((x,y)=>((x-fx)/2.2)**2+((y-fy)/1.2)**2<1,1)}
+   addSrc({x:80,y:4,type:'knall',w:6,ang:90,amp:2,rep:.16});addMic(85,4);gp(68,4,'Schiff');gl(95,4,95,78,'Tiefe ?');gp(140,92,'Meeresboden')},
+  obs:'Das Schiff sendet einen kurzen Schallimpuls nach unten. Miss die Zeit bis zum Echo und berechne die Wassertiefe. Wähle danach „Fischschwarm“.',
+  why:'Tiefe = c · t / 2, in Wasser mit c ≈ 1480 m/s. Echte Echolote arbeiten mit Ultraschall (etwa 50 bis 200 kHz). Hier ist der Ton viel tiefer, damit man die Welle sehen kann. Delfine und Fledermäuse orientieren sich genauso.'},
+ {g:'Absorption',t:'Beton oder Schaumstoff?',d:'Echo von zwei Böden vergleichen',vars:[{k:'m',n:'Rechter Boden',o:[['Schaumstoff',4],['Vorhang',3],['Holz',2]],v:4}],
+  build(o){sceneNew(24,8,480,{scope:30});rect(0,6.9,12,8,1);rect(12,6.9,24,8,o.m);addSrc({x:6,y:3,type:'knall',rep:.05});addSrc({x:18,y:3,type:'knall',rep:.05});addMic(6,4);addMic(18,4);gp(6,7.45,'Beton');gp(18,7.45,MAT[o.m].n)},
+  obs:'Beide Klatscher sind gleich laut. M1 hört den Boden aus Beton, M2 den rechten Boden. Vergleiche, um wie viel dB das Echo (Signal 2) leiser ist als der direkte Schall.',
+  why:'Beton reflektiert fast alles (α ≈ 0,02). Schaumstoff ist porös: Die Luft reibt in den Poren, Schall wird zu Wärme (α ≈ 0,9). Das Echo ist dort etwa 10 dB leiser. Achtung: Ein Teil der Abschwächung kommt auch vom längeren Weg.'},
+ {g:'Absorption',t:'Hallraum und gedämpfter Raum',d:'Nachhall hängt von den Wänden ab',vars:[{k:'m',n:'Wände',o:[['Beton',1],['Holz',2],['Vorhang',3],['Schaumstoff',4]],v:1}],
+  build(o){sceneNew(8,6,120,{scope:300,spf:18,decay:true});frame(.3,.3,7.7,5.7,.3,o.m);addSrc({x:2.4,y:2.6,type:'knall'});addMic(5.6,3.9)},
+  obs:'Klatsche in den Raum (Knopf „Klatschen“ beim Lautsprecher oder Werkzeug „Klatschen“). Wie lange kommt am Mikrofon noch Schall an? Vergleiche die Wandmaterialien.',
+  why:'Bei jeder Reflexion geht ein Teil der Energie verloren. Harte Wände bedeuten viele Reflexionen und langen Nachhall, schallschluckende Wände kurzen Nachhall. Die Zahl ist eine Schätzung im 2D-Modell. Richtige Nachhallzeiten berechnest du im Bereich „Nachhall“.'},
+ {g:'Spiegel',t:'Flüstergewölbe (Ellipse)',d:'Schall trifft im zweiten Brennpunkt zusammen',vars:[{k:'s',n:'Quelle',o:[['Klatschen','knall'],['Dauerton','sinus']],v:'knall'}],
+  build(o){sceneNew(12,8,240,{scope:40,view:o.s==='sinus'?'I':'p'});fillW((x,y)=>{const e=((x-6)/5.2)**2+((y-4)/3.4)**2;return e>=1&&e<=1.13},1);
+   const fc=Math.sqrt(5.2**2-3.4**2);addSrc({x:6-fc,y:4,type:o.s,rep:.045});addMic(6+fc,4);addMic(6,6.2);gp(6-fc,4.7,'F₁');gp(6+fc,4.7,'F₂')},
+  obs:'Die Quelle steht im Brennpunkt F₁ einer Ellipse. Wo trifft der reflektierte Schall zusammen? Vergleiche M1 (im Brennpunkt F₂) mit M2.',
+  why:'Eine Ellipse reflektiert alles, was von einem Brennpunkt ausgeht, in den anderen Brennpunkt, und alle Wege sind gleich lang. In Flüstergewölben (z. B. in Kirchen und Museen) hört man so ein Flüstern am anderen Ende des Raums.'},
+ {g:'Spiegel',t:'Parabolspiegel',d:'Schall bündeln oder gerade abstrahlen',vars:[{k:'r',n:'Richtung',o:[['Welle kommt an','ein'],['Quelle im Brennpunkt','aus']],v:'ein'}],
+  build(o){sceneNew(12,8,240,{scope:30});fillW((x,y)=>{const xs=11-(y-4)**2/6.4;return Math.abs(y-4)<3.4&&x>=xs&&x<=xs+.3},1);
+   if(o.r==='ein'){addSrc({x:1.2,y:4,type:'puls',w:6.6,ang:0,f:686,rep:.03});addMic(9.4,4);addMic(7,5.8)}else{addSrc({x:9.4,y:4,f:686});addMic(3,4);addMic(3,6.6)}
+   gp(9.4,4.75,'Brennpunkt')},
+  obs:'Eine gerade (ebene) Welle trifft auf einen Parabolspiegel. Wo wird der Schall gebündelt? Schalte danach auf „Quelle im Brennpunkt“.',
+  why:'Ein Parabolspiegel lenkt parallel einfallenden Schall in den Brennpunkt (Richtmikrofon, Schallspiegel). Umgekehrt wird Schall aus dem Brennpunkt zu einem parallelen Strahl, wie bei einem Scheinwerfer.'},
+ {g:'Beugung',t:'Schall um die Ecke',d:'Beugung an einer Tür',vars:[{k:'f',n:'Ton',o:[['tief (150 Hz)',150],['mittel (343 Hz)',343],['hoch (800 Hz)',800]],v:343}],
+  build(o){sceneNew(12,8,240,{view:'I'});rect(6,0,6.3,3.4,1);rect(6,4.6,6.3,8,1);addSrc({x:1.2,y:4,w:7.8,ang:0,f:o.f});addMic(9,1.4);addMic(9,4);gp(6.15,4,'');gp(7.2,3.1,'Tür (1,2 m)')},
+  obs:'Schall trifft auf eine Wand mit Tür. M1 steht hinter der Wand im „Schatten“. Vergleiche tiefen und hohen Ton: Wie viel Schall kommt bei M1 an?',
+  why:'Beugung: Wellen laufen um Kanten herum und breiten sich hinter Öffnungen aus. Je größer die Wellenlänge im Vergleich zur Öffnung, desto stärker. Deshalb hört man aus dem Nachbarraum vor allem die Bässe der Musik.'},
+ {g:'Beugung',t:'Lärmschutzwand',d:'Schallschatten hinter der Wand (Seitenansicht)',vars:[{k:'w',n:'Wand',o:[['keine',0],['2 m',2],['4 m',4]],v:4},{k:'f',n:'Ton',o:[['tief (100 Hz)',100],['hoch (400 Hz)',400]],v:400}],
+  build(o){sceneNew(30,12,300,{view:'I',spf:5});rect(0,11.5,30,12,1);if(o.w)rect(9,11.5-o.w,9.25,11.5,1);addSrc({x:5,y:11,f:o.f});addMic(22,10.3);addMic(22,7);
+   gl(20,11.5,20,5.6,'');gl(20,5.6,26,5.6,'');gl(26,5.6,26,11.5,'');gp(23,5.2,'Haus');gp(5,10.2,'Auto')},
+  obs:'Seitenansicht: Ein Auto auf der Straße, eine Lärmschutzwand, ein Haus. Vergleiche die Pegel im Erdgeschoss (M1) und im 1. Stock (M2) mit und ohne Wand, für tiefe und hohe Töne.',
+  why:'Hinter der Wand entsteht ein Schallschatten. Tiefe Töne werden stärker über die Wandkante gebeugt, darum hilft die Wand bei hohen Tönen mehr. Eine höhere Wand vergrößert den Schatten. Der Boden reflektiert zusätzlich.'},
+ {g:'Überlagerung',t:'Zwei Lautsprecher: Interferenz',d:'laute und leise Zonen, Antischall',vars:[{k:'p',n:'Lautsprecher',o:[['gleichphasig','g'],['gegenphasig','u'],['Antischall','a']],v:'g'}],
+  build(o){sceneNew(12,8,240,{view:'I'});const d=o.p==='a'?.07:.8;addSrc({x:2,y:4-d});addSrc({x:2,y:4+d,ph:o.p==='g'?0:1});addMic(9,4);addMic(9,6.3)},
+  obs:'Zwei Lautsprecher spielen denselben Ton. Die Ansicht „Lautstärke“ zeigt laute und leise Zonen. Schalte den Ton ein und ziehe ein Mikrofon hindurch.',
+  why:'Treffen Überdruck und Überdruck zusammen, verstärken sie sich. Trifft Überdruck auf Unterdruck, löschen sie sich aus (Interferenz). Gegenphasig vertauscht laut und leise. Beim Antischall (Noise Cancelling) sitzt ein gegenphasiger Lautsprecher ganz nahe an der Quelle: Fast überall wird es leise.'},
+ {g:'Überlagerung',t:'Stehende Welle vor einer Wand',d:'Knoten im Abstand λ/2',vars:[{k:'m',n:'Wand',o:[['Beton',1],['Schaumstoff',4]],v:1},{k:'f',n:'Ton',o:[['343 Hz',343],['686 Hz',686]],v:343}],
+  build(o){sceneNew(12,6,240,{view:'I'});rect(10,0,10.4,6,o.m);addSrc({x:1.5,y:3,w:5.6,ang:0,f:o.f});addMic(8,3)},
+  obs:'Vor der Wand entstehen ruhige Streifen. Miss ihren Abstand mit dem Maßstab und vergleiche mit der Wellenlänge. Was ändert Schaumstoff?',
+  why:'Hin- und rücklaufende Welle bilden eine stehende Welle, die Knoten liegen λ/2 auseinander. In Räumen nennt man solche Muster Raummoden: Manche Töne dröhnen an bestimmten Stellen. Mit Schaumstoff ist die reflektierte Welle schwach, die Streifen verschwinden fast.'},
+ {g:'Bewegung',t:'Doppler-Effekt und Überschall',d:'bewegte Schallquelle',vars:[{k:'v',n:'Geschwindigkeit',o:[['0',0],['0,3 c',.3],['0,6 c',.6],['1,3 c',1.3]],v:.3}],
+  build(o){sceneNew(16,8,240,{scope:30});addSrc(o.v?{x:2,y:4,f:200,v:o.v*343,x0:2,x1:13.5}:{x:8,y:4,f:200});addMic(15,4);addMic(1,4);gp(15,4.8,'vorne');gp(1,4.8,'hinten')},
+  obs:'Die Schallquelle (200 Hz) fährt nach rechts. Vergleiche die gemessene Frequenz vor der Quelle (M1) und hinter ihr (M2). Wähle zuletzt 1,3 c.',
+  why:'Vor der Quelle werden die Wellen zusammengedrängt: höherer Ton. Dahinter werden sie auseinandergezogen: tieferer Ton. Es gilt f′ = f / (1 ∓ v/c), bei 0,3 c also etwa 286 Hz vorne und 154 Hz hinten. Ist die Quelle schneller als der Schall, entsteht ein Machkegel, der Überschallknall.'},
+ {g:'Selbst bauen',t:'Leeres Labor',d:'eigene Versuche aufbauen',build(){sceneNew(12,8,240);addSrc({x:3,y:4});addMic(8,4)},
+  obs:'Baue selbst: Ziehe Lautsprecher und Mikrofone hinein, zeichne Wände aus verschiedenen Materialien und klatsche ins Feld.',
+  why:'Tippe einen Lautsprecher an, um Signal, Frequenz, Phase, Strahlrichtung oder Geschwindigkeit einzustellen. Objekte entfernst du mit „Entfernen“ oder der Entf-Taste. „Rückgängig“ nimmt die letzte Wand zurück.'}
+];
+function rLoad(i,keep){
+  const p=RP[i];if(!keep){R.pi=i;R.opt={};(p.vars||[]).forEach(v=>R.opt[v.k]=v.v)}
+  p.build(R.opt);setBeta();R.run=true;rTools();rPanel();renderLib('Versuche: Raum',groupBy(RP),R.pi,j=>rLoad(j));
+}
+const TOOLS=[['Ziehen','move'],['Klatschen','clap'],['+ Lautsprecher','lsp'],['+ Mikrofon','mic'],['Wand zeichnen','wall'],['Radierer','erase']];
+function rTools(){
+  $('#tools').innerHTML=seg('tool',TOOLS,R.tool)+`<select id="wmat" aria-label="Wandmaterial">${MAT.map((m,i)=>m?`<option value="${i}" ${i===R.wmat?'selected':''}>${m.n}</option>`:'').join('')}</select>`+
+   `<span class="sep"></span><button class="btn" id="rRun">${R.run?'Pause':'Weiter'}</button><button class="btn" id="rClr">Welle löschen</button><button class="btn" id="rUndo">Rückgängig</button>`+
+   `<span class="sep"></span>`+seg('view',[['Druck','p'],['Lautstärke','I']],R.view);
+  $('#tools').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.tool){R.tool=b.dataset.tool;rTools()}
+    else if(b.dataset.view){R.view=b.dataset.view;rTools()}
+    else if(b.id==='rRun'){R.run=!R.run;b.textContent=R.run?'Pause':'Weiter'}
+    else if(b.id==='rClr'){clearWave(R.sim);const q=R.sim.src.find(q=>q.type!=='sinus');if(q){R.sim.lastTrig=0;R.sim.trigOff=trigOff(q)}}
+    else if(b.id==='rUndo'){const u=R.undo.pop();if(u){R.sim.mat.set(u);R.wdirty=true}}};
+  $('#wmat').onchange=e=>{R.wmat=+e.target.value;R.tool='wall';rTools()};
+  const hint={move:'Lautsprecher und Mikrofone ziehen, antippen zum Einstellen.',clap:'Ins Feld tippen: Dort wird geklatscht.',lsp:'Ins Feld tippen: Neuer Lautsprecher.',mic:'Ins Feld tippen: Neues Mikrofon (höchstens 4).',wall:'Mit gedrückter Maus oder dem Finger Wände zeichnen. Material oben wählen.',erase:'Über Wände wischen, um sie zu entfernen.'};
+  $('#status').textContent=hint[R.tool];
+}
+function rPanel(){
+  const p=RP[R.pi],vars=(p.vars||[]).map(v=>`<div class="small">${v.n}</div>`+seg('var-'+v.k,v.o,R.opt[v.k])).join('');
+  $('#panel').innerHTML=infoCard(p)+(vars?`<div class="card"><h3>Variante</h3>${vars}</div>`:'')+
+   `<div class="card" id="selCard"></div>
+    <div class="card"><h3>Mikrofone</h3><canvas class="scope" id="scope"></canvas><p class="small" id="scap"></p><div class="mics" id="micList"></div></div>
+    <div class="card"><h3>Darstellung</h3>${range('rk','Kontrast',-2,3,.1,Math.log2(R.contrast))}${range('rt','Tempo',.25,3,.05,R.tempo)}${range('rw','Wanddicke beim Zeichnen',.1,1,.05,R.wth)}
+    <div class="legend" style="margin-top:8px"><span><i style="background:${cs('red')}"></i>Überdruck</span><span><i style="background:${cs('blue')}"></i>Unterdruck</span>${MAT.map(m=>m?`<span><i style="background:${m.col}"></i>${m.n} (α ≈ ${fmt(m.a,2)})</span>`:'').join('')}</div></div>`;
+  const P=$('#panel');
+  P.onclick=e=>{const b=e.target.closest('button');if(!b)return;
+    for(const k in b.dataset){if(k.startsWith('var')){const key=k.slice(3).replace(/^-/,'');const kk=key.charAt(0).toLowerCase()+key.slice(1);const v=(p.vars.find(x=>x.k===kk)||{}).o?.find(o=>String(o[1])===b.dataset[k]);if(v){R.opt[kk]=v[1];rLoad(R.pi,true)}return}}
+    selClick(b)};
+  P.oninput=e=>{const el=e.target;if(el.id==='rk')R.contrast=2**+el.value;else if(el.id==='rt')R.tempo=+el.value;else if(el.id==='rw')R.wth=+el.value;else selInput(el);rOuts()};
+  rOuts();renderSel();
+}
+function rOuts(){setOut('rk',fmt(R.contrast,2)+' ×');setOut('rt',fmt(R.tempo,2)+' ×');setOut('rw',fmt(R.wth,2)+' m')}
+function fmax(){const s=R.sim;return Math.floor(s.c/(8*s.h)/10)*10}
+function renderSel(){
+  const el=$('#selCard');if(!el)return;const s=R.sim,q=R.sel;
+  if(!q||(!s.src.includes(q)&&!s.mic.includes(q))){R.sel=null;el.innerHTML='<h3>Objekt</h3><p class="small">Tippe einen Lautsprecher oder ein Mikrofon an, um es einzustellen.</p>';return}
+  if(s.mic.includes(q)){const i=s.mic.indexOf(q);el.innerHTML=`<h3>Mikrofon M${i+1}</h3><p class="small">Ziehe das Mikrofon an eine andere Stelle. Mit Ton an hörst du den Ton so laut, wie er hier ankommt.</p><div class="seg"><button data-act="listen">${R.listen===i?'wird abgehört':'abhören'}</button><button data-act="del">Entfernen</button></div>`;return}
+  const t=q.type,fm=fmax(),beam=q.w>0;
+  el.innerHTML=`<h3>${t==='knall'?'Klatscher':'Lautsprecher'}</h3>`+seg('ty',[['Dauerton','sinus'],['Tonpuls','puls'],['Knall','knall']],t)+
+   (t!=='knall'?range('sf','Frequenz',50,fm,5,Math.min(q.f,fm)):'')+range('sa','Lautstärke',.2,2,.05,q.amp)+
+   `<div class="small">Phase</div>`+seg('ph',[['0°',0],['180° (umgekehrt)',1]],q.ph)+
+   `<div class="small">Abstrahlung</div>`+seg('bm',[['rundum',0],['Strahl',1]],beam?1:0)+
+   (beam?range('sd','Richtung',-180,180,1,Math.round(q.ang*180/Math.PI))+range('sw','Breite',.3,Math.min(10,R.Wm*.6),.1,q.w):range('sv','Geschwindigkeit (nach rechts)',-1.5,1.5,.05,q.v/s.c))+
+   (t!=='sinus'?range('sr','Wiederholen alle',0,Math.max(100,R.scopeMs*2),5,Math.round(q.rep*1000)):'')+
+   `<div class="seg">${t!=='sinus'?'<button data-act="fire">Klatschen / auslösen</button>':''}<button data-act="onoff">${q.on?'Ausschalten':'Einschalten'}</button><button data-act="del">Entfernen</button></div>`;
+  selOuts();
+}
+function selOuts(){const q=R.sel;if(!q||!q.type)return;const s=R.sim;
+  setOut('sf',fmt(q.f)+' Hz · λ = '+fmt(s.c/q.f,2)+' m');setOut('sa',fmt(q.amp,2)+' ×');setOut('sd',fmt(q.ang*180/Math.PI)+'°');setOut('sw',fmt(q.w,1)+' m');
+  setOut('sv',q.v?fmt(q.v/s.c,2)+' c = '+fmt(q.v)+' m/s':'steht');setOut('sr',q.rep?fmt(q.rep*1000)+' ms':'nur auf Knopfdruck')}
+function fire(q){const s=R.sim;q.ts=s.t;s.lastTrig=s.t;s.trigOff=trigOff(q);for(const m of s.mic)trigMic(m,s)}
+function selClick(b){const q=R.sel,s=R.sim;if(!q)return;
+  if(b.dataset.act==='del'){removeSel();return}
+  if(b.dataset.act==='listen'){R.listen=s.mic.indexOf(q);renderSel();return}
+  if(b.dataset.act==='fire'){fire(q);return}
+  if(b.dataset.act==='onoff'){q.on=!q.on;renderSel();return}
+  if(b.dataset.ty){q.type=b.dataset.ty;if(q.type!=='sinus')fire(q);else q.ts=s.t;setBeta();renderSel();return}
+  if(b.dataset.ph!=null){q.ph=+b.dataset.ph;renderSel();return}
+  if(b.dataset.bm!=null){if(+b.dataset.bm){q.w=1.2;q.v=0}else q.w=0;renderSel();return}}
+function selInput(el){const q=R.sel,s=R.sim;if(!q||!q.type)return;
+  if(el.id==='sf'){q.f=+el.value;setBeta()}else if(el.id==='sa')q.amp=+el.value;else if(el.id==='sd')q.ang=+el.value*Math.PI/180;else if(el.id==='sw')q.w=+el.value;
+  else if(el.id==='sv'){const v=+el.value*s.c;if(v&&!q.v){q.x0=1/s.h;q.x1=s.nx-1/s.h}if(!v&&q.v){q.x0=null}q.v=v}
+  else if(el.id==='sr')q.rep=+el.value/1000;selOuts()}
+function removeSel(){const s=R.sim,q=R.sel;if(!q)return;let i=s.src.indexOf(q);if(i>=0)s.src.splice(i,1);i=s.mic.indexOf(q);if(i>=0){s.mic.splice(i,1);R.listen=0}R.sel=null;setBeta();renderSel()}
+function rFrame(){
+  const s=R.sim;if(!s)return;
+  if(R.run){const cap=Math.max(1,Math.floor(1.6e6/s.N));const n=Math.min(cap,Math.max(1,Math.round(R.spf*R.tempo)));for(let k=0;k<n;k++)step(s)}
+  for(const m of s.mic){const n=m.det.ev.length;if(m._ne==null)m._ne=0;if(n<m._ne)m._ne=0;if(n>m._ne){if(s.mic.indexOf(m)===R.listen)for(let k=m._ne;k<n;k++)click(m.det.ev[k].pk*2.2);m._ne=n}}
+  const m=s.mic[R.listen];let f=0;if(m&&R.run){f=micFreq(m,s.t);const sq=s.src.find(q=>q.type==='sinus'&&q.on);if(!f&&sq)f=sq.f;if(!sq)f=0}
+  tone(f,m&&f?Math.sqrt(m.ms)/.2:0);
+}
+function rGeo(){const s=R.sim,sc=Math.min((CW-12)/s.nx,(CH-12)/s.ny);R.sc=sc;R.ox=(CW-s.nx*sc)/2;R.oy=(CH-s.ny*sc)/2}
+function rDraw(){
+  const s=R.sim;if(!s)return;rGeo();const {sc,ox,oy}=R,nx=s.nx,ny=s.ny,M=s.M,NX=s.NX,d=R.img.data;
+  ctx.fillStyle=cs('fld');ctx.fillRect(0,0,CW,CH);
+  let o=0;
+  if(R.view==='p'){const g=GAIN*R.contrast*256;for(let j=0;j<ny;j++){let c=(j+M)*NX+M;for(let i=0;i<nx;i++,c++,o+=4){let k=Math.round(s.p[c]*g)+256;k=k<0?0:k>512?512:k;k*=3;d[o]=LUTP[k];d[o+1]=LUTP[k+1];d[o+2]=LUTP[k+2];d[o+3]=255}}}
+  else{const g=R.contrast*R.contrast/IREF;for(let j=0;j<ny;j++){let c=(j+M)*NX+M;for(let i=0;i<nx;i++,c++,o+=4){const v=s.I[c]*g;let k=v>1e-4?Math.round((Math.log10(v)/4+1)*256):0;k=k<0?0:k>256?256:k;k*=3;d[o]=LUTI[k];d[o+1]=LUTI[k+1];d[o+2]=LUTI[k+2];d[o+3]=255}}}
+  R.octx.putImageData(R.img,0,0);ctx.imageSmoothingEnabled=true;ctx.drawImage(R.off,ox,oy,nx*sc,ny*sc);
+  if(R.wdirty){const wc=R.offW.getContext('2d'),wi=wc.createImageData(nx,ny),w=wi.data,cols=MAT.map(m=>m?hex(m.col):null);
+    for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){const m=s.mat[(j+M)*NX+i+M];if(m){const q=(j*nx+i)*4,cc=cols[m];w[q]=cc[0];w[q+1]=cc[1];w[q+2]=cc[2];w[q+3]=255}}wc.putImageData(wi,0,0);R.wdirty=false}
+  ctx.imageSmoothingEnabled=false;ctx.drawImage(R.offW,ox,oy,nx*sc,ny*sc);ctx.imageSmoothingEnabled=true;
+  ctx.strokeStyle=cs('line');ctx.lineWidth=1;ctx.strokeRect(ox+.5,oy+.5,nx*sc-1,ny*sc-1);
+  const mx=x=>ox+x/s.h*sc,my=y=>oy+y/s.h*sc,cx=x=>ox+x*sc,cy=y=>oy+y*sc;
+  for(const g of R.guides){if(g.k==='l'){ctx.strokeStyle=cs('ink',.65);ctx.lineWidth=1.5;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(mx(g.x1),my(g.y1));ctx.lineTo(mx(g.x2),my(g.y2));ctx.stroke();ctx.setLineDash([]);
+      if(g.label)txt(g.label,(mx(g.x1)+mx(g.x2))/2+(g.x1===g.x2?8:0),(my(g.y1)+my(g.y2))/2-6,cs('ink'),g.x1===g.x2?'left':'center',13,true)}
+    else if(g.label)txt(g.label,mx(g.x),my(g.y),cs('ink'),'center',14,true)}
+  for(const q of s.src){const X=cx(q.x),Y=cy(q.y);ctx.globalAlpha=q.on?1:.4;
+    if(q.w>0){const n=q.w/s.h*sc/2,ex=Math.cos(q.ang),ey=Math.sin(q.ang);ctx.strokeStyle=cs('ink');ctx.lineWidth=6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(X+ey*n,Y-ex*n);ctx.lineTo(X-ey*n,Y+ex*n);ctx.stroke();
+      ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(X,Y);ctx.lineTo(X+ex*26,Y+ey*26);ctx.stroke();ctx.fillStyle=cs('ink');ctx.beginPath();ctx.moveTo(X+ex*34,Y+ey*34);ctx.lineTo(X+ex*24-ey*6,Y+ey*24+ex*6);ctx.lineTo(X+ex*24+ey*6,Y+ey*24-ex*6);ctx.fill();ctx.lineCap='butt'}
+    else{ctx.fillStyle=cs('ink');ctx.beginPath();ctx.arc(X,Y,10,0,6.283);ctx.fill();ctx.fillStyle=cs('fld');
+      if(q.type==='knall'){ctx.strokeStyle=cs('fld');ctx.lineWidth=2;ctx.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3;ctx.moveTo(X+Math.cos(a)*2.5,Y+Math.sin(a)*2.5);ctx.lineTo(X+Math.cos(a)*6.5,Y+Math.sin(a)*6.5)}ctx.stroke()}
+      else{ctx.fillRect(X-5,Y-2.5,3.5,5);ctx.beginPath();ctx.moveTo(X-1.5,Y-2.5);ctx.lineTo(X+4,Y-6);ctx.lineTo(X+4,Y+6);ctx.lineTo(X-1.5,Y+2.5);ctx.fill()}
+      if(q.v){ctx.strokeStyle=cs('ink');ctx.lineWidth=2.5;const dir=Math.sign(q.v);ctx.beginPath();ctx.moveTo(X+dir*14,Y);ctx.lineTo(X+dir*34,Y);ctx.moveTo(X+dir*28,Y-5);ctx.lineTo(X+dir*34,Y);ctx.lineTo(X+dir*28,Y+5);ctx.stroke()}}
+    if(q===R.sel){ctx.strokeStyle=cs('red');ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.beginPath();ctx.arc(X,Y,16,0,6.283);ctx.stroke();ctx.setLineDash([])}
+    ctx.globalAlpha=1}
+  s.mic.forEach((m,i)=>{const X=cx(m.x),Y=cy(m.y),col=MICCOL[i];ctx.fillStyle=col;ctx.strokeStyle=cs('fld');ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(X-6,Y-9,12,18,6);ctx.fill();ctx.stroke();
+    const db=micDb(m),lb=`M${i+1}${Number.isFinite(db)&&db>20?' · '+fmt(db)+' dB':''}`;ctx.font=`700 13px ${FONT}`;const flip=X+10+ctx.measureText(lb).width>ox+nx*sc-4;txt(lb,flip?X-10:X+10,Y-10,col,flip?'right':'left',13,true);
+    if(m===R.sel){ctx.strokeStyle=cs('red');ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.beginPath();ctx.arc(X,Y,16,0,6.283);ctx.stroke();ctx.setLineDash([])}});
+  const bar=nice(R.Wm*.14),bp=bar/s.h*sc,by=oy+26,bx=ox+nx*sc-14-bp;ctx.strokeStyle=cs('ink');ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx+bp,by);ctx.moveTo(bx,by-6);ctx.lineTo(bx,by+3);ctx.moveTo(bx+bp,by-6);ctx.lineTo(bx+bp,by+3);ctx.stroke();
+  txt(fmt(bar)+' m',bx+bp/2,by+18,cs('ink'),'center',13,true);
+  txt(`t = ${fmt(s.t*1000,1)} ms${R.medium!=='Luft'?` · ${R.medium}, c = ${fmt(s.c)} m/s`:''}${R.run?'':' · Pause'}`,ox+12,oy+20,cs('ink'),'left',13,true);
+}
+function rUpd(){
+  const s=R.sim,el=$('#micList');if(!s||!el)return;selOuts();
+  let lowf=0;for(const q of s.src)if(q.type==='sinus'&&q.on&&(!lowf||q.f<lowf))lowf=q.f;
+  const imp=s.lastTrig>=0&&s.src.some(q=>q.type!=='sinus'),win=imp?R.scopeMs/1000:Math.min(R.scopeMs/1000,lowf?5/lowf:.03);
+  const trig=imp&&s.t-s.lastTrig<=win*1.5,t0=trig?s.lastTrig:s.t-win,t1=trig?s.lastTrig+win:s.t;
+  const evs=[];s.mic.forEach((m,i)=>m.det.ev.forEach(e=>evs.push({t:e.tp,col:MICCOL[i]})));const z0=s.lastTrig+s.trigOff;
+  drawScope($('#scope'),s.mic.map((m,i)=>({ring:m.ring,col:MICCOL[i]})),t0,t1,imp?evs:null,trig?z0:null);
+  $('#scap').textContent=trig?'Druck an den Mikrofonen, Zeit seit dem letzten Knall':'Druck an den Mikrofonen (die letzten '+fmt(win*1000,1)+' ms)';
+  let h='';const first=[];
+  s.mic.forEach((m,i)=>{const db=micDb(m),f=micFreq(m,s.t);let line=`<i style="background:${MICCOL[i]}"></i><b>M${i+1}</b> ${Number.isFinite(db)&&db>20?fmt(db)+' dB':'still'}`;
+    if(f&&s.src.some(q=>q.type==='sinus'&&q.on)&&Number.isFinite(db)&&db>25)line+=` · ${fmt(f)} Hz`;
+    if(imp){const cur=m.det.ev.filter(e=>e.done),uc=cur.length>=(m.prev?m.prev.length:0),ev=uc?cur:m.prev,zz=uc?(m.z??z0):m.prevZ;const ew=ev?ev.filter(e=>e.tp-zz<=R.scopeMs/1000):[];if(ew.length){first[i]=ew[0].tp-zz;line+=' · '+ew.slice(0,4).map((e,k)=>`${fmt((e.tp-zz)*1000,1)} ms${k?` (${fmt(20*Math.log10(e.pk/ew[0].pk))} dB)`:''}`).join(', ')}}
+    h+=`<div>${line}</div>`});
+  const fa=first.findIndex(x=>x!=null),fb=first.findIndex((x,k)=>k>fa&&x!=null);if(imp&&fa>=0&&fb>=0&&Math.abs(first[fb]-first[fa])>3e-4){const a=fa,b=fb;h+=`<div>Laufzeitunterschied M${b+1} − M${a+1}: <b>${fmt((first[b]-first[a])*1000,1)} ms</b></div>`}
+  if(imp)h+='<div class="small">Zeiten seit dem Knall; in Klammern: Pegel im Vergleich zum ersten Signal.</div>';
+  if(R.decay&&s.mic[0]){const d=s.mic[0].dec;h+=`<div>Nachhall an M1 (Schätzung, 2D-Modell): <b>${d.t15?fmt(4*(d.t15-d.tpk),2)+' s':s.lastTrig>=0?'wird gemessen …':'–'}</b></div>`}
+  if(!s.mic.length)h='<div class="small">Kein Mikrofon. Werkzeug „+ Mikrofon“ wählen und ins Feld tippen.</div>';
+  el.innerHTML=h;
+}
+function rPos(X,Y){return [(X-R.ox)/R.sc,(Y-R.oy)/R.sc]}
+function hit(X,Y){const s=R.sim;let best=null,bd=18;for(const o of [...s.mic,...s.src]){const d=Math.hypot(R.ox+o.x*R.sc-X,R.oy+o.y*R.sc-Y);if(d<bd){bd=d;best=o}}return best}
+function paint(x0,y0,x1,y1,m){const s=R.sim,r=Math.max(.6,(m?R.wth:.5)/s.h/2),M=s.M;
+  const i0=Math.floor(Math.min(x0,x1)-r-1),i1=Math.ceil(Math.max(x0,x1)+r+1),j0=Math.floor(Math.min(y0,y1)-r-1),j1=Math.ceil(Math.max(y0,y1)+r+1);
+  for(let j=Math.max(0,j0);j<=Math.min(s.ny-1,j1);j++)for(let i=Math.max(0,i0);i<=Math.min(s.nx-1,i1);i++){if(segD(i+.5,j+.5,x0,y0,x1,y1)<=r){const c=(j+M)*s.NX+i+M;s.mat[c]=m;s.p[c]=0}}R.wdirty=true}
+function rDown(X,Y){
+  const s=R.sim;rGeo();const [x,y]=rPos(X,Y),inside=x>=0&&y>=0&&x<=s.nx&&y<=s.ny;
+  if(R.tool==='move'){const o=hit(X,Y);R.sel=o;if(o)R.drag={o,dx:o.x-x,dy:o.y-y};renderSel();return}
+  if(!inside)return;
+  if(R.tool==='clap'){const q={x,y,type:'knall',fp:s.c/(20*s.h),amp:1,ts:s.t,once:true,w:0,ph:0,v:0,rep:0,on:true};s.src.push(q);s.lastTrig=s.t;s.trigOff=trigOff(q);for(const m of s.mic)trigMic(m,s)}
+  else if(R.tool==='lsp'){const q=addSrc({x:x*s.h,y:y*s.h});q.ts=s.t;R.sel=q;R.tool='move';setBeta();rTools();renderSel()}
+  else if(R.tool==='mic'){const m=addMic(x*s.h,y*s.h);if(m){R.sel=m;R.tool='move';rTools();renderSel()}}
+  else{R.undo.push(s.mat.slice());if(R.undo.length>20)R.undo.shift();R.paint=[x,y];paint(x,y,x,y,R.tool==='wall'?R.wmat:0)}
+}
+function rMove(X,Y){const s=R.sim,[x,y]=rPos(X,Y);
+  if(R.drag){const o=R.drag.o;o.x=clamp(x+R.drag.dx,.5,s.nx-.5);o.y=clamp(y+R.drag.dy,.5,s.ny-.5);if(o.ring){resetMic(o);o._ne=0}}
+  else if(R.paint){paint(R.paint[0],R.paint[1],x,y,R.tool==='wall'?R.wmat:0);R.paint=[x,y]}}
+MODES.raum={enter(){if(R.sim){rTools();rPanel();renderLib('Versuche: Raum',groupBy(RP),R.pi,j=>rLoad(j))}else rLoad(0)},frame:rFrame,draw:rDraw,upd:rUpd,down:rDown,move:rMove,up(){R.drag=null;R.paint=null},
+  key(k){if(k===' '){R.run=!R.run;rTools()}else if(k==='Delete'||k==='Backspace'){removeSel()}}};
+
+/* =====================================================================
+   BEREICH 3: NACHHALL (Sabine-Formel)
+   ===================================================================== */
+const BANDS=[125,250,500,1000,2000,4000],BL=['125','250','500','1k','2k','4k'];
+const HM={
+  beton:{n:'Beton, glatt',a:[.01,.01,.02,.02,.02,.03],col:'#9aa1a6'},
+  putz:{n:'Ziegel, verputzt',a:[.01,.02,.02,.03,.04,.05],col:'#d8d0c4'},
+  gk:{n:'Gipskarton auf Ständerwerk',a:[.29,.10,.05,.04,.07,.09],col:'#e6e2da'},
+  holzv:{n:'Holzvertäfelung mit Luftraum',a:[.30,.25,.15,.10,.10,.07],col:'#c49464'},
+  holz:{n:'Holz, massiv',a:[.15,.11,.10,.07,.06,.07],col:'#a8774b'},
+  linol:{n:'Linoleum / PVC',a:[.02,.02,.03,.03,.04,.04],col:'#7f9a8c'},
+  parkett:{n:'Parkett',a:[.04,.04,.07,.06,.06,.07],col:'#c8a06c'},
+  stein:{n:'Steinboden',a:[.01,.01,.015,.02,.02,.02],col:'#b3aca2'},
+  teppich:{n:'Teppichboden',a:[.02,.06,.14,.37,.60,.65],col:'#8b5a6b'},
+  akdecke:{n:'Akustikdecke, abgehängt',a:[.35,.50,.65,.70,.70,.65],col:'#eef1f3'},
+  akplatte:{n:'Akustikplatten (Wand)',a:[.40,.75,.90,.85,.75,.65],col:'#6f7f8c'},
+  vorhang:{n:'Vorhang, schwer, gefaltet',a:[.14,.35,.55,.72,.70,.65],col:'#a24a6c'},
+  schaum:{n:'Schaumstoff 5 cm',a:[.08,.25,.60,.90,.95,.90],col:'#55616b'},
+  pinn:{n:'Pinnwand (Kork)',a:[.05,.10,.20,.55,.60,.55],col:'#b98b57'},
+  glas:{n:'Fensterglas',a:[.35,.25,.18,.12,.07,.04],col:'#bfe0ee'}
+};
+const MOB=[.04,.06,.08,.10,.10,.10],PERSON=[.15,.25,.40,.45,.45,.45],AIRM=[0,0,.0006,.001,.0024,.006];
+const NUTZ={A1:{n:'Musik',f:V=>.45*Math.log10(V)+.07},A2:{n:'Sprache, Vortrag',f:V=>.37*Math.log10(V)-.14},A3:{n:'Unterricht, Kommunikation',f:V=>.32*Math.log10(V)-.17},A4:{n:'Unterricht inklusiv',f:V=>.26*Math.log10(V)-.14}};
+const HP=[
+ {g:'Schule',t:'Klassenzimmer, kahl und leer',d:'harte Flächen, keine Personen',s:{L:9,B:7,H:3.2,boden:'linol',decke:'beton',wand:'putz',fen:12,absM:'pinn',absA:0,pers:0,nutz:'A3',mob:1},
+  obs:'Klatsche oder lass die Silben „ta-ta-ta“ abspielen. Wie lange hallt es nach? Vergleiche mit dem Richtwert.',
+  why:'Putz, Glas, Linoleum und Beton schlucken fast keinen Schall. Die Nachhallzeit ist viel länger als der Richtwert, Silben verschwimmen ineinander.'},
+ {g:'Schule',t:'Klassenzimmer mit 25 Schüler:innen',d:'Personen schlucken Schall',s:{L:9,B:7,H:3.2,boden:'linol',decke:'beton',wand:'putz',fen:12,absM:'pinn',absA:0,pers:25,nutz:'A3',mob:1},
+  obs:'Derselbe Raum, jetzt besetzt. Wie stark ändert sich die Nachhallzeit? Ändere die Anzahl der Personen.',
+  why:'Jede Person schluckt etwa so viel Schall wie 0,4 m² offenes Fenster (bei 500 Hz). In einem kahlen Raum ist die Klasse selbst der größte Absorber. Trotzdem reicht das meist nicht.'},
+ {g:'Schule',t:'Klassenzimmer saniert',d:'mit Akustikdecke und Pinnwand',s:{L:9,B:7,H:3.2,boden:'linol',decke:'akdecke',wand:'putz',fen:12,absM:'pinn',absA:4,pers:25,nutz:'A3',mob:1},
+  obs:'Mit Akustikdecke und Pinnwand: Liegt die Nachhallzeit jetzt im grünen Bereich? Was bringt die Decke, was die Pinnwand?',
+  why:'Die Akustikdecke ist die wirksamste Maßnahme: große Fläche mit hohem Absorptionsgrad. A = Fläche × α wächst stark, also sinkt T = 0,161 · V / A. Lärmpegel und Anstrengung beim Zuhören sinken dadurch deutlich.'},
+ {g:'Schule',t:'Musiksaal',d:'für Musik darf es länger klingen',s:{L:12,B:9,H:4,boden:'parkett',decke:'gk',wand:'putz',fen:16,absM:'vorhang',absA:18,pers:22,nutz:'A1',mob:1},
+  obs:'Stelle die Nutzung zwischen „Musik“ und „Unterricht“ um. Wie ändert sich der Richtwert? Spiel die Melodie ab.',
+  why:'Musik braucht Raumklang, Sprache braucht Deutlichkeit. Deshalb ist der Richtwert für Musik länger. Ein Vorhang, den man auf- und zuziehen kann, macht einen Raum für beides brauchbar.'},
+ {g:'Schule',t:'Turnsaal',d:'großer Raum, harte Flächen',s:{L:27,B:15,H:7,boden:'linol',decke:'holz',wand:'beton',fen:40,absM:'holzv',absA:180,pers:0,nutz:'A3',mob:0},
+  obs:'Wie lange hallt es im Turnsaal? Wähle für die Decke „Akustikdecke“ oder tausche die Prallwand gegen Akustikplatten. Was bringt mehr?',
+  why:'Großes Volumen und harte Flächen ergeben ohne Akustikmaßnahmen Nachhallzeiten von mehreren Sekunden. Darum ist es dort so laut. Viele Turnsäle haben deshalb schallschluckende Decken aus Holzwolleplatten. Für Sporthallen gibt es eigene, etwas längere Richtwerte; hier wird der Wert für Unterricht verwendet.'},
+ {g:'Andere Räume',t:'Kirche',d:'sehr großes Volumen',s:{L:40,B:18,H:15,boden:'stein',decke:'beton',wand:'putz',fen:120,absM:'holz',absA:150,pers:150,nutz:'A1',mob:0},
+  obs:'Höre dir Klatschen, Silben und Melodie an. Wofür ist dieser Raum gut geeignet, wofür nicht?',
+  why:'Ein riesiges Volumen ergibt einen sehr langen Nachhall von mehreren Sekunden. Das ist ideal für Orgel und Chor, aber schwierig für Sprache. Bei hohen Tönen schluckt in großen Räumen auch die Luft selbst Schall.'},
+ {g:'Andere Räume',t:'Wohnzimmer',d:'klein, mit Teppich und Vorhang',s:{L:6,B:4.5,H:2.6,boden:'teppich',decke:'putz',wand:'putz',fen:6,absM:'vorhang',absA:10,pers:3,nutz:'A2',mob:1},
+  obs:'Vergleiche das Wohnzimmer mit dem kahlen Klassenzimmer. Warum klingt es hier „trocken“?',
+  why:'Kleines Volumen, dazu Teppich, Vorhänge und Polstermöbel: Der Schall wird schnell geschluckt, der Nachhall ist kurz. Ein leerer Raum nach dem Umzug klingt dagegen hallig, bis die Möbel drin sind.'}
+];
+const HS={pi:0,...HP[0].s,play:null};
+function hCalc(){
+  const {L,B,H}=HS,V=L*B*H,Sb=L*B,Sw=Math.max(0,2*(L+B)*H-HS.fen-HS.absA),S=2*L*B+2*(L+B)*H;
+  const A=BANDS.map((_,b)=>Sb*HM[HS.boden].a[b]+Sb*HM[HS.decke].a[b]+Sw*HM[HS.wand].a[b]+HS.fen*HM.glas.a[b]+HS.absA*HM[HS.absM].a[b]+HS.pers*PERSON[b]+(HS.mob?Sb*MOB[b]:0)+4*AIRM[b]*V);
+  const T=A.map(a=>.161*V/a),Tm=(T[2]+T[3])/2,Ts=Math.max(.2,NUTZ[HS.nutz].f(V));
+  return {V,S,Sw,A,T,Tm,Ts};
+}
+function hLoad(i){HS.pi=i;Object.assign(HS,HP[i].s);hTools();hPanel();renderLib('Versuche: Nachhall',groupBy(HP),i,hLoad)}
+function hTools(){
+  $('#tools').innerHTML=`<button class="btn hot" data-play="clap">Klatschen anhören</button><button class="btn" data-play="syl">Silben „ta-ta-ta“</button><button class="btn" data-play="mel">Melodie</button><button class="btn" data-play="stop">Stopp</button>`;
+  $('#tools').onclick=e=>{const b=e.target.closest('button');if(b&&b.dataset.play)hPlay(b.dataset.play)};
+  $('#status').textContent='Nachhallzeit T: Zeit, bis der Schall nach dem Abschalten um 60 dB leiser geworden ist (auf ein Millionstel der Energie).';
+}
+const opts=(sel,keys)=>keys.map(k=>`<option value="${k}" ${k===sel?'selected':''}>${HM[k].n}</option>`).join('');
+const sel=(id,label,cur,keys)=>`<label class="small" for="${id}" style="display:block;margin-top:8px">${label}</label><select class="full" id="${id}">${opts(cur,keys)}</select>`;
+function hPanel(){
+  const p=HP[HS.pi],K=Object.keys(HM).filter(k=>k!=='glas');
+  $('#panel').innerHTML=infoCard(p)+
+  `<div class="card"><h3>Ergebnis</h3><div class="big" id="hT"></div><p id="hV" style="margin:6px 0 2px"></p><div class="kv" id="hKV"></div>
+    <table class="bands" id="hTab"></table><p class="small">Sabine: T = 0,161 · V / A. Richtwert nach DIN 18041 für den besetzten Raum, ±20 % Toleranz. Absorptionsgrade sind typische, gerundete Werte.</p></div>
+  <div class="card"><h3>Raum</h3><div class="grid2"><div><label for="hL">Länge (m)</label><input id="hL" type="number" min="2" max="80" step=".1" value="${HS.L}"></div><div><label for="hB">Breite (m)</label><input id="hB" type="number" min="2" max="60" step=".1" value="${HS.B}"></div><div><label for="hH">Höhe (m)</label><input id="hH" type="number" min="2" max="30" step=".1" value="${HS.H}"></div></div>
+   <label class="small" for="hN" style="display:block;margin-top:8px">Nutzung</label><select class="full" id="hN">${Object.entries(NUTZ).map(([k,n])=>`<option value="${k}" ${k===HS.nutz?'selected':''}>${n.n}</option>`).join('')}</select></div>
+  <div class="card"><h3>Flächen</h3>${sel('hBo','Boden',HS.boden,K)}${sel('hDe','Decke',HS.decke,K)}${sel('hWa','Wände',HS.wand,K)}
+   ${range('hF','Fensterfläche',0,Math.round(2*(HS.L+HS.B)*HS.H*.5),1,HS.fen)}
+   ${sel('hAm','Zusätzlich an den Wänden',HS.absM,K)}${range('hA','Fläche davon',0,Math.round(2*(HS.L+HS.B)*HS.H*.6),1,HS.absA)}
+   ${range('hP','Personen im Raum',0,Math.max(10,Math.round(HS.L*HS.B/1.1)),1,HS.pers)}<div class="chk" style="margin-top:6px"><label><input type="checkbox" id="hM" ${HS.mob?'checked':''}>Möbel (Tische, Stühle, Kästen)</label></div></div>`;
+  const P=$('#panel'),map={hBo:'boden',hDe:'decke',hWa:'wand',hAm:'absM',hN:'nutz'};
+  P.onchange=e=>{const el=e.target;if(map[el.id]){HS[map[el.id]]=el.value;hOuts()}else if(['hL','hB','hH'].includes(el.id)){HS[el.id==='hL'?'L':el.id==='hB'?'B':'H']=clamp(+el.value||3,2,80);HS.fen=Math.min(HS.fen,2*(HS.L+HS.B)*HS.H*.5);hPanel()}};
+  P.oninput=e=>{const el=e.target;if(el.id==='hF')HS.fen=+el.value;else if(el.id==='hA')HS.absA=+el.value;else if(el.id==='hP')HS.pers=+el.value;else if(el.id==='hM')HS.mob=el.checked?1:0;else return;hOuts()};
+  hOuts();
+}
+function hOuts(){
+  const r=hCalc();setOut('hF',fmt(HS.fen)+' m²');setOut('hA',fmt(HS.absA)+' m²');setOut('hP',fmt(HS.pers));
+  $('#hT').textContent='T ≈ '+fmt(r.Tm,2)+' s';
+  const q=r.Tm/r.Ts,v=q>1.2?['zu hallig: Sprache verschwimmt','red']:q<.8?['sehr trocken, stark gedämpft','blue']:['im Bereich des Richtwerts','ok'];
+  $('#hV').innerHTML=`<b style="color:${cs(v[1])}">${v[0]}</b>`;
+  $('#hKV').innerHTML=`<span>Richtwert (${NUTZ[HS.nutz].n})</span><b>${fmt(r.Ts,2)} s</b><span>Volumen V</span><b>${fmt(r.V)} m³</b><span>Oberfläche</span><b>${fmt(r.S)} m²</b><span>Absorptionsfläche A (500 Hz)</span><b>${fmt(r.A[2],1)} m²</b>`;
+  $('#hTab').innerHTML=`<tr><th>Frequenz</th>${BL.map(b=>`<th>${b}</th>`).join('')}</tr><tr><td>A in m²</td>${r.A.map(a=>`<td>${fmt(a,a<10?1:0)}</td>`).join('')}</tr><tr><td>T in s</td>${r.T.map(t=>`<td>${fmt(t,t<10?2:1)}</td>`).join('')}</tr>`;
+}
+/* Ton: Faltung mit künstlichem Nachhall */
+function bp(x,f0,fs,Q){const w=2*Math.PI*f0/fs,al=Math.sin(w)/(2*Q),a0=1+al,b0=al/a0,b2=-al/a0,a1=-2*Math.cos(w)/a0,a2=(1-al)/a0;let x1=0,x2=0,y1=0,y2=0;for(let i=0;i<x.length;i++){const y=b0*x[i]+b2*x2-a1*y1-a2*y2;x2=x1;x1=x[i];y2=y1;y1=y;x[i]=y}}
+function makeIR(T){const c=AU.ctx,fs=c.sampleRate,len=Math.floor(fs*Math.min(7,Math.max(...T)*1.25+.1)),buf=c.createBuffer(2,len,fs);
+  for(let ch=0;ch<2;ch++){const out=buf.getChannelData(ch),tmp=new Float32Array(len);
+    BANDS.forEach((f,b)=>{for(let i=0;i<len;i++)tmp[i]=Math.random()*2-1;bp(tmp,f,fs,1.4);const k=-6.91/(T[b]*fs);for(let i=0;i<len;i++)out[i]+=tmp[i]*Math.exp(k*i)})}
+  return buf}
+function hPlay(kind){
+  if(!AU.on)setTon(true);if(!AU.ctx)return;const c=AU.ctx;
+  for(const n of AU.nodes){try{n.stop()}catch(e){}}AU.nodes=[];if(kind==='stop'){HS.play=null;return}
+  const r=hCalc();AU.conv.buffer=makeIR(r.T);AU.wet.gain.value=.45*clamp(Math.sqrt(r.Tm/1.2),.35,1.3);AU.dry.gain.value=.9;
+  const t0=c.currentTime+.05,out=n=>{n.connect(AU.dry);n.connect(AU.conv)};
+  if(kind==='clap'){const n=Math.floor(c.sampleRate*.03),b=c.createBuffer(1,n,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(c.sampleRate*.004));
+    const s=c.createBufferSource();s.buffer=b;out(s);s.start(t0);AU.nodes.push(s)}
+  else if(kind==='syl'){for(let k=0;k<6;k++){const t=t0+k*.22,o=c.createOscillator(),g=c.createGain(),f1=c.createBiquadFilter(),f2=c.createBiquadFilter();o.type='sawtooth';o.frequency.value=k%2?135:150;
+      f1.type=f2.type='bandpass';f1.frequency.value=750;f2.frequency.value=1200;f1.Q.value=f2.Q.value=5;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(1.6,t+.015);g.gain.setValueAtTime(1.6,t+.09);g.gain.linearRampToValueAtTime(0,t+.13);
+      o.connect(f1);o.connect(f2);f1.connect(g);f2.connect(g);out(g);o.start(t);o.stop(t+.15);AU.nodes.push(o)}}
+  else{[523.25,659.25,783.99,1046.5,783.99,659.25,523.25].forEach((f,k)=>{const t=t0+k*.3,o=c.createOscillator(),g=c.createGain();o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.5,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+.45);o.connect(g);out(g);o.start(t);o.stop(t+.5);AU.nodes.push(o)})}
+  HS.play={t0,kind};
+}
+function hDraw(){
+  const W=CW,H=CH,r=hCalc();ctx.fillStyle=cs('fld');ctx.fillRect(0,0,W,H);
+  const narrow=W<620,rh=narrow?H*.5:H*.56;
+  // Raum isometrisch
+  const {L,B}=HS,Hh=HS.H,bw=W-32,bh=rh-30,s=Math.min(bw*.8/((L+B)*.866),bh*.86/((L+B)*.5+Hh)),ox=16+bw/2-((L-B)*.866*s)/2,oy=18+(bh-((L+B)*.5+Hh)*s)/2+Hh*s;
+  const P=(x,y,z)=>[ox+(x-y)*.866*s,oy+(x+y)*.5*s-z*s];
+  const quad=(pts,fill,al=1,stroke=true)=>{ctx.beginPath();pts.forEach((p,i)=>{const q=P(...p);i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])});ctx.closePath();ctx.globalAlpha=al;ctx.fillStyle=fill;ctx.fill();ctx.globalAlpha=1;if(stroke){ctx.strokeStyle=cs('ink',.55);ctx.lineWidth=1.2;ctx.stroke()}};
+  const shade=(h,k)=>{const c=hex(h).map(v=>Math.round(v*k));return `rgb(${c.join(',')})`};
+  quad([[0,0,0],[L,0,0],[L,B,0],[0,B,0]],HM[HS.boden].col);
+  quad([[0,0,0],[0,B,0],[0,B,Hh],[0,0,Hh]],shade(HM[HS.wand].col,.86));
+  quad([[0,0,0],[L,0,0],[L,0,Hh],[0,0,Hh]],shade(HM[HS.wand].col,.97));
+  if(HS.fen>0){const wh=Math.min(1.6,Hh*.5),tw=Math.min(B*.9,HS.fen/wh),k=Math.max(1,Math.round(tw/1.8)),w=tw/k,gap=(B-tw)/(k+1);
+    for(let i=0;i<k;i++){const y0=gap+i*(w+gap);quad([[0,y0,.9],[0,y0+w,.9],[0,y0+w,.9+wh],[0,y0,.9+wh]],HM.glas.col)}}
+  if(HS.absA>0){const ah=Math.min(2,Hh-1),aw=Math.min(L*.92,HS.absA/ah),x0=(L-aw)/2;quad([[x0,0,.8],[x0+aw,0,.8],[x0+aw,0,.8+ah],[x0,0,.8+ah]],HM[HS.absM].col)}
+  if(HS.pers>0){const n=Math.min(HS.pers,300),cols=Math.max(1,Math.round(Math.sqrt(n*L/B))),rows=Math.ceil(n/cols);ctx.fillStyle=cs('ink',.75);ctx.beginPath();
+    for(let i=0;i<n;i++){const cx=(i%cols+.5)/cols,cy=(Math.floor(i/cols)+.5)/rows,[X,Y]=P(.8+cx*(L-1.6),.8+cy*(B-1.6),1.2);ctx.moveTo(X+3.5,Y);ctx.arc(X,Y,3.5,0,6.283)}ctx.fill()}
+  quad([[0,0,Hh],[L,0,Hh],[L,B,Hh],[0,B,Hh]],HM[HS.decke].col,.4);
+  ctx.strokeStyle=cs('ink',.55);ctx.setLineDash([4,4]);ctx.beginPath();let q=P(L,B,0);ctx.moveTo(...q);q=P(L,B,Hh);ctx.lineTo(...q);q=P(0,B,Hh);ctx.moveTo(...P(0,B,0));ctx.lineTo(...q);ctx.moveTo(...P(L,0,0));ctx.lineTo(...P(L,0,Hh));ctx.stroke();ctx.setLineDash([]);
+  let a=P(L/2,B,0);txt(fmt(L,1)+' m',a[0]-10,a[1]+20,cs('ink'),'right',13,true);a=P(L,B/2,0);txt(fmt(B,1)+' m',a[0]+12,a[1]+18,cs('ink'),'left',13,true);a=P(L,0,Hh/2);txt(fmt(Hh,1)+' m',a[0]+10,a[1],cs('ink'),'left',13,true);
+  txt('T ≈ '+fmt(r.Tm,2)+' s',W-18,40,cs('ink'),'right',narrow?26:34,true);txt('Richtwert '+fmt(r.Ts,2)+' s',W-18,64,cs('mut'),'right',14);
+  // Diagramme
+  const top=rh+8,ch=H-top-12,cw=narrow?W-32:(W-48)/2;
+  const bar=(x0,y0,w,h)=>{const pl=40,pb=24,pt=24,pw=w-pl-8,ph=h-pt-pb,tmax=Math.max(...r.T,r.Ts*1.4)*1.12;txt('Nachhallzeit je Tonhöhe',x0,y0+14,cs('ink'),'left',14,true);
+    const Y=t=>y0+pt+ph-t/tmax*ph;ctx.fillStyle=cs('ok',.16);ctx.fillRect(x0+pl,Y(r.Ts*1.2),pw,Y(r.Ts*.8)-Y(r.Ts*1.2));
+    ctx.strokeStyle=cs('ok');ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(x0+pl,Y(r.Ts));ctx.lineTo(x0+pl+pw,Y(r.Ts));ctx.stroke();ctx.setLineDash([]);
+    const st=nice(tmax/4);ctx.strokeStyle=cs('line');ctx.lineWidth=1;for(let t=0;t<=tmax;t+=st){ctx.beginPath();ctx.moveTo(x0+pl,Y(t));ctx.lineTo(x0+pl+pw,Y(t));ctx.stroke();txt(fmt(t,st<1?1:0)+' s',x0+pl-6,Y(t)+4,cs('mut'),'right',12)}
+    const bw2=pw/6;r.T.forEach((t,i)=>{const x=x0+pl+i*bw2+bw2*.18,ww=bw2*.64,out=t>r.Ts*1.2||t<r.Ts*.8;ctx.fillStyle=out?cs('red'):cs('ink');ctx.fillRect(x,Y(t),ww,Y(0)-Y(t));
+      txt(fmt(t,t<10?1:0),x+ww/2,Y(t)-5,cs('ink'),'center',12,true);txt(BL[i]+(i===0?' Hz':''),x+ww/2,y0+h-6,cs('mut'),'center',12)})};
+  const dec=(x0,y0,w,h)=>{const pl=46,pb=24,pt=24,pw=w-pl-8,ph=h-pt-pb,tmax=Math.max(1,r.Tm*1.25,r.Ts*1.5);txt('Abklingen nach einem Knall (500–1000 Hz)',x0,y0+14,cs('ink'),'left',14,true);
+    const X=t=>x0+pl+t/tmax*pw,Y=d=>y0+pt+(-d)/60*ph;ctx.strokeStyle=cs('line');ctx.lineWidth=1;
+    for(let d=0;d>=-60;d-=20){ctx.beginPath();ctx.moveTo(X(0),Y(d));ctx.lineTo(X(tmax),Y(d));ctx.stroke();txt(fmt(d)+' dB',X(0)-6,Y(d)+4,cs('mut'),'right',12)}
+    const st=nice(tmax/4);for(let t=0;t<=tmax+1e-9;t+=st)txt(fmt(t,st<1?1:0)+' s',X(t),y0+h-6,cs('mut'),'center',12);
+    ctx.strokeStyle=cs('ok');ctx.setLineDash([5,4]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(0),Y(0));ctx.lineTo(X(Math.min(tmax,r.Ts)),Y(-60*Math.min(tmax,r.Ts)/r.Ts));ctx.stroke();ctx.setLineDash([]);
+    ctx.strokeStyle=cs('ink');ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(X(0),Y(0));const te=Math.min(tmax,r.Tm);ctx.lineTo(X(te),Y(-60*te/r.Tm));ctx.stroke();
+    txt('Raum',X(te*.55)+6,Y(-60*te*.55/r.Tm)-6,cs('ink'),'left',12,true);txt('Richtwert',X(Math.min(tmax,r.Ts)*.35)-4,Y(-60*Math.min(tmax,r.Ts)*.35/r.Ts)+16,cs('ok'),'right',12,true);
+    if(HS.play&&AU.ctx){const el=AU.ctx.currentTime-HS.play.t0;if(el>=0&&el<=tmax){ctx.fillStyle=cs('red');ctx.beginPath();ctx.arc(X(el),Y(Math.max(-60,-60*el/r.Tm)),6,0,6.283);ctx.fill()}}};
+  if(ch>80){if(narrow){bar(16,top,cw,ch/2-4);dec(16,top+ch/2+4,cw,ch/2-4)}else{bar(16,top,cw,ch);dec(32+cw,top,cw,ch)}}
+}
+MODES.hall={enter(){hLoad(HS.pi)},frame(){tone(0,0)},draw:hDraw,upd(){},down(){},move(){},up(){},key(){}};
+
+/* =====================================================================
+   Start, Umschalten, Schleife
+   ===================================================================== */
+function fit(){const r=$('#cvw').getBoundingClientRect();DPR=Math.min(2,devicePixelRatio||1);CW=Math.max(50,r.width);CH=Math.max(50,r.height);cv.width=Math.round(CW*DPR);cv.height=Math.round(CH*DPR);ctx.setTransform(DPR,0,0,DPR,0,0)}
+const ro=new ResizeObserver(()=>fit());ro.observe($('#cvw'));
+const themeObs=new MutationObserver(()=>{readCols();if(APP.mode==='hall')hOuts();if(APP.mode==='raum')rPanel()});themeObs.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',readCols)}catch(e){}
+function setMode(m){if(!MODES[m])m='welle';if(m===APP.mode)return;APP.mode=m;$$('.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.mode===m)));tone(0,0);
+  for(const n of AU.nodes){try{n.stop()}catch(e){}}AU.nodes=[];MODES[m].enter()}
+$$('.tabs button').forEach(b=>b.onclick=()=>{location.hash=b.dataset.mode;setMode(b.dataset.mode)});
+addEventListener('hashchange',()=>setMode(location.hash.slice(1)));
+$('#bTon').onclick=()=>setTon(!AU.on);
+$('#bFull').onclick=()=>{const d=document;try{if(d.fullscreenElement)d.exitFullscreen();else d.documentElement.requestFullscreen().catch(()=>{})}catch(e){}};
+const pos=e=>{const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top]};
+cv.addEventListener('pointerdown',e=>{try{cv.setPointerCapture(e.pointerId)}catch(_){}MODES[APP.mode].down(...pos(e))});
+cv.addEventListener('pointermove',e=>MODES[APP.mode].move(...pos(e)));
+const up=()=>MODES[APP.mode].up();cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;if(e.key===' '&&e.target.tagName==='BUTTON')return;
+  if(e.key===' '||e.key==='Delete'||(e.key==='Backspace'&&APP.mode==='raum')){e.preventDefault();MODES[APP.mode].key(e.key)}});
+readCols();fit();setMode(location.hash.slice(1)||'welle');
+let last=performance.now();
+function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;APP.frame++;const M=MODES[APP.mode];
+  try{M.frame(dt);M.draw();if(APP.frame%5===0)M.upd()}catch(err){console.error(err)}requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+}
+
+</script>
+</body>
+</html>

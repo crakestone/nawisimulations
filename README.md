@@ -28,6 +28,8 @@ Schlagwörter. Ist nicht klar, in welches Fach eine neue Simulation gehört: nac
 | `Bandstruktur/` | `Bandstrukturlabor.html` | Freies Elektron, reziproker Raum und Brillouin-Zonen, Kronig-Penney, Bragg-Reflexion, Tight-Binding, Bänder füllen, Si und GaAs |
 | `Halbleiter/` | `Halbleiterlabor.html` | Bändermodell, Dotierung, innerer und äußerer Photoeffekt, pn-Übergang, Solarzelle, LED |
 | `Quantenphysik/` | `Quantenlabor.html` | Photoeffekt, Spektren, Doppelspalt mit Einzelobjekten (mit Zeigermodell) und Mach-Zehnder-Interferometer mit Quantenradierer |
+| `Schall/` | `Schalllabor.html` | Schallwelle im Rohr (Teilchen, Druck, λ), 2D-Raum mit Reflexion, Absorption, Echo, Echolot, Beugung, Interferenz, Doppler; Nachhall nach Sabine mit Hörbeispielen |
+| `Klang/` | `Klanglabor.html` | Saite (Monochord, Flageolett), Pfeife (offen/gedackt, Panflöte), Klangfarbe aus Teiltönen, Schwebung & Intervalle, Resonanz (Weinglas), Spektrum und Stimmgerät |
 | `Relativitätstheorie/` | `Relativitaetslabor.html` | Lichtuhr und Myonen, Gleichzeitigkeit, Längenkontraktion (Leiter-Garage), Geschwindigkeitsaddition, Zwillingsparadoxon, Raumzeit-Diagramm, Lichtmauer & E = mc², GPS, Doppler-Effekt; Wechsel des Bezugssystems |
 | `Radioaktivität/` | `Radioaktivitaetslabor.html` | Atomkern & Isotope mit Periodensystem, Nuklidkarte (Z 0–118), Zerfallsarten, Zerfallsgesetz (Würfelmodell), Zerfallsreihen & Gleichgewicht, Strahlung messen & abschirmen, Nebelkammer, C-14-Datierung, Strahlung im Alltag (Österreich) |
 | `Kernenergie/` | `Kernenergielabor.html` | Kernspaltung, Kettenreaktion, Kernreaktor (Fukushima/Tschernobyl-Szenario), Kernfusion (Tokamak, Lawson), Sonne, Energie aus Masse, Tschernobyl & Fukushima, Cäsium in Österreich; Reaktor und Fusion anschaulich oder mit Zahlen |
@@ -212,9 +214,47 @@ Sieben Stationen (auch direkt über `#freies-elektron`, `#reziproker-raum`, `#kr
 
 Modell: ħ²/(2m_e) = 0,0381 eV·nm², Gitterkonstante der 1D-Modelle a = 0,4 nm.
 
+## Schall – Schalllabor.html
+
+Drei Bereiche (auch direkt über `#welle`, `#raum`, `#hall`):
+
+- **Schallwelle (Rohr):** Lautsprecher, Luftteilchen (drei markiert), Druckfarben, Druck- und Auslenkungskurve, Wellenlänge;
+  Dauerton, Tonpuls oder Knall; Stoff (Luft mit Temperatur, Helium, Wasser, Stahl) und Rohrende (Wand, Holz, Vorhang,
+  Schaumstoff, offen). Verschiebbares Mikrofon mit Laufzeitmessung; mit Ton hört man, was am Mikrofon ankommt. 9 Versuche.
+- **Raum:** 2D-Wellensimulation (Wellengleichung auf einem Gitter) mit Wänden aus Beton, Holz, Vorhang, Schaumstoff, Fels;
+  Werkzeuge Klatschen, Lautsprecher (auch gerichtet, gegenphasig, bewegt), Mikrofone (Pegel, Frequenz, Ankunftszeiten),
+  Wände zeichnen. Ansicht Druck oder Lautstärke. 15 Versuche: Schallgeschwindigkeit, Reflexionsgesetz, Echo, Echolot,
+  Absorption, Hallraum, Flüstergewölbe, Parabolspiegel, Beugung, Lärmschutzwand, Interferenz/Antischall, stehende Welle,
+  Doppler-Effekt und Überschall.
+- **Nachhall:** Sabine-Formel je Oktavband (125 Hz–4 kHz) mit Flächen, Materialien, Personen und Möbeln; Richtwert nach
+  DIN 18041; Raumskizze, Nachhallzeit je Tonhöhe, Abklingkurve; Klatschen, Silben und Melodie mit berechnetem Nachhall.
+
+Modell: Die Raum-Simulation ist zweidimensional (Pegelabnahme 3 dB statt 6 dB pro Abstandsverdopplung), Wände reflektieren
+über eine Wandimpedanz aus dem Absorptionsgrad α.
+
+## Klang – Klanglabor.html
+
+Sechs Stationen (auch direkt über `#saite`, `#pfeife`, `#farbe`, `#schwebung`, `#resonanz`, `#spektrum`), drei Niveaustufen:
+
+- **Saite:** Saite mit der Maus ziehen und loslassen; Teiltöne einzeln und als Spektrum; Zupfstelle, Länge, Spannkraft,
+  Saitenart; zupfen, anschlagen, streichen; Flageolett (Finger auf 1/2 … 1/5); Monochord mit Teilungen (Oktave, Quinte …).
+- **Pfeife:** offene und gedackte Pfeife mit stehender Welle (Teilchen, Druck, Knoten), Schwingungsformen 1–5,
+  mögliche Teiltöne; Temperatur; Panflöte in C-Dur zum Antippen.
+- **Klangfarbe:** 16 Teiltöne zum Ziehen, Wellenform, Tastatur; Vorlagen (Flöte, Klarinette, Oboe, Geige, Trompete, Orgel,
+  Rechteck, Sägezahn, Dreieck); Phasen würfeln; fehlender Grundton; Hörrätsel.
+- **Schwebung & Intervalle:** Schwebung zweier Töne, Instrument nach Gehör stimmen; 13 Intervalle rein und temperiert
+  mit Lissajous-Figur und zusammenfallenden Teiltönen.
+- **Resonanz:** angetriebenes Federpendel mit Resonanzkurve (Durchlauf, Messpunkte, Dämpfung), Phase; Weinglas, das bei
+  der Eigenfrequenz zerbricht.
+- **Spektrum:** Spektrogramm, Spektrum, Stimmgerät mit Cent-Anzeige; Mikrofon (auf der Website bzw. heruntergeladen),
+  Audiodatei oder Beispielklänge (Instrumente, Vokale mit Formanten, Akkord, Glissando, Rauschen).
+
+Modell: Töne werden additiv aus Sinustönen erzeugt (Web Audio). Saite ideal ohne Inharmonizität,
+Pfeifen ohne Mündungskorrektur, Instrumentenspektren vereinfacht.
+
 ## Navigation
 
-In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“, „Stromkreislabor“, „Quantenlabor“, „Halbleiterlabor“, „Bandstrukturlabor“ oder „Relativitätslabor“) zurück zur Startseite `index.html`.
+In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“, „Stromkreislabor“, „Quantenlabor“, „Halbleiterlabor“, „Bandstrukturlabor“, „Relativitätslabor“, „Schalllabor“ oder „Klanglabor“) zurück zur Startseite `index.html`.
 
 ## Radioaktivität – Radioaktivitaetslabor.html
 
