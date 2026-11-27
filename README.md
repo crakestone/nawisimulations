@@ -23,6 +23,7 @@ neuer Planet. Jede Simulation ist ein Mond ihres Themen-Planeten.
 | `Bandstruktur/` | `Bandstrukturlabor.html` | Freies Elektron, reziproker Raum und Brillouin-Zonen, Kronig-Penney, Bragg-Reflexion, Tight-Binding, Bänder füllen, Si und GaAs |
 | `Halbleiter/` | `Halbleiterlabor.html` | Bändermodell, Dotierung, innerer und äußerer Photoeffekt, pn-Übergang, Solarzelle, LED |
 | `Quantenphysik/` | `Quantenlabor.html` | Photoeffekt, Spektren, Doppelspalt mit Einzelobjekten (mit Zeigermodell) und Mach-Zehnder-Interferometer mit Quantenradierer |
+| `Relativitätstheorie/` | `Relativitaetslabor.html` | Lichtuhr und Myonen, Gleichzeitigkeit, Längenkontraktion (Leiter-Garage), Geschwindigkeitsaddition, Zwillingsparadoxon, Raumzeit-Diagramm, Lichtmauer & E = mc², GPS, Doppler-Effekt; Wechsel des Bezugssystems |
 
 ## Stoßprozesse – Stoss-Simulation.html
 
@@ -123,6 +124,39 @@ Modell: Austrittsarbeiten Cs 2,14 · K 2,29 · Na 2,36 · Zn 4,33 · Cu 4,65 · 
 I ∝ cos²(π d sinθ/λ)·sinc²(π b sinθ/λ) und Abstand 1 m; Interferometer mit Strahlteiler-Amplituden 1/√2 und i/√2,
 Photonen unter 45° polarisiert. Die Stromstärke am Photoeffekt ist schematisch (ein Elektron je absorbiertem Photon).
 
+## Relativitätstheorie – Relativitaetslabor.html
+
+Neun Stationen (auch direkt über `#lichtuhr`, `#gleichzeitigkeit`, `#laengenkontraktion`, `#geschwindigkeiten`, `#zwillinge`,
+`#raumzeit`, `#lichtmauer`, `#gps`, `#doppler`), jeweils mit Aufträgen, Erklärungen und drei Niveaustufen.
+
+- **Sicht wechseln:** Über der Szene schaltet „Sicht von: Bahnsteig | Zug“ (bzw. Erde | Rakete, Garage | Leiter …) das
+  Bezugssystem um. Die Szene geht dabei fließend in die andere Sicht über (Lorentz-Transformation). Taste B wechselt die Sicht.
+- **Welt:** „Echte Welt“ oder Gedankenwelt mit c = 20 km/h (wie bei Mr Tompkins): Geschwindigkeiten und Zeiten werden in
+  Alltagsgrößen angezeigt.
+- **Lichtuhr:** zwei Lichtuhren (Bahnsteig, Zug) mit Lichtspur im Zickzack und Tick-Zählern; ab *Mittel* γ und Dreieck nach
+  Pythagoras, *Anspruchsvoll* mit Herleitung. Szene **Myonen**: Schauer aus 500 Myonen in 15 km Höhe, Zerfall nach der
+  Eigenzeit, Vergleich mit klassischer Rechnung; in der Sicht der Myonen ist die Atmosphäre verkürzt.
+- **Gleichzeitigkeit:** Einsteins Zug mit zwei Blitzen, Lichtkreisen, Brandflecken und Lämpchen bei Paula (Bahnsteig) und
+  Toni (Zug); Blitze gleichzeitig für Bahnsteig oder Zug; ab *Mittel* synchronisierte Uhren und Minkowski-Diagramm.
+- **Längenkontraktion:** Zug und Tunnel gleicher Ruhelänge mit Maßstäben; *Anspruchsvoll:* Leiter-Garage-Paradoxon mit Toren.
+- **Geschwindigkeiten:** Rakete schießt Kugel oder Lichtblitz; Alltagsregel und Einstein nebeneinander, Diagramm u(v),
+  *Anspruchsvoll:* Stufenrakete und Rapidität.
+- **Zwillinge:** Reise mit einstellbarer Geschwindigkeit und Entfernung, Geburtstagsgrüße als Lichtsignale, Alter beider
+  Zwillinge, Sicht der Hin- und Rückflug-Rakete; Minkowski-Diagramm mit Gleichzeitigkeitslinien und „Sprung“ beim Umkehren.
+- **Raumzeit:** Ereignisse ins Minkowski-Diagramm setzen und ziehen, System S′ mit einstellbarer Geschwindigkeit,
+  Lichtkegel, Koordinaten in S und S′, zeitartig/raumartig/lichtartig, Gitter von S′, Eichhyperbeln, „Jetzt“-Linie.
+- **Lichtmauer & E = mc²:** Elektron (Myon, Proton) mit 1 keV bis 10 TeV; Rennen gegen das Licht auf 8,4 m (wie bei
+  Bertozzi 1964), Geschwindigkeit über der Energie klassisch und relativistisch, Energie und Impuls, E = mc² mit Haushalten.
+- **GPS:** Satellitenuhr in einstellbarer Höhe (ISS, GPS, Galileo, geostationär); SRT und ART einzeln schaltbar,
+  Positionsfehler im Navi, Gangunterschied über der Höhe; *Anspruchsvoll:* Verstimmung ab Werk.
+- **Doppler-Effekt:** Rakete sendet Licht wählbarer Farbe, Wellenberge als Kreise, Farben bei den Personen vorne und hinten;
+  Vergleich ohne Zeitdilatation; *Anspruchsvoll:* transversaler Doppler-Effekt.
+
+Modell: Rechnung mit c = 1. Die Szenen sind als Weltlinien im Bahnsteig- bzw. Erdsystem beschrieben und werden für die
+Anzeige exakt in das gewählte Bezugssystem transformiert. Myonen: mittlere Lebensdauer 2,197 µs. GPS: GM = 3,986·10¹⁴ m³/s²,
+R = 6371 km, Kreisbahn, Erddrehung vernachlässigt (GPS: −7,2 µs + 45,7 µs = +38,5 µs pro Tag).
+Doppler: λ = γ·λ₀·(1 − β·cos θ) mit dem Winkel beim Aussenden.
+
 ## Halbleiter – Halbleiterlabor.html
 
 Sechs Stationen (auch direkt über `#baender`, `#dotierung`, `#photoeffekt`, `#diode`, `#solarzelle`, `#led`), jeweils mit
@@ -173,4 +207,4 @@ Modell: ħ²/(2m_e) = 0,0381 eV·nm², Gitterkonstante der 1D-Modelle a = 0,4 nm
 
 ## Navigation
 
-In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“, „Stromkreislabor“, „Quantenlabor“, „Halbleiterlabor“ oder „Bandstrukturlabor“) zurück zur Startseite `index.html`.
+In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“, „Stromkreislabor“, „Quantenlabor“, „Halbleiterlabor“, „Bandstrukturlabor“ oder „Relativitätslabor“) zurück zur Startseite `index.html`.

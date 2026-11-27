@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relativitätslabor – Lichtuhr, Gleichzeitigkeit, Zwillinge, Raumzeit</title>
+<style>
+  :root{
+    --ink:#1d2230; --muted:#5b6477; --line:#d9dde6; --bg:#f4f6fa; --panel:#ffffff;
+    --accent:#0f766e; --warn:#b91c1c; --frame:#4f46e5;
+    font-size:17px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.35}
+  header{display:flex;align-items:center;gap:.6rem 1rem;flex-wrap:wrap;padding:.55rem 1rem;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+  header h1{font-size:1.25rem;margin:0;white-space:nowrap}
+  header h1 a{color:inherit;text-decoration:none}
+  header h1 a:hover{text-decoration:underline;text-underline-offset:4px}
+  header h1 small{font-weight:400;color:var(--muted);font-size:.85rem;margin-left:.4rem}
+  .grow{flex:1 1 auto}
+  .lvl{display:flex;align-items:center;gap:.5rem}
+  .lvl > span{color:var(--muted);font-size:.9rem}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#eef1f6;flex-wrap:wrap}
+  .seg button{border:0;background:transparent;padding:.4rem .7rem;font:inherit;font-size:.9rem;cursor:pointer;color:var(--ink)}
+  .seg button + button{border-left:1px solid var(--line)}
+  .seg button.on{background:var(--accent);color:#fff;font-weight:600}
+  .seg.small{flex-wrap:nowrap}
+  .seg.small button{padding:.3rem .45rem;font-size:.8rem;white-space:nowrap}
+  #stSeg button{padding:.38rem .58rem;font-size:.86rem}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:.42rem .8rem;font:inherit;font-size:.92rem;cursor:pointer;color:var(--ink)}
+  .btn:hover{background:#f0f3f8}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+  .btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:1rem;padding:1rem;align-items:start}
+  aside{display:flex;flex-direction:column;gap:.8rem}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.8rem .9rem}
+  .card h2{font-size:1rem;margin:0 0 .55rem}
+  .field{margin:.4rem 0 .7rem}
+  .field > label{display:flex;justify-content:space-between;gap:.5rem;font-size:.9rem;margin-bottom:.15rem}
+  .field > label b{font-variant-numeric:tabular-nums;font-weight:600;text-align:right}
+  input[type=range]{accent-color:var(--accent);width:100%}
+  input.spectrum{-webkit-appearance:none;appearance:none;height:14px;border-radius:7px;outline:none}
+  input.spectrum::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid #1d2230;cursor:pointer}
+  input.spectrum::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid #1d2230;cursor:pointer}
+  select{font:inherit;font-size:.93rem;padding:.35rem;border-radius:8px;border:1px solid var(--line);width:100%;background:#fff}
+  .check{display:flex;align-items:center;gap:.5rem;margin:.35rem 0;font-size:.92rem;cursor:pointer}
+  .check input{width:1.1rem;height:1.1rem;accent-color:var(--accent)}
+  .btnrow{display:flex;gap:.4rem;flex-wrap:wrap;margin:.4rem 0}
+  .note{font-size:.84rem;color:var(--muted);margin:.35rem 0}
+  .tasks{display:flex;flex-direction:column;gap:.35rem}
+  .tasks button{font:inherit;font-size:.88rem;text-align:left;border:1px solid var(--line);background:#fafbfd;border-radius:9px;padding:.4rem .55rem;cursor:pointer;color:var(--ink)}
+  .tasks button:hover{background:#eef6f5;border-color:#b8dcd7}
+  .tasks button.on{background:#e3f3f1;border-color:var(--accent);font-weight:600}
+  #taskInfo p{margin:.45rem 0;font-size:.92rem}
+  #taskInfo .q{background:#fff8e6;border:1px solid #f4dfa5;border-radius:9px;padding:.45rem .6rem}
+  #taskInfo .a{background:#eef7f2;border:1px solid #c5e4d2;border-radius:9px;padding:.45rem .6rem}
+  .stage{min-width:0}
+  .viewbox{position:relative;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;height:calc(100vh - 100px);min-height:560px}
+  #cv{display:block;width:100%;height:100%;touch-action:none}
+  .ovl{position:absolute;left:10px;top:10px;z-index:5;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:12px;padding:.3rem .45rem}
+  .ovl .lab{font-size:.85rem;color:var(--muted);margin-left:.2rem}
+  #frSeg button.on{background:var(--frame)}
+  #frWrap{display:flex;gap:.4rem;align-items:center}
+  .ovl .btn{padding:.3rem .6rem;font-size:.88rem}
+  .ovl .seg.small button{padding:.28rem .45rem}
+  @media (max-width: 900px){ .layout{grid-template-columns:1fr} aside{order:2} .viewbox{height:78vh;min-height:520px} }
+</style>
+</head>
+<body>
+<header>
+  <h1><a href="../index.html" title="Zur Startseite">Relativitätslabor</a> <small>Raum und Zeit bei hohen Geschwindigkeiten</small></h1>
+  <span class="grow"></span>
+  <div class="lvl"><span>Welt:</span>
+    <div class="seg" id="worldSeg"><button data-v="real" class="on">Echte Welt</button><button data-v="slow" title="Gedankenexperiment wie bei Mr Tompkins: Licht ist nur 20 km/h schnell">c = 20 km/h</button></div>
+  </div>
+  <div class="lvl"><span>Niveau:</span>
+    <div class="seg" id="lvlSeg"><button data-v="easy" class="on">Einfach</button><button data-v="mid">Mittel</button><button data-v="hard">Anspruchsvoll</button></div>
+  </div>
+  <button class="btn" id="fsBtn">Vollbild</button>
+  <div style="flex-basis:100%;height:0"></div>
+  <div class="seg" id="stSeg"></div>
+</header>
+<div class="layout">
+  <aside>
+    <div class="card"><h2 id="ctrlTitle">Einstellungen</h2><div id="ctrl"></div></div>
+    <div class="card"><h2>Aufträge</h2><div class="tasks" id="tasks"></div><div id="taskInfo"></div></div>
+  </aside>
+  <section class="stage">
+    <div class="viewbox" id="vb">
+      <canvas id="cv"></canvas>
+      <div class="ovl" id="ovl">
+        <div id="frWrap"><span class="lab">Sicht von:</span><div class="seg" id="frSeg"></div></div>
+        <button class="btn" id="playBtn" title="Start / Pause (Leertaste)">⏸ Pause</button>
+        <button class="btn" id="resetBtn" title="Von vorne (R)">↺ Von vorne</button>
+        <div class="seg small" id="spdSeg"><button data-v="0.25">¼×</button><button data-v="0.5">½×</button><button data-v="1" class="on">1×</button><button data-v="2">2×</button></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   Relativitätslabor – neun Stationen:
+   0 Lichtuhr & Myonen · 1 Gleichzeitigkeit · 2 Längenkontraktion · 3 Geschwindigkeiten
+   4 Zwillinge · 5 Raumzeit · 6 Lichtmauer & E = mc² · 7 GPS · 8 Doppler-Effekt
+   Gerechnet wird in Einheiten mit c = 1. Alle Szenen (außer 3, 6, 7) sind als Weltlinien
+   im Ruhesystem des Bahnsteigs / der Erde beschrieben und werden für die Anzeige mit der
+   Lorentz-Transformation in das gewählte Bezugssystem umgerechnet.
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const C_REAL = 299792458, C_SLOW = 20/3.6;
+const S = { st:0, level:'easy', task:-1, showAnswer:false, world:'real', run:true, speed:1 };
+const lvlNum = () => ({easy:0, mid:1, hard:2})[S.level];
+const cNow = () => S.world === 'slow' ? C_SLOW : C_REAL;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a)*t;
+
+/* ---------- Zahlen ---------- */
+function fmt(v, d){ if (!isFinite(v)) return '–'; const s = (Math.abs(v) < 0.5*Math.pow(10,-d) ? 0 : v).toFixed(d); return s.replace('-', '−').replace('.', ','); }
+function grp(v, d){
+  if (!isFinite(v)) return '–';
+  const neg = v < 0 && Math.abs(v) >= 0.5*Math.pow(10,-d);
+  const p = Math.abs(v).toFixed(d).split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return (neg ? '−' : '') + p.join(',');
+}
+function sig(v, n){ if (!isFinite(v)) return '–'; if (v === 0) return '0'; const e = Math.floor(Math.log10(Math.abs(v))); return grp(v, clamp(n - 1 - e, 0, 9)); }
+function sup(n){ const m = {'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'}; return String(n).split('').map(c => m[c]).join(''); }
+function sci(v, d){ if (v === 0) return '0'; const ex = Math.floor(Math.log10(Math.abs(v))); if (ex >= -2 && ex <= 4) return sig(v, d + 1); const m = v/Math.pow(10, ex); return fmt(m, d) + '·10' + sup(ex); }
+function fmtSec(s){
+  const a = Math.abs(s); if (a < 1e-15) return '0 s';
+  if (a < 1e-6) return sig(s*1e9, 3) + ' ns';
+  if (a < 1e-3) return sig(s*1e6, 3) + ' µs';
+  if (a < 1) return sig(s*1e3, 3) + ' ms';
+  return sig(s, 3) + ' s';
+}
+function fmtLen(u, um){
+  const m = u*um, a = Math.abs(m);
+  if (a >= 1e5) return sig(m/1000, 3) + ' km';
+  if (a >= 1000) return grp(m/1000, 2) + ' km';
+  if (a >= 10) return grp(m, 0) + ' m';
+  if (a >= 0.01 || a === 0) return grp(m, 2) + ' m';
+  return sig(m*1000, 3) + ' mm';
+}
+/* Zeit in Szenen-Einheiten (Lichtlaufzeit für eine Einheit Länge) */
+const fmtTime = (u, um) => fmtSec(u*um/cNow());
+function fmtV(b){ return S.world === 'slow' ? grp(b*20, Math.abs(b*20) < 10 ? 2 : 1) + ' km/h' : grp(b*299792.458, 0) + ' km/s'; }
+function bTxt(b){ const a = Math.abs(b); return (a >= 0.9995 && a < 1 ? fmt(b, 5) : a >= 0.995 && a < 1 ? fmt(b, 4) : a >= 0.95 && a < 1 ? fmt(b, 3) : fmt(b, 2)) + ' c'; }
+function niceStep(x){ const p = Math.pow(10, Math.floor(Math.log10(x))), m = x/p; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10)*p; }
+
+/* ---------- Farben des Lichts ---------- */
+function nmRGB(nm){
+  if (nm < 380) return [150, 90, 220];
+  if (nm > 780) return [140, 30, 30];
+  let r = 0, g = 0, b = 0;
+  if (nm < 440){ r = -(nm-440)/60; b = 1; }
+  else if (nm < 490){ g = (nm-440)/50; b = 1; }
+  else if (nm < 510){ g = 1; b = -(nm-510)/20; }
+  else if (nm < 580){ r = (nm-510)/70; g = 1; }
+  else if (nm < 645){ r = 1; g = -(nm-645)/65; }
+  else r = 1;
+  const f = nm < 420 ? 0.35 + 0.65*(nm-380)/40 : nm > 700 ? 0.35 + 0.65*(780-nm)/80 : 1;
+  return [r,g,b].map(v => Math.round(255*Math.pow(v*f, 0.8)));
+}
+const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+const spectrumCSS = (a, b) => { const st = []; for (let nm = a; nm <= b; nm += 10) st.push(`${rgba(nmRGB(nm),1)} ${((nm-a)/(b-a)*100).toFixed(1)}%`); return `linear-gradient(90deg,${st.join(',')})`; };
+const region = nm => nm < 380 ? 'UV' : nm > 750 ? 'Infrarot' : 'sichtbar';
+
+/* ---------- Canvas ---------- */
+const cv = $('#cv'), ctx = cv.getContext('2d'), vb = $('#vb');
+let W = 0, H = 0;
+function resize(){
+  const r = vb.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+  W = r.width; H = r.height; cv.width = W*dpr; cv.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+new ResizeObserver(resize).observe(vb);
+function line(x1,y1,x2,y2,col,w,dash){ ctx.strokeStyle = col; ctx.lineWidth = w || 1; if (dash) ctx.setLineDash(dash); ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); if (dash) ctx.setLineDash([]); }
+function text(t, x, y, o){
+  o = o || {}; ctx.font = `${o.italic ? 'italic ' : ''}${o.weight || 500} ${o.size || 13}px ${o.mono ? 'ui-monospace,Menlo,Consolas,monospace' : 'system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif'}`;
+  ctx.fillStyle = o.col || '#1d2230'; ctx.textAlign = o.align || 'left'; ctx.textBaseline = o.base || 'middle'; ctx.fillText(t, x, y);
+}
+function tw(t, size, weight){ ctx.font = `${weight || 500} ${size || 13}px system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif`; return ctx.measureText(t).width; }
+function box(x, y, w, h, fill, stroke, r){ ctx.beginPath(); ctx.roundRect(x, y, w, h, r ?? 8); if (fill){ ctx.fillStyle = fill; ctx.fill(); } if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = 1.2; ctx.stroke(); } }
+function circle(x, y, r, fill, stroke, lw){ ctx.beginPath(); ctx.arc(x, y, Math.max(0, r), 0, Math.PI*2); if (fill){ ctx.fillStyle = fill; ctx.fill(); } if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = lw || 1.2; ctx.stroke(); } }
+function pill(t, x, y, o){
+  o = o || {}; const sz = o.size || 12.5;
+  const w = tw(t, sz, o.weight || 600) + 14, h = sz + 9;
+  const bx = o.align === 'left' ? x : o.align === 'right' ? x - w : x - w/2;
+  box(bx, y - h/2, w, h, o.bg || '#1d2230', o.stroke || null, 7);
+  text(t, bx + w/2, y + 0.5, {col:o.col || '#fff', align:'center', weight:o.weight || 600, size:sz});
+  return w;
+}
+function wrapText(t, x, y, maxW, o){
+  o = o || {}; const sz = o.size || 13, fnt = `${o.weight || 500} ${sz}px ${o.mono ? 'ui-monospace,Menlo,Consolas,monospace' : 'system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif'}`; ctx.font = fnt;
+  const words = String(t).split(' '); let ln = '';
+  const lh = sz + 5;
+  for (const w of words){
+    const test = ln ? ln + ' ' + w : w;
+    if (ctx.measureText(test).width > maxW && ln){ text(ln, x, y, o); y += lh; ln = w; ctx.font = fnt; } else ln = test;
+  }
+  if (ln){ text(ln, x, y, o); y += lh; }
+  return y;
+}
+function arrow(x1,y1,x2,y2,col,w){
+  line(x1,y1,x2,y2,col,w || 2);
+  const a = Math.atan2(y2-y1, x2-x1), h = 7 + (w || 2);
+  ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2 - h*Math.cos(a-0.45), y2 - h*Math.sin(a-0.45)); ctx.lineTo(x2 - h*Math.cos(a+0.45), y2 - h*Math.sin(a+0.45)); ctx.fill();
+}
+function dimArrow(x1, x2, y, col, label){
+  line(x1, y, x2, y, col, 1.5);
+  for (const [xa, d] of [[x1, 1], [x2, -1]]){ ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(xa, y); ctx.lineTo(xa + d*8, y - 4); ctx.lineTo(xa + d*8, y + 4); ctx.fill(); line(xa, y - 7, xa, y + 7, col, 1.5); }
+  if (label) pill(label, (x1 + x2)/2, y - 14, {bg:'#fff', col, stroke:col, size:12});
+}
+function clip(r){ ctx.save(); ctx.beginPath(); ctx.rect(r.x, r.y, r.w, r.h); ctx.clip(); }
+/* Infotafel rechts bzw. unten */
+function card(r, title){ box(r.x, r.y, r.w, r.h, '#fbfcfe', '#d9dde6', 12); if (title) text(title, r.x + 14, r.y + 20, {weight:700, size:15}); return r.y + 44; }
+function para(x, y, maxW, arr){
+  for (const l of arr){
+    if (!l) continue;
+    if (typeof l === 'string') y = wrapText(l, x, y, maxW, {size:13.5});
+    else if (l.gap) y += l.gap;
+    else if (l.kv){ text(l.kv[0], x, y, {size:l.size || 13.5, col:l.col0 || '#5b6477'}); text(l.kv[1], x + maxW, y, {size:l.size || 13.5, align:'right', weight:700, col:l.col || '#1d2230', mono:l.mono}); y += (l.size || 13.5) + 7; }
+    else y = wrapText(l.t, x, y, maxW, Object.assign({size:13.5}, l));
+  }
+  return y;
+}
+/* Aufteilung der Zeichenfläche: Szene + Infotafel */
+function lay(sideW){
+  const top = 62;
+  if (W >= 880){ const sw = Math.min(sideW || 380, W*0.4); return { wide:true, scene:{x:12, y:top, w:W - sw - 36, h:H - top - 12}, side:{x:W - sw - 12, y:top, w:sw, h:H - top - 12} }; }
+  const sh = clamp(H*0.44, 250, 520);
+  return { wide:false, scene:{x:10, y:top, w:W - 20, h:H - sh - top - 18}, side:{x:10, y:H - sh - 8, w:W - 20, h:sh} };
+}
+function clockFace(x, y, r, frac, col, sub){
+  circle(x, y, r, '#fff', col, 2.2);
+  for (let k = 0; k < 12; k++){ const a = k/12*Math.PI*2; line(x + Math.sin(a)*r*0.78, y - Math.cos(a)*r*0.78, x + Math.sin(a)*r*0.92, y - Math.cos(a)*r*0.92, '#9aa3b5', 1.2); }
+  const a = frac*Math.PI*2; ctx.lineCap = 'round'; line(x, y, x + Math.sin(a)*r*0.78, y - Math.cos(a)*r*0.78, col, 2.6); ctx.lineCap = 'butt';
+  circle(x, y, 2.5, col);
+  if (sub) text(sub, x, y + r + 12, {align:'center', size:12, weight:700, col});
+}
+function person(x, y, col, s){
+  s = s || 1;
+  circle(x, y - 30*s, 7*s, col);
+  ctx.strokeStyle = col; ctx.lineWidth = 3.2*s; ctx.lineCap = 'round'; ctx.beginPath();
+  ctx.moveTo(x, y - 22*s); ctx.lineTo(x, y - 9*s); ctx.moveTo(x, y - 9*s); ctx.lineTo(x - 6*s, y); ctx.moveTo(x, y - 9*s); ctx.lineTo(x + 6*s, y);
+  ctx.moveTo(x - 8*s, y - 18*s); ctx.lineTo(x + 8*s, y - 18*s); ctx.stroke(); ctx.lineCap = 'butt';
+}
+function flash(x, y, r, a){
+  ctx.save(); ctx.globalAlpha = clamp(a, 0, 1);
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(255,250,200,1)'); g.addColorStop(0.4, 'rgba(255,214,10,.8)'); g.addColorStop(1, 'rgba(255,200,0,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill(); ctx.restore();
+}
+function bolt(x, y1, y2){
+  ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 3.5; ctx.lineJoin = 'round'; ctx.beginPath();
+  const n = 5; ctx.moveTo(x, y1); for (let i = 1; i <= n; i++){ ctx.lineTo(x + (i % 2 ? 9 : -6), y1 + (y2 - y1)*i/n); } ctx.lineTo(x, y2); ctx.stroke();
+}
+
+/* =====================================================================
+   Lorentz-Transformation (c = 1)
+   Ereignis im Bahnsteig-/Erdsystem (t, x)  →  Sichtsystem mit Geschwindigkeit u
+   ===================================================================== */
+const gam = u => 1/Math.sqrt(1 - u*u);
+const V = { u:0, T:0, fi:0, rate:2 };
+function toV(t, x, u){ if (u === undefined) u = V.u; const g = gam(u); return [g*(t - u*x), g*(x - u*t)]; }
+function toG(tp, xp, u){ if (u === undefined) u = V.u; const g = gam(u); return [g*(tp + u*xp), g*(xp + u*tp)]; }
+const relV = (w, u) => (w - u)/(1 - w*u);
+/* Weltlinie x = x0 + w·t: Zeit im Bahnsteigsystem, zu der das Sichtsystem die Zeit T anzeigt */
+function solveLin(x0, w, T, u){ if (T === undefined) T = V.T; if (u === undefined) u = V.u; return (T/gam(u) + u*x0)/(1 - u*w); }
+function placeLin(x0, w, T, u){ if (T === undefined) T = V.T; if (u === undefined) u = V.u; const t = solveLin(x0, w, T, u); return { t, x: gam(u)*(x0 + w*t - u*t) }; }
+/* beliebige Weltlinie x(t) (|dx/dt| ≤ 1): Bisektion */
+function placeFn(xf, X, T, u){
+  if (T === undefined) T = V.T; if (u === undefined) u = V.u;
+  const g = gam(u); let t;
+  if (Math.abs(u) < 1e-12) t = T;
+  else { let lo = T/g - Math.abs(u)*X - 1, hi = T/g + Math.abs(u)*X + 1; for (let i = 0; i < 48; i++){ const m = (lo + hi)/2; if (g*(m - u*xf(m)) < T) lo = m; else hi = m; } t = (lo + hi)/2; }
+  return { t, x: g*(xf(t) - u*t) };
+}
+/* Lichtstrahl ab Ereignis e trifft Weltlinie x0 + w·t */
+function rayHit(e, x0, w){
+  const xo = x0 + w*e.t; if (Math.abs(xo - e.x) < 1e-9) return e.t;
+  return xo > e.x ? (x0 - e.x + e.t)/(1 - w) : (e.x + e.t - x0)/(1 + w);
+}
+
+/* ---------- Minkowski-Diagramm (im aktuellen Sichtsystem) ---------- */
+function mink(r, o){
+  const u = o.u === undefined ? V.u : o.u;
+  box(r.x, r.y, r.w, r.h, '#fff', '#d9dde6', 10);
+  if (o.title) text(o.title, r.x + 10, r.y + 13, {size:12.5, weight:700, col:'#5b6477'});
+  const top = o.title ? 24 : 6;
+  const R = {x:r.x + 4, y:r.y + top, w:r.w - 8, h:r.h - top - 4};
+  const [x0, x1, t0, t1] = o.range;
+  const s = Math.min(R.w/(x1 - x0), R.h/(t1 - t0));
+  const cxm = (x0 + x1)/2, ctm = (t0 + t1)/2, ox = R.x + R.w/2, oy = R.y + R.h/2;
+  const X = x => ox + (x - cxm)*s, Y = t => oy - (t - ctm)*s;
+  const vx0 = cxm - R.w/2/s, vx1 = cxm + R.w/2/s, vt0 = ctm - R.h/2/s, vt1 = ctm + R.h/2/s;
+  clip(R);
+  const st = o.step || niceStep((vx1 - vx0)/8);
+  for (let gx = Math.ceil(vx0/st)*st; gx < vx1; gx += st) line(X(gx), R.y, X(gx), R.y + R.h, '#eef1f6');
+  for (let gt = Math.ceil(vt0/st)*st; gt < vt1; gt += st) line(R.x, Y(gt), R.x + R.w, Y(gt), '#eef1f6');
+  if (o.under) o.under(X, Y, s, {vx0, vx1, vt0, vt1});
+  /* Lichtlinien durch den Ursprung */
+  const L = Math.max(vx1 - vx0, vt1 - vt0)*2;
+  if (o.light !== false){ line(X(-L), Y(-L), X(L), Y(L), '#f2c94c', 1.3, [5,4]); line(X(-L), Y(L), X(L), Y(-L), '#f2c94c', 1.3, [5,4]); }
+  /* Achsen des Sichtsystems */
+  const vn = o.viewName || '';
+  line(X(0), Y(vt0), X(0), Y(vt1), '#1d2230', 1.6); line(X(vx0), Y(0), X(vx1), Y(0), '#1d2230', 1.6);
+  /* Achsen der anderen Systeme */
+  for (const f of (o.frames || [])){
+    const rr = relV(f.w, u); if (Math.abs(rr) < 1e-4) continue;
+    line(X(rr*vt0), Y(vt0), X(rr*vt1), Y(vt1), f.col, 1.8);
+    line(X(vx0), Y(rr*vx0), X(vx1), Y(rr*vx1), f.col, 1.8);
+    const tl = vt1*0.86, xl = vx1*0.86;
+    text(f.tl || ("ct′" + (f.name ? ' ' + f.name : '')), X(rr*tl) + 5, Y(tl), {size:11.5, weight:700, col:f.col});
+    text(f.xl || "x′", X(xl) - 4, Y(rr*xl) - 9, {size:11.5, weight:700, col:f.col, align:'right'});
+  }
+  for (const Ln of (o.lines || [])){
+    ctx.strokeStyle = Ln.col; ctx.lineWidth = Ln.w || 2; if (Ln.dash) ctx.setLineDash(Ln.dash); ctx.beginPath();
+    Ln.pts.forEach(([t, x], i) => { const [tv, xv] = toV(t, x, u); if (i) ctx.lineTo(X(xv), Y(tv)); else ctx.moveTo(X(xv), Y(tv)); });
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+  if (o.now !== undefined && isFinite(o.now)){ line(R.x, Y(o.now), R.x + R.w, Y(o.now), '#0f766e', 1.6, [7,4]); text('jetzt', R.x + R.w - 6, Y(o.now) - 9, {size:11, col:'#0f766e', weight:700, align:'right'}); }
+  for (const e of (o.events || [])){
+    const [tv, xv] = toV(e.t, e.x, u);
+    circle(X(xv), Y(tv), e.r || 4.5, e.col || '#1d2230', '#fff', 1.5);
+    if (e.lab) text(e.lab, X(xv) + (e.dx ?? 7), Y(tv) + (e.dy ?? -8), {size:11.5, weight:700, col:e.col || '#1d2230', align:e.align || 'left'});
+  }
+  if (o.over) o.over(X, Y, s);
+  text(o.vt || ('ct' + (vn ? ' ' + vn : '')), X(0) + 5, R.y + 10, {size:11.5, weight:700, col:o.vcol || '#1d2230'});
+  text(o.vx || 'x', R.x + R.w - 8, Y(0) - 9, {size:11.5, weight:700, align:'right', col:o.vcol || '#1d2230'});
+  ctx.restore();
+  return {X, Y, s};
+}
+
+/* ---------- Bedienelemente links ---------- */
+const UI = {
+  el: $('#ctrl'),
+  clear(){ this.el.innerHTML = ''; },
+  slider(label, o){
+    const d = document.createElement('div'); d.className = 'field';
+    d.innerHTML = `<label><span>${label}</span><b></b></label><input type="range" min="${o.min}" max="${o.max}" step="${o.step}">`;
+    const b = d.querySelector('b'), inp = d.querySelector('input');
+    if (o.cls) inp.className = o.cls; if (o.bg) inp.style.background = o.bg;
+    inp.value = o.get(); b.innerHTML = o.fmt(o.get());
+    inp.oninput = () => { o.set(+inp.value); b.innerHTML = o.fmt(+inp.value); };
+    d.refresh = () => { inp.value = o.get(); b.innerHTML = o.fmt(o.get()); };
+    this.el.appendChild(d); return d;
+  },
+  /* Geschwindigkeit als Anteil von c */
+  speed(label, get, set, o){
+    o = o || {};
+    return this.slider(label, { min:o.min ?? 0.05, max:o.max ?? 0.99, step:0.01, get, set:v => { set(v); if (o.after) o.after(); },
+      fmt:v => bTxt(v) + `<br><span style="font-weight:400;color:#5b6477;white-space:nowrap">≈ ${fmtV(v)}</span>${lvlNum() >= 1 ? `<br><span style="font-weight:400;color:#5b6477">γ = ${fmt(gam(v), 3)}</span>` : ''}` });
+  },
+  select(label, opts, get, set){
+    const d = document.createElement('div'); d.className = 'field';
+    d.innerHTML = `<label><span>${label}</span></label><select>${opts.map(([v,t]) => `<option value="${v}">${t}</option>`).join('')}</select>`;
+    const s = d.querySelector('select'); s.value = get(); s.onchange = () => set(s.value);
+    this.el.appendChild(d); return d;
+  },
+  seg(label, opts, get, set){
+    const d = document.createElement('div'); d.className = 'field';
+    d.innerHTML = (label ? `<label><span>${label}</span></label>` : '') + `<div class="seg small">${opts.map(([v,t]) => `<button data-v="${v}">${t}</button>`).join('')}</div>`;
+    const btns = [...d.querySelectorAll('button')];
+    const upd = () => btns.forEach(b => b.classList.toggle('on', b.dataset.v === String(get())));
+    btns.forEach(b => b.onclick = () => { set(b.dataset.v); upd(); });
+    upd(); this.el.appendChild(d); return d;
+  },
+  check(label, get, set){
+    const d = document.createElement('label'); d.className = 'check';
+    d.innerHTML = `<input type="checkbox"> ${label}`; const c = d.querySelector('input'); c.checked = get(); c.onchange = () => set(c.checked);
+    this.el.appendChild(d); return d;
+  },
+  buttons(list){
+    const d = document.createElement('div'); d.className = 'btnrow';
+    for (const [t, fn, cls] of list){ const b = document.createElement('button'); b.className = 'btn ' + (cls || ''); b.innerHTML = t; b.onclick = fn; d.appendChild(b); }
+    this.el.appendChild(d); return d;
+  },
+  note(html){ const p = document.createElement('p'); p.className = 'note'; p.innerHTML = html; this.el.appendChild(p); return p; }
+};
+/* Hinweis auf die Gedankenwelt mit c = 20 km/h */
+function slowBanner(r){ if (S.world !== 'slow') return; pill('Gedankenwelt: Licht ist nur 20 km/h schnell', r.x + r.w - 8, r.y + 14, {align:'right', bg:'#fef3c7', col:'#92400e', size:12}); }
+</script>
+<script>
+"use strict";
+/* =====================================================================
+   Station 0: Lichtuhr (Zeitdilatation) und Myonen
+   ===================================================================== */
+const LU = { v:0.6, scene:'uhr', h:3, trail:true, gm:15, H:15, classic:false, mu:[] };
+const LU_UM = 1;                         /* 1 Einheit = 1 m; Spiegelabstand 3 m */
+const MU_TU = 1000/C_REAL;               /* Myonen: 1 Einheit = 1 km, Zeiteinheit 3,336 µs */
+const MU_TAU = 2.197e-6/MU_TU;           /* mittlere Lebensdauer (Halbwertszeit 1,52 µs) */
+const muBeta = () => Math.sqrt(1 - 1/(LU.gm*LU.gm));
+function muNew(){ LU.mu = []; for (let i = 0; i < 500; i++) LU.mu.push({ jx:Math.random()*2 - 1, jy:Math.random()*2 - 1, tau:-MU_TAU*Math.log(1 - Math.random()) }); }
+muNew();
+function tri(s){ const m = ((s % 2) + 2) % 2; return m < 1 ? m : 2 - m; }
+function luFrames(){
+  if (LU.scene === 'uhr') return [{lab:'Bahnsteig', u:() => 0}, {lab:'Zug', u:() => LU.v}];
+  return LU.classic ? [{lab:'Erde', u:() => 0}] : [{lab:'Erde', u:() => 0}, {lab:'Myon', u:() => -muBeta()}];
+}
+function luControls(){
+  UI.seg('Szene', [['uhr','Lichtuhren im Zug'],['myon','Myonen aus der Höhe']], () => LU.scene, v => { LU.scene = v; frameReset(); buildControls(); });
+  if (LU.scene === 'uhr'){
+    UI.speed('Geschwindigkeit des Zugs', () => LU.v, v => LU.v = v, {after:snapFrame});
+    UI.check('Lichtspur zeigen', () => LU.trail, c => LU.trail = c);
+    UI.note('Die beiden Uhren starten gemeinsam, wenn sie aneinander vorbeifahren. Jedes Mal, wenn das Licht wieder unten ankommt, macht eine Uhr einen „Tick“.');
+  } else {
+    UI.slider('Geschwindigkeit der Myonen', {min:2, max:40, step:0.5, get:() => LU.gm, set:v => { LU.gm = v; snapFrame(); }, fmt:v => bTxt(Math.sqrt(1 - 1/(v*v))) + (lvlNum() >= 1 ? ' · γ = ' + fmt(v, 1) : '')});
+    UI.check('Klassisch rechnen (ohne Zeitdilatation)', () => LU.classic, c => { LU.classic = c; frameReset(); });
+    UI.buttons([['Neuer Myonen-Schauer', () => { muNew(); stReset(); }, 'primary']]);
+    UI.note('Myonen entstehen in etwa 15 km Höhe, wenn kosmische Strahlung auf die Atmosphäre trifft. Ihre Halbwertszeit ist 1,52 µs. Diese Szene rechnet immer mit der echten Lichtgeschwindigkeit.');
+  }
+}
+function luClock(xs, yb, k, h, col, lab){
+  line(xs - 0.75*k, yb + 3, xs + 0.75*k, yb + 3, '#475569', 5);
+  line(xs - 0.75*k, yb - h*k - 3, xs + 0.75*k, yb - h*k - 3, '#475569', 5);
+  line(xs - 0.75*k, yb - h*k, xs - 0.75*k, yb, '#cbd5e1', 1, [3,3]); line(xs + 0.75*k, yb - h*k, xs + 0.75*k, yb, '#cbd5e1', 1, [3,3]);
+  if (lab) text(lab, xs, yb - h*k - 16, {align:'center', size:12.5, weight:700, col});
+}
+function luDrawUhr(){
+  const L = lay(400), sc = L.scene, v = LU.v, h = LU.h, u = V.u, gv = gam(v);
+  const f = v > 0 ? clamp(u/v, 0, 1) : 0;
+  const k = Math.min(sc.w/19, (sc.h - 90)/(2*h + 7.5));
+  const xc = lerp(6, -6, f);
+  const X = x => sc.x + sc.w/2 + (x - xc)*k;
+  const y0 = sc.y + Math.max(40, (sc.h - (2*h + 7.5)*k)/2);
+  const yT = y0 + (h + 1.6)*k, yP = yT + (h + 3.4)*k;
+  clip(sc);
+  box(sc.x, sc.y, sc.w, sc.h, '#f8fbff', null, 0);
+  /* Bahnsteig mit Markierungen (ruht im Bahnsteigsystem) */
+  box(sc.x, yP + 4, sc.w, sc.y + sc.h - yP, '#e7e5e4', null, 0); line(sc.x, yP + 4, sc.x + sc.w, yP + 4, '#78716c', 2);
+  for (let i = -140; i <= 140; i += 1){ const sx = X(placeLin(i, 0).x); if (sx < sc.x - 5 || sx > sc.x + sc.w + 5) continue; line(sx, yP + 4, sx, yP + (i % 5 === 0 ? 18 : 11), '#78716c', 1.2); }
+  /* Gleis mit Schwellen */
+  const yR = yT + 0.95*k;
+  for (let i = -200; i <= 200; i += 1){ const sx = X(placeLin(i, 0).x); if (sx < sc.x - 5 || sx > sc.x + sc.w + 5) continue; line(sx, yR - 2, sx, yR + 6, '#a8a29e', 3); }
+  line(sc.x, yR, sc.x + sc.w, yR, '#57534e', 3);
+  /* Zug (ruht im Zugsystem) */
+  for (const c of [-30, -22.5, -15, -7.5, 0, 7.5, 15, 22.5, 30]){
+    const a = placeLin((c - 3.5)/gv, v), b = placeLin((c + 3.5)/gv, v), xa = X(a.x), xb = X(b.x);
+    if (xb < sc.x - 20 || xa > sc.x + sc.w + 20) continue;
+    box(xa, yT - (h + 0.9)*k, xb - xa, (h + 1.45)*k, c === 0 ? '#dbeafe' : '#eaf2ff', '#3b82f6', 6);
+    for (const wd of [c - 2.4, c + 2.4]){ const p = placeLin(wd/gv, v); circle(X(p.x), yT + 0.62*k, 0.3*k, '#334155'); }
+  }
+  /* Uhren und Photonen */
+  const pA = placeLin(0, 0), pB = placeLin(0, v);
+  const yA = pA.t > 0 ? h*tri(pA.t/h) : 0, yB = pB.t > 0 ? h*tri(pB.t/(gv*h)) : 0;
+  const nA = Math.floor(Math.max(0, pA.t)/(2*h)), nB = Math.floor(Math.max(0, pB.t/gv)/(2*h));
+  luClock(X(pA.x), yP, k, h, '#c2410c', 'Uhr am Bahnsteig');
+  luClock(X(pB.x), yT, k, h, '#1d4ed8', 'Uhr im Zug');
+  if (LU.trail && V.T > 0){
+    for (const [w, gw, base, col] of [[0, 1, yP, 'rgba(234,88,12,.75)'], [v, gv, yT, 'rgba(37,99,235,.75)']]){
+      const n = Math.min(900, Math.ceil(V.T*18)); ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath();
+      for (let i = 0; i <= n; i++){ const p = placeLin(0, w, V.T*i/n), y = p.t > 0 ? h*tri(p.t/(gw*h)) : 0; const sx = X(p.x), sy = base - y*k; if (i) ctx.lineTo(sx, sy); else ctx.moveTo(sx, sy); }
+      ctx.stroke();
+    }
+  }
+  flash(X(pA.x), yP - yA*k, 13, 1); circle(X(pA.x), yP - yA*k, 4.5, '#facc15', '#a16207');
+  flash(X(pB.x), yT - yB*k, 13, 1); circle(X(pB.x), yT - yB*k, 4.5, '#facc15', '#a16207');
+  pill('Ticks: ' + nA, X(pA.x) + 0.95*k, yP - h*k/2, {align:'left', bg:'#c2410c', size:14});
+  pill('Ticks: ' + nB, X(pB.x) + 0.95*k, yT - h*k/2, {align:'left', bg:'#1d4ed8', size:14});
+  /* Geschwindigkeitspfeile */
+  const vz = relV(v, u), vp = -u;
+  if (Math.abs(vz) > 0.02){ const xa = sc.x + sc.w*0.5, d = Math.sign(vz)*70; arrow(xa - d/2, sc.y + 22, xa + d/2, sc.y + 22, '#1d4ed8', 3); text('Zug: ' + bTxt(Math.abs(vz)), xa + 50, sc.y + 22, {size:12.5, weight:700, col:'#1d4ed8'}); }
+  if (Math.abs(vp) > 0.02){ const xa = sc.x + sc.w*0.5, d = Math.sign(vp)*70, yy = Math.min(sc.y + sc.h - 16, yP + 34); arrow(xa - d/2, yy, xa + d/2, yy, '#c2410c', 3); text('Bahnsteig: ' + bTxt(Math.abs(vp)), xa + 50, yy, {size:12.5, weight:700, col:'#c2410c'}); }
+  slowBanner(sc);
+  ctx.restore();
+  /* Infotafel */
+  const r = L.side; let y = card(r, 'Zwei Lichtuhren im Vergleich'); const x = r.x + 14, mw = r.w - 28;
+  const zugBewegt = Math.abs(vz) >= Math.abs(vp);
+  y = para(x, y, mw, [
+    {kv:['Ticks der Uhr am Bahnsteig', String(nA)], col:'#c2410c'},
+    {kv:['Ticks der Uhr im Zug', String(nB)], col:'#1d4ed8'},
+    lvlNum() >= 1 ? {kv:['abgelaufene Zeit am Bahnsteig', fmtTime(Math.max(0, pA.t), LU_UM)], col:'#c2410c'} : null,
+    lvlNum() >= 1 ? {kv:['abgelaufene Zeit im Zug', fmtTime(Math.max(0, pB.t/gv), LU_UM)], col:'#1d4ed8'} : null,
+    {gap:4},
+    zugBewegt
+      ? 'Aus Sicht des Bahnsteigs fährt die Uhr im Zug. Ihr Licht läuft schräg im Zickzack, also einen längeren Weg. Weil Licht für alle gleich schnell ist, braucht es dafür länger: Die bewegte Uhr geht langsamer.'
+      : 'Jetzt ruht der Zug – und die Uhr am Bahnsteig fährt. Nun läuft ihr Licht im Zickzack, und sie geht langsamer. Beide Sichten sind gleichberechtigt: Jede Seite sieht die Uhr der anderen langsamer gehen.'
+  ]);
+  if (lvlNum() >= 1){
+    const g = gam(Math.abs(zugBewegt ? vz : vp)), b = Math.abs(zugBewegt ? vz : vp), dt0 = 2*h;
+    y = para(x, y + 4, mw, [
+      {kv:['Lorentz-Faktor γ', fmt(gv, 3)]},
+      {kv:['Tick der ruhenden Uhr Δt₀', fmtTime(dt0, LU_UM)]},
+      {kv:['Tick der bewegten Uhr Δt = γ·Δt₀', fmtTime(dt0*gv, LU_UM)]}
+    ]);
+    /* Dreieck nach Pythagoras für einen halben Tick der bewegten Uhr */
+    const hh = Math.min(110, r.y + r.h - y - (lvlNum() >= 2 ? 96 : 44));
+    if (hh > 50 && b > 0.01){
+      const base = b*g*hh, sc2 = Math.min(1, (mw - 110)/base), bx = x + 8, by = y + hh*sc2 + 6, bw = base*sc2, bh = hh*sc2;
+      ctx.fillStyle = 'rgba(250,204,21,.18)'; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by - bh); ctx.closePath(); ctx.fill();
+      line(bx, by, bx + bw, by, '#475569', 2); line(bx + bw, by, bx + bw, by - bh, '#475569', 2); line(bx, by, bx + bw, by - bh, '#ca8a04', 3);
+      text('v·Δt/2', bx + bw/2, by + 11, {align:'center', size:12, weight:700, col:'#475569'});
+      text('c·Δt₀/2', bx + bw + 6, by - bh/2, {size:12, weight:700, col:'#475569'});
+      text('c·Δt/2', bx + bw/2 - 8, by - bh/2 - 6, {align:'right', size:12, weight:700, col:'#a16207'});
+      y = by + 22;
+    }
+    if (lvlNum() >= 2) para(x, y, mw, [
+      {t:'Pythagoras:  (c·Δt/2)² = (v·Δt/2)² + (c·Δt₀/2)²', mono:true, size:12.5},
+      {t:'⇒  Δt²·(c² − v²) = c²·Δt₀²   ⇒   Δt = Δt₀ / √(1 − v²/c²) = γ·Δt₀', mono:true, size:12.5}
+    ]);
+  }
+}
+function luDrawMyon(){
+  const L = lay(400), sc = L.scene, b = muBeta(), g = LU.gm, H = LU.H, u = V.u;
+  const gC = LU.classic ? 1 : g;
+  const xref = toV(0, H, u)[1];
+  const k = (sc.h - 80)/(H*1.1), top = sc.y + 46;
+  const Yx = x => top + (xref - x)*k;
+  const cx = sc.x + sc.w*0.52, hw = Math.min(sc.w*0.36, 240);
+  clip(sc);
+  box(sc.x, sc.y, sc.w, sc.h, '#0b1020', null, 0);
+  const ps = placeLin(0, 0), pt = placeLin(H, 0), ys = Yx(ps.x), yt = Yx(pt.x);
+  const gr = ctx.createLinearGradient(0, yt, 0, ys); gr.addColorStop(0, '#1e3a8a'); gr.addColorStop(1, '#bfdbfe');
+  ctx.fillStyle = gr; ctx.fillRect(sc.x, yt, sc.w, ys - yt);
+  ctx.fillStyle = '#5b7f45'; ctx.beginPath(); ctx.moveTo(sc.x, ys);
+  for (let i = 0; i <= 12; i++){ const px = sc.x + sc.w*i/12; ctx.lineTo(px, ys - (i % 3 === 1 ? 16 : i % 2 ? 8 : 2)); }
+  ctx.lineTo(sc.x + sc.w, sc.y + sc.h + 5); ctx.lineTo(sc.x, sc.y + sc.h + 5); ctx.fill();
+  /* Maßstab: Dicke der Atmosphäre */
+  const xs = sc.x + 40; line(xs, yt, xs, ys, '#fff', 2); line(xs - 7, yt, xs + 7, yt, '#fff', 2); line(xs - 7, ys, xs + 7, ys, '#fff', 2);
+  pill(fmtLen(pt.x - ps.x, 1000), xs + 10, (yt + ys)/2, {align:'left', bg:'#fff', col:'#1e3a8a', size:13});
+  /* Myonen */
+  const tArr = H/b, t = solveLin(H, -b); let nf = 0, nd = 0, na = 0;
+  const xv = gam(u)*((H - b*t) - u*t);
+  for (const m of LU.mu){
+    if (t < 0) continue;
+    const px = cx + m.jx*hw, jy = m.jy*5, td = m.tau*gC;
+    if (td < Math.min(t, tArr)){
+      nd++; const [tvd, xvd] = toV(td, H - b*td, u), age = (V.T - tvd)/Math.max(0.02, V.rateMu || 1);
+      if (age < 0.35) flash(px, Yx(xvd) + jy, 9, 1 - age/0.35);
+      continue;
+    }
+    if (t >= tArr){ na++; circle(px, ys - 4 + jy*0.4, 2.4, '#f97316'); continue; }
+    nf++; circle(px, Yx(xv) + jy, 2.6, '#fde047');
+  }
+  text(LU.classic ? 'klassisch gerechnet: Myonen-Uhren gehen wie Erd-Uhren' : (Math.abs(u) > 0.01 ? 'Sicht der Myonen: Die Erde rast ihnen entgegen' : 'Sicht der Erde: Die Myonen rasen nach unten'), sc.x + sc.w/2, sc.y + 24, {align:'center', size:14, weight:700, col:'#e0e7ff'});
+  ctx.restore();
+  /* Infotafel */
+  const r = L.side; let y = card(r, 'Myonen auf dem Weg zum Boden'); const x = r.x + 14, mw = r.w - 28;
+  const tE = Math.max(0, Math.min(t, tArr)), N = LU.mu.length;
+  const expRel = N*Math.exp(-tArr/(g*MU_TAU)), expCl = N*Math.exp(-tArr/MU_TAU);
+  y = para(x, y, mw, [
+    {kv:['unterwegs', String(nf)], col:'#a16207'},
+    {kv:['zerfallen', String(nd)], col:'#64748b'},
+    {kv:['unten angekommen', String(na) + ' von ' + N], col:'#c2410c'},
+    {gap:4},
+    {kv:['Uhr der Erde seit dem Start', fmtSec(tE*MU_TU)]},
+    {kv:['Uhr der Myonen seit dem Start', fmtSec(tE/gC*MU_TU)]},
+    {kv:['Dicke der Atmosphäre (diese Sicht)', fmtLen(pt.x - ps.x, 1000)]},
+    {gap:4},
+    lvlNum() >= 1 ? {kv:['Flugzeit, Erd-Uhr', fmtSec(tArr*MU_TU)]} : null,
+    lvlNum() >= 1 ? {kv:['Flugzeit, Uhr der Myonen', fmtSec(tArr/g*MU_TU)]} : null,
+    lvlNum() >= 1 ? {kv:['erwartet unten (relativistisch)', grp(expRel, expRel < 10 ? 1 : 0)], col:'#0f766e'} : null,
+    lvlNum() >= 1 ? {kv:['erwartet unten (klassisch)', expCl < 0.01 ? sci(expCl, 1) : grp(expCl, 2)], col:'#b91c1c'} : null,
+    {gap:4},
+    LU.classic ? 'Ohne Zeitdilatation zerfallen fast alle Myonen lange bevor sie unten ankommen: Für 15 km brauchen sie rund 50 µs, das sind etwa 33 Halbwertszeiten.'
+      : Math.abs(u) > 0.01 ? `Für die Myonen ist die Atmosphäre nur ${fmtLen(H/g, 1000)} dick (Längenkontraktion). Diese kurze Strecke schaffen viele innerhalb ihrer Lebensdauer.`
+      : 'Die Uhren der schnellen Myonen gehen langsamer (Zeitdilatation). Deshalb kommen viel mehr unten an, als man ohne Relativitätstheorie erwarten würde.',
+    lvlNum() >= 2 ? {t:`N = N₀·(1/2)^(t/T½) mit t = ${fmtSec(tArr/gC*MU_TU)} (Eigenzeit) und T½ = 1,52 µs`, mono:true, size:12} : null,
+    {t:`Wiedergabe: 1 s ≙ ${fmtSec((V.rateMu || 1)*MU_TU*S.speed)} in dieser Sicht`, size:12, col:'#5b6477'}
+  ]);
+}
+function luDraw(){ if (LU.scene === 'uhr') luDrawUhr(); else luDrawMyon(); }
+function luRate(){
+  if (LU.scene === 'uhr') return 4;
+  const b = muBeta(), d = toV(LU.H/b, 0)[0] - toV(0, LU.H)[0];
+  V.rateMu = Math.max(0.05, d/5.5); return V.rateMu;
+}
+function luStart(){ return LU.scene === 'uhr' ? -0.6 : toV(0, LU.H)[0] - 0.3*(V.rateMu || 1); }
+function luEnd(){ return LU.scene === 'uhr' ? Math.min(90, 20/Math.max(LU.v, 0.04)) : toV(LU.H/muBeta(), 0)[0] + 1.2*(V.rateMu || 1); }
+
+/* =====================================================================
+   Station 1: Relativität der Gleichzeitigkeit (Einsteins Zug)
+   ===================================================================== */
+const GL = { v:0.5, sim:'bahnsteig', clocks:false, L:16 };
+const GL_UM = () => S.world === 'slow' ? 2 : 25;
+function glEvents(){
+  const v = GL.v, g = gam(v), L = GL.L;
+  if (GL.sim === 'bahnsteig') return [{t:0, x:-L/(2*g), n:'hinten'}, {t:0, x:L/(2*g), n:'vorne'}];
+  return [{t:-g*v*L/2, x:-g*L/2, n:'hinten'}, {t:g*v*L/2, x:g*L/2, n:'vorne'}];
+}
+const glRecv = () => glEvents().map(e => ({ P:rayHit(e, 0, 0), T:rayHit(e, 0, GL.v) }));
+function glFrames(){ return [{lab:'Bahnsteig', u:() => 0}, {lab:'Zug', u:() => GL.v}]; }
+function glControls(){
+  UI.speed('Geschwindigkeit des Zugs', () => GL.v, v => GL.v = v, {after:stReset, max:0.95});
+  UI.seg('Die Blitze schlagen gleichzeitig ein für …', [['bahnsteig','den Bahnsteig'],['zug','den Zug']], () => GL.sim, v => { GL.sim = v; stReset(); });
+  if (lvlNum() >= 1) UI.check('Uhren am Bahnsteig und im Zug zeigen', () => GL.clocks, c => GL.clocks = c);
+  UI.note('Zwei Blitze schlagen am Anfang und am Ende des Zugs ein und hinterlassen Brandflecken auf Zug und Bahnsteig. Paula steht in der Mitte des Bahnsteigs, Toni in der Mitte des Zugs.');
+}
+function lamp(x, y, on, lab){ circle(x, y, 7, on ? '#facc15' : '#e5e7eb', on ? '#a16207' : '#9ca3af', 1.5); if (on) flash(x, y, 14, 0.6); text(lab, x, y + 15, {align:'center', size:10.5, col:'#5b6477'}); }
+function glDraw(){
+  const L = lay(410), sc = L.scene, v = GL.v, g = gam(v), u = V.u, Lz = GL.L, um = GL_UM();
+  const k = sc.w/(Lz*1.75), cx = sc.x + sc.w/2, X = x => cx + x*k;
+  const yTB = sc.y + sc.h*0.5, th = Math.min(80, sc.h*0.16), yc = yTB - th/2, yPl = yTB + 30;
+  const ev = glEvents(), rc = glRecv(), evV = ev.map(e => toV(e.t, e.x));
+  clip(sc);
+  box(sc.x, sc.y, sc.w, sc.h, '#f8fbff', null, 0);
+  /* Lichtkreise */
+  ev.forEach((e, i) => { const [tv, xv] = evV[i], d = V.T - tv; if (d <= 0) return; const rr = d*k;
+    if (rr < sc.w*1.6){ ctx.strokeStyle = `rgba(245,158,11,${clamp(0.95 - rr/(sc.w*1.8), 0.15, 0.9)})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(X(xv), yc, rr, 0, Math.PI*2); ctx.stroke(); }
+  });
+  /* Bahnsteig */
+  box(sc.x, yPl, sc.w, sc.y + sc.h - yPl, '#e7e5e4', null, 0); line(sc.x, yPl, sc.x + sc.w, yPl, '#78716c', 2);
+  for (let i = -100; i <= 100; i += 1){ const sx = X(placeLin(i, 0).x); if (sx < sc.x - 4 || sx > sc.x + sc.w + 4) continue; line(sx, yPl, sx, yPl + (i % 5 === 0 ? 14 : 8), '#a8a29e', 1); }
+  const yR = yTB + 12; line(sc.x, yR, sc.x + sc.w, yR, '#57534e', 3);
+  /* Zug */
+  const ra = placeLin(-Lz/(2*g), v), fr = placeLin(Lz/(2*g), v);
+  box(X(ra.x), yTB - th, X(fr.x) - X(ra.x), th, '#dbeafe', '#3b82f6', 8);
+  for (let d = -Lz/2 + 1; d <= Lz/2 - 1.2; d += 1.6){ const a = placeLin(d/g, v), b = placeLin((d + 1.1)/g, v); box(X(a.x), yTB - th*0.78, X(b.x) - X(a.x), th*0.3, '#fff', '#93c5fd', 3); }
+  for (const d of [-Lz/2 + 1.5, -Lz/2 + 3, Lz/2 - 3, Lz/2 - 1.5]){ const p = placeLin(d/g, v); circle(X(p.x), yTB + 4, 6, '#334155'); }
+  /* Brandflecken und Blitze */
+  ev.forEach((e, i) => {
+    const pm = placeLin(e.x, 0); if (pm.t >= e.t){ ctx.fillStyle = '#292524'; ctx.beginPath(); ctx.ellipse(X(pm.x), yPl + 2, 9, 3.5, 0, 0, Math.PI*2); ctx.fill(); }
+    const tm = placeLin(e.x - v*e.t, v); if (tm.t >= e.t){ ctx.fillStyle = '#292524'; ctx.beginPath(); ctx.ellipse(X(tm.x), yTB - th + 2, 8, 3.5, 0, 0, Math.PI*2); ctx.fill(); }
+    const [tv, xv] = evV[i], d = V.T - tv;
+    if (d >= 0 && d < 1.5){ bolt(X(xv), sc.y + 4, yTB - th); flash(X(xv), yc, 46, 1 - d/1.5); }
+  });
+  /* Beobachter */
+  const pP = placeLin(0, 0), pT = placeLin(0, v);
+  person(X(pP.x), yPl + 46, '#c2410c'); text('Paula', X(pP.x), yPl + 60, {align:'center', size:12.5, weight:700, col:'#c2410c'});
+  person(X(pT.x), yTB - 6, '#1d4ed8', 0.85); text('Toni', X(pT.x) + 14, yTB - 26, {size:12.5, weight:700, col:'#1d4ed8'});
+  const seen = (tNow, tr) => tNow >= tr;
+  const sP = [seen(pP.t, rc[0].P), seen(pP.t, rc[1].P)], sT = [seen(pT.t, rc[0].T), seen(pT.t, rc[1].T)];
+  lamp(X(pP.x) - 22, yPl + 82, sP[0], 'hinten'); lamp(X(pP.x) + 22, yPl + 82, sP[1], 'vorne');
+  lamp(X(pT.x) - 22, yTB - th - 34, sT[0], 'hinten'); lamp(X(pT.x) + 22, yTB - th - 34, sT[1], 'vorne');
+  /* Uhren */
+  if (GL.clocks && lvlNum() >= 1){
+    for (const xi of [-0.9, -0.45, 0, 0.45, 0.9].map(q => q*Lz)){ const p = placeLin(xi, 0), sx = X(p.x); if (sx < sc.x || sx > sc.x + sc.w) continue; pill(fmtTime(p.t, um), sx, yPl + 108, {bg:'#c2410c', size:11.5}); }
+    for (const d of [-Lz/2 + 0.6, 0, Lz/2 - 0.6]){ const p = placeLin(d/g, v), tz = toV(p.t, d/g + v*p.t, v)[0]; pill(fmtTime(tz, um), X(p.x), yTB - th/2 + 4, {bg:'#1d4ed8', size:11.5}); }
+  }
+  const vz = relV(v, u); if (Math.abs(vz) > 0.02) arrow(cx - Math.sign(vz)*35, sc.y + 20, cx + Math.sign(vz)*35, sc.y + 20, '#1d4ed8', 3);
+  if (Math.abs(u) > 0.02) arrow(cx - Math.sign(-u)*35, sc.y + sc.h - 14, cx + Math.sign(-u)*35, sc.y + sc.h - 14, '#c2410c', 3);
+  slowBanner(sc);
+  ctx.restore();
+  /* Infotafel */
+  const r = L.side; let y = card(r, 'Wer sieht welchen Blitz zuerst?'); const x = r.x + 14, mw = r.w - 28;
+  const order = (a, b) => Math.abs(a - b) < 1e-6 ? 'beide gleichzeitig' : a < b ? 'zuerst hinten, dann vorne' : 'zuerst vorne, dann hinten';
+  const bothP = sP[0] && sP[1], bothT = sT[0] && sT[1];
+  y = para(x, y, mw, [
+    {kv:['Paula (Bahnsteig)', bothP ? order(rc[0].P, rc[1].P) : sP[0] || sP[1] ? (sP[0] ? 'hinten gesehen …' : 'vorne gesehen …') : '–'], col:'#c2410c'},
+    {kv:['Toni (Zug)', bothT ? order(rc[0].T, rc[1].T) : sT[0] || sT[1] ? (sT[0] ? 'hinten gesehen …' : 'vorne gesehen …') : '–'], col:'#1d4ed8'},
+    {gap:4}
+  ]);
+  const dV = evV[1][0] - evV[0][0], um2 = um;
+  if (lvlNum() >= 1) y = para(x, y, mw, [
+    {kv:['Einschlag hinten, Zeit in dieser Sicht', fmtTime(evV[0][0], um2)]},
+    {kv:['Einschlag vorne, Zeit in dieser Sicht', fmtTime(evV[1][0], um2)]},
+    {kv:['Unterschied', Math.abs(dV) < 1e-6 ? 'gleichzeitig' : fmtTime(Math.abs(dV), um2) + (dV < 0 ? ' (vorne früher)' : ' (hinten früher)')], col:'#4f46e5'}
+  ]);
+  y = para(x, y + 2, mw, [ bothP && bothT ? (GL.sim === 'bahnsteig'
+    ? 'Paula steht in der Mitte zwischen den Brandflecken und sieht beide Blitze gleichzeitig: Für den Bahnsteig waren sie gleichzeitig. Toni steht in der Mitte zwischen den Brandflecken am Zug, sieht aber den vorderen Blitz zuerst. Weil das Licht auch für ihn in beide Richtungen mit c läuft, schließt er: Vorne hat es früher eingeschlagen.'
+    : 'Diesmal sind die Blitze für den Zug gleichzeitig: Toni sieht beide zugleich. Paula sieht den hinteren Blitz zuerst und schließt: Hinten hat es früher eingeschlagen. Was „gleichzeitig“ ist, hängt vom Bezugssystem ab.')
+    : 'Starte die Animation und beobachte die Lämpchen bei Paula und Toni.' ]);
+  if (lvlNum() >= 2) y = para(x, y, mw, [{t:'Für Ereignisse im Abstand Δx, die im Bahnsteigsystem gleichzeitig sind, gilt im Zug: Δt′ = −γ·v·Δx/c².', mono:true, size:12}]);
+  if (lvlNum() >= 1){
+    const mh = r.y + r.h - y - 10;
+    if (mh > 140){
+      const lines = [ {pts:[[-Lz, 0], [2*Lz, 0]], col:'#c2410c', w:2}, {pts:[[-Lz, -v*Lz], [2*Lz, 2*v*Lz]], col:'#1d4ed8', w:2},
+        {pts:[[-Lz, -Lz/(2*g) - v*Lz], [2*Lz, -Lz/(2*g) + 2*v*Lz]], col:'#93c5fd', w:1.5}, {pts:[[-Lz, Lz/(2*g) - v*Lz], [2*Lz, Lz/(2*g) + 2*v*Lz]], col:'#93c5fd', w:1.5} ];
+      const evs = [];
+      ev.forEach((e, i) => { const tl = Math.max(rc[i].P, rc[i].T), dir = e.n === 'hinten' ? 1 : -1; lines.push({pts:[[e.t, e.x], [tl, e.x + dir*(tl - e.t)]], col:'#f59e0b', w:2}); evs.push({t:e.t, x:e.x, lab:'Blitz ' + e.n, col:'#b45309', align:e.n === 'hinten' ? 'right' : 'left', dx:e.n === 'hinten' ? -7 : 7});
+        evs.push({t:rc[i].P, x:0, col:'#c2410c', r:3.5}); evs.push({t:rc[i].T, x:v*rc[i].T, col:'#1d4ed8', r:3.5}); });
+      const span = Lz*0.75;
+      mink({x:r.x + 10, y, w:r.w - 20, h:mh}, { title:'Minkowski-Diagramm (Sicht: ' + curFrameName() + ')', range:[-span, span, -span*0.55, span*1.05], viewName:'', now:V.T,
+        frames:[{w:0, col:'#c2410c', name:'Bahnsteig'}, {w:v, col:'#1d4ed8', name:'Zug'}], lines, events:evs,
+        over:(X2, Y2) => { /* Gleichzeitigkeitslinie des Sichtsystems durch die Blitze */ } });
+    }
+  }
+}
+function glStart(){ const ev = glEvents().map(e => toV(e.t, e.x)[0]); return Math.min(...ev) - 2.5; }
+function glEnd(){ const rc = glRecv(), v = GL.v; let m = -1e9; for (const q of rc){ m = Math.max(m, toV(q.P, 0)[0], toV(q.T, v*q.T)[0]); } return m + 3; }
+
+/* =====================================================================
+   Station 2: Längenkontraktion (Zug & Tunnel, Leiter & Garage)
+   ===================================================================== */
+const LK = { v:0.6, scene:'tunnel', Lz:12, Lt:12, Ll:10, Lg:8, dl:0.8 };
+const LK_UM = () => S.world === 'slow' ? 2 : 25;
+function lkFrames(){ return LK.scene === 'tunnel' ? [{lab:'Bahnsteig', u:() => 0}, {lab:'Zug', u:() => LK.v}] : [{lab:'Garage', u:() => 0}, {lab:'Leiter', u:() => LK.v}]; }
+function lkControls(){
+  if (lvlNum() >= 2) UI.seg('Szene', [['tunnel','Zug & Tunnel'],['garage','Leiter & Garage']], () => LK.scene, v => { LK.scene = v; LK.v = v === 'garage' ? 0.8 : 0.6; frameReset(); buildControls(); });
+  else if (LK.scene !== 'tunnel'){ LK.scene = 'tunnel'; }
+  UI.speed(LK.scene === 'tunnel' ? 'Geschwindigkeit des Zugs' : 'Geschwindigkeit der Leiter', () => LK.v, v => LK.v = v, {after:snapFrame, max:0.95});
+  if (LK.scene === 'tunnel') UI.note('Zug und Tunnel sind gleich lang, wenn beide ruhen: je ' + fmtLen(LK.Lz, LK_UM()) + '. Die Maßstäbe (Striche) sind im Ruhezustand alle ' + fmtLen(1, LK_UM()) + ' lang.');
+  else UI.note('Die Leiter ist in Ruhe ' + fmtLen(LK.Ll, LK_UM()) + ' lang, die Garage nur ' + fmtLen(LK.Lg, LK_UM()) + '. Kurz bevor die Leiter mittig steht, gehen im Garagensystem beide Tore gleichzeitig kurz zu und wieder auf.');
+}
+function lkDraw(){
+  const L = lay(400), sc = L.scene, v = LK.v, g = gam(v), u = V.u, um = LK_UM(), tun = LK.scene === 'tunnel';
+  const len = tun ? LK.Lz : LK.Ll, hall = tun ? LK.Lt : LK.Lg;
+  const k = sc.w/(Math.max(len, hall)*2.5), cx = sc.x + sc.w/2, X = x => cx + x*k;
+  const yB = sc.y + sc.h*0.56, th = Math.min(70, sc.h*0.14);
+  clip(sc); box(sc.x, sc.y, sc.w, sc.h, '#f8fbff', null, 0);
+  box(sc.x, yB + 16, sc.w, sc.y + sc.h - yB, '#e7e5e4', null, 0);
+  /* Maßstab am Boden (ruht) */
+  for (let i = -80; i <= 80; i += 1){ const sx = X(placeLin(i, 0).x); if (sx < sc.x - 4 || sx > sc.x + sc.w + 4) continue; line(sx, yB + 16, sx, yB + (i % 5 === 0 ? 34 : 26), '#78716c', 1.3); }
+  line(sc.x, yB + 12, sc.x + sc.w, yB + 12, '#57534e', 3);
+  const ha = placeLin(-hall/2, 0), hb = placeLin(hall/2, 0);
+  const ra = placeLin(-len/(2*g), v), fa = placeLin(len/(2*g), v);
+  const hallLen = hb.x - ha.x, objLen = fa.x - ra.x;
+  if (!tun){
+    /* Garage hinter der Leiter */
+    box(X(ha.x), yB - th*1.9, X(hb.x) - X(ha.x), th*1.9 + 12, '#fef3c7', '#d97706', 4);
+    ctx.fillStyle = '#d97706'; ctx.beginPath(); ctx.moveTo(X(ha.x) - 8, yB - th*1.9); ctx.lineTo((X(ha.x) + X(hb.x))/2, yB - th*2.6); ctx.lineTo(X(hb.x) + 8, yB - th*1.9); ctx.fill();
+  }
+  /* Objekt: Zug oder Leiter (ruht im bewegten System) */
+  if (tun){
+    box(X(ra.x), yB - th, X(fa.x) - X(ra.x), th, '#dbeafe', '#3b82f6', 8);
+    for (let d = -len/2; d <= len/2 + 1e-9; d += 1){ const p = placeLin(d/g, v); line(X(p.x), yB - th, X(p.x), yB - th + (Math.abs(d % 5) < 1e-9 ? 18 : 10), '#1d4ed8', 1.4); }
+    for (const d of [-len/2 + 1.3, -len/2 + 2.6, len/2 - 2.6, len/2 - 1.3]){ const p = placeLin(d/g, v); circle(X(p.x), yB + 5, 6, '#334155'); }
+  } else {
+    line(X(ra.x), yB - 8, X(fa.x), yB - 8, '#92400e', 5); line(X(ra.x), yB - th*0.75, X(fa.x), yB - th*0.75, '#92400e', 5);
+    for (let d = -len/2; d <= len/2 + 1e-9; d += 1){ const p = placeLin(d/g, v); line(X(p.x), yB - 8, X(p.x), yB - th*0.75, '#b45309', 3); }
+  }
+  let crash = false, closed = [false, false];
+  if (tun){
+    /* Tunnel: halbdurchsichtiger Berg */
+    ctx.fillStyle = 'rgba(120,113,108,.45)'; ctx.beginPath(); ctx.moveTo(X(ha.x) - 30, yB + 12); ctx.lineTo(X(ha.x), yB - th*1.5); ctx.quadraticCurveTo((X(ha.x) + X(hb.x))/2, yB - th*3, X(hb.x), yB - th*1.5); ctx.lineTo(X(hb.x) + 30, yB + 12); ctx.closePath(); ctx.fill();
+    for (const p of [ha, hb]){ ctx.strokeStyle = '#44403c'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(X(p.x), yB + 12); ctx.lineTo(X(p.x), yB - th*1.2); ctx.stroke(); }
+  } else {
+    [ha, hb].forEach((p, i) => { closed[i] = Math.abs(p.t) < LK.dl; const xd = i ? LK.Lg/2 : -LK.Lg/2; const hit = closed[i] && Math.abs(xd - v*p.t) < len/(2*g);
+      if (hit) crash = true;
+      if (closed[i]) box(X(p.x) - 4, yB - th*1.9, 8, th*1.9 + 12, hit ? '#dc2626' : '#78350f', null, 2); else line(X(p.x), yB - th*1.9, X(p.x), yB + 12, '#d97706', 1.5, [4,4]);
+      text(i ? 'Tor vorne' : 'Tor hinten', X(p.x), yB - th*2.0 - 10, {align:'center', size:11.5, weight:700, col:'#92400e'}); });
+    if (crash) pill('Ein Tor trifft die Leiter!', cx, sc.y + 50, {bg:'#dc2626', size:14});
+    else if (closed[0] && closed[1]) pill('Beide Tore zu – die Leiter ist eingeschlossen!', cx, sc.y + 50, {bg:'#0f766e', size:14});
+  }
+  /* Längenangaben */
+  dimArrow(X(ra.x), X(fa.x), yB - th - (tun ? th*1.9 : th*2.4) + 6, '#1d4ed8', (tun ? 'Zug ' : 'Leiter ') + fmtLen(objLen, um));
+  dimArrow(X(ha.x), X(hb.x), yB + 58, '#57534e', (tun ? 'Tunnel ' : 'Garage ') + fmtLen(hallLen, um));
+  const inside = ra.x >= ha.x - 1e-6 && fa.x <= hb.x + 1e-6;
+  if (tun && inside) pill('Der Zug passt ganz in den Tunnel', cx, sc.y + 50, {bg:'#0f766e', size:14});
+  const vz = relV(v, u); if (Math.abs(vz) > 0.02) arrow(cx - Math.sign(vz)*35, sc.y + 22, cx + Math.sign(vz)*35, sc.y + 22, '#1d4ed8', 3);
+  if (Math.abs(u) > 0.02) arrow(cx + Math.sign(u)*35, sc.y + sc.h - 14, cx - Math.sign(u)*35, sc.y + sc.h - 14, '#57534e', 3);
+  slowBanner(sc);
+  ctx.restore();
+  /* Infotafel */
+  const r = L.side; let y = card(r, tun ? 'Wie lang sind Zug und Tunnel?' : 'Passt die Leiter in die Garage?'); const x = r.x + 14, mw = r.w - 28;
+  const objMoves = Math.abs(vz) > Math.abs(u) + 1e-9;
+  y = para(x, y, mw, [
+    {kv:[(tun ? 'Länge des Zugs' : 'Länge der Leiter') + ' (diese Sicht)', fmtLen(objLen, um)], col:'#1d4ed8'},
+    {kv:[(tun ? 'Länge des Tunnels' : 'Länge der Garage') + ' (diese Sicht)', fmtLen(hallLen, um)]},
+    lvlNum() >= 1 ? {kv:['Ruhelängen', fmtLen(len, um) + ' / ' + fmtLen(hall, um)]} : null,
+    lvlNum() >= 1 ? {kv:['Lorentz-Faktor γ', fmt(g, 3)]} : null,
+    {gap:4},
+    tun ? (objMoves ? 'Aus Sicht des Bahnsteigs ist der fahrende Zug kürzer als in Ruhe – er passt ganz in den Tunnel. Nur die Länge in Fahrtrichtung schrumpft, die Höhe bleibt gleich.'
+                     : 'Aus Sicht des Zugs fährt der Tunnel – jetzt ist der Tunnel verkürzt, und der Zug passt nicht hinein. Beide Sichten sind richtig: Bewegte Gegenstände sind in Bewegungsrichtung verkürzt.')
+        : (objMoves ? 'Im Garagensystem ist die Leiter verkürzt und passt kurz hinein: Beide Tore sind gleichzeitig zu.'
+                     : 'Im System der Leiter ist die Garage verkürzt! Trotzdem kracht nichts: Die Tore gehen in dieser Sicht nicht gleichzeitig zu. Zuerst schließt und öffnet sich das vordere Tor, erst später das hintere.'),
+    lvlNum() >= 1 ? {t:'L = L₀/γ = L₀·√(1 − v²/c²)', mono:true, size:12.5} : null
+  ]);
+  if (!tun){ const tc = [toV(0, -LK.Lg/2)[0], toV(0, LK.Lg/2)[0]]; y = para(x, y, mw, [ {kv:['Tor hinten schließt bei', fmtTime(tc[0], um)]}, {kv:['Tor vorne schließt bei', fmtTime(tc[1], um)]} ]); }
+  if (lvlNum() >= 1){
+    const mh = r.y + r.h - y - 10;
+    if (mh > 140){
+      const big = 3*hall, lines = [];
+      for (const xh of [-hall/2, hall/2]) lines.push({pts:[[-big, xh], [big, xh]], col:'#78716c', w:2});
+      for (const xo of [-len/(2*g), len/(2*g)]) lines.push({pts:[[-big, xo - v*big], [big, xo + v*big]], col:'#1d4ed8', w:2});
+      if (!tun) for (const xh of [-hall/2, hall/2]) lines.push({pts:[[-LK.dl, xh], [LK.dl, xh]], col:'#dc2626', w:6});
+      const span = Math.max(len, hall)*0.95;
+      mink({x:r.x + 10, y, w:r.w - 20, h:mh}, { title:'Minkowski-Diagramm (Sicht: ' + curFrameName() + ')', range:[-span, span, -span*0.8, span*0.8], now:V.T,
+        frames:[{w:0, col:'#78716c', name:tun ? 'Bahnsteig' : 'Garage'}, {w:v, col:'#1d4ed8', name:tun ? 'Zug' : 'Leiter'}], lines });
+    }
+  }
+}
+function lkRate(){ return clamp(7*LK.v, 1.5, 6); }
+function lkStart(){ const len = LK.scene === 'tunnel' ? LK.Lz : LK.Ll, hall = LK.scene === 'tunnel' ? LK.Lt : LK.Lg; return -Math.min(60, (hall/2 + len/2 + 4)/LK.v); }
+function lkEnd(){ return -lkStart(); }
+</script>
+<script>
+"use strict";
+/* =====================================================================
+   Station 3: Geschwindigkeitsaddition – klassisch und relativistisch
+   ===================================================================== */
+const GA = { v:0.6, up:0.6, licht:false, stages:4, tf:3 };
+function gaFrames(){ return [{lab:'Erde', u:() => 0}, {lab:'Rakete', u:() => GA.v}]; }
+const gaW = () => GA.licht ? 1 : (GA.v + GA.up)/(1 + GA.v*GA.up);
+const gaWc = () => GA.v + (GA.licht ? 1 : GA.up);
+function gaControls(){
+  UI.speed('Geschwindigkeit der Rakete (gegen die Erde)', () => GA.v, v => GA.v = v, {after:snapFrame, max:0.95});
+  if (!GA.licht) UI.speed('Geschwindigkeit der Kugel (gegen die Rakete)', () => GA.up, v => GA.up = v, {max:0.99});
+  UI.check('Statt der Kugel einen Lichtblitz abfeuern', () => GA.licht, c => { GA.licht = c; buildControls(); stReset(); });
+  if (lvlNum() >= 2) UI.slider('Stufenrakete: Anzahl der Stufen', {min:1, max:8, step:1, get:() => GA.stages, set:v => GA.stages = v, fmt:v => String(v)});
+  UI.note('Oben wird mit der Alltagsregel gerechnet (Geschwindigkeiten einfach addieren), unten mit der Relativitätstheorie. Der gelbe Punkt ist ein Lichtblitz, der im selben Moment wie die Kugel startet.');
+}
+function rocket(x, y, s, col, dir){
+  ctx.save(); ctx.translate(x, y); ctx.scale(dir || 1, 1);
+  ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(26*s, 0); ctx.quadraticCurveTo(14*s, -11*s, -16*s, -9*s); ctx.lineTo(-16*s, 9*s); ctx.quadraticCurveTo(14*s, 11*s, 26*s, 0); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-10*s, -9*s); ctx.lineTo(-22*s, -17*s); ctx.lineTo(-16*s, -4*s); ctx.fill(); ctx.beginPath(); ctx.moveTo(-10*s, 9*s); ctx.lineTo(-22*s, 17*s); ctx.lineTo(-16*s, 4*s); ctx.fill();
+  circle(8*s, 0, 4*s, '#e0f2fe', '#fff', 1.5);
+  ctx.restore();
+}
+function gaDraw(){
+  const L = lay(400), sc = L.scene, v = GA.v, u = V.u, tf = GA.tf, w = gaW(), wc = gaWc();
+  const f = clamp(u/v, 0, 1), k = sc.w/19, xc = lerp(7.5, 2.5, f);
+  const X = x => sc.x + sc.w/2 + (x - xc)*k;
+  clip(sc); box(sc.x, sc.y, sc.w, sc.h, '#0f172a', null, 0);
+  for (let i = 0; i < 60; i++){ const sx = sc.x + ((i*137.5) % 1)*sc.w, sy = sc.y + ((i*73.1) % 1)*sc.h; circle(sc.x + ((i*97) % 101)/101*sc.w, sc.y + ((i*61) % 89)/89*sc.h, 1, 'rgba(255,255,255,.35)'); }
+  const lanes = [{cl:true, y:sc.y + sc.h*0.3, t:'Alltagsregel (Galilei): Geschwindigkeiten addieren'}, {cl:false, y:sc.y + sc.h*0.74, t:'Relativitätstheorie (Einstein)'}];
+  const T = V.T, info = {};
+  for (const ln of lanes){
+    const yL = ln.y;
+    text(ln.t, sc.x + 14, yL - sc.h*0.17, {size:14, weight:700, col:ln.cl ? '#fdba74' : '#93c5fd'});
+    /* Bodenmarken der Erde */
+    for (let i = -60; i <= 60; i++){ const xx = ln.cl ? i - u*T : placeLin(i, 0).x; const sx = X(xx); if (sx < sc.x || sx > sc.x + sc.w) continue; line(sx, yL + 26, sx, yL + (i % 5 === 0 ? 40 : 33), 'rgba(148,163,184,.7)', 1.2); }
+    line(sc.x, yL + 26, sc.x + sc.w, yL + 26, 'rgba(148,163,184,.7)', 1.2);
+    const xE = ln.cl ? -1.6 - u*T : placeLin(-1.6, 0).x; circle(X(xE), yL + 2, 20, '#2563eb', '#93c5fd', 2); text('Erde', X(xE), yL + 2, {align:'center', size:11, weight:700, col:'#fff'});
+    const xR = ln.cl ? (v - u)*T : placeLin(0, v).x; rocket(X(xR), yL, 1.15, '#e2e8f0', 1);
+    /* Kugel bzw. Lichtblitz und Referenz-Lichtblitz */
+    const fired = ln.cl ? T >= tf : placeLin(v*tf - w*tf, w).t >= tf;
+    const sp = ln.cl ? {rocket:v - u, proj:wc - u, light:1 - u} : {rocket:relV(v, u), proj:relV(w, u), light:1};
+    info[ln.cl ? 'cl' : 'rel'] = sp;
+    if (fired){
+      const xp = ln.cl ? v*tf + wc*(T - tf) - u*T : placeLin(v*tf - w*tf, w).x;
+      const xl = ln.cl ? v*tf + (T - tf) - u*T : placeLin(v*tf - tf, 1).x;
+      if (!GA.licht){ flash(X(xl), yL - 22, 12, 0.9); circle(X(xl), yL - 22, 4, '#fde047'); pill('Licht ' + bTxt(sp.light), X(xl), yL - 44, {bg:Math.abs(sp.light - 1) > 0.005 ? '#dc2626' : '#a16207', size:11.5}); }
+      if (GA.licht){ flash(X(xp), yL, 14, 1); circle(X(xp), yL, 5, '#fde047'); }
+      else circle(X(xp), yL, 7, '#f97316', '#fff', 2);
+      const fast = sp.proj > 1.0005;
+      pill((GA.licht ? 'Lichtblitz ' : 'Kugel ') + bTxt(sp.proj), X(xp), yL + 58, {bg:fast ? '#dc2626' : '#c2410c', size:12});
+      if (fast) text('schneller als Licht?!', X(xp), yL + 80, {align:'center', size:12, weight:700, col:'#fca5a5'});
+    }
+    pill('Rakete ' + bTxt(sp.rocket), X(xR), yL - 30, {bg:'#334155', size:12});
+  }
+  slowBanner(sc);
+  ctx.restore();
+  /* Infotafel */
+  const r = L.side; let y = card(r, 'Wie schnell ist die Kugel?'); const x = r.x + 14, mw = r.w - 28;
+  const up = GA.licht ? 1 : GA.up, wCl = v + up;
+  y = para(x, y, mw, [
+    {t:'Gemessen von der Erde:', weight:700},
+    {kv:['Alltagsregel: v + u′', bTxt(wCl) + (wCl > 1 ? '  > c !' : '')], col:wCl > 1 ? '#b91c1c' : '#c2410c'},
+    {kv:['Relativitätstheorie', bTxt(w)], col:'#1d4ed8'},
+    {kv:['in km/s bzw. km/h', fmtV(w)], col:'#1d4ed8'},
+    {gap:4},
+    GA.licht ? 'Licht aus der fahrenden Rakete ist für die Erde genauso schnell wie jedes andere Licht: c. Nach der Alltagsregel müsste es schneller sein – das wird nie beobachtet.'
+      : wCl > 1 ? 'Nach der Alltagsregel wäre die Kugel schneller als Licht. Mit der Relativitätstheorie bleibt sie langsamer als c – egal wie schnell Rakete und Kugel sind.'
+      : 'Bei kleinen Geschwindigkeiten liefern beide Regeln fast dasselbe. Je näher an c, desto stärker weichen sie voneinander ab.',
+    lvlNum() >= 1 ? {t:'u = (v + u′) / (1 + v·u′/c²)', mono:true, size:13} : null,
+    lvlNum() >= 1 ? {t:`= (${fmt(v, 2)} + ${fmt(up, 2)}) / (1 + ${fmt(v, 2)}·${fmt(up, 2)}) c = ${bTxt(w)}`, mono:true, size:12.5} : null
+  ]);
+  if (lvlNum() >= 1){
+    /* Diagramm u(v) */
+    const gh = Math.min(200, r.y + r.h - y - (lvlNum() >= 2 ? 150 : 16));
+    if (gh > 110){
+      const gx = x + 30, gw = mw - 40, gy = y + 8, ghh = gh - 34, Xg = q => gx + q*gw, Yg = q => gy + ghh - q/2*ghh;
+      box(x, y, mw, gh, '#fff', '#d9dde6', 8);
+      line(gx, gy, gx, gy + ghh, '#1d2230', 1.2); line(gx, gy + ghh, gx + gw, gy + ghh, '#1d2230', 1.2);
+      line(gx, Yg(1), gx + gw, Yg(1), '#ca8a04', 1.4, [5,4]); text('c', gx - 6, Yg(1), {align:'right', size:12, weight:700, col:'#a16207'});
+      text('2c', gx - 6, Yg(2), {align:'right', size:11, col:'#5b6477'}); text('0', gx - 6, Yg(0), {align:'right', size:11, col:'#5b6477'});
+      ctx.strokeStyle = '#ea580c'; ctx.lineWidth = 2.2; ctx.setLineDash([6,4]); ctx.beginPath(); ctx.moveTo(Xg(0), Yg(up)); ctx.lineTo(Xg(1), Yg(Math.min(2, 1 + up))); ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle = '#1d4ed8'; ctx.lineWidth = 2.6; ctx.beginPath(); for (let i = 0; i <= 60; i++){ const q = i/60, ww = (q + up)/(1 + q*up); if (i) ctx.lineTo(Xg(q), Yg(ww)); else ctx.moveTo(Xg(q), Yg(ww)); } ctx.stroke();
+      circle(Xg(v), Yg(Math.min(2, wCl)), 4.5, '#ea580c'); circle(Xg(v), Yg(w), 4.5, '#1d4ed8');
+      text('Geschwindigkeit der Rakete v →', gx + gw, gy + ghh + 14, {align:'right', size:11.5, col:'#5b6477'});
+      text('Kugel', gx + 4, gy + 6, {size:11.5, col:'#5b6477'});
+      y += gh + 8;
+    }
+  }
+  if (lvlNum() >= 2 && !GA.licht){
+    /* Stufenrakete */
+    const n = GA.stages, bh = Math.min(118, r.y + r.h - y - 34);
+    if (bh > 60){
+      y = para(x, y, mw, [{t:`Stufenrakete: Jede Stufe ist ${bTxt(up)} schneller als die vorige.`, weight:600, size:12.5}]);
+      const bw = (mw - 20)/n, by = y + bh;
+      for (let i = 1; i <= n; i++){
+        const cl = i*up, rl = Math.tanh(i*Math.atanh(up)), bx = x + 10 + (i - 1)*bw;
+        const sH = q => Math.min(2.2, q)/2.2*bh;
+        box(bx + 2, by - sH(cl), bw*0.42, sH(cl), cl > 1 ? '#fca5a5' : '#fdba74', null, 3);
+        box(bx + 2 + bw*0.45, by - sH(rl), bw*0.42, sH(rl), '#93c5fd', null, 3);
+        text(String(i), bx + bw*0.45, by + 10, {align:'center', size:11, col:'#5b6477'});
+      }
+      line(x + 10, by - bh/2.2, x + mw - 10, by - bh/2.2, '#ca8a04', 1.3, [5,4]); text('c', x + mw - 6, by - bh/2.2 - 8, {align:'right', size:11, weight:700, col:'#a16207'});
+      y = para(x, by + 24, mw, [{t:`Nach ${n} Stufen: Alltagsregel ${bTxt(n*up)}, Relativität ${bTxt(Math.tanh(n*Math.atanh(up)))}. Was sich addiert, ist die Rapidität φ = artanh(v/c).`, size:12}]);
+    }
+  }
+}
+function gaStart(){ return -0.5; }
+function gaEnd(){ return 17; }
+
+/* =====================================================================
+   Station 4: Zwillingsparadoxon
+   ===================================================================== */
+const ZW = { v:0.8, D:4, simul:false, age0:15 };
+function zwFrames(){ return [{lab:'Erde', u:() => 0}, {lab:'Hinflug-Rakete', u:() => ZW.v}, {lab:'Rückflug-Rakete', u:() => -ZW.v}]; }
+const zwT = () => ({ tt:ZW.D/ZW.v, tb:2*ZW.D/ZW.v, g:gam(ZW.v) });
+function zwX(t){ const {tt, tb} = zwT(), v = ZW.v, D = ZW.D; return t <= 0 ? 0 : t <= tt ? v*t : t <= tb ? D - v*(t - tt) : 0; }
+function zwTau(t){ const {tb, g} = zwT(); return t <= 0 ? t : t <= tb ? t/g : tb/g + (t - tb); }
+function zwSignals(){
+  const {tt, tb, g} = zwT(), v = ZW.v, D = ZW.D, E = [], R = [];
+  for (let k = 1; k < tb - 1e-9; k++){ let tr = k/(1 - v); if (tr > tt) tr = (2*D + k)/(1 + v); E.push({te:k, xe:0, tr, xr:zwX(tr), dir:1}); }
+  for (let k = 1; k < tb/g - 1e-9; k++){ let te, xe; if (k <= tt/g){ te = k*g; xe = v*te; } else { te = tt + (k - tt/g)*g; xe = D - v*(te - tt); } R.push({te, xe, tr:te + xe, xr:0, dir:-1}); }
+  return {E, R};
+}
+function zwControls(){
+  UI.speed('Geschwindigkeit der Rakete', () => ZW.v, v => ZW.v = v, {after:stReset, min:0.1, max:0.99});
+  UI.slider('Entfernung des Sterns', {min:1, max:20, step:0.5, get:() => ZW.D, set:v => { ZW.D = v; stReset(); }, fmt:v => fmt(v, 1) + ' Lichtjahre'});
+  if (lvlNum() >= 2) UI.check('Gleichzeitigkeitslinien der Reisenden zeigen', () => ZW.simul, c => ZW.simul = c);
+  UI.note('Anna bleibt auf der Erde, ihr Zwillingsbruder Ben fliegt zum Stern und zurück. Beide sind beim Start 15 Jahre alt. Jedes Jahr (nach der eigenen Uhr) schicken sich beide einen Geburtstagsgruß per Lichtsignal: gelb von Anna, türkis von Ben.');
+}
+function zwDraw(){
+  const L = lay(410), sc = L.scene, v = ZW.v, D = ZW.D, u = V.u, {tt, tb, g} = zwT();
+  const k = sc.w/(D*1.35 + 1.4);
+  const pE = placeLin(0, 0), pS = placeLin(D, 0), pT = placeFn(zwX, D + 1);
+  const wgt = v > 0 ? clamp(Math.abs(u)/v, 0, 1) : 0;
+  const cFol = clamp((pE.x + pT.x)/2, pT.x - 0.4*sc.w/k, pT.x + 0.4*sc.w/k);
+  const xc = lerp(D/2, cFol, wgt), X = x => sc.x + sc.w/2 + (x - xc)*k, yL = sc.y + sc.h*0.5;
+  clip(sc); box(sc.x, sc.y, sc.w, sc.h, '#0f172a', null, 0);
+  for (let i = 0; i < 70; i++) circle(sc.x + ((i*97) % 101)/101*sc.w, sc.y + ((i*61) % 89)/89*sc.h, 1, 'rgba(255,255,255,.3)');
+  line(X(pE.x), yL, X(pS.x), yL, 'rgba(148,163,184,.55)', 1.5, [6,5]);
+  dimArrow(X(pE.x), X(pS.x), yL + 64, '#94a3b8', 'Entfernung ' + fmt(pS.x - pE.x, 2) + ' Lj');
+  /* Signale */
+  const {E, R} = zwSignals();
+  for (const [list, col, dy] of [[E, '#fde047', -14], [R, '#5eead4', 14]]){
+    for (const s of list){ const [te, xe] = toV(s.te, s.xe), [tr] = toV(s.tr, s.xr); if (V.T < te || V.T > tr) continue; const xs = xe + s.dir*(V.T - te); flash(X(xs), yL + dy, 10, 0.8); circle(X(xs), yL + dy, 3.5, col); }
+  }
+  /* Erde, Stern, Rakete */
+  circle(X(pE.x), yL, 22, '#2563eb', '#93c5fd', 2); text('Erde', X(pE.x), yL, {align:'center', size:11, weight:700, col:'#fff'});
+  ctx.fillStyle = '#facc15'; ctx.beginPath(); for (let i = 0; i < 10; i++){ const a = i*Math.PI/5 - Math.PI/2, rr = i % 2 ? 9 : 22; ctx.lineTo(X(pS.x) + rr*Math.cos(a), yL + rr*Math.sin(a)); } ctx.fill();
+  text('Stern', X(pS.x), yL - 32, {align:'center', size:12, weight:700, col:'#fde68a'});
+  const back = pT.t > tt && pT.t < tb;
+  if (pT.t > 0 && pT.t < tb) rocket(X(pT.x), yL - 34, 0.9, '#e2e8f0', back ? -1 : 1);
+  /* Alter */
+  const tE = pE.t, tTr = pT.t, aA = ZW.age0 + tE, aB = ZW.age0 + (tTr < 0 ? tTr : zwTau(tTr));
+  const nA = R.filter(s => s.tr <= tE).length, nB = E.filter(s => s.tr <= tTr).length;
+  pill('Anna ' + fmt(Math.max(ZW.age0, aA), 1) + ' J.', X(pE.x), yL + 38, {bg:'#c2410c', size:13});
+  pill('Ben ' + fmt(Math.max(ZW.age0, aB), 1) + ' J.', X(pT.x), yL - (pT.t > 0 && pT.t < tb ? 66 : 62), {bg:'#1d4ed8', size:13});
+  for (const [xx, side] of [[pE.x, 'Erde'], [pS.x, 'Stern']]){ const sx = X(xx); if (sx < sc.x - 10) { arrow(sc.x + 40, yL + 100, sc.x + 12, yL + 100, '#94a3b8', 2); text(side + ' ←', sc.x + 46, yL + 100, {size:11.5, col:'#cbd5e1'}); } if (sx > sc.x + sc.w + 10){ arrow(sc.x + sc.w - 40, yL + 100, sc.x + sc.w - 12, yL + 100, '#94a3b8', 2); text('→ ' + side, sc.x + sc.w - 46, yL + 100, {size:11.5, col:'#cbd5e1', align:'right'}); } }
+  ctx.restore();
+  /* Infotafel */
+  const r = L.side; let y = card(r, 'Wer ist beim Wiedersehen jünger?'); const x = r.x + 14, mw = r.w - 28;
+  const done = tE >= tb && tTr >= tb;
+  y = para(x, y, mw, [
+    {kv:['Anna (Erde)', fmt(Math.max(ZW.age0, aA), 1) + ' Jahre'], col:'#c2410c'},
+    {kv:['Ben (Rakete)', fmt(Math.max(ZW.age0, aB), 1) + ' Jahre'], col:'#1d4ed8'},
+    {kv:['Grüße bei Anna angekommen', String(nA)], col:'#0d9488'},
+    {kv:['Grüße bei Ben angekommen', String(nB)], col:'#a16207'},
+    {gap:4},
+    done ? `Beim Wiedersehen ist Anna ${fmt(tb, 1)} Jahre älter geworden, Ben nur ${fmt(tb/g, 1)} Jahre. Ben hat ${E.length} Grüße erhalten, Anna nur ${R.length}.`
+      : 'Ben fliegt mit ' + bTxt(v) + ' zum Stern, kehrt dort sofort um und fliegt zurück.',
+    'Warum kein Widerspruch? Die Situation ist nicht symmetrisch: Nur Ben wechselt beim Umkehren sein Bezugssystem. Anna bleibt die ganze Zeit im selben Inertialsystem.'
+  ]);
+  if (lvlNum() >= 1){
+    const kD = Math.sqrt((1 - v)/(1 + v));
+    y = para(x, y, mw, [
+      {kv:['Reisezeit auf der Erde', fmt(tb, 2) + ' Jahre']},
+      {kv:['Reisezeit für Ben: Δt/γ', fmt(tb/g, 2) + ' Jahre']},
+      {t:`Auf dem Hinflug kommen Annas Grüße bei Ben nur alle ${fmt(1/kD, 2)} Jahre an, auf dem Rückflug alle ${fmt(kD, 2)} Jahre (Doppler-Effekt).`, size:12.5}
+    ]);
+    const mh = r.y + r.h - y - 10;
+    if (mh > 150){
+      const pts = [[0, 0], [tt, D], [tb, 0], [tb, D], [0, D], [-0.5, 0], [tb + 0.5, 0]].map(([t, xx]) => toV(t, xx));
+      const xs = pts.map(p => p[1]), ts = pts.map(p => p[0]), pad = D*0.12 + 0.3;
+      const lines = [ {pts:[[-1, 0], [tb + 1, 0]], col:'#c2410c', w:2.5}, {pts:[[-1, D], [tb + 1, D]], col:'#ca8a04', w:1.5, dash:[4,3]},
+        {pts:[[-1, 0], [0, 0], [tt, D], [tb, 0], [tb + 1, 0]], col:'#1d4ed8', w:2.5} ];
+      for (const s of E) lines.push({pts:[[s.te, s.xe], [s.tr, s.xr]], col:'rgba(202,138,4,.7)', w:1});
+      for (const s of R) lines.push({pts:[[s.te, s.xe], [s.tr, s.xr]], col:'rgba(13,148,136,.75)', w:1});
+      if (ZW.simul && lvlNum() >= 2){
+        for (let kk = 0; kk <= Math.floor(tb/g + 1e-9); kk++){
+          const tau = kk; let te, xe, out = tau <= tt/g;
+          if (out){ te = tau*g; xe = v*te; } else { te = tt + (tau - tt/g)*g; xe = D - v*(te - tt); }
+          lines.push({pts:[[te, xe], [out ? te - v*xe : te + v*xe, 0]], col:'rgba(79,70,229,.55)', w:1.2});
+        }
+        lines.push({pts:[[tt, D], [tt - v*D, 0]], col:'#4f46e5', w:1.8}); lines.push({pts:[[tt, D], [tt + v*D, 0]], col:'#4f46e5', w:1.8});
+        lines.push({pts:[[tt - v*D, 0], [tt + v*D, 0]], col:'#a855f7', w:6});
+      }
+      mink({x:r.x + 10, y, w:r.w - 20, h:mh}, { title:'Minkowski-Diagramm (Sicht: ' + curFrameName() + ', Einheiten: Jahre, Lichtjahre)', range:[Math.min(...xs) - pad, Math.max(...xs) + pad, Math.min(...ts) - pad, Math.max(...ts) + pad], now:V.T,
+        frames:[{w:0, col:'#c2410c', name:'Erde'}, {w:v, col:'#2563eb', name:'Hin'}, {w:-v, col:'#7c3aed', name:'Rück'}], lines,
+        events:[{t:tt, x:D, lab:'Umkehr', col:'#1d4ed8'}, {t:tb, x:0, lab:'Wiedersehen', col:'#0f766e'}].concat(ZW.simul && lvlNum() >= 2 ? [{t:tt - v*D, x:0, lab:'Sprung', col:'#a855f7', align:'right', dx:-8}] : []) });
+    }
+  }
+}
+function zwRate(){ return Math.max(0.6, (toV(zwT().tb, 0)[0] + 1)/10); }
+function zwStart(){ return -0.8; }
+function zwEnd(){ return toV(zwT().tb, 0)[0] + 1.5; }
+
+/* =====================================================================
+   Station 5: Raumzeit-Spielplatz (Minkowski-Diagramm)
+   ===================================================================== */
+const RZ = { w:0.5, ev:[], sel:0, cone:true, grid2:false, hyp:false, now:false, drag:-1, map:null };
+const RZ_N = 'ABCDEF';
+function rzPreset(p){
+  const P = {
+    start:[[1, -2], [1, 2], [3.5, 0.5]],
+    gleich:[[2, -3], [2, 3]],
+    kausal:[[0.5, -1], [3.5, 0.5], [2, 4]],
+    licht:[[0, 0], [3, 3], [4, -1]]
+  }[p] || [];
+  RZ.ev = P.map(([t, x], i) => ({t, x, n:RZ_N[i]})); RZ.sel = 0;
+}
+rzPreset('start');
+function rzFrames(){ return [{lab:'S (ruht)', u:() => 0}, {lab:'S′ (bewegt)', u:() => RZ.w}]; }
+function rzControls(){
+  UI.slider('Geschwindigkeit von S′ gegen S', {min:-0.9, max:0.9, step:0.05, get:() => RZ.w, set:v => { RZ.w = v; snapFrame(); }, fmt:v => bTxt(v) + (lvlNum() >= 1 ? ' · γ = ' + fmt(gam(v), 3) : '')});
+  UI.check('Lichtkegel des gewählten Ereignisses', () => RZ.cone, c => RZ.cone = c);
+  if (lvlNum() >= 1) UI.check('Koordinatengitter von S′', () => RZ.grid2, c => RZ.grid2 = c);
+  if (lvlNum() >= 2) UI.check('Eichhyperbeln (c²t² − x² = ±1, ±4, …)', () => RZ.hyp, c => RZ.hyp = c);
+  UI.check('„Jetzt“-Linie laufen lassen', () => RZ.now, c => { RZ.now = c; stReset(); });
+  UI.select('Beispiel laden', [['','– auswählen –'], ['gleich','Zwei gleichzeitige Ereignisse'], ['kausal','Ursache und Wirkung?'], ['licht','Lichtsignal'], ['start','Startbeispiel']], () => '', v => { if (v){ rzPreset(v); buildControls(); } });
+  UI.buttons([['Gewähltes Ereignis löschen', () => { if (RZ.sel >= 0){ RZ.ev.splice(RZ.sel, 1); RZ.ev.forEach((e, i) => e.n = RZ_N[i]); RZ.sel = RZ.ev.length ? 0 : -1; } }], ['Alle löschen', () => { RZ.ev = []; RZ.sel = -1; }]]);
+  UI.note('Tippe ins Diagramm, um ein Ereignis zu setzen (höchstens 6); ziehen verschiebt es. Einheiten: Zeit in Sekunden, Ort in Lichtsekunden (Ls) – so laufen Lichtsignale unter 45°.');
+}
+function rzDraw(){
+  const L = lay(400), sc = L.scene, u = V.u, w = RZ.w;
+  const half = 6.5, tH = half*sc.h/sc.w;
+  const vS = Math.abs(u) < Math.abs(u - w);
+  const fr = [{w:0, col:'#c2410c', tl:'ct', xl:'x'}, {w:w, col:'#4f46e5', tl:'ct′', xl:'x′'}];
+  const sel = RZ.ev[RZ.sel];
+  const m = mink(sc, { range:[-half, half, -tH, tH], step:1, now:RZ.now ? V.T : undefined, frames:fr, vt:vS ? 'ct' : 'ct′', vx:vS ? 'x' : 'x′', vcol:vS ? '#c2410c' : '#4f46e5',
+    under:(X, Y, s, B) => {
+      if (RZ.grid2 && lvlNum() >= 1){
+        const oth = vS ? w : 0, rr = relV(oth, u), gg = gam(rr);
+        ctx.strokeStyle = 'rgba(79,70,229,.16)'; if (!vS) ctx.strokeStyle = 'rgba(194,65,12,.16)'; ctx.lineWidth = 1;
+        for (let c = -12; c <= 12; c++){
+          ctx.beginPath(); ctx.moveTo(X(gg*(c + rr*-15)), Y(gg*(-15 + rr*c))); ctx.lineTo(X(gg*(c + rr*15)), Y(gg*(15 + rr*c))); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(X(gg*(-15 + rr*c)), Y(gg*(c + rr*-15))); ctx.lineTo(X(gg*(15 + rr*c)), Y(gg*(c + rr*15))); ctx.stroke();
+        }
+      }
+      if (RZ.hyp && lvlNum() >= 2){
+        for (const a of [1, 2, 3, 4]){ ctx.strokeStyle = 'rgba(15,118,110,.45)'; ctx.lineWidth = 1.2;
+          for (const sg of [1, -1]){ ctx.beginPath(); for (let i = -40; i <= 40; i++){ const q = i/10; const px = a*Math.sinh(q), pt = sg*a*Math.cosh(q); if (i > -40) ctx.lineTo(X(px), Y(pt)); else ctx.moveTo(X(px), Y(pt)); } ctx.stroke();
+            ctx.beginPath(); for (let i = -40; i <= 40; i++){ const q = i/10; const px = sg*a*Math.cosh(q), pt = a*Math.sinh(q); if (i > -40) ctx.lineTo(X(px), Y(pt)); else ctx.moveTo(X(px), Y(pt)); } ctx.stroke(); } }
+      }
+      if (RZ.cone && sel){
+        const [te, xe] = toV(sel.t, sel.x), Lc = 40;
+        ctx.fillStyle = 'rgba(250,204,21,.16)'; ctx.beginPath(); ctx.moveTo(X(xe), Y(te)); ctx.lineTo(X(xe - Lc), Y(te + Lc)); ctx.lineTo(X(xe + Lc), Y(te + Lc)); ctx.fill();
+        ctx.fillStyle = 'rgba(96,165,250,.14)'; ctx.beginPath(); ctx.moveTo(X(xe), Y(te)); ctx.lineTo(X(xe - Lc), Y(te - Lc)); ctx.lineTo(X(xe + Lc), Y(te - Lc)); ctx.fill();
+        line(X(xe - Lc), Y(te - Lc), X(xe + Lc), Y(te + Lc), '#eab308', 1.5); line(X(xe - Lc), Y(te + Lc), X(xe + Lc), Y(te - Lc), '#eab308', 1.5);
+        text('Zukunft von ' + sel.n, X(xe), Y(te + 1.6), {align:'center', size:12, weight:700, col:'#a16207'});
+        text('Vergangenheit von ' + sel.n, X(xe), Y(te - 1.6), {align:'center', size:12, weight:700, col:'#2563eb'});
+      }
+      /* Gleichzeitigkeitslinie (beider Systeme) durch das gewählte Ereignis */
+      if (sel && lvlNum() >= 1){
+        const [te, xe] = toV(sel.t, sel.x), oth = vS ? w : 0, rr = relV(oth, u);
+        line(X(xe - 30), Y(te - rr*30), X(xe + 30), Y(te + rr*30), vS ? 'rgba(79,70,229,.6)' : 'rgba(194,65,12,.6)', 1.4, [3,4]);
+        line(X(-30), Y(te), X(30), Y(te), vS ? 'rgba(194,65,12,.5)' : 'rgba(79,70,229,.5)', 1.4, [3,4]);
+      }
+    },
+    over:(X, Y) => {
+      RZ.ev.forEach((e, i) => { const [tv, xv] = toV(e.t, e.x), passed = RZ.now && tv <= V.T;
+        circle(X(xv), Y(tv), i === RZ.sel ? 9 : 7, passed ? '#f59e0b' : '#1d2230', i === RZ.sel ? '#0f766e' : '#fff', i === RZ.sel ? 3 : 2);
+        text(e.n, X(xv) + 11, Y(tv) - 11, {size:15, weight:800, col:'#1d2230'}); });
+    } });
+  RZ.map = m;
+  /* Infotafel */
+  const r = L.side; let y = card(r, 'Ereignisse in S und S′'); const x = r.x + 14, mw = r.w - 28;
+  text('Ereignis', x, y, {size:12, weight:700, col:'#5b6477'}); text('in S: (ct | x)', x + mw*0.52, y, {size:12, weight:700, col:'#c2410c', align:'right'}); text('in S′: (ct′ | x′)', x + mw, y, {size:12, weight:700, col:'#4f46e5', align:'right'}); y += 20;
+  for (const e of RZ.ev){ const [tp, xp] = toV(e.t, e.x, w);
+    text(e.n, x + 8, y, {size:14, weight:800}); text(`(${fmt(e.t, 2)} | ${fmt(e.x, 2)})`, x + mw*0.52, y, {mono:true, size:12.5, align:'right'}); text(`(${fmt(tp, 2)} | ${fmt(xp, 2)})`, x + mw, y, {mono:true, size:12.5, align:'right'}); y += 19; }
+  if (!RZ.ev.length) y = para(x, y, mw, ['Noch keine Ereignisse – tippe ins Diagramm.']);
+  y += 6;
+  if (sel){
+    y = para(x, y, mw, [{t:'Beziehung zu ' + sel.n + ':', weight:700}]);
+    for (const e of RZ.ev){ if (e === sel) continue;
+      const dt = e.t - sel.t, dx = e.x - sel.x, s2 = dt*dt - dx*dx, [t1] = toV(sel.t, sel.x, w), [t2] = toV(e.t, e.x, w), dtp = t2 - t1;
+      const ord = (d) => Math.abs(d) < 1e-6 ? 'gleichzeitig' : d > 0 ? e.n + ' später' : e.n + ' früher';
+      let typ, msg;
+      if (Math.abs(s2) < 1e-6){ typ = 'lichtartig'; msg = `Ein Lichtsignal kann genau von ${dt > 0 ? sel.n + ' nach ' + e.n : e.n + ' nach ' + sel.n} laufen.`; }
+      else if (s2 > 0){ typ = 'zeitartig'; msg = `${dt > 0 ? sel.n + ' kann ' + e.n : e.n + ' kann ' + sel.n} beeinflussen. Die Reihenfolge ist in jedem System gleich.`; }
+      else { typ = 'raumartig'; msg = 'Keines kann das andere beeinflussen – nicht einmal mit Licht. Die Reihenfolge hängt vom Bezugssystem ab.'; }
+      y = para(x, y, mw, [
+        {kv:[sel.n + ' → ' + e.n, typ], col:typ === 'raumartig' ? '#b91c1c' : typ === 'zeitartig' ? '#0f766e' : '#a16207'},
+        {t:`in S: ${ord(dt)}, in S′: ${ord(dtp)}`, size:12.5, col:'#5b6477'},
+        {t:msg, size:12.5},
+        lvlNum() >= 2 ? {t:`(cΔt)² − Δx² = ${fmt(s2, 2)} in S und ${fmt(dtp*dtp - Math.pow(toV(e.t, e.x, w)[1] - toV(sel.t, sel.x, w)[1], 2), 2)} in S′`, mono:true, size:11.5} : null,
+        {gap:3}
+      ]);
+      if (y > r.y + r.h - 30) break;
+    }
+  }
+}
+function rzPick(px, py){ if (!RZ.map) return -1; let best = -1, bd = 16; RZ.ev.forEach((e, i) => { const [tv, xv] = toV(e.t, e.x), d = Math.hypot(RZ.map.X(xv) - px, RZ.map.Y(tv) - py); if (d < bd){ bd = d; best = i; } }); return best; }
+function rzToEv(px, py){
+  const m = RZ.map, xv = (px - m.X(0))/(m.X(1) - m.X(0)), tv = (py - m.Y(0))/(m.Y(1) - m.Y(0));
+  const sn = q => Math.round(q*4)/4; const [t, x] = toG(sn(tv), sn(xv)); return {t, x};
+}
+function rzClick(px, py){
+  const L = lay(400); if (px < L.scene.x || px > L.scene.x + L.scene.w || py < L.scene.y || py > L.scene.y + L.scene.h) return false;
+  const i = rzPick(px, py);
+  if (i >= 0){ RZ.sel = i; RZ.drag = i; return true; }
+  if (RZ.ev.length >= 6) return false;
+  const p = rzToEv(px, py); RZ.ev.push({t:p.t, x:p.x, n:RZ_N[RZ.ev.length]}); RZ.sel = RZ.ev.length - 1; RZ.drag = RZ.sel; return true;
+}
+function rzMove(px, py){ if (RZ.drag < 0) return; const p = rzToEv(px, py); Object.assign(RZ.ev[RZ.drag], p); }
+</script>
+<script>
+"use strict";
+/* =====================================================================
+   Station 6: Lichtmauer und E = mc²
+   ===================================================================== */
+const LM = { part:'e', lg:5.7, cl:true, mg:0 };
+const PARTS = { e:['Elektron', 0.51099895e6], mu:['Myon', 105.6584e6], p:['Proton', 938.272e6] };
+const LM_TRACK = 8.4;
+function fmtEV(e){ const u = [[1e12,'TeV'],[1e9,'GeV'],[1e6,'MeV'],[1e3,'keV'],[1,'eV']]; for (const [f, n] of u) if (e >= f*0.9995) return sig(e/f, 3) + ' ' + n; return sig(e, 3) + ' eV'; }
+function lmCalc(){
+  const mc2 = PARTS[LM.part][1], Ek = Math.pow(10, LM.lg), g = 1 + Ek/mc2, b = Math.sqrt(1 - 1/(g*g));
+  return { mc2, Ek, g, b, omb:1/(g*g*(1 + b)), bcl:Math.sqrt(2*Ek/mc2), pc:Math.sqrt((Ek + mc2)*(Ek + mc2) - mc2*mc2) };
+}
+function lmControls(){
+  if (lvlNum() >= 1) UI.seg('Teilchen', [['e','Elektron'],['mu','Myon'],['p','Proton']], () => LM.part, v => { LM.part = v; stReset(); });
+  else LM.part = 'e';
+  UI.slider('Beschleunigungsspannung / Bewegungsenergie', {min:3, max:13, step:0.05, get:() => LM.lg, set:v => { LM.lg = v; }, fmt:v => fmtEV(Math.pow(10, v)).replace('eV', 'V') + ' → ' + fmtEV(Math.pow(10, v))});
+  UI.buttons([['▶ Rennen starten', () => stReset(), 'primary']]);
+  UI.check('Klassische Rechnung (½·m·v²) zeigen', () => LM.cl, c => LM.cl = c);
+  if (lvlNum() >= 1) UI.slider('E = mc²: Masse', {min:-6, max:3, step:0.1, get:() => LM.mg, set:v => LM.mg = v, fmt:v => { const g = Math.pow(10, v); return g >= 1000 ? sig(g/1000, 3) + ' kg' : g >= 1 ? sig(g, 3) + ' g' : g >= 1e-3 ? sig(g*1e3, 3) + ' mg' : sig(g*1e6, 3) + ' µg'; }});
+  UI.note('Die Rennstrecke ist 8,4 m lang – so lang wie im Versuch von William Bertozzi (1964). Das Teilchen startet gleichzeitig mit einem Lichtblitz. Hier immer echte Lichtgeschwindigkeit.');
+}
+function lmDraw(){
+  const L = lay(400), sc = L.scene, q = lmCalc(), T = V.T;
+  clip(sc); box(sc.x, sc.y, sc.w, sc.h, '#fff', null, 0);
+  /* Rennstrecke */
+  const tx0 = sc.x + 150, tx1 = sc.x + sc.w - 80, ty = sc.y + 30, lanes = LM.cl ? 3 : 2, lh = 34;
+  text('Start', tx0, ty, {align:'center', size:12, weight:700, col:'#5b6477'}); text('Ziel nach 8,4 m', tx1, ty, {align:'center', size:12, weight:700, col:'#5b6477'});
+  const items = [['Licht', 1, '#ca8a04'], [PARTS[LM.part][0], q.b, '#1d4ed8']]; if (LM.cl) items.push([PARTS[LM.part][0] + ' (klassisch)', q.bcl, '#ea580c']);
+  items.forEach(([n, b, col], i) => {
+    const y = ty + 22 + i*lh; box(tx0, y - 11, tx1 - tx0, 22, '#f1f5f9', null, 11); line(tx1, y - 13, tx1, y + 13, '#1d2230', 2);
+    const frac = Math.max(0, T)*b, done = frac >= 1, px = tx0 + Math.min(1, frac)*(tx1 - tx0);
+    if (i === 0){ flash(px, y, 14, 1); circle(px, y, 5, '#fde047', '#a16207'); } else circle(px, y, 7, col, '#fff', 2);
+    text(n, tx0 - 8, y, {align:'right', size:11.5, weight:700, col});
+    const tFlight = LM_TRACK/(b*C_REAL);
+    if (done) pill(fmtSec(tFlight), tx1 + 4, y, {align:'left', bg:col, size:11});
+  });
+  /* Diagramm v/c über der Energie */
+  const gy0 = ty + 22 + lanes*lh + 26, gx0 = sc.x + 60, gx1 = sc.x + sc.w - 24, gy1 = sc.y + sc.h - 40;
+  if (gy1 - gy0 > 120){
+    const Xg = lg => gx0 + (lg - 3)/10*(gx1 - gx0), Yg = b => gy1 - b/1.5*(gy1 - gy0);
+    line(gx0, gy0, gx0, gy1, '#1d2230', 1.3); line(gx0, gy1, gx1, gy1, '#1d2230', 1.3);
+    for (let lg = 3; lg <= 13; lg++){ line(Xg(lg), gy1, Xg(lg), gy1 + 5, '#1d2230', 1); if (lg % 3 === 0) text(fmtEV(Math.pow(10, lg)), Xg(lg), gy1 + 16, {align:'center', size:11, col:'#5b6477'}); }
+    for (const b of [0.5, 1, 1.5]) text(fmt(b, 1) + ' c', gx0 - 6, Yg(b), {align:'right', size:11, col:'#5b6477'});
+    line(gx0, Yg(1), gx1, Yg(1), '#ca8a04', 1.5, [6,4]); text('Lichtgeschwindigkeit c', gx1 - 4, Yg(1) - 10, {align:'right', size:12, weight:700, col:'#a16207'});
+    if (lvlNum() >= 1){ ctx.fillStyle = 'rgba(79,70,229,.08)'; const a = Math.log10(0.5e6), bb = Math.log10(15e6); if (LM.part === 'e'){ ctx.fillRect(Xg(a), gy0, Xg(bb) - Xg(a), gy1 - gy0); text('Bertozzi 1964', (Xg(a) + Xg(bb))/2, gy0 + 10, {align:'center', size:11, col:'#4f46e5', weight:700}); } }
+    const mc2 = q.mc2;
+    if (LM.cl){ ctx.strokeStyle = '#ea580c'; ctx.lineWidth = 2.2; ctx.setLineDash([6,4]); ctx.beginPath(); let st = false; for (let i = 0; i <= 300; i++){ const lg = 3 + i/30, bc = Math.sqrt(2*Math.pow(10, lg)/mc2); if (bc > 1.5) break; if (st) ctx.lineTo(Xg(lg), Yg(bc)); else { ctx.moveTo(Xg(lg), Yg(bc)); st = true; } } ctx.stroke(); ctx.setLineDash([]); }
+    ctx.strokeStyle = '#1d4ed8'; ctx.lineWidth = 2.8; ctx.beginPath(); for (let i = 0; i <= 300; i++){ const lg = 3 + i/30, g = 1 + Math.pow(10, lg)/mc2, b = Math.sqrt(1 - 1/(g*g)); if (i) ctx.lineTo(Xg(lg), Yg(b)); else ctx.moveTo(Xg(lg), Yg(b)); } ctx.stroke();
+    circle(Xg(LM.lg), Yg(q.b), 6, '#1d4ed8', '#fff', 2); if (LM.cl && q.bcl <= 1.5) circle(Xg(LM.lg), Yg(q.bcl), 6, '#ea580c', '#fff', 2);
+    text('Geschwindigkeit', gx0 + 6, gy0 - 4, {size:12, weight:700, col:'#5b6477'}); text('Bewegungsenergie (logarithmisch) →', gx1, gy1 + 30, {align:'right', size:11.5, col:'#5b6477'});
+  }
+  ctx.restore();
+  /* Infotafel */
+  const r = L.side; let y = card(r, 'Wie schnell wird das ' + PARTS[LM.part][0] + '?'); const x = r.x + 14, mw = r.w - 28;
+  const bTx = q.b > 0.99999 ? '0,99999… c' : bTxt(q.b);
+  y = para(x, y, mw, [
+    {kv:['Bewegungsenergie', fmtEV(q.Ek)]},
+    {kv:['Geschwindigkeit (relativistisch)', bTx], col:'#1d4ed8'},
+    LM.cl ? {kv:['klassisch: v = √(2·E/m)', bTxt(q.bcl) + (q.bcl > 1 ? ' > c !' : '')], col:q.bcl > 1 ? '#b91c1c' : '#ea580c'} : null,
+    {kv:['Flugzeit für 8,4 m', fmtSec(LM_TRACK/(q.b*C_REAL)) + ' (Licht: 28,0 ns)']},
+    q.b > 0.999 ? {kv:['langsamer als Licht um', sig(q.omb*C_REAL, 3) + ' m/s']} : null,
+    {gap:4},
+    q.bcl > 1 ? 'Nach der klassischen Formel wäre das Teilchen schneller als Licht. Gemessen wird das nie: Es kommt c beliebig nahe, erreicht sie aber nicht.' : 'Bei kleinen Energien stimmen klassische und relativistische Rechnung überein.'
+  ]);
+  if (lvlNum() >= 1){
+    const E = q.Ek + q.mc2, bw = mw, f0 = q.mc2/E;
+    y = para(x, y + 2, mw, [
+      {kv:['Lorentz-Faktor γ', q.g < 1e4 ? fmt(q.g, q.g < 10 ? 3 : 1) : sci(q.g, 2)]},
+      {kv:['Ruheenergie E₀ = mc²', fmtEV(q.mc2)]},
+      {kv:['Gesamtenergie E = γ·mc²', fmtEV(E)]},
+      lvlNum() >= 2 ? {kv:['Impuls p·c = √(E² − E₀²)', fmtEV(q.pc)]} : null
+    ]);
+    box(x, y, bw, 18, '#fde68a', null, 4); box(x, y, Math.max(2, bw*f0), 18, '#94a3b8', null, 4);
+    text('Ruheenergie ' + fmt(f0*100, f0 < 0.01 ? 3 : 1) + ' %', x + 6, y + 9, {size:11, weight:700, col:'#1d2230'}); y += 30;
+    const m = Math.pow(10, LM.mg)/1000, EJ = m*C_REAL*C_REAL, hh = EJ/(3500*3.6e6);
+    y = para(x, y, mw, [
+      {t:'E = m·c²: Energie, die in Masse steckt', weight:700},
+      {kv:['Masse', LM.mg >= 3 ? sig(m, 3) + ' kg' : sig(m*1000, 3) + ' g']},
+      {kv:['Energie', sci(EJ, 2) + ' J']},
+      {kv:['reicht für Haushalte (je 3500 kWh) ein Jahr lang', hh >= 1 ? grp(hh, 0) : fmt(hh, 3)]},
+      lvlNum() >= 2 ? {t:'Die Sonne strahlt in jeder Sekunde etwa 4 Millionen Tonnen ihrer Masse als Energie ab.', size:12.5, col:'#5b6477'} : null
+    ]);
+  }
+}
+function lmEnd(){ const q = lmCalc(); return Math.min(6, 1/Math.max(0.05, Math.min(q.b, LM.cl ? q.bcl : 1))) + 0.4; }
+
+/* =====================================================================
+   Station 7: GPS – Uhren im Satelliten
+   ===================================================================== */
+const GP = { alt:20200, srt:true, art:true, korr:false };
+const GMe = 3.986004418e14, RE = 6.371e6, DAY = 86400;
+function gpEff(altKm){ const r = RE + altKm*1e3, v = Math.sqrt(GMe/r), c2 = C_REAL*C_REAL; return { r, v, T:2*Math.PI*Math.sqrt(r*r*r/GMe), srt:-v*v/(2*c2)*DAY*1e6, art:GMe/c2*(1/RE - 1/r)*DAY*1e6 }; }
+const GP_CORR = (() => { const e = gpEff(20200); return e.srt + e.art; })();
+function gpNet(alt){ const e = gpEff(alt ?? GP.alt); return (GP.srt ? e.srt : 0) + (GP.art ? e.art : 0) - (GP.korr ? GP_CORR : 0); }
+const GP_MARK = [['ISS', 408], ['GPS', 20200], ['Galileo', 23222], ['geostationär', 35786]];
+function gpControls(){
+  UI.slider('Bahnhöhe des Satelliten', {min:300, max:40000, step:100, get:() => GP.alt, set:v => GP.alt = v, fmt:v => grp(v, 0) + ' km'});
+  const d = UI.buttons(GP_MARK.map(([n, a]) => [n, () => { GP.alt = a; buildControls(); }]));
+  UI.check('Spezielle Relativitätstheorie (Geschwindigkeit)', () => GP.srt, c => GP.srt = c);
+  UI.check('Allgemeine Relativitätstheorie (Schwerkraft)', () => GP.art, c => GP.art = c);
+  if (lvlNum() >= 2) UI.check('Satellitenuhr ab Werk verstimmt (10,22999999543 MHz)', () => GP.korr, c => GP.korr = c);
+  UI.note('Ein Tag vergeht in einer Sekunde. Die Satellitenbewegung ist stark verlangsamt gezeichnet. Die Drehung der Erde wird vernachlässigt.');
+}
+function gpDraw(){
+  const L = lay(400), sc = L.scene, e = gpEff(GP.alt), days = Math.max(0, V.T), net = gpNet(), dt = net*days, errKm = Math.abs(dt)*1e-6*C_REAL/1000;
+  clip(sc); box(sc.x, sc.y, sc.w, sc.h, '#0b1020', null, 0);
+  for (let i = 0; i < 80; i++) circle(sc.x + ((i*97) % 101)/101*sc.w, sc.y + ((i*61) % 89)/89*sc.h, 1, 'rgba(255,255,255,.3)');
+  const wide = sc.w > 640, ex = sc.x + (wide ? sc.w*0.36 : sc.w*0.5), ey = sc.y + sc.h*(wide ? 0.52 : 0.4);
+  const rMax = RE + 42000e3, s = Math.min(wide ? sc.w*0.34 : sc.w*0.45, sc.h*(wide ? 0.44 : 0.34))/rMax;
+  circle(ex, ey, e.r*s, null, 'rgba(148,163,184,.5)', 1.2);
+  const gE = ctx.createRadialGradient(ex - RE*s*0.3, ey - RE*s*0.3, 2, ex, ey, RE*s); gE.addColorStop(0, '#60a5fa'); gE.addColorStop(1, '#1e3a8a');
+  ctx.fillStyle = gE; ctx.beginPath(); ctx.arc(ex, ey, RE*s, 0, Math.PI*2); ctx.fill();
+  const ang = 2*Math.PI*days*DAY/e.T*0.03 - Math.PI/2, sx = ex + Math.cos(ang)*e.r*s, sy = ey + Math.sin(ang)*e.r*s;
+  ctx.save(); ctx.translate(sx, sy); ctx.rotate(ang); box(-5, -5, 10, 10, '#e2e8f0', null, 2); box(-19, -3, 12, 6, '#3b82f6', null, 1); box(7, -3, 12, 6, '#3b82f6', null, 1); ctx.restore();
+  text(GP_MARK.find(m => m[1] === GP.alt)?.[0] || 'Satellit', sx, sy - 18, {align:'center', size:12, weight:700, col:'#e0e7ff'});
+  /* Uhren */
+  const cx2 = wide ? sc.x + sc.w*0.36 : sc.x + sc.w*0.5, cy2 = sc.y + sc.h - 46;
+  const dd = Math.floor(days), hh = (days - dd)*24;
+  pill(`Tag ${dd + 1}, ${String(Math.floor(hh)).padStart(2, '0')}:${String(Math.floor((hh % 1)*60)).padStart(2, '0')} Uhr`, cx2, cy2 - 26, {bg:'#334155', size:13});
+  const ahead = dt >= 0;
+  pill(`Satellitenuhr ${Math.abs(dt) < 0.05 ? 'geht richtig' : (ahead ? 'geht vor: +' : 'geht nach: −') + grp(Math.abs(dt), 1) + ' µs'}`, cx2, cy2 + 4, {bg:Math.abs(dt) < 0.05 ? '#0f766e' : ahead ? '#2563eb' : '#c2410c', size:14});
+  /* Navi-Karte */
+  if (wide){
+    const mw = Math.min(sc.w*0.3, sc.h*0.48, 280), mx = sc.x + sc.w - mw - 16, my = sc.y + 56, kmW = 40, pk = mw/kmW;
+    box(mx, my, mw, mw, '#f1f5f9', '#94a3b8', 8);
+    ctx.save(); ctx.beginPath(); ctx.rect(mx, my, mw, mw); ctx.clip();
+    for (let i = 0; i <= 8; i++){ line(mx + i*mw/8, my, mx + i*mw/8 + (i % 3)*6, my + mw, '#cbd5e1', i % 4 ? 2 : 4); line(mx, my + i*mw/8, mx + mw, my + i*mw/8 - (i % 2)*5, '#cbd5e1', i % 4 ? 2 : 4); }
+    const ox = mx + mw/2, oy = my + mw/2, off = Math.min(errKm*pk, mw/2 - 10);
+    circle(ox, oy, 7, '#2563eb', '#fff', 2);
+    if (errKm > 0.05){ circle(ox + off, oy - off*0.35, 7, '#dc2626', '#fff', 2); if (errKm*pk > mw/2 - 10) arrow(ox + off - 20, oy - off*0.35, ox + off + 8, oy - off*0.35, '#dc2626', 2.5); }
+    ctx.restore();
+    text('Navi', mx + 8, my + 14, {size:12, weight:700, col:'#334155'});
+    text('● wahre Position', mx + 6, my + mw + 14, {size:11.5, col:'#2563eb', weight:700}); text('● Navi', mx + mw - 6, my + mw + 14, {size:11.5, col:'#dc2626', weight:700, align:'right'});
+    pill('Fehler: ' + (errKm < 1 ? grp(errKm*1000, 0) + ' m' : grp(errKm, 1) + ' km'), mx + mw/2, my + mw + 36, {bg:errKm > 0.05 ? '#dc2626' : '#0f766e', size:13});
+    text('Kartenausschnitt 40 km', mx + mw/2, my + mw + 58, {align:'center', size:11, col:'#94a3b8'});
+  }
+  ctx.restore();
+  /* Infotafel */
+  const r = L.side; let y = card(r, 'Wie genau geht die Uhr im Satelliten?'); const x = r.x + 14, mw = r.w - 28;
+  y = para(x, y, mw, [
+    {kv:['Bahnhöhe', grp(GP.alt, 0) + ' km']},
+    {kv:['Bahngeschwindigkeit', grp(e.v/1000, 2) + ' km/s']},
+    {kv:['Umlaufzeit', grp(e.T/3600, 1) + ' h']},
+    {gap:3},
+    {kv:['SRT (Geschwindigkeit) pro Tag', (GP.srt ? '' : '(aus) ') + fmt(e.srt, 1) + ' µs'], col:'#c2410c'},
+    {kv:['ART (Schwerkraft) pro Tag', (GP.art ? '' : '(aus) ') + '+' + fmt(e.art, 1) + ' µs'], col:'#2563eb'},
+    GP.korr ? {kv:['Verstimmung ab Werk', '−' + fmt(GP_CORR, 1) + ' µs']} : null,
+    {kv:['zusammen pro Tag', (net >= 0 ? '+' : '') + fmt(net, 1) + ' µs'], col:'#1d2230'},
+    {kv:['Positionsfehler pro Tag', grp(Math.abs(net)*1e-6*C_REAL/1000, 1) + ' km'], col:'#dc2626'},
+    {gap:3},
+    'Das Navi berechnet die Entfernung zum Satelliten aus der Laufzeit des Funksignals (Lichtgeschwindigkeit). 1 µs Fehler bedeutet 300 m.'
+  ]);
+  if (lvlNum() >= 2) y = para(x, y, mw, [{t:'SRT: Δt/t = −v²/(2c²)   ART: Δt/t = GM/c²·(1/R − 1/r)', mono:true, size:11.5}]);
+  if (lvlNum() >= 1){
+    const gh = r.y + r.h - y - 12;
+    if (gh > 130){
+      const gx = x + 34, gw = mw - 40, gy = y + 10, ghh = gh - 40, Xg = a => gx + a/40000*gw, Yg = q => gy + (60 - q)/100*ghh;
+      box(x, y, mw, gh, '#fff', '#d9dde6', 8);
+      line(gx, gy, gx, gy + ghh, '#1d2230', 1.1); line(gx, Yg(0), gx + gw, Yg(0), '#1d2230', 1.1);
+      for (const q of [-40, -20, 20, 40, 60]) text((q > 0 ? '+' : '') + q, gx - 4, Yg(q), {align:'right', size:10.5, col:'#5b6477'});
+      const curve = (fn, col, w, dash) => { ctx.strokeStyle = col; ctx.lineWidth = w; if (dash) ctx.setLineDash(dash); ctx.beginPath(); for (let i = 0; i <= 200; i++){ const a = 200 + i/200*39800, v = clamp(fn(gpEff(a)), -40, 60); if (i) ctx.lineTo(Xg(a), Yg(v)); else ctx.moveTo(Xg(a), Yg(v)); } ctx.stroke(); ctx.setLineDash([]); };
+      curve(q => q.srt, '#c2410c', 2, [5,3]); curve(q => q.art, '#2563eb', 2, [5,3]); curve(q => q.srt + q.art, '#1d2230', 2.6);
+      for (const [n, a] of GP_MARK){ line(Xg(a), gy, Xg(a), gy + ghh, 'rgba(100,116,139,.25)', 1); text(n, Xg(a) + 2, gy + ghh - 8, {size:10, col:'#64748b'}); }
+      const e2 = gpEff(GP.alt); circle(Xg(GP.alt), Yg(e2.srt + e2.art), 5, '#1d2230', '#fff', 2);
+      text('Gangunterschied in µs pro Tag', gx + 4, gy + 4, {size:11, weight:700, col:'#5b6477'});
+      text('Höhe →', gx + gw, Yg(0) + 12, {align:'right', size:10.5, col:'#5b6477'});
+      text('ART', Xg(36000), Yg(e2.art > 0 ? gpEff(36000).art : 0) - 9, {size:11, weight:700, col:'#2563eb'});
+      text('SRT', Xg(3000), Yg(gpEff(3000).srt) + 12, {size:11, weight:700, col:'#c2410c'});
+    }
+  }
+}
+
+/* =====================================================================
+   Station 8: Relativistischer Doppler-Effekt
+   ===================================================================== */
+const DO = { v:0.4, lam:550, cls:false, quer:false, P:1.1, R:13, yq:6 };
+function doFrames(){ return [{lab:'Beobachter (Erde)', u:() => 0}, {lab:'Quelle (Rakete)', u:() => DO.v}]; }
+function doControls(){
+  UI.speed('Geschwindigkeit der Rakete', () => DO.v, v => DO.v = v, {after:snapFrame, min:0.01, max:0.95});
+  UI.slider('Farbe des ausgesandten Lichts', {min:400, max:700, step:2, cls:'spectrum', bg:spectrumCSS(400, 700), get:() => DO.lam, set:v => DO.lam = v, fmt:v => v + ' nm'});
+  if (lvlNum() >= 1) UI.check('Vergleich: Rechnung ohne Zeitdilatation', () => DO.cls, c => DO.cls = c);
+  if (lvlNum() >= 2) UI.check('Dritte Person seitlich der Flugbahn', () => DO.quer, c => DO.quer = c);
+  UI.note('Die Kreise sind Wellenberge des Lichts. Der Abstand der Wellenberge ist der Anschaulichkeit halber riesig vergrößert. Die Farbe bei den Personen zeigt, was sie tatsächlich sehen.');
+}
+function doRecv(xo, yo, to){
+  const v = DO.v, a = v*v - 1, B = 2*(to - v*xo), C = xo*xo + yo*yo - to*to, disc = Math.sqrt(Math.max(0, B*B - 4*a*C));
+  const te = Math.min((-B + disc)/(2*a), (-B - disc)/(2*a));
+  const dx = xo - v*te, d = Math.hypot(dx, yo), cos = d > 1e-9 ? dx/d : 0;
+  return { te, cos, ratio:gam(v)*(1 - v*cos), cl:1 - v*cos };
+}
+function doDraw(){
+  const L = lay(400), sc = L.scene, v = DO.v, g = gam(v), u = V.u, R = DO.R;
+  const k = sc.w/(2*R + 6), cx = sc.x + sc.w/2, cy = sc.y + sc.h*0.5, X = x => cx + x*k, Y = y => cy - y*k;
+  clip(sc); box(sc.x, sc.y, sc.w, sc.h, '#0b1020', null, 0);
+  /* Wellenberge */
+  const Pg = DO.P*g;
+  for (let n = -400; n <= 400; n++){
+    const te = n*Pg, [tv, xv] = toV(te, v*te), rr = V.T - tv; if (rr <= 0 || rr > 2.2*R) continue;
+    ctx.strokeStyle = `rgba(226,232,240,${clamp(0.8 - rr/(3.6*R), 0.22, 0.75)})`; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(X(xv), cy, rr*k, 0, Math.PI*2); ctx.stroke();
+  }
+  /* Rakete */
+  const pr = placeLin(0, v), col0 = nmRGB(DO.lam);
+  flash(X(pr.x), cy, 26, 0.8); rocket(X(pr.x), cy, 0.9, rgba(col0, 1), 1);
+  /* Beobachter */
+  const obs = [{x:R, y:0, n:'vorne'}, {x:-R, y:0, n:'hinten'}]; if (DO.quer && lvlNum() >= 2) obs.push({x:0, y:DO.yq, n:'seitlich'});
+  const res = [];
+  for (const o of obs){
+    const p = placeLin(o.x, 0), rc = doRecv(o.x, o.y, p.t), lam = DO.lam*rc.ratio, c = nmRGB(lam), sxx = X(p.x), syy = Y(o.y) + (o.y ? 0 : 46);
+    res.push({o, lam, cl:DO.lam*rc.cl});
+    circle(sxx, syy, 22, rgba(c, 0.9), '#fff', 2);
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(sxx, syy, 11, 6.5, 0, 0, Math.PI*2); ctx.fill(); circle(sxx, syy, 3.5, '#1d2230');
+    text(Math.round(lam) + ' nm', sxx, syy + 34, {align:'center', size:12.5, weight:700, col:'#e2e8f0'});
+    text(o.n, sxx, syy - 32, {align:'center', size:12, weight:700, col:'#cbd5e1'});
+  }
+  if (Math.abs(relV(v, u)) > 0.02) arrow(X(pr.x) - 30, cy - 34, X(pr.x) + 30*Math.sign(relV(v, u)) - (Math.sign(relV(v, u)) < 0 ? 0 : 0), cy - 34, '#fde68a', 2.5);
+  slowBanner(sc);
+  ctx.restore();
+  /* Infotafel */
+  const r = L.side; let y = card(r, 'Welche Farbe kommt an?'); const x = r.x + 14, mw = r.w - 28;
+  const lf = DO.lam*Math.sqrt((1 - v)/(1 + v)), lb = DO.lam*Math.sqrt((1 + v)/(1 - v));
+  y = para(x, y, mw, [
+    {kv:['ausgesandt', DO.lam + ' nm']},
+    ...res.map(q => ({kv:['bei der Person ' + q.o.n, Math.round(q.lam) + ' nm (' + region(q.lam) + ')' + (DO.cls && lvlNum() >= 1 ? ' · ohne ZD: ' + Math.round(q.cl) + ' nm' : '')], col:rgba(nmRGB(q.lam), 1).replace('rgba', 'rgba')})),
+    {gap:4}
+  ]);
+  /* Spektrum mit Markierungen */
+  const sx0 = x, sw = mw, sy = y, nm2x = nm => sx0 + (clamp(nm, 300, 900) - 300)/600*sw;
+  const grd = ctx.createLinearGradient(nm2x(380), 0, nm2x(780), 0); for (let nm = 380; nm <= 780; nm += 20) grd.addColorStop((nm - 380)/400, rgba(nmRGB(nm), 1));
+  box(sx0, sy, sw, 20, '#e5e7eb', null, 4); ctx.fillStyle = grd; ctx.fillRect(nm2x(380), sy, nm2x(780) - nm2x(380), 20);
+  text('UV', sx0 + 4, sy + 10, {size:10.5, col:'#5b6477', weight:700}); text('IR', sx0 + sw - 4, sy + 10, {size:10.5, col:'#5b6477', weight:700, align:'right'});
+  const mk = (nm, lab, up) => { const px = nm2x(nm); line(px, sy - 4, px, sy + 24, '#1d2230', 2); text(lab, px, up ? sy - 10 : sy + 32, {align:'center', size:11, weight:700}); };
+  mk(DO.lam, 'ausgesandt', true); res.forEach((q, i) => { const px = nm2x(q.lam); line(px, sy - 4, px, sy + 24, '#1d2230', 2); text(q.o.n, px, i === 1 ? sy - 10 : sy + 32 + (i === 2 ? 13 : 0), {align:'center', size:11, weight:700}); });
+  y = sy + 60;
+  y = para(x, y, mw, [
+    'Vorne werden die Wellenberge zusammengeschoben (kürzere Wellenlänge, Blauverschiebung), hinten auseinandergezogen (Rotverschiebung).',
+    lvlNum() >= 1 ? {t:'λ = λ₀·√((1 + β)/(1 − β))  (Quelle entfernt sich)', mono:true, size:12} : null,
+    lvlNum() >= 1 ? {kv:['vorne / hinten nach Formel', Math.round(lf) + ' nm / ' + Math.round(lb) + ' nm']} : null,
+    DO.cls && lvlNum() >= 1 ? 'Ohne Zeitdilatation (wie beim Schall) wäre λ = λ₀·(1 ∓ β). Weil die Uhr der Rakete langsamer geht, sendet sie ihre Wellenberge seltener aus: Alle Wellenlängen sind um γ = ' + fmt(g, 3) + ' länger.' : null,
+    DO.quer && lvlNum() >= 2 ? 'Seitlich: Licht, das an der Stelle des kleinsten Abstands ausgesandt wird, kommt um γ rotverschoben an (transversaler Doppler-Effekt) – klassisch gäbe es dort keine Verschiebung.' : null
+  ]);
+}
+function doRate(){ return 3; }
+function doStart(){ return -Math.min(40, DO.R*0.8/DO.v); }
+function doEnd(){ return Math.min(40, DO.R*0.8/DO.v); }
+
+/* =====================================================================
+   Aufträge
+   ===================================================================== */
+const TASKS = [
+  [ /* Lichtuhr */
+    { n:'Welche Uhr tickt langsamer?', min:0, setup(){ Object.assign(LU, {scene:'uhr', v:0.6, trail:true}); },
+      q:'Beide Lichtuhren sind gleich gebaut. Starte die Animation und zähle die Ticks. Welche Uhr tickt aus Sicht des Bahnsteigs langsamer – und warum?',
+      a:'Die Uhr im Zug. Ihr Licht muss schräg im Zickzack laufen, also einen längeren Weg zurücklegen. Weil Licht für alle Beobachter gleich schnell ist (c), dauert ein Tick länger. Bei 0,6 c macht die Zuguhr nur 4 Ticks, während die Bahnsteiguhr 5 macht.' },
+    { n:'Die Sicht wechseln', min:0, setup(){ Object.assign(LU, {scene:'uhr', v:0.6, trail:true}); },
+      q:'Schalte oben auf „Sicht von: Zug“. Welche Uhr tickt jetzt langsamer?',
+      a:'Jetzt ruht der Zug, und der Bahnsteig fährt. Nun läuft das Licht der Bahnsteiguhr im Zickzack, und sie geht langsamer. Das ist kein Widerspruch: Jede Seite misst, dass die jeweils bewegte Uhr langsamer geht. Die Zeitdilatation ist gegenseitig.' },
+    { n:'Alltagsgeschwindigkeiten', min:0, setup(){ Object.assign(LU, {scene:'uhr', v:0.05}); },
+      q:'Stelle die kleinste Geschwindigkeit ein (0,05 c – das sind immer noch 15 000 km/s!). Wie groß ist der Unterschied zwischen den Uhren?',
+      a:'Kaum sichtbar: Bei 0,05 c geht die bewegte Uhr nur um etwa 0,13 % langsamer (γ ≈ 1,0013). Bei 100 km/h beträgt der Effekt nur etwa 4·10⁻¹⁵ – deshalb merken wir im Alltag nichts davon. In der Gedankenwelt mit c = 20 km/h wäre das anders.' },
+    { n:'Wie groß ist γ?', min:1, setup(){ Object.assign(LU, {scene:'uhr', v:0.8}); },
+      q:'Stelle 0,8 c ein. Wie viele Ticks macht die Bahnsteiguhr, während die Zuguhr 3 Ticks macht? Berechne γ.',
+      a:'γ = 1/√(1 − 0,8²) = 1/0,6 ≈ 1,67. Während die Zuguhr 3-mal tickt, tickt die Bahnsteiguhr 5-mal.' },
+    { n:'Myonen aus 15 km Höhe', min:0, setup(){ Object.assign(LU, {scene:'myon', gm:15, classic:false}); muNew(); },
+      q:'Myonen entstehen hoch oben in der Atmosphäre und zerfallen schnell (Halbwertszeit 1,52 µs). Starte den Schauer: Wie viele kommen unten an? Vergleiche mit „Klassisch rechnen“.',
+      a:'Mit Zeitdilatation erreichen rund 20 % den Boden (etwa 110 von 500). Klassisch gerechnet bräuchten sie 50 µs – das sind 33 Halbwertszeiten, es käme praktisch keines an. Tatsächlich misst man am Boden sehr viele Myonen: ein wichtiger Beleg für die Zeitdilatation.' },
+    { n:'Myonen aus ihrer eigenen Sicht', min:1, setup(){ Object.assign(LU, {scene:'myon', gm:15, classic:false}); muNew(); },
+      q:'Wechsle zu „Sicht von: Myon“. Für die Myonen gehen ihre eigenen Uhren ganz normal. Wie erklären sie, dass sie trotzdem unten ankommen?',
+      a:'Für die Myonen rast die Erde heran, und die Atmosphäre ist in Bewegungsrichtung verkürzt: statt 15 km nur 15 km/γ = 1 km. Diese kurze Strecke schaffen sie in rund 3,3 µs. Zeitdilatation (Sicht der Erde) und Längenkontraktion (Sicht der Myonen) sind zwei Seiten derselben Sache.' },
+    { n:'Herleitung mit Pythagoras', min:2, setup(){ Object.assign(LU, {scene:'uhr', v:0.6}); },
+      q:'Leite aus dem Dreieck in der Infotafel die Formel Δt = γ·Δt₀ her. Welche Voraussetzungen stecken darin?',
+      a:'Für einen halben Tick gilt (c·Δt/2)² = (v·Δt/2)² + (c·Δt₀/2)². Daraus folgt Δt²·(c² − v²) = c²·Δt₀², also Δt = Δt₀/√(1 − v²/c²). Voraussetzungen: Das Licht hat in beiden Systemen dieselbe Geschwindigkeit c (2. Postulat), und der Spiegelabstand senkrecht zur Bewegung ist für beide gleich.' }
+  ],
+  [ /* Gleichzeitigkeit */
+    { n:'Wer sieht zuerst?', min:0, setup(){ Object.assign(GL, {v:0.5, sim:'bahnsteig'}); },
+      q:'Starte die Animation. Welchen Blitz sehen Paula und Toni zuerst? Achte auf die Lämpchen.',
+      a:'Paula sieht beide gleichzeitig, denn sie steht genau in der Mitte zwischen den Einschlagstellen. Toni fährt dem vorderen Lichtblitz entgegen und vom hinteren weg – er sieht den vorderen zuerst.' },
+    { n:'Was war gleichzeitig?', min:0, setup(){ Object.assign(GL, {v:0.5, sim:'bahnsteig'}); },
+      q:'Toni steht in der Mitte seines Zugs, die Brandflecken am Zug sind gleich weit von ihm entfernt. Was schließt Toni daraus, dass er den vorderen Blitz zuerst sieht? Wechsle zu „Sicht von: Zug“.',
+      a:'Für Toni läuft das Licht von beiden Enden mit c, und beide Wege sind gleich lang. Wenn der vordere Blitz zuerst ankommt, muss er früher eingeschlagen haben. Im Zugsystem waren die Blitze also nicht gleichzeitig – in der Zugsicht sieht man das direkt. Gleichzeitigkeit ist relativ.' },
+    { n:'Gleichzeitig für den Zug', min:1, setup(){ Object.assign(GL, {v:0.5, sim:'zug'}); },
+      q:'Jetzt schlagen die Blitze für den Zug gleichzeitig ein. Was sehen Paula und Toni nun? Was folgt für das Bahnsteigsystem?',
+      a:'Toni sieht beide gleichzeitig, Paula sieht den hinteren Blitz zuerst. Für den Bahnsteig hat es also hinten früher eingeschlagen. Keines der beiden Systeme ist „richtiger“.' },
+    { n:'Uhren im Zug', min:1, setup(){ Object.assign(GL, {v:0.6, sim:'bahnsteig', clocks:true}); },
+      q:'Schalte die Uhren ein (falls nicht schon an). Die Uhren im Zug sind im Zugsystem synchronisiert. Was zeigen sie – vom Bahnsteig aus betrachtet – im selben Moment?',
+      a:'Sie zeigen verschiedene Zeiten: Die hintere Zuguhr geht vor, die vordere nach. Der Unterschied beträgt v·L₀/c² (L₀ = Ruhelänge des Zugs). Was für den Zug „gleichzeitig“ ist, ist für den Bahnsteig nicht gleichzeitig.' },
+    { n:'Gegenwartslinie im Diagramm', min:2, setup(){ Object.assign(GL, {v:0.5, sim:'bahnsteig'}); },
+      q:'Beobachte im Minkowski-Diagramm die Linie „jetzt“ und wechsle die Sicht. Welche Ereignisse liegen jeweils auf derselben Gleichzeitigkeitslinie?',
+      a:'In der Sicht des Bahnsteigs liegen beide Blitze auf derselben waagrechten Linie (gleiches t). In der Sicht des Zugs sind sie gegeneinander verschoben – sie haben verschiedene t′. Die „Gegenwart“ ist für jedes Inertialsystem ein anderer Schnitt durch die Raumzeit.' }
+  ],
+  [ /* Längenkontraktion */
+    { n:'Passt der Zug in den Tunnel?', min:0, setup(){ Object.assign(LK, {scene:'tunnel', v:0.6}); },
+      q:'Zug und Tunnel sind in Ruhe gleich lang. Lass den Zug durchfahren. Passt er aus Sicht des Bahnsteigs ganz hinein?',
+      a:'Ja: Bei 0,6 c ist der Zug nur 80 % so lang wie in Ruhe (L = L₀/γ mit γ = 1,25). Eine Zeit lang ist er ganz im Tunnel.' },
+    { n:'Und aus Sicht des Zugs?', min:0, setup(){ Object.assign(LK, {scene:'tunnel', v:0.6}); },
+      q:'Wechsle zu „Sicht von: Zug“. Wie lang sind Zug und Tunnel jetzt?',
+      a:'Jetzt ruht der Zug und hat seine volle Länge. Der Tunnel bewegt sich und ist um den Faktor γ verkürzt – der Zug passt nicht hinein. Beides ist richtig, weil „vorne und hinten gleichzeitig im Tunnel“ in beiden Systemen etwas anderes bedeutet.' },
+    { n:'Wie stark verkürzt?', min:1, setup(){ Object.assign(LK, {scene:'tunnel', v:0.5}); },
+      q:'Bei welcher Geschwindigkeit ist der Zug nur noch halb so lang? Probiere es aus und rechne nach.',
+      a:'L = L₀/2 heißt γ = 2, also √(1 − v²/c²) = 0,5 und v = √0,75·c ≈ 0,87 c.' },
+    { n:'Nur in Fahrtrichtung', min:1, setup(){ Object.assign(LK, {scene:'tunnel', v:0.9}); },
+      q:'Vergleiche die Höhe des Zugs in beiden Sichten. Was fällt auf?',
+      a:'Die Höhe bleibt gleich. Die Längenkontraktion betrifft nur die Länge in Bewegungsrichtung, senkrecht dazu ändert sich nichts. Das haben wir auch bei der Lichtuhr vorausgesetzt.' },
+    { n:'Leiter-Garage-Paradoxon', min:2, setup(){ Object.assign(LK, {scene:'garage', v:0.8}); },
+      q:'Eine Leiter fliegt mit 0,8 c durch eine Garage. In Ruhe ist die Leiter länger als die Garage (10 : 8). Die Tore schließen im Garagensystem für einen Moment gleichzeitig. Ist die Leiter eingeschlossen? Wechsle dann zur Sicht der Leiter – dort ist die Garage sogar nur 4,8 Teile lang!',
+      a:'Im Garagensystem ist die Leiter auf 6 Teile verkürzt und passt hinein: Beide Tore sind kurz gleichzeitig zu. Im System der Leiter schließen die Tore nicht gleichzeitig: Das vordere Tor geht zu und wieder auf, bevor die Leiterspitze ankommt; das hintere erst, nachdem das Leiterende drin ist. Kein Widerspruch – Gleichzeitigkeit ist relativ.' },
+    { n:'Zu langsam', min:2, setup(){ Object.assign(LK, {scene:'garage', v:0.5}); },
+      q:'Was passiert bei 0,5 c? Prüfe beide Sichten.',
+      a:'Dann ist die Leiter nur auf 8,7 Teile verkürzt (γ = 1,15) – sie ist länger als die Garage. Ein Tor trifft die Leiter, und zwar in jeder Sicht: Ob zwei Dinge am selben Ort zur selben Zeit zusammentreffen, hängt nicht vom Bezugssystem ab.' }
+  ],
+  [ /* Geschwindigkeiten */
+    { n:'Kugel aus der Rakete', min:0, setup(){ Object.assign(GA, {v:0.5, up:0.5, licht:false}); },
+      q:'Die Rakete fliegt mit 0,5 c und schießt eine Kugel mit 0,5 c nach vorne. Wie schnell ist die Kugel für die Erde – nach der Alltagsregel und nach Einstein?',
+      a:'Alltagsregel: 0,5 c + 0,5 c = 1,0 c. Relativitätstheorie: (0,5 + 0,5)/(1 + 0,25)·c = 0,8 c. Die Kugel bleibt langsamer als Licht.' },
+    { n:'Licht aus der Rakete', min:0, setup(){ Object.assign(GA, {v:0.6, licht:true}); },
+      q:'Jetzt schickt die Rakete einen Lichtblitz nach vorne. Wie schnell ist er für die Erde?',
+      a:'Genau c – nicht 1,6 c. Die Lichtgeschwindigkeit ist für alle Beobachter gleich, egal wie schnell sich die Lichtquelle bewegt. Das ist das zweite Postulat der Relativitätstheorie.' },
+    { n:'Aus Sicht der Rakete', min:0, setup(){ Object.assign(GA, {v:0.6, up:0.6, licht:false}); },
+      q:'Wechsle zur Sicht der Rakete. Wie schnell sind Kugel und Lichtblitz jetzt – oben und unten?',
+      a:'In beiden Bahnen fliegt die Kugel mit 0,6 c (so war es eingestellt). Oben bewegt sich das Licht aber plötzlich nur mit 0,4 c – nach der Alltagsregel hinge die Lichtgeschwindigkeit vom Beobachter ab. Unten bleibt sie c. Messungen (z. B. Michelson-Morley) zeigen: Unten hat recht.' },
+    { n:'Kleine Geschwindigkeiten', min:1, setup(){ Object.assign(GA, {v:0.05, up:0.05, licht:false}); },
+      q:'Stelle für Rakete und Kugel kleine Geschwindigkeiten ein. Wie groß ist der Unterschied zwischen den Regeln?',
+      a:'(0,05 + 0,05)/(1 + 0,0025)·c ≈ 0,0998 c statt 0,1 c – nur 0,25 % Unterschied. Für Autos, Flugzeuge und sogar Raumsonden ist die Alltagsregel eine ausgezeichnete Näherung.' },
+    { n:'Stufenrakete', min:2, setup(){ Object.assign(GA, {v:0.5, up:0.5, licht:false, stages:6}); },
+      q:'Eine Rakete hat mehrere Stufen. Nach jeder Zündung ist die nächste Stufe 0,5 c schneller als die vorige (gemessen von der vorigen). Wie schnell ist die 6. Stufe?',
+      a:'Alltagsregel: 3 c. Relativität: tanh(6·artanh 0,5) = tanh(3,30) ≈ 0,997 c. Es addieren sich nicht die Geschwindigkeiten, sondern die Rapiditäten φ = artanh(v/c). Weil tanh nie 1 erreicht, kommt man c beliebig nahe, aber nie darüber.' },
+    { n:'Herleitung: u′ = c', min:2, setup(){ Object.assign(GA, {v:0.6, licht:true}); },
+      q:'Zeige mit der Formel: Wenn u′ = c ist, ist auch u = c – für jedes v.',
+      a:'u = (v + c)/(1 + v·c/c²) = (v + c)/(1 + v/c) = c·(v + c)/(c + v) = c.' }
+  ],
+  [ /* Zwillinge */
+    { n:'Wer ist jünger?', min:0, setup(){ Object.assign(ZW, {v:0.8, D:4, simul:false}); },
+      q:'Ben fliegt mit 0,8 c zu einem 4 Lichtjahre entfernten Stern und zurück. Wie alt sind Anna und Ben beim Wiedersehen?',
+      a:'Für Anna dauert die Reise 2·4/0,8 = 10 Jahre, sie ist 25. Bens Uhr geht um den Faktor γ = 1,67 langsamer: Er ist nur 6 Jahre älter geworden, also 21.' },
+    { n:'Geburtstagsgrüße zählen', min:0, setup(){ Object.assign(ZW, {v:0.8, D:4}); },
+      q:'Beide schicken sich jedes Jahr einen Lichtgruß. Wann kommen die Grüße an? Wie viele erhält jeder?',
+      a:'Ben erhält auf dem Hinflug (3 Jahre) nur einen Gruß, auf dem Rückflug (3 Jahre) acht weitere und den zehnten beim Wiedersehen. Anna erhält in den ersten 9 Jahren nur alle 3 Jahre einen Gruß, im letzten Jahr zwei weitere, den sechsten beim Wiedersehen. Beide zählen dasselbe Ergebnis: Anna ist 10 Jahre älter, Ben 6.' },
+    { n:'Aus Sicht von Ben', min:1, setup(){ Object.assign(ZW, {v:0.8, D:4}); },
+      q:'Wechsle zur Sicht der Hinflug-Rakete. Wessen Uhr geht auf dem Hinflug langsamer? Wie weit ist der Stern entfernt?',
+      a:'In diesem System ruht Ben, Anna fliegt davon, und ihre Uhr geht langsamer. Die Strecke zum Stern ist auf 4 Lj/γ = 2,4 Lj verkürzt. Trotzdem ist Ben am Ende jünger: Beim Umkehren wechselt er das System – das unterscheidet ihn von Anna.' },
+    { n:'Der Sprung beim Umkehren', min:2, setup(){ Object.assign(ZW, {v:0.8, D:4, simul:true}); },
+      q:'Schalte die Gleichzeitigkeitslinien ein. Welches Jahr ist für Ben auf der Erde „gleichzeitig“ – kurz vor und kurz nach dem Umkehren?',
+      a:'Kurz vor dem Umkehren ist für Ben auf der Erde gerade das Jahr 1,8 (t_U/γ²), kurz danach schon das Jahr 8,2 (t_U·(1 + v²/c²)). Beim Wechsel des Bezugssystems springt seine Gegenwartslinie über 6,4 Jahre von Annas Leben. In beiden Flugphasen sieht er Annas Uhr langsamer gehen (je 1,8 Jahre), erst durch den Sprung kommen insgesamt 10 Jahre zusammen.' },
+    { n:'Reise zu einem fernen Stern', min:0, setup(){ Object.assign(ZW, {v:0.99, D:20}); },
+      q:'Ben fliegt mit 0,99 c zu einem 20 Lichtjahre entfernten Stern und zurück. Wie alt ist er bei der Rückkehr – und wie alt Anna?',
+      a:'Anna wird um 40/0,99 ≈ 40,4 Jahre älter, sie ist etwa 55. Ben altert nur um 40,4/7,09 ≈ 5,7 Jahre und ist knapp 21. Mit hoher Geschwindigkeit kann man – im Prinzip – in die Zukunft reisen, aber nicht zurück.' }
+  ],
+  [ /* Raumzeit */
+    { n:'Gleichzeitig?', min:0, setup(){ rzPreset('gleich'); RZ.w = 0.5; },
+      q:'A und B finden in S gleichzeitig an verschiedenen Orten statt. Wechsle zur Sicht von S′. Sind sie dort auch gleichzeitig? Verändere die Geschwindigkeit von S′ – auch nach links (negativ).',
+      a:'Nein. Bewegt sich S′ nach rechts, ist B in S′ früher als A; bewegt sich S′ nach links, ist B später. Für Ereignisse, die außerhalb des Lichtkegels voneinander liegen (raumartig), hängt sogar die Reihenfolge vom Bezugssystem ab.' },
+    { n:'Ursache und Wirkung', min:0, setup(){ rzPreset('kausal'); RZ.w = 0.5; RZ.cone = true; },
+      q:'Wähle A (antippen). B liegt im Lichtkegel von A, C nicht. Versuche, mit der Geschwindigkeit von S′ die Reihenfolge von A und B bzw. von A und C umzudrehen.',
+      a:'Bei A und B gelingt es nie: B liegt im Zukunftskegel von A, A kann B beeinflussen – und das bleibt in jedem System so. Bei C gelingt es: C liegt außerhalb des Lichtkegels. Kein Signal kann von A nach C gelangen, deshalb ist die Reihenfolge nicht festgelegt, und die Kausalität bleibt unverletzt.' },
+    { n:'Achsen von S′', min:1, setup(){ rzPreset('start'); RZ.w = 0.5; RZ.grid2 = true; },
+      q:'Wie sehen die Achsen von S′ im Diagramm von S aus? Was passiert, wenn S′ immer schneller wird?',
+      a:'Die ct′-Achse ist die Weltlinie des Ursprungs von S′ und kippt zur Lichtlinie hin. Die x′-Achse (alle Ereignisse mit t′ = 0) kippt um denselben Winkel nach oben. Bei v → c klappen beide Achsen auf die Lichtlinie zusammen – die Lichtlinie selbst ist für alle Systeme dieselbe.' },
+    { n:'Lichtsignal', min:1, setup(){ rzPreset('licht'); RZ.w = 0.5; },
+      q:'A und B liegen auf einer Lichtlinie. Was gilt in S′? Wechsle die Sicht.',
+      a:'Sie liegen auch in S′ auf einer Lichtlinie unter 45°: Δx′ = c·Δt′. Lichtsignale sind in allen Systemen gleich schnell – das ist das Fundament der Theorie.' },
+    { n:'Die Invariante', min:2, setup(){ rzPreset('start'); RZ.w = 0.6; RZ.hyp = true; },
+      q:'Vergleiche für zwei Ereignisse den Ausdruck (cΔt)² − Δx² in S und S′. Was fällt auf? Schau dir die Eichhyperbeln an.',
+      a:'Er ist in allen Systemen gleich (Raumzeit-Intervall). Darum liegen alle Ereignisse mit gleichem Intervall zum Ursprung auf Hyperbeln. Wo die Hyperbel c²t² − x² = 1 die ct′-Achse schneidet, ist ct′ = 1: So liest man den Maßstab von S′ im Diagramm von S ab – die Einheiten von S′ wirken gestreckt.' }
+  ],
+  [ /* Lichtmauer */
+    { n:'Schneller als Licht?', min:0, setup(){ Object.assign(LM, {part:'e', lg:4, cl:true}); },
+      q:'Beschleunige ein Elektron mit immer höherer Spannung. Ab welcher Energie wäre es nach der klassischen Formel ½·m·v² schneller als Licht? Was sagt die Relativitätstheorie?',
+      a:'Klassisch wäre c schon bei E_kin = ½·mc² ≈ 256 keV erreicht, danach ginge es schneller. Relativistisch wird das Elektron immer weniger schneller: Bei 1 MeV hat es 0,94 c, bei 1 GeV 0,99999987 c. c wird nie erreicht.' },
+    { n:'Bertozzi-Versuch', min:1, setup(){ Object.assign(LM, {part:'e', lg:Math.log10(0.5e6), cl:true}); },
+      q:'1964 maß William Bertozzi, wie lange Elektronen für 8,4 m brauchen. Starte das Rennen bei 0,5 MeV und dann bei 15 MeV. Was ändert sich an der Flugzeit?',
+      a:'Bei 0,5 MeV braucht das Elektron etwa 32 ns (0,86 c), bei 15 MeV praktisch so lang wie das Licht: 28,0 ns. Die 30-fache Energie macht es kaum schneller. Die Messung bestätigte die relativistische Rechnung und widerlegte E_kin = ½·m·v².' },
+    { n:'Wohin geht die Energie?', min:1, setup(){ Object.assign(LM, {part:'e', lg:8}); },
+      q:'Bei hohen Energien wird das Elektron kaum noch schneller. Wohin geht die zugeführte Energie? Schau dir die Werte in der Infotafel an.',
+      a:'Die Gesamtenergie E = γ·mc² wächst weiter, ebenso der Impuls p = γ·m·v. Die Geschwindigkeit nähert sich dagegen nur noch c an. Energie und Impuls haben keine Obergrenze, die Geschwindigkeit schon.' },
+    { n:'E = mc²', min:1, setup(){ Object.assign(LM, {mg:0}); },
+      q:'Welche Energie steckt in 1 g Masse? Für wie viele Haushalte würde sie ein Jahr lang reichen?',
+      a:'E = 0,001 kg · (3·10⁸ m/s)² = 9·10¹³ J ≈ 25 GWh. Das deckt den Jahresstrombedarf von rund 7000 Haushalten (je 3500 kWh). Bei der Kernspaltung wird allerdings nur etwa 0,1 % der Masse in Energie umgewandelt.' },
+    { n:'Protonen im LHC', min:2, setup(){ Object.assign(LM, {part:'p', lg:Math.log10(6.8e12)}); },
+      q:'Im LHC am CERN haben Protonen 6,8 TeV. Wie schnell sind sie? Um wie viel langsamer als Licht?',
+      a:'γ ≈ 7250, v ≈ 0,99999999 c – nur etwa 3 m/s langsamer als Licht. Ein 27 km langes Stück Strecke wäre für sie nur etwa 3,7 m lang.' }
+  ],
+  [ /* GPS */
+    { n:'Geht die Satellitenuhr richtig?', min:0, setup(){ Object.assign(GP, {alt:20200, srt:true, art:true, korr:false}); },
+      q:'GPS-Satelliten kreisen in 20 200 km Höhe. Lass ein paar Tage vergehen. Geht die Uhr im Satelliten vor oder nach – und um wie viel?',
+      a:'Sie geht vor, um etwa 38 µs pro Tag. Weil das Navi Entfernungen über die Laufzeit der Funksignale misst, wäre die Position nach einem Tag um rund 11 km falsch.' },
+    { n:'Zwei Effekte', min:1, setup(){ Object.assign(GP, {alt:20200, srt:true, art:true, korr:false}); },
+      q:'Schalte nacheinander die Spezielle (SRT) und die Allgemeine Relativitätstheorie (ART) aus. Welcher Effekt lässt die Uhr langsamer gehen, welcher schneller?',
+      a:'SRT: Der Satellit bewegt sich mit 3,9 km/s – seine Uhr geht 7 µs pro Tag langsamer. ART: Weiter oben ist die Schwerkraft schwächer, dort gehen Uhren schneller: +46 µs pro Tag. Zusammen +38 µs pro Tag.' },
+    { n:'Raumstation ISS', min:1, setup(){ Object.assign(GP, {alt:408, srt:true, art:true, korr:false}); },
+      q:'Stelle die Höhe der ISS (408 km) ein. Altern Astronautinnen schneller oder langsamer als wir?',
+      a:'Langsamer: Die ISS ist schnell (7,7 km/s, −28 µs pro Tag) und noch nahe an der Erde (ART nur +4 µs pro Tag). Zusammen sind es etwa −25 µs pro Tag; nach einem halben Jahr ist eine Astronautin rund 4,5 ms jünger.' },
+    { n:'Wo heben sich die Effekte auf?', min:2, setup(){ Object.assign(GP, {alt:3000, srt:true, art:true, korr:false}); },
+      q:'In welcher Höhe gehen Satellitenuhren genauso schnell wie Uhren am Boden? Suche im Diagramm und rechne nach.',
+      a:'Bei r = 1,5·R_Erde, also in etwa 3200 km Höhe. Aus v²/(2c²) = GM/(2·r·c²) = GM/c²·(1/R − 1/r) folgt 3/(2r) = 1/R. Darunter überwiegt die SRT (Uhr geht nach), darüber die ART (Uhr geht vor).' },
+    { n:'Ab Werk verstimmt', min:2, setup(){ Object.assign(GP, {alt:20200, srt:true, art:true, korr:true}); },
+      q:'Die Uhren der GPS-Satelliten laufen ab Werk mit 10,22999999543 MHz statt mit 10,23 MHz. Was bewirkt das – auch in anderen Höhen?',
+      a:'In 20 200 km Höhe gleicht die Verstimmung den Gangunterschied genau aus, der Positionsfehler verschwindet. In anderen Höhen passt die Korrektur nicht mehr: Sie ist für die GPS-Bahn berechnet. Ohne Relativitätstheorie würde kein Navi funktionieren.' }
+  ],
+  [ /* Doppler */
+    { n:'Farbe vorne und hinten', min:0, setup(){ Object.assign(DO, {v:0.3, lam:550, quer:false}); },
+      q:'Eine Rakete sendet grünes Licht (550 nm). Welche Farbe sieht die Person, auf die sie zufliegt? Und die Person hinter ihr?',
+      a:'Vorne werden die Wellenberge zusammengeschoben: kürzere Wellenlänge, blauer (bei 0,3 c etwa 404 nm, violett). Hinten werden sie auseinandergezogen: rötlicher (etwa 750 nm, tiefrot).' },
+    { n:'Wie schnell für Rot?', min:0, setup(){ Object.assign(DO, {v:0.05, lam:550, quer:false}); },
+      q:'Wie schnell muss sich die Rakete entfernen, damit hinten ihr grünes Licht (550 nm) rot aussieht (650 nm)?',
+      a:'λ/λ₀ = 650/550 ≈ 1,18. Aus √((1 + β)/(1 − β)) = 1,18 folgt β ≈ 0,17 – etwa 50 000 km/s. Bei Autos ist der Effekt deshalb unsichtbar klein.' },
+    { n:'Ohne Zeitdilatation?', min:1, setup(){ Object.assign(DO, {v:0.6, lam:550, cls:true}); },
+      q:'Vergleiche die gemessenen Wellenlängen mit der Rechnung ohne Zeitdilatation (wie beim Schall). Warum gibt es einen Unterschied?',
+      a:'Die Uhr der Rakete geht langsamer: Sie sendet ihre Wellenberge seltener aus, als man ohne Relativität erwarten würde. Dadurch sind alle Wellenlängen um den Faktor γ länger: λ = γ·λ₀·(1 − β·cos θ). Vorne und hinten ergibt das λ = λ₀·√((1 ∓ β)/(1 ± β)).' },
+    { n:'Aus Sicht der Rakete', min:1, setup(){ Object.assign(DO, {v:0.5, lam:550}); },
+      q:'Wechsle zur Sicht der Rakete. Wie sehen die Wellen jetzt aus? Wie erklärt die Rakete die Farbänderung?',
+      a:'Für die Rakete sind die Wellenberge konzentrische Kreise, das Licht hat überall λ₀. Dafür bewegen sich die Personen: Wer entgegenkommt, trifft öfter auf Wellenberge, und seine eigene Uhr geht langsamer. Die Farben, die die Personen sehen, sind in beiden Sichten dieselben – was jemand misst, hängt nicht von der Sicht ab.' },
+    { n:'Quer zur Bewegung', min:2, setup(){ Object.assign(DO, {v:0.6, lam:550, quer:true}); },
+      q:'Eine dritte Person steht seitlich. Beobachte ihre Farbe, während die Rakete vorbeifliegt. Gibt es eine Verschiebung, wenn sich die Rakete weder nähert noch entfernt?',
+      a:'Ja – den transversalen Doppler-Effekt. Licht, das die Rakete an der Stelle des kleinsten Abstands aussendet, kommt um den Faktor γ rotverschoben an (bei 0,6 c: 550 nm → 688 nm). Klassisch gäbe es dort keine Verschiebung; sie ist ein reiner Effekt der Zeitdilatation.' },
+    { n:'Rotverschiebung eines Sterns', min:2, setup(){ Object.assign(DO, {v:0.05, lam:656, quer:false}); },
+      q:'Die rote Wasserstofflinie (656 nm) eines Sterns wird bei 700 nm gemessen. Wie schnell entfernt er sich? Prüfe mit der Simulation (die Person „hinten“ sieht einen Stern, der sich entfernt).',
+      a:'λ/λ₀ = 700/656 ≈ 1,067, also (1 + β)/(1 − β) ≈ 1,139 und β ≈ 0,065. Der Stern entfernt sich mit etwa 19 400 km/s.' }
+  ]
+];
+function renderTasks(){
+  const el = $('#tasks'); el.innerHTML = '';
+  TASKS[S.st].forEach((t, k) => {
+    if (t.min > lvlNum()) return;
+    const b = document.createElement('button'); b.textContent = t.n; b.classList.toggle('on', k === S.task);
+    b.onclick = () => { S.task = k; S.showAnswer = false; t.setup(); buildControls(); frameReset(); renderTasks(); };
+    el.appendChild(b);
+  });
+  const info = $('#taskInfo');
+  const t = TASKS[S.st][S.task];
+  if (!t || t.min > lvlNum()){ info.innerHTML = '<p class="note">Wähle einen Auftrag oder probiere frei aus.</p>'; return; }
+  info.innerHTML = `<p class="q"><b>Auftrag:</b> ${t.q}</p>` + (S.showAnswer ? `<p class="a">${t.a}</p>` : '') + `<button class="btn" id="ansBtn">${S.showAnswer ? 'Erklärung ausblenden' : 'Erklärung zeigen'}</button>`;
+  $('#ansBtn').onclick = () => { S.showAnswer = !S.showAnswer; renderTasks(); };
+}
+
+/* =====================================================================
+   Stationen, Bezugssystem, Zeichenschleife
+   ===================================================================== */
+const STATIONS = [
+  { name:'Lichtuhr', hash:'lichtuhr', controls:luControls, draw:luDraw, frames:luFrames, rate:luRate, start:luStart, end:luEnd, pivot:() => LU.scene === 'myon' ? placeLin(LU.H, -muBeta()).x : 0 },
+  { name:'Gleichzeitigkeit', hash:'gleichzeitigkeit', controls:glControls, draw:glDraw, frames:glFrames, rate:() => 4, start:glStart, end:glEnd },
+  { name:'Längenkontraktion', hash:'laengenkontraktion', controls:lkControls, draw:lkDraw, frames:lkFrames, rate:lkRate, start:lkStart, end:lkEnd },
+  { name:'Geschwindigkeiten', hash:'geschwindigkeiten', controls:gaControls, draw:gaDraw, frames:gaFrames, rate:() => 2.2, start:gaStart, end:gaEnd },
+  { name:'Zwillinge', hash:'zwillinge', controls:zwControls, draw:zwDraw, frames:zwFrames, rate:zwRate, start:zwStart, end:zwEnd },
+  { name:'Raumzeit', hash:'raumzeit', controls:rzControls, draw:rzDraw, frames:rzFrames, rate:() => RZ.now ? 1 : 0, start:() => RZ.now ? -6 : 0, end:() => 8, click:rzClick, move:rzMove },
+  { name:'Lichtmauer & E = mc²', hash:'lichtmauer', controls:lmControls, draw:lmDraw, rate:() => 0.35, start:() => -0.15, end:lmEnd },
+  { name:'GPS', hash:'gps', controls:gpControls, draw:gpDraw, rate:() => 1, start:() => 0, end:() => 30 },
+  { name:'Doppler-Effekt', hash:'doppler', controls:doControls, draw:doDraw, frames:doFrames, rate:doRate, start:doStart, end:doEnd }
+];
+function curFrames(){ const st = STATIONS[S.st]; return st.frames ? st.frames() : null; }
+function curFrameName(){ const fr = curFrames(); return fr ? fr[Math.min(V.fi, fr.length - 1)].lab : ''; }
+const pivotX = () => { const st = STATIONS[S.st]; return st.pivot ? st.pivot() : 0; };
+function buildFrameSeg(){
+  const fr = curFrames(), seg = $('#frSeg'); seg.innerHTML = '';
+  $('#frWrap').style.display = fr && fr.length > 1 ? '' : 'none';
+  if (!fr) return;
+  fr.forEach((f, i) => { const b = document.createElement('button'); b.textContent = f.lab; b.classList.toggle('on', i === V.fi); b.onclick = () => setFrame(i); seg.appendChild(b); });
+}
+function setFrame(i){ const fr = curFrames(); if (!fr || i >= fr.length) return; V.fi = i; V.rate = Math.max(0.6, Math.abs(Math.atanh(fr[i].u()) - Math.atanh(V.u))/1.1); buildFrameSeg(); }
+function frameReset(){ V.fi = 0; V.u = 0; buildFrameSeg(); stReset(); }
+function snapFrame(){ const fr = curFrames(); if (!fr) return; const tgt = fr[Math.min(V.fi, fr.length - 1)].u(); const [tg, xg] = toG(V.T, pivotX(), V.u); V.u = tgt; V.T = toV(tg, xg, tgt)[0]; }
+function setRun(r){ S.run = r; $('#playBtn').textContent = r ? '⏸ Pause' : '▶ Start'; }
+function stReset(){ const st = STATIONS[S.st]; if (st.rate) st.rate(); V.T = st.start ? st.start() : 0; setRun(true); }
+function frameStep(dt){
+  const fr = curFrames(); if (!fr){ V.u = 0; return; }
+  if (V.fi >= fr.length){ V.fi = 0; buildFrameSeg(); }
+  const tgt = fr[V.fi].u();
+  if (Math.abs(tgt - V.u) > 1e-9){
+    const p0 = Math.atanh(V.u), p1 = Math.atanh(tgt), stp = V.rate*dt;
+    const p = Math.abs(p1 - p0) <= stp ? p1 : p0 + Math.sign(p1 - p0)*stp, nu = Math.tanh(p);
+    const [tg, xg] = toG(V.T, pivotX(), V.u); V.u = nu; V.T = toV(tg, xg, nu)[0];
+  }
+}
+function buildControls(){ UI.clear(); $('#ctrlTitle').textContent = 'Einstellungen: ' + STATIONS[S.st].name; STATIONS[S.st].controls(); }
+function setStation(i){
+  S.st = i; S.task = -1; S.showAnswer = false;
+  for (const b of $('#stSeg').children) b.classList.toggle('on', +b.dataset.s === i);
+  buildControls(); renderTasks(); frameReset();
+  try { history.replaceState(null, '', '#' + STATIONS[i].hash); } catch(_){}
+}
+function setLevel(l){
+  S.level = l; for (const b of $('#lvlSeg').children) b.classList.toggle('on', b.dataset.v === l);
+  if (l !== 'hard'){ if (LK.scene !== 'tunnel'){ LK.scene = 'tunnel'; if (S.st === 2) frameReset(); } ZW.simul = false; GP.korr = false; DO.quer = false; RZ.hyp = false; }
+  if (l === 'easy'){ GL.clocks = false; RZ.grid2 = false; DO.cls = false; LM.part = 'e'; }
+  buildControls(); renderTasks();
+}
+$('#stSeg').innerHTML = STATIONS.map((s, i) => `<button data-s="${i}">${s.name}</button>`).join('');
+$('#stSeg').onclick = e => { const b = e.target.closest('button'); if (b) setStation(+b.dataset.s); };
+$('#lvlSeg').onclick = e => { const b = e.target.closest('button'); if (b) setLevel(b.dataset.v); };
+$('#worldSeg').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.world = b.dataset.v; for (const x of $('#worldSeg').children) x.classList.toggle('on', x === b); buildControls(); };
+$('#spdSeg').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.speed = +b.dataset.v; for (const x of $('#spdSeg').children) x.classList.toggle('on', x === b); };
+$('#playBtn').onclick = () => { const st = STATIONS[S.st]; if (!S.run && st.end && V.T >= st.end() - 1e-6) stReset(); else setRun(!S.run); };
+$('#resetBtn').onclick = () => stReset();
+$('#fsBtn').onclick = () => { const d = document; try { if (d.fullscreenElement) d.exitFullscreen(); else d.documentElement.requestFullscreen().catch(() => {}); } catch(_){} };
+let dragging = false;
+cv.addEventListener('pointerdown', e => {
+  const r = cv.getBoundingClientRect(), st = STATIONS[S.st];
+  if (st.click && st.click(e.clientX - r.left, e.clientY - r.top)){ dragging = true; cv.setPointerCapture(e.pointerId); }
+});
+cv.addEventListener('pointermove', e => { if (!dragging) return; const r = cv.getBoundingClientRect(), st = STATIONS[S.st]; if (st.move) st.move(e.clientX - r.left, e.clientY - r.top); });
+cv.addEventListener('pointerup', () => { dragging = false; RZ.drag = -1; });
+window.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  if (e.key === ' '){ $('#playBtn').click(); e.preventDefault(); }
+  if (e.key === 'r' || e.key === 'R') stReset();
+  if (e.key === 'b' || e.key === 'B'){ const fr = curFrames(); if (fr && fr.length > 1) setFrame((V.fi + 1) % fr.length); }
+});
+let last = performance.now();
+function frame(ts){
+  const dt = Math.min(0.05, (ts - last)/1000); last = ts;
+  const st = STATIONS[S.st];
+  frameStep(dt);
+  if (S.run){
+    V.T += dt*S.speed*(st.rate ? st.rate() : 1);
+    if (st.end){ const e = st.end(); if (V.T >= e){ V.T = e; setRun(false); } }
+  } else if (st.rate) st.rate();
+  ctx.clearRect(0, 0, W, H);
+  try { st.draw(dt); } catch (err){ console.error(err); }
+  requestAnimationFrame(frame);
+}
+resize();
+const startHash = STATIONS.findIndex(s => s.hash === location.hash.slice(1));
+setStation(startHash >= 0 ? startHash : 0);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
