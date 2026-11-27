@@ -151,7 +151,8 @@ const TOPICS = [
   { id:'halbleiter', subject:'physik', name:'Festkörper & Halbleiter', color:'#d97706' },
   { id:'relativ',    subject:'physik', name:'Raum & Zeit',             color:'#4f46e5' },
   { id:'kern',       subject:'physik', name:'Kerne & Strahlung',       color:'#ca8a04' },
-  { id:'akustik',    subject:'physik', name:'Schwingungen & Akustik',  color:'#df4329' }
+  { id:'akustik',    subject:'physik', name:'Schwingungen & Akustik',  color:'#df4329' },
+  { id:'stoffwechsel', subject:'biologie', name:'Stoffwechsel & Enzyme', color:'#16a34a' }
 ];
 /* Liste der Simulationen – neue Simulationen hier eintragen.
    subject = Fach (Pflicht), topic = Themengebiet innerhalb des Fachs (optional). */
@@ -243,11 +244,31 @@ const SIMS = [
     text:'Saite und Pfeife mit Obertönen, Klangfarbe selbst mischen, Schwebung und Intervalle, Resonanz bis das Weinglas bricht, Spektrum und Stimmgerät – die Brücke zur Musik.',
     tags:['Obertöne','Klangfarbe','Intervalle','Resonanz','Spektrum','3 Niveaustufen'],
     thumb:'klang'
+  },
+  {
+    subject:'biologie', topic:'stoffwechsel',
+    title:'Enzymlabor',
+    file:'Enzyme/Enzymlabor.html',
+    text:'Enzym und Substrat als Teilchen: aktives Zentrum, Aktivierungsenergie, Temperatur und pH, Sättigungskurve, Hemmstoffe und der Katalase-Versuch mit Leber und Kartoffel.',
+    tags:['Schlüssel-Schloss & Induced Fit','Denaturierung','Michaelis-Menten','Hemmung','3 Niveaustufen'],
+    thumb:'enzym'
   }
 ];
 
 /* --- Vorschaubilder als SVG --- */
 const THUMBS = {
+  enzym: (() => {
+    /* Enzym mit aktivem Zentrum, Substrat-Dreiecke und Produkte */
+    const enz = (cx, cy, R, a, fill) => { let d = ''; for (let k = 0; k <= 120; k++){ const th = k/120*2*Math.PI - Math.PI; let r = R; if (Math.abs(th) < .42) r -= R*.42*(1 - Math.abs(th)/.42); const t = th + a; d += (k ? 'L' : 'M') + (cx + Math.cos(t)*r).toFixed(1) + ' ' + (cy + Math.sin(t)*r).toFixed(1); } return `<path d="${d}Z" fill="${fill}" stroke="#14532d" stroke-width="1.5"/>`; };
+    const tri = (cx, cy, rot, f) => `<path d="M${(cx+Math.cos(rot)*11).toFixed(1)} ${(cy+Math.sin(rot)*11).toFixed(1)} L${(cx+Math.cos(rot+2.3)*10).toFixed(1)} ${(cy+Math.sin(rot+2.3)*10).toFixed(1)} L${(cx+Math.cos(rot-2.3)*10).toFixed(1)} ${(cy+Math.sin(rot-2.3)*10).toFixed(1)}Z" fill="${f}"/>`;
+    return `<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice">
+      <rect width="400" height="170" fill="#ecfdf3"/>
+      ${enz(150, 88, 48, 0, '#2f9e5a')}${tri(190, 88, Math.PI, '#3d7ddb')}
+      ${enz(305, 50, 26, 2.4, '#46b874')}${enz(330, 128, 24, -1.2, '#46b874')}
+      ${tri(250, 96, .4, '#3d7ddb')}${tri(60, 40, 2, '#3d7ddb')}${tri(70, 140, -1, '#3d7ddb')}${tri(240, 30, 1.2, '#3d7ddb')}${tri(380, 90, 3, '#3d7ddb')}
+      <g fill="#f08a24"><circle cx="222" cy="62" r="6"/><circle cx="232" cy="122" r="6"/><circle cx="34" cy="96" r="6"/><circle cx="270" cy="150" r="6"/></g>
+    </svg>`;
+  })(),
   stoss: `<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice">
     <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e4f0fb"/><stop offset="1" stop-color="#f8fbfe"/></linearGradient></defs>
     <rect width="400" height="170" fill="url(#sky)"/>

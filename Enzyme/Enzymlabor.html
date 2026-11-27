@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Enzymlabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: sachliches Laborheft, ruhig und genau
+   IDEA: Teilchen im Becher – Enzym, Substrat und Produkt als einfache Formen, die zusammenpassen oder nicht
+   COLOUR and TYPE: Weiß bzw. Nacht; Enzym grün, Substrat blau, Produkt orange, Hemmstoff rot/violett; Archivo + Source Sans 3
+   LAYOUT: Stationsleiste, Experiment groß links, Regler rechts, darunter Aufträge und Erklärung */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#111419);--ink:light-dark(#15181d,#e9ecf1);--mut:light-dark(#566170,#9ea8b5);
+--line:light-dark(#d8dde4,#2d343e);--soft:light-dark(#f2f5f3,#171d1b);--card:light-dark(#ffffff,#161b21);
+--acc:light-dark(#15803d,#5fd38d);--accink:light-dark(#ffffff,#0c1a12);
+--enz:light-dark(#2f9e5a,#46b874);--enzd:light-dark(#9aa79e,#5d6862);--sub:#3d7ddb;--prod:#f08a24;--inh:#e2475b;--allo:#8a5cc7;--metal:light-dark(#4b5563,#9ca3af);--wrong:light-dark(#7c8796,#8f9aa8);
+--grid:light-dark(#e6ebe8,#242b29)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Source Sans 3",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Archivo,system-ui,sans-serif;line-height:1.08;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4vw,40px)}h2{font-size:clamp(24px,3vw,32px)}h3{font-size:18px;margin-bottom:6px}
+header{padding:18px max(4vw,14px) 0;border-bottom:1px solid var(--line)}
+.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.top p{margin:4px 0 0;color:var(--mut);max-width:62ch}
+.lvl{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:10px}
+.lvl button{border:0;background:none;color:var(--ink);padding:8px 12px;border-radius:7px;font:600 15px "Source Sans 3",sans-serif;cursor:pointer;min-height:40px}
+.lvl button[aria-pressed=true]{background:var(--acc);color:var(--accink)}
+nav.scroll{display:flex;gap:2px;margin-top:14px;overflow-x:auto;scrollbar-width:thin}
+nav a{flex:none;padding:10px 14px;color:var(--mut);text-decoration:none;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap}
+nav a.on{color:var(--ink);border-color:var(--acc)}
+nav a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.st{display:none;padding:22px max(4vw,14px) 40px;max-width:1500px;margin:0 auto}
+.st.on{display:block}
+.lead{color:var(--mut);max-width:75ch;margin:6px 0 16px}
+.work{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+@media(max-width:980px){.work{grid-template-columns:minmax(0,1fr)}}
+.stage{display:grid;gap:12px}
+.fig{position:relative;min-height:220px;background:var(--soft);border-radius:12px;overflow:hidden;touch-action:none}
+.fig>canvas{position:absolute;inset:0;width:100%;height:100%}
+.fig.tall{height:min(62vh,520px)}.fig.mid{height:340px}.fig.low{height:250px}
+.ctrl{display:grid;gap:12px;background:var(--soft);padding:14px;border-radius:12px}
+.ctrl .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ctrl label{font-weight:600;font-size:15px}
+.lab{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-size:15px}
+.ctrl .lab output{font-weight:400;color:var(--mut);white-space:nowrap}
+button.b,select{font:600 15px "Source Sans 3",sans-serif;min-height:44px;padding:8px 13px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button.b.pri{background:var(--acc);border-color:var(--acc);color:var(--accink)}
+button.b.sm{min-height:36px;padding:5px 10px;font-size:14px}
+button.b[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button.b:disabled{opacity:.5;cursor:default}
+select{font-weight:400;font-size:16px;width:100%}
+input[type=range]{width:100%;accent-color:var(--acc);min-height:30px}
+.chk{display:flex;gap:8px;align-items:center;font-weight:400!important;cursor:pointer;min-height:32px}
+.chk input{width:20px;height:20px;accent-color:var(--acc)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px}
+.kpi div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.kpi span{display:block;font-size:13px;color:var(--mut)}.kpi b{font:700 22px/1.15 Archivo,sans-serif;font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--mut)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid rgba(0,0,0,.2)}
+.msg{padding:10px 12px;border-radius:10px;font-weight:600;background:var(--soft)}
+.msg.warn{background:rgba(226,71,91,.14)}.msg.ok{background:rgba(58,164,92,.15)}
+.tasks{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:20px}
+.task{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.task p{margin:0;font-size:15.5px}
+.task .lv{font-size:13px;font-weight:700;color:var(--mut)}
+.task button{align-self:flex-start;margin-top:auto}
+.expl{margin-top:20px;border-top:1px solid var(--line);padding-top:6px}
+details summary{cursor:pointer;font-weight:700;padding:10px 0;font-family:Archivo,sans-serif;font-size:18px}
+details .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px 28px}
+details p{margin:0 0 10px;max-width:70ch}
+body[data-lvl="1"] .l2,body[data-lvl="1"] .l3,body[data-lvl="2"] .l3{display:none!important}
+.note{font-size:14px;color:var(--mut);margin:6px 0 0}
+.mut{color:var(--mut)}.small{font-size:14px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px}
+.eq{font-family:Archivo,sans-serif;font-size:19px}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.seg{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);padding:4px;border-radius:10px}
+.seg button{flex:1;border:0;background:none;color:var(--ink);min-height:40px;border-radius:7px;font:600 15px "Source Sans 3",sans-serif;cursor:pointer;padding:4px 6px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.tubes{display:grid;gap:6px}
+.tubes .tr{display:grid;grid-template-columns:28px minmax(0,1fr);gap:6px;align-items:center}
+.tubes .tr b{font-family:Archivo,sans-serif;text-align:center}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body data-lvl="1">
+<header>
+ <div class="top">
+  <div><h1><a id="home" href="../index.html" style="color:inherit;text-decoration:none" title="Zur Startseite">Enzymlabor</a></h1><p>Wie Enzyme Reaktionen beschleunigen: Substrat und aktives Zentrum, Aktivierungsenergie, Temperatur und pH, Sättigung, Hemmstoffe – und der Katalase-Versuch mit Leber und Kartoffel.</p></div>
+  <div class="lvl" role="group" aria-label="Niveau"><button data-l="1" aria-pressed="true">Einfach</button><button data-l="2" aria-pressed="false">Mittel</button><button data-l="3" aria-pressed="false">Anspruchsvoll</button></div>
+ </div>
+ <nav class="scroll" id="nav"><a href="#modell">Enzym &amp; Substrat</a><a href="#energie">Aktivierungsenergie</a><a href="#temperatur">Temperatur &amp; pH</a><a href="#konzentration">Substratmenge</a><a href="#hemmung">Hemmstoffe</a><a href="#katalase">Versuch: Katalase</a></nav>
+</header>
+
+<!-- ========== MODELL ========== -->
+<section class="st" id="st-modell">
+ <h2>Enzym &amp; Substrat</h2>
+ <p class="lead">Enzyme sind große Eiweißmoleküle (Proteine). In ihrer Oberfläche haben sie eine Mulde, das <b>aktive Zentrum</b>. Nur ein passendes Molekül, das <b>Substrat</b>, kann dort andocken. Im Enzym wird es umgebaut, die <b>Produkte</b> werden losgelassen – und das Enzym ist sofort wieder frei.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="mC"></canvas></div>
+   <div class="legend"><span><i style="background:var(--enz)"></i>Enzym (Katalase)</span><span><i style="background:var(--sub)"></i>Substrat (H₂O₂)</span><span><i style="background:var(--prod)"></i>Produkte (H₂O und O₂)</span><span><i style="background:var(--wrong)"></i>anderes Molekül (passt nicht)</span></div>
+   <div class="kpi" id="mK"></div>
+   <div class="card l2"><h3>Verlauf</h3><div class="fig low" style="height:200px;min-height:180px"><canvas id="mT"></canvas></div><p class="note">Blau: Substratteilchen im Becher, orange: gebildete Produkte, grün: Zahl der Enzyme.</p></div>
+  </div>
+  <aside class="ctrl">
+   <div class="row"><button class="b pri" id="mGo">Pause</button><button class="b" id="mRe">Neu starten</button></div>
+   <div><label>Tempo</label><div class="seg" id="mSp"><button data-v=".3" aria-pressed="false">Zeitlupe</button><button data-v="1" aria-pressed="true">normal</button><button data-v="3" aria-pressed="false">schnell</button></div></div>
+   <div><div class="lab"><span>Enzyme</span><output id="mEo">5</output></div><input type="range" id="mE" min="1" max="12" value="5"></div>
+   <div><div class="lab"><span>Substrat am Start</span><output id="mSo">40</output></div><input type="range" id="mS" min="0" max="120" value="40"></div>
+   <button class="b" id="mAdd">+ 20 Substrat zugeben</button>
+   <div><div class="lab"><span>Andere Moleküle</span><output id="mXo">0</output></div><input type="range" id="mX" min="0" max="40" value="0"></div>
+   <div class="l2"><label>Modell</label><div class="seg" id="mMo"><button data-v="lock" aria-pressed="true">Schlüssel-Schloss</button><button data-v="fit" aria-pressed="false">Induced Fit</button></div></div>
+   <div class="card small" id="mInfo"></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-modell"></div>
+ <div class="expl"><details><summary>Erklärung: aktives Zentrum, Spezifität, Katalysator</summary><div class="cols">
+  <p><b>Aktives Zentrum.</b> Das Enzym ist eine lange Kette aus Aminosäuren, die sich zu einer ganz bestimmten räumlichen Form faltet. Eine kleine Mulde darin ist das aktive Zentrum. Form und Ladungen dort passen genau zum Substrat.</p>
+  <p><b>Substratspezifität.</b> Weil nur das passende Molekül andocken kann, beschleunigt ein Enzym meist nur eine einzige Reaktion. Katalase zerlegt Wasserstoffperoxid (2 H₂O₂ → 2 H₂O + O₂), Amylase spaltet Stärke, Pepsin Eiweiß.</p>
+  <p><b>Katalysator.</b> Das Enzym geht aus der Reaktion unverändert hervor und wird nicht verbraucht. Darum reichen wenige Enzyme für sehr viel Substrat. Zähle mit: Die Zahl der Enzyme ändert sich nie.</p>
+  <p class="l2"><b>Schlüssel-Schloss oder Induced Fit?</b> Emil Fischer (1894) verglich Substrat und Enzym mit Schlüssel und Schloss. Heute weiß man: Das aktive Zentrum ist beweglich und schließt sich erst beim Andocken um das Substrat (Daniel Koshland, 1958, „induzierte Passform“). Schalte das Modell um und beobachte die Mulde.</p>
+  <p class="l3"><b>Wechselzahl.</b> Die Zahl der Substratmoleküle, die ein Enzym pro Sekunde umsetzt, heißt Wechselzahl. Im Modell sind es wenige pro Sekunde. Echte Katalase schafft rund 40 Millionen pro Sekunde und gehört damit zu den schnellsten Enzymen.</p>
+ </div></details></div>
+</section>
+
+<!-- ========== ENERGIE ========== -->
+<section class="st" id="st-energie">
+ <h2>Aktivierungsenergie</h2>
+ <p class="lead">Wasserstoffperoxid zerfällt von selbst in Wasser und Sauerstoff – aber sehr langsam. Damit ein Molekül reagiert, muss es zuerst über einen Energieberg, die <b>Aktivierungsenergie</b>. Ein Katalysator senkt diesen Berg. Start und Ziel bleiben gleich.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="eC"></canvas></div>
+   <div class="kpi" id="eK"></div>
+   <div class="card l2"><h3>Wie viele Teilchen haben genug Energie?</h3><div class="fig low" style="height:210px;min-height:190px"><canvas id="eH"></canvas></div><p class="note">Die Teilchen stoßen ständig zusammen und haben dadurch unterschiedlich viel Energie: viele wenig, wenige viel. Nur der Anteil rechts von der Linie schafft den Berg. Kurve anschaulich gestaucht.</p></div>
+  </div>
+  <aside class="ctrl">
+   <div><label>Katalysator</label><div class="seg" id="eCat"><button data-v="none" aria-pressed="false">ohne</button><button data-v="pt" aria-pressed="false">Braunstein</button><button data-v="kat" aria-pressed="true">Katalase</button></div></div>
+   <div><div class="lab"><span>Temperatur</span><output id="eTo">37 °C</output></div><input type="range" id="eT" min="0" max="100" value="37"></div>
+   <div class="row"><button class="b pri" id="eGo">Pause</button><button class="b" id="eRe">Neu starten</button></div>
+   <div class="card small" id="eInfo"></div>
+   <div class="card small l3" id="eArr"></div>
+   <p class="note">Die Animation ist stark beschleunigt. Die echten Zahlen stehen in den Kästchen unter dem Bild.</p>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-energie"></div>
+ <div class="expl"><details><summary>Erklärung: Energieberg, Temperatur, was ein Enzym (nicht) ändert</summary><div class="cols">
+  <p><b>Der Energieberg.</b> Bevor neue Bindungen entstehen können, müssen alte gelockert werden. Das kostet zuerst Energie. Erst danach wird – bei dieser Reaktion – viel mehr Energie frei, als hineingesteckt wurde.</p>
+  <p><b>Was ein Enzym macht.</b> Das Enzym hält das Substrat im aktiven Zentrum so fest, dass die Bindungen leichter aufgehen. Der Berg wird niedriger. Die Energie am Start und am Ziel ändert es nicht: Es wird gleich viel Energie frei, und das Enzym liefert auch keine Energie.</p>
+  <p><b>Wärme hilft auch.</b> Bei höherer Temperatur bewegen sich die Teilchen schneller, und mehr von ihnen schaffen den Berg. Lebewesen können ihre Zellen aber nicht stark erhitzen – darum brauchen sie Enzyme.</p>
+  <p class="l2"><b>ES-Komplex.</b> Die kleine Mulde in der Katalase-Kurve ist der Enzym-Substrat-Komplex: Das Substrat sitzt im aktiven Zentrum, bevor es umgebaut wird.</p>
+  <p class="l3"><b>Arrhenius.</b> Die Geschwindigkeit wächst mit k = A · e^(−E_A/(R·T)). Werte für H₂O₂ aus Schulbüchern (je nach Quelle etwas verschieden): ohne Katalysator 75 kJ/mol, mit Platin bzw. Braunstein rund 49 kJ/mol, mit Katalase 23 kJ/mol. Die Reaktionsenthalpie ist ΔH ≈ −98 kJ pro mol H₂O₂.</p>
+ </div></details></div>
+</section>
+
+<!-- ========== TEMPERATUR & pH ========== -->
+<section class="st" id="st-temperatur">
+ <h2>Temperatur &amp; pH</h2>
+ <p class="lead">Wärmer heißt schneller – aber nur bis zu einer Grenze. Wird es zu heiß oder zu sauer, verliert das Enzym seine Form. Dann passt kein Substrat mehr ins aktive Zentrum.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="tC"></canvas></div>
+   <div class="kpi" id="tK"></div>
+   <div class="grid2">
+    <div class="card"><h3>Messreihe Temperatur</h3><div class="fig low" style="height:230px"><canvas id="tGT"></canvas></div><div class="row" style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><button class="b sm pri" id="tSerT">Messreihe 0–100 °C</button><button class="b sm" id="tClrT">Löschen</button></div></div>
+    <div class="card"><h3>Messreihe pH</h3><div class="fig low" style="height:230px"><canvas id="tGP"></canvas></div><div class="row" style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><button class="b sm pri" id="tSerP">Messreihe pH 1–13</button><button class="b sm" id="tClrP">Löschen</button></div></div>
+   </div>
+   <p class="note" id="tProg"></p>
+  </div>
+  <aside class="ctrl">
+   <div><label for="tEnz">Enzym</label><select id="tEnz"></select></div>
+   <div><div class="lab"><span>Temperatur</span><output id="tTo">37 °C</output></div><input type="range" id="tT" min="0" max="100" value="37"></div>
+   <div><div class="lab"><span>pH-Wert</span><output id="tPo">7</output></div><input type="range" id="tP" min="1" max="13" step="0.5" value="7"></div>
+   <div class="row"><button class="b pri" id="tGo">Pause</button><button class="b" id="tNew">Frische Enzyme</button></div>
+   <div class="card small" id="tInfo"></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-temperatur"></div>
+ <div class="expl"><details><summary>Erklärung: Optimum, Denaturierung, pH</summary><div class="cols">
+  <p><b>Zwei Wirkungen der Wärme.</b> Wärmer heißt: Die Teilchen sind schneller, treffen öfter auf das Enzym, und der Umbau geht rascher. Gleichzeitig wackelt das Enzym stärker. Ab einer bestimmten Temperatur reißen die schwachen Bindungen, die seine Faltung zusammenhalten.</p>
+  <p><b>Denaturierung.</b> Ist die Faltung zerstört, ist das Enzym <b>denaturiert</b>. Das ist meist nicht umkehrbar – wie bei einem gekochten Ei, das beim Abkühlen nicht wieder flüssig wird. Enzyme „sterben“ nicht, denn sie leben nicht. Sie verlieren ihre Form.</p>
+  <p><b>Optimum.</b> Aus beiden Wirkungen ergibt sich eine Optimumskurve. Die meisten Enzyme des Menschen arbeiten am besten um 37–40 °C. Taq-Polymerase aus Bakterien heißer Quellen hält fast 100 °C aus und wird deshalb im PCR-Test verwendet.</p>
+  <p><b>pH-Wert.</b> Säure oder Lauge verändern die Ladungen im aktiven Zentrum. Jedes Enzym hat sein pH-Optimum: Pepsin im sauren Magen bei pH 2, Amylase im Mund bei pH 7, Trypsin im Dünndarm bei pH 8.</p>
+  <p class="l3"><b>Modell.</b> Umbau-Geschwindigkeit nach Arrhenius mit E_A = 50 kJ/mol; jedes Enzym denaturiert zufällig mit einer Rate, die oberhalb einer Grenztemperatur stark ansteigt. Die pH-Abhängigkeit ist eine Glockenkurve um das Optimum. Jeder Messpunkt ist eine eigene Simulation über 30 s – darum streuen die Werte.</p>
+ </div></details></div>
+</section>
+
+<!-- ========== KONZENTRATION ========== -->
+<section class="st" id="st-konzentration">
+ <h2>Substratmenge</h2>
+ <p class="lead">Mehr Substrat heißt mehr Treffer – darum steigt die Geschwindigkeit zuerst an. Irgendwann sind aber alle Enzyme besetzt. Dann hilft noch mehr Substrat nichts mehr: Die Reaktion ist <b>gesättigt</b>.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="kC"></canvas></div>
+   <div class="kpi" id="kK"></div>
+   <div class="card"><h3>Geschwindigkeit und Substratmenge</h3><div class="fig low" style="height:270px"><canvas id="kG"></canvas></div>
+    <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><button class="b sm" id="kPt">Messpunkt bei dieser Menge</button><button class="b sm pri" id="kSer">Ganze Messreihe</button><button class="b sm" id="kClr">Löschen</button><button class="b sm l3" id="kLB" aria-pressed="false">Lineweaver-Burk</button></div>
+    <p class="note" id="kFit"></p></div>
+  </div>
+  <aside class="ctrl">
+   <div><div class="lab"><span>Substrat im Becher</span><output id="kSo">30</output></div><input type="range" id="kS" min="2" max="200" value="30"></div>
+   <div><div class="lab"><span>Enzyme</span><output id="kEo">5</output></div><input type="range" id="kE" min="1" max="12" value="5"></div>
+   <label class="chk"><input type="checkbox" id="kKeep" checked> Substrat nachfüllen (Menge bleibt gleich)</label>
+   <div class="row"><button class="b pri" id="kGo">Pause</button><button class="b" id="kRe">Neu starten</button></div>
+   <div class="card small" id="kInfo"></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-konzentration"></div>
+ <div class="expl"><details><summary>Erklärung: Sättigung, v<sub>max</sub> und K<sub>M</sub></summary><div class="cols">
+  <p><b>Wenig Substrat.</b> Die Enzyme warten meist leer. Doppelt so viel Substrat bedeutet doppelt so viele Treffer – die Geschwindigkeit steigt fast gleichmäßig.</p>
+  <p><b>Viel Substrat.</b> Jedes Enzym braucht für einen Umbau eine bestimmte Zeit. Sind alle Enzyme ständig beschäftigt, ist die Höchstgeschwindigkeit v<sub>max</sub> erreicht. Mehr geht nur mit <b>mehr Enzym</b>.</p>
+  <p class="l2"><b>Michaelis-Konstante.</b> K<sub>M</sub> ist die Substratmenge, bei der die halbe Höchstgeschwindigkeit erreicht wird. Ein kleines K<sub>M</sub> bedeutet: Das Enzym bindet sein Substrat schon bei geringer Menge gut. Die Kurve folgt v = v<sub>max</sub> · S / (K<sub>M</sub> + S) – im Labor entsteht sie von selbst aus den Zusammenstößen.</p>
+  <p class="l3"><b>Lineweaver-Burk.</b> Trägt man 1/v über 1/S auf, wird die Kurve zur Geraden: Achsenabschnitt 1/v<sub>max</sub>, Steigung K<sub>M</sub>/v<sub>max</sub>. Kleine Messwerte bekommen dabei großes Gewicht – die Punkte links unten sind zuverlässiger als die rechts oben.</p>
+ </div></details></div>
+</section>
+
+<!-- ========== HEMMUNG ========== -->
+<section class="st" id="st-hemmung">
+ <h2>Hemmstoffe</h2>
+ <p class="lead">Manche Stoffe bremsen Enzyme. Ein Hemmstoff kann das aktive Zentrum besetzen, das Enzym an einer anderen Stelle verbiegen oder es für immer unbrauchbar machen. Viele Medikamente und Gifte wirken genau so.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="hC"></canvas></div>
+   <div class="legend" id="hLeg"></div>
+   <div class="kpi" id="hK"></div>
+   <div class="card"><h3>Mit und ohne Hemmstoff</h3><div class="fig low" style="height:260px"><canvas id="hG"></canvas></div>
+    <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><button class="b sm pri" id="hSer">Beide Messreihen</button><button class="b sm" id="hClr">Löschen</button></div><p class="note" id="hNote"></p></div>
+  </div>
+  <aside class="ctrl">
+   <div><label>Hemmstoff</label><div class="seg" id="hTy" style="flex-wrap:wrap"><button data-v="I" aria-pressed="true">kompetitiv</button><button data-v="A" aria-pressed="false">allosterisch</button><button data-v="M" aria-pressed="false">Schwermetall</button></div></div>
+   <div><div class="lab"><span>Hemmstoff-Teilchen</span><output id="hNo">15</output></div><input type="range" id="hN" min="0" max="40" value="15"></div>
+   <div><div class="lab"><span>Substrat im Becher</span><output id="hSo">30</output></div><input type="range" id="hS" min="2" max="200" value="30"></div>
+   <div class="row"><button class="b pri" id="hGo">Pause</button><button class="b" id="hRe">Neu starten</button></div>
+   <div class="card small" id="hInfo"></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-hemmung"></div>
+ <div class="expl"><details><summary>Erklärung: drei Arten der Hemmung</summary><div class="cols">
+  <p><b>Kompetitiv (Konkurrenz).</b> Der Hemmstoff sieht dem Substrat ähnlich und setzt sich ins aktive Zentrum, wird aber nicht umgebaut. Nach einer Weile löst er sich wieder. Viel Substrat verdrängt ihn: Die Höchstgeschwindigkeit wird wieder erreicht, man braucht nur mehr Substrat. Beispiel: Methanol-Vergiftung wird mit Ethanol behandelt, das um dasselbe Enzym konkurriert.</p>
+  <p><b>Allosterisch.</b> Der Hemmstoff dockt an einer anderen Stelle an und verbiegt das Enzym, sodass das aktive Zentrum nicht mehr passt. Mehr Substrat hilft nicht – v<sub>max</sub> sinkt. So regeln Zellen ihren Stoffwechsel: Ein Endprodukt hemmt oft das erste Enzym seiner eigenen Herstellung (Rückkopplung).</p>
+  <p><b>Irreversibel.</b> Schwermetalle wie Quecksilber, Blei oder Kupfer binden fest an das Enzym und zerstören seine Form. Das Enzym ist dauerhaft unbrauchbar. Darum sind Schwermetallsalze giftig.</p>
+  <p class="l2"><b>In der Kurve erkennen.</b> Kompetitiv: Die Kurve steigt langsamer an, erreicht aber dieselbe Höhe (K<sub>M</sub> größer, v<sub>max</sub> gleich). Allosterisch: Die Kurve bleibt niedriger (v<sub>max</sub> kleiner).</p>
+ </div></details></div>
+</section>
+
+<!-- ========== KATALASE ========== -->
+<section class="st" id="st-katalase">
+ <h2>Versuch: Katalase</h2>
+ <p class="lead">Fast alle Zellen enthalten Katalase, weil bei der Atmung giftiges Wasserstoffperoxid entsteht. Gib Proben in 3-%-ige H₂O₂-Lösung und miss nach einer Minute die Schaumhöhe. Mit dem Glimmspan prüfst du, ob Sauerstoff entsteht.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="cC"></canvas></div>
+   <div class="card"><h3>Messprotokoll</h3><div style="overflow-x:auto"><table><thead><tr><th>#</th><th>Probe</th><th class="n">Temperatur</th><th>Zusatz</th><th class="n">Schaumhöhe nach 1 min</th></tr></thead><tbody id="cTab"></tbody></table></div>
+    <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><button class="b sm" id="cCsv">Als Tabelle kopieren (CSV)</button><button class="b sm" id="cClr">Protokoll löschen</button></div><p class="note" id="cMsg"></p></div>
+  </div>
+  <aside class="ctrl">
+   <div><label>Proben in den Röhrchen</label><div class="tubes" id="cSel"></div></div>
+   <div><div class="lab"><span>Wasserbad</span><output id="cTo">20 °C</output></div><input type="range" id="cT" min="0" max="100" step="5" value="20"></div>
+   <div><label for="cAdd">Zusatz zur Lösung</label><select id="cAdd"><option value="0">nichts (pH 7)</option><option value="1">Essig (pH 3)</option><option value="2">Natronlauge (pH 12)</option><option value="3">Kupfersulfat (Schwermetall)</option></select></div>
+   <div class="row"><button class="b pri" id="cGo">Versuch starten</button><button class="b" id="cFast" aria-pressed="false">Zeitraffer</button></div>
+   <div><label for="cGl">Glimmspan in Röhrchen</label><div class="row"><select id="cGl" style="width:auto;flex:1"></select><button class="b" id="cGlB">Prüfen</button></div></div>
+   <div class="card small" id="cInfo"></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-katalase"></div>
+ <div class="expl"><details><summary>Erklärung: Kontrolle, Variablen, Braunstein</summary><div class="cols">
+  <p><b>Was passiert?</b> Katalase zerlegt Wasserstoffperoxid: 2 H₂O₂ → 2 H₂O + O₂. Der Sauerstoff bildet Bläschen und Schaum. Ein glimmender Holzspan flammt im Sauerstoff hell auf (Glimmspanprobe).</p>
+  <p><b>Kontrollversuch.</b> Das Röhrchen mit Wasser bzw. Sand zeigt, dass H₂O₂ ohne Katalysator kaum zerfällt. Ändere immer nur eine Größe (Probe, Temperatur oder Zusatz), sonst weißt du nicht, woran es lag.</p>
+  <p><b>Gekocht.</b> Gekochte Leber oder Kartoffel schäumt fast nicht mehr: Die Katalase ist denaturiert. Braunstein (MnO₂) ist ein anorganischer Katalysator – er wirkt auch nach dem Erhitzen, nur schwächer als frische Leber.</p>
+  <p class="l2"><b>Warum hat jede Zelle Katalase?</b> Bei der Zellatmung und anderen Reaktionen entsteht laufend H₂O₂, das Zellbestandteile angreift. Leberzellen enthalten besonders viel Katalase, weil die Leber viele Stoffe abbaut.</p>
+  <p class="l3"><b>Modell.</b> Schaumhöhe h(t) = 8 cm · (1 − e^(−r·t/20 s)); r hängt von Katalasemenge, Temperatur (Arrhenius mit Denaturierung), pH (Optimum 7) und Schwermetall ab. Die Messwerte streuen um etwa 6 %.</p>
+ </div></details></div>
+</section>
+
+<script>
+/* ===================== Grundlagen ===================== */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const de=(x,p=3)=>Number(Number(x).toPrecision(p)).toLocaleString("de-AT",{maximumFractionDigits:10});
+const SUPD="⁰¹²³⁴⁵⁶⁷⁸⁹";const sup=n=>String(n).replace(/-/g,"⁻").replace(/\d/g,d=>SUPD[d]);
+function sci(x,p=2){if(x===0)return"0";const e=Math.floor(Math.log10(Math.abs(x)));if(e>=-2&&e<5)return de(x,p);return de(x/10**e,p)+" · 10"+sup(e)}
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const angD=(a,b)=>{let d=a-b;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;return d};
+const probe=document.createElement("i");probe.style.display="none";document.body.appendChild(probe);let CC={};
+function col(v){if(CC[v])return CC[v];probe.style.color=v.startsWith("var")||v.startsWith("#")?v:`var(${v})`;return CC[v]=getComputedStyle(probe).color}
+function alpha(c,a){const m=c.match(/[\d.]+/g);return m?`rgba(${m[0]},${m[1]},${m[2]},${a})`:c}
+const REG=[];
+function canv(id,draw){const c=document.getElementById(id);const o={c,draw,x:null,w:0,h:0};const fit=()=>{const r=c.getBoundingClientRect();if(!r.width||!r.height)return;const d=devicePixelRatio||1;c.width=Math.round(r.width*d);c.height=Math.round(r.height*d);o.w=r.width;o.h=r.height;o.x=c.getContext("2d");o.x.setTransform(d,0,0,d,0,0);draw(o)};o.fit=fit;o.redraw=()=>{if(o.x&&o.w)draw(o)};new ResizeObserver(fit).observe(c);REG.push(o);return o}
+const redrawAll=()=>{CC={};REG.forEach(o=>o.redraw())};
+new MutationObserver(redrawAll).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme","class","style"]});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",redrawAll);
+function txt(x,s,X,Y,o={}){x.font=`${o.w||400} ${o.size||13}px "Source Sans 3",system-ui,sans-serif`;x.fillStyle=o.c||col("--ink");x.textAlign=o.a||"left";x.textBaseline=o.b||"middle";x.fillText(s,X,Y)}
+function seg(id,cb){const el=document.getElementById(id);el.querySelectorAll("button").forEach(b=>b.onclick=()=>{el.querySelectorAll("button").forEach(q=>q.setAttribute("aria-pressed",q===b));cb(b.dataset.v)});return v=>{el.querySelectorAll("button").forEach(q=>q.setAttribute("aria-pressed",q.dataset.v==v))}}
+function kpi(id,items){document.getElementById(id).innerHTML=items.map(([k,v])=>`<div><span>${k}</span><b>${v}</b></div>`).join("")}
+const TL=["","einfach","mittel","anspruchsvoll"];
+function tasks(id,list){const el=document.getElementById("tk-"+id);el.innerHTML="";list.forEach(t=>{const d=document.createElement("div");d.className="task"+(t.l==2?" l2":t.l==3?" l3":"");d.innerHTML=`<span class="lv">${TL[t.l]}</span><h3>${t.h}</h3><p>${t.p}</p>`;if(t.set){const b=document.createElement("button");b.className="b sm";b.textContent="Einstellen";b.onclick=()=>{t.set();document.getElementById("st-"+id).scrollIntoView({behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"})};d.appendChild(b)}el.appendChild(d)})}
+function setLvl(l){document.body.dataset.lvl=l;$$(".lvl button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l==l));try{localStorage.setItem("enzlvl",l)}catch(e){}setTimeout(()=>{REG.forEach(o=>o.fit())},20)}
+$$(".lvl button").forEach(b=>b.onclick=()=>setLvl(b.dataset.l));
+const VIEWS=["modell","energie","temperatur","konzentration","hemmung","katalase"];let cur="modell";
+function route(){const h=location.hash.slice(1);cur=VIEWS.includes(h)?h:"modell";$$(".st").forEach(s=>s.classList.toggle("on",s.id=="st-"+cur));$$("#nav a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")=="#"+cur));setTimeout(()=>REG.forEach(o=>o.fit()),10)}
+addEventListener("hashchange",route);
+const sleep=()=>new Promise(r=>setTimeout(r,0));
+
+/* ===================== Diagramm ===================== */
+function nice(r){const e=10**Math.floor(Math.log10(r/5));for(const m of[1,2,2.5,5,10])if(r/(m*e)<=6)return m*e;return 10*e}
+function chart(o,c){const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const L=54,R=14,T=14,B=40;
+ const X=v=>L+(v-c.x0)/(c.x1-c.x0)*(w-L-R),Y=v=>h-B-(v-c.y0)/(c.y1-c.y0)*(h-T-B);
+ x.strokeStyle=col("--grid");x.lineWidth=1;x.font='12px "Source Sans 3",sans-serif';
+ const sx=nice(c.x1-c.x0),sy=nice(c.y1-c.y0);
+ for(let v=Math.ceil(c.x0/sx)*sx;v<=c.x1+1e-9;v+=sx){x.beginPath();x.moveTo(X(v),T);x.lineTo(X(v),h-B);x.stroke();txt(x,de(v,3),X(v),h-B+12,{a:"center",c:col("--mut"),size:12})}
+ for(let v=Math.ceil(c.y0/sy)*sy;v<=c.y1+1e-9;v+=sy){x.beginPath();x.moveTo(L,Y(v));x.lineTo(w-R,Y(v));x.stroke();txt(x,de(v,3),L-6,Y(v),{a:"right",c:col("--mut"),size:12})}
+ x.strokeStyle=col("--mut");x.beginPath();x.moveTo(L,T);x.lineTo(L,h-B);x.lineTo(w-R,h-B);x.stroke();
+ txt(x,c.xl,(L+w-R)/2,h-10,{a:"center",c:col("--mut"),size:13,w:600});
+ x.save();x.translate(13,(T+h-B)/2);x.rotate(-Math.PI/2);txt(x,c.yl,0,0,{a:"center",c:col("--mut"),size:13,w:600});x.restore();
+ x.save();x.beginPath();x.rect(L,T,w-L-R,h-T-B);x.clip();
+ (c.extra||(()=>{}))(x,X,Y);
+ for(const s of c.series||[]){const cc=col(s.c);
+  if(s.fn){x.strokeStyle=cc;x.lineWidth=2;x.setLineDash(s.dash||[]);x.beginPath();for(let i=0;i<=200;i++){const v=c.x0+(c.x1-c.x0)*i/200,y=s.fn(v);if(!isFinite(y))continue;i?x.lineTo(X(v),Y(y)):x.moveTo(X(v),Y(y))}x.stroke();x.setLineDash([])}
+  if(s.line&&s.pts.length>1){x.strokeStyle=alpha(cc,.55);x.lineWidth=1.6;x.beginPath();s.pts.forEach((p,i)=>i?x.lineTo(X(p[0]),Y(p[1])):x.moveTo(X(p[0]),Y(p[1])));x.stroke()}
+  if(s.pts){x.fillStyle=cc;for(const p of s.pts){x.beginPath();x.arc(X(p[0]),Y(p[1]),s.r||4,0,7);x.fill()}}}
+ x.restore();
+ if(c.legend){let yy=T+10;for(const [t,cc] of c.legend){x.fillStyle=col(cc);x.fillRect(w-R-150,yy-5,12,10);txt(x,t,w-R-133,yy,{size:12,c:col("--ink")});yy+=17}}}
+
+/* ===================== Enzyme ===================== */
+const ENZ={
+ katalase:{n:"Katalase (Leber)",Tm:40,pH:7,pw:2.2,tc:1.2},
+ amylase:{n:"Amylase (Speichel)",Tm:40,pH:6.8,pw:1.7,tc:1.4},
+ pepsin:{n:"Pepsin (Magen)",Tm:43,pH:2,pw:1.6,tc:1.5},
+ trypsin:{n:"Trypsin (Dünndarm)",Tm:41,pH:8,pw:1.5,tc:1.4},
+ taq:{n:"Taq-Polymerase (heiße Quelle)",Tm:88,pH:8.3,pw:1.6,tc:5}};
+const EA=50000,RG=8.314;
+const kfT=T=>Math.exp(-EA/RG*(1/(T+273.15)-1/310.15));
+const hazT=(T,Tm)=>.025*Math.exp((T-Tm)/2.6);
+const gpH=(p,e)=>Math.exp(-(((p-e.pH)/e.pw)**2));
+
+/* ===================== Teilchen-Becher ===================== */
+const WW=900,WH=520,RE=34,RM={S:10,X:10,P:6.5,I:10,A:7,M:6.5};
+class Pot{
+ constructor(o){this.o=Object.assign({nE:5,nS:40,enz:"katalase",T:37,pH:7,fit:false,X:0,I:0,A:0,M:0,keep:false},o);this.reset()}
+ reset(){const o=this.o;this.t=0;this.made=0;this.ev=[];this.E=[];this.M=[];this.hist=[];
+  for(let i=0;i<o.nE;i++)this.addE();
+  for(const k of["S","X","I","A","M"])this.add(k,k=="S"?o.nS:o[k])}
+ addE(){let e,tr=0;do{e={x:RE+20+Math.random()*(WW-2*RE-40),y:RE+20+Math.random()*(WH-2*RE-40)};tr++}while(tr<60&&this.E.some(f=>(f.x-e.x)**2+(f.y-e.y)**2<(2.6*RE)**2));
+  const a=Math.random()*6.28,s=8+Math.random()*6;Object.assign(e,{vx:Math.cos(a)*s,vy:Math.sin(a)*s,a:Math.random()*6.28,va:0,st:0,tm:0,allo:0,metal:false,dead:false,def:0,nh:.42,nd:.42,seed:Math.random()*6});this.E.push(e)}
+ rmE(){if(this.E.length)this.E.pop()}
+ mol(k,x,y){const a=Math.random()*6.28,sf=.55+Math.random()*.9;return{type:k,x:x??(RM[k]+Math.random()*(WW-2*RM[k])),y:y??(RM[k]+Math.random()*(WH-2*RM[k])),vx:Math.cos(a),vy:Math.sin(a),sf,r:RM[k],rot:Math.random()*6.28,vr:(Math.random()-.5)*3,age:0}}
+ add(k,n){for(let i=0;i<n;i++){let m,tr=0;do{m=this.mol(k);tr++}while(tr<20&&this.E.some(e=>(e.x-m.x)**2+(e.y-m.y)**2<(RE+m.r+2)**2));this.M.push(m)}}
+ count(k){return this.M.filter(m=>m.type==k).length}
+ setN(k,n){const c=this.count(k);if(n>c)this.add(k,n-c);else{let r=c-n;for(let i=this.M.length-1;i>=0&&r>0;i--)if(this.M[i].type==k){this.M.splice(i,1);r--}}}
+ setE(n){while(this.E.length<n)this.addE();while(this.E.length>n)this.rmE()}
+ vth(){return 240*Math.sqrt((this.o.T+273.15)/310.15)}
+ release(e,k,dist){const a=e.a+(k=="A"?Math.PI:0),d=RE+(dist||12);const m=this.mol(k,e.x+Math.cos(a)*d,e.y+Math.sin(a)*d);m.vx=Math.cos(a+(Math.random()-.5));m.vy=Math.sin(a+(Math.random()-.5));this.M.push(m);return m}
+ step(dt){const o=this.o,en=ENZ[o.enz],v=this.vth(),kf=kfT(o.T),haz=hazT(o.T,en.Tm),g=gpH(o.pH,en);this.t+=dt;
+  /* Enzyme */
+  for(const e of this.E){
+   e.x+=e.vx*dt;e.y+=e.vy*dt;if(e.x<RE){e.x=RE;e.vx=Math.abs(e.vx)}if(e.x>WW-RE){e.x=WW-RE;e.vx=-Math.abs(e.vx)}if(e.y<RE){e.y=RE;e.vy=Math.abs(e.vy)}if(e.y>WH-RE){e.y=WH-RE;e.vy=-Math.abs(e.vy)}
+   e.va+=(Math.random()-.5)*4*dt;e.va*=.98;e.va=clamp(e.va,-1.2,1.2);e.a+=e.va*dt;
+   if(!e.dead&&Math.random()<haz*dt){e.dead=true;if(e.st==1)this.release(e,"S");if(e.st==2)this.release(e,"I");e.st=0}
+   if(e.st){e.tm-=dt;if(e.tm<=0){if(e.st==1){const p1=this.release(e,"P",8),p2=this.release(e,"P",8);p1.vx+= -Math.sin(e.a)*.8;p1.vy+=Math.cos(e.a)*.8;p2.vx+=Math.sin(e.a)*.8;p2.vy-=Math.cos(e.a)*.8;this.made++;this.ev.push(this.t);if(o.keep)this.add("S",1)}else this.release(e,"I");e.st=0}}
+   if(e.allo>0){e.allo-=dt;if(e.allo<=0){e.allo=0;this.release(e,"A")}}
+   const defT=e.dead?1:e.metal?.75:e.allo>0?.55:(1-g)*.85;e.def+=(defT-e.def)*Math.min(1,dt*3);
+   let nh=.42,nd=.42;if(o.fit){if(e.st){nh=.38;nd=.46}else{nh=.62;nd=.3}}nd*=1-e.def*.9;nh*=1-e.def*.4;e.nh+=(nh-e.nh)*Math.min(1,dt*6);e.nd+=(nd-e.nd)*Math.min(1,dt*6)}
+  for(let i=0;i<this.E.length;i++)for(let j=i+1;j<this.E.length;j++){const a=this.E[i],b=this.E[j],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||1;if(d<2*RE+4){const p=(2*RE+4-d)/2,nx=dx/d,ny=dy/d;a.x-=nx*p;a.y-=ny*p;b.x+=nx*p;b.y+=ny*p;const rv=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(rv<0){a.vx+=rv*nx;a.vy+=rv*ny;b.vx-=rv*nx;b.vy-=rv*ny}}}
+  /* Moleküle */
+  const jit=1.8*Math.sqrt(Math.max(0,dt));
+  for(let i=this.M.length-1;i>=0;i--){const m=this.M[i];m.age+=dt;
+   const th=gauss()*jit,c=Math.cos(th),s=Math.sin(th),vx=m.vx*c-m.vy*s,vy=m.vx*s+m.vy*c,L=Math.hypot(vx,vy)||1;m.vx=vx/L;m.vy=vy/L;
+   const sp=v*m.sf*(m.type=="P"?1.25:1);m.x+=m.vx*sp*dt;m.y+=m.vy*sp*dt;m.rot+=m.vr*dt;
+   if(m.x<m.r){m.x=m.r;m.vx=Math.abs(m.vx)}if(m.x>WW-m.r){m.x=WW-m.r;m.vx=-Math.abs(m.vx)}if(m.y<m.r){m.y=m.r;m.vy=Math.abs(m.vy)}if(m.y>WH-m.r){m.y=WH-m.r;m.vy=-Math.abs(m.vy)}
+   if(m.type=="P"&&o.keep&&m.age>3){this.M.splice(i,1);continue}
+   for(const e of this.E){const dx=m.x-e.x,dy=m.y-e.y,d2=dx*dx+dy*dy,R=RE+m.r;if(d2>R*R)continue;
+    const d=Math.sqrt(d2)||1,ang=angD(Math.atan2(dy,dx),e.a),ok=!e.dead&&!e.metal&&e.allo<=0&&e.st==0;let gone=false;
+    if((m.type=="S"||m.type=="I")&&ok&&Math.abs(ang)<1&&Math.random()<g){e.st=m.type=="S"?1:2;e.tm=m.type=="S"?en.tc/kf*(.6+.8*Math.random()):1.6+2.4*Math.random();gone=true}
+    else if(m.type=="A"&&!e.dead&&e.allo<=0&&Math.abs(angD(ang,Math.PI))<1){e.allo=2.5+3*Math.random();gone=true}
+    else if(m.type=="M"&&!e.dead&&!e.metal){e.metal=true;if(e.st==1)this.release(e,"S");if(e.st==2)this.release(e,"I");e.st=0;gone=true}
+    if(gone){this.M.splice(i,1);break}
+    const nx=dx/d,ny=dy/d;m.x=e.x+nx*R;m.y=e.y+ny*R;const dot=m.vx*nx+m.vy*ny;if(dot<0){m.vx-=2*dot*nx;m.vy-=2*dot*ny}break}}
+  while(this.ev.length&&this.ev[0]<this.t-8)this.ev.shift();
+  if(!this._h||this.t-this._h>.25){this._h=this.t;this.hist.push([this.t,this.count("S")+this.E.filter(e=>e.st==1).length,this.made,this.E.length]);if(this.hist.length>1200)this.hist.splice(0,this.hist.length-1200)}}
+ rate(){const w=Math.min(8,this.t);return w>.5?this.ev.filter(t=>t>this.t-w).length/w:0}
+ active(){return this.E.filter(e=>!e.dead&&!e.metal).length}
+}
+function measure(o,dur,warm){const p=new Pot(Object.assign({},o,{keep:true}));const dt=1/30;for(let t=0;t<warm;t+=dt)p.step(dt);const m0=p.made;for(let t=0;t<dur;t+=dt)p.step(dt);return(p.made-m0)/dur}
+
+/* Zeichnen */
+function triPts(cx,cy,rot,s){return[[cx+Math.cos(rot)*11*s,cy+Math.sin(rot)*11*s],[cx+Math.cos(rot+2.3)*10*s,cy+Math.sin(rot+2.3)*10*s],[cx+Math.cos(rot-2.3)*10*s,cy+Math.sin(rot-2.3)*10*s]]}
+function poly(x,P,fill,stroke){x.beginPath();P.forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.closePath();x.fillStyle=fill;x.fill();if(stroke){x.strokeStyle=stroke;x.lineWidth=1.2;x.stroke()}}
+function drawMol(x,m,X,Y,s){const cx=X(m.x),cy=Y(m.y),r=m.r*s;
+ if(m.type=="S"||m.type=="I")poly(x,triPts(cx,cy,m.rot,s),col(m.type=="S"?"--sub":"--inh"),"rgba(0,0,0,.3)");
+ else if(m.type=="X"){x.save();x.translate(cx,cy);x.rotate(m.rot);x.fillStyle=col("--wrong");x.fillRect(-r*.85,-r*.85,r*1.7,r*1.7);x.strokeStyle="rgba(0,0,0,.3)";x.strokeRect(-r*.85,-r*.85,r*1.7,r*1.7);x.restore()}
+ else if(m.type=="P"){x.fillStyle=col("--prod");x.beginPath();x.arc(cx,cy,r,0,7);x.fill();x.strokeStyle="rgba(0,0,0,.25)";x.stroke()}
+ else if(m.type=="A"){x.fillStyle=col("--allo");x.beginPath();x.arc(cx,cy,r,0,7);x.fill();x.beginPath();x.moveTo(cx+Math.cos(m.rot)*r,cy+Math.sin(m.rot)*r);x.lineTo(cx+Math.cos(m.rot)*r*2,cy+Math.sin(m.rot)*r*2);x.strokeStyle=col("--allo");x.lineWidth=2.5*s;x.stroke()}
+ else if(m.type=="M"){x.fillStyle=col("--metal");x.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3+m.rot;x.lineTo(cx+Math.cos(a)*r*1.15,cy+Math.sin(a)*r*1.15)}x.closePath();x.fill();txt(x,"Hg",cx,cy+.5,{a:"center",size:Math.max(7,8*s),w:700,c:"#fff"})}}
+function drawEnz(x,e,X,Y,s){const cx=X(e.x),cy=Y(e.y),N=140;
+ x.beginPath();for(let k=0;k<=N;k++){const th=k/N*2*Math.PI-Math.PI,d=th;let r=RE*(1+e.def*(.16*Math.sin(3*th+e.seed)+.09*Math.sin(5*th+2*e.seed)));
+  if(Math.abs(d)<e.nh)r-=RE*e.nd*(1-Math.abs(d)/e.nh);const d2=angD(th,Math.PI);if(Math.abs(d2)<.38)r-=RE*.16*Math.cos(d2/.38*Math.PI/2)*(e.allo>0?0:1);
+  const a=th+e.a,px=cx+Math.cos(a)*r*s,py=cy+Math.sin(a)*r*s;k?x.lineTo(px,py):x.moveTo(px,py)}
+ x.closePath();const c=e.dead?col("--enzd"):col("--enz");const gr=x.createRadialGradient(cx-RE*s*.3,cy-RE*s*.35,RE*s*.1,cx,cy,RE*s*1.1);gr.addColorStop(0,alpha(c,.65));gr.addColorStop(1,c);x.fillStyle=gr;x.fill();x.strokeStyle=e.metal?col("--metal"):"rgba(0,0,0,.28)";x.lineWidth=e.metal?2.5:1.2;x.stroke();
+ if(e.st){const ia=e.a+Math.PI,tip=RE-RE*e.nd+2,bx=cx+Math.cos(e.a)*(tip+11)*s,by=cy+Math.sin(e.a)*(tip+11)*s;poly(x,triPts(bx,by,ia,s),col(e.st==1?"--sub":"--inh"),"rgba(0,0,0,.3)")}
+ if(e.allo>0){const a=e.a+Math.PI;const ax=cx+Math.cos(a)*(RE+2)*s,ay=cy+Math.sin(a)*(RE+2)*s;x.fillStyle=col("--allo");x.beginPath();x.arc(ax,ay,7*s,0,7);x.fill()}
+ if(e.metal){const a=e.a+2;drawMol(x,{type:"M",x:e.x+Math.cos(a)*(RE-2),y:e.y+Math.sin(a)*(RE-2),r:6.5,rot:0},X,Y,s)}
+ if(e.dead&&!e.metal&&s>.45){txt(x,"denaturiert",cx,cy,{a:"center",size:11*Math.max(.8,s),c:"rgba(0,0,0,.6)",w:600})}}
+function drawPot(o,p){const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const s=Math.min(w/WW,h/WH),ox=(w-WW*s)/2,oy=(h-WH*s)/2,X=v=>ox+v*s,Y=v=>oy+v*s;
+ x.fillStyle=alpha(col("--sub"),.05);x.fillRect(ox,oy,WW*s,WH*s);x.strokeStyle=col("--line");x.strokeRect(ox+.5,oy+.5,WW*s-1,WH*s-1);
+ for(const m of p.M)drawMol(x,m,X,Y,s);for(const e of p.E)drawEnz(x,e,X,Y,s)}
+
+/* ===================== Station: Modell ===================== */
+const MP=new Pot({nE:5,nS:40});let mRun=true,mSpd=1;
+const mC=canv("mC",o=>drawPot(o,MP));
+const mT=canv("mT",o=>{const H=MP.hist;const tmax=Math.max(20,MP.t);const ymax=Math.max(10,...H.map(r=>Math.max(r[1],r[2])));
+ chart(o,{x0:Math.max(0,tmax-120),x1:tmax,y0:0,y1:ymax*1.1,xl:"Zeit in s",yl:"Anzahl",series:[{pts:[],line:false,fn:null,c:"--sub"}],extra:(x,X,Y)=>{for(const [k,cc] of[[1,"--sub"],[2,"--prod"],[3,"--enz"]]){x.strokeStyle=col(cc);x.lineWidth=2.2;x.beginPath();H.forEach((r,i)=>i?x.lineTo(X(r[0]),Y(r[k])):x.moveTo(X(r[0]),Y(r[k])));x.stroke()}}})});
+function mUpd(){const sLeft=MP.count("S")+MP.E.filter(e=>e.st==1).length;
+ kpi("mK",[["Enzyme",MP.E.length],["Substrat übrig",sLeft],["Umsätze",MP.made],["Umsätze pro s",de(MP.rate(),2)]]);
+ const busy=MP.E.filter(e=>e.st==1).length;
+ $("#mInfo").innerHTML=`${busy} von ${MP.E.length} Enzymen arbeiten gerade.`+(sLeft==0&&MP.made>0?` <b>Alles Substrat ist umgesetzt – die Enzyme sind noch alle da.</b>`:"")+`<span class="l3"><br>Wechselzahl im Modell: ${de(MP.rate()/MP.E.length,2)} pro Enzym und Sekunde (echte Katalase: ≈ 4 · 10⁷ pro s).</span>`}
+$("#mGo").onclick=()=>{mRun=!mRun;$("#mGo").textContent=mRun?"Pause":"Weiter"};
+$("#mRe").onclick=()=>{MP.o.nE=+$("#mE").value;MP.o.nS=+$("#mS").value;MP.o.X=+$("#mX").value;MP.reset();mC.redraw()};
+seg("mSp",v=>mSpd=+v);
+const mSetMo=seg("mMo",v=>{MP.o.fit=v=="fit"});
+$("#mE").oninput=e=>{$("#mEo").textContent=e.target.value;MP.setE(+e.target.value)};
+$("#mS").oninput=e=>{$("#mSo").textContent=e.target.value};
+$("#mS").onchange=()=>$("#mRe").onclick();
+$("#mX").oninput=e=>{$("#mXo").textContent=e.target.value;MP.setN("X",+e.target.value)};
+$("#mAdd").onclick=()=>MP.add("S",20);
+function mSet(nE,nS,X,fit,spd){$("#mE").value=nE;$("#mEo").textContent=nE;$("#mS").value=nS;$("#mSo").textContent=nS;$("#mX").value=X;$("#mXo").textContent=X;MP.o.fit=!!fit;mSetMo(fit?"fit":"lock");if(spd){mSpd=spd;seg("mSp",v=>mSpd=+v)(spd)}$("#mRe").onclick();if(!mRun)$("#mGo").onclick()}
+tasks("modell",[
+ {l:1,h:"Wird das Enzym verbraucht?",p:"Vermute zuerst: Wie viele Enzyme sind übrig, wenn alles Substrat umgesetzt ist? Starte mit 3 Enzymen und 30 Substratteilchen und zähle.",set:()=>mSet(3,30,0,false,3)},
+ {l:1,h:"Passt nicht",p:"Gib 20 andere Moleküle (graue Quadrate) dazu. Docken sie an? Was bedeutet das für die Verdauung von Stärke im Mund und von Eiweiß im Magen?",set:()=>mSet(4,25,20,false,1)},
+ {l:1,h:"Mehr Enzym",p:"Vergleiche die Umsätze pro Sekunde mit 2 und mit 8 Enzymen bei gleich viel Substrat. Was fällt dir auf?",set:()=>mSet(2,80,0,false,1)},
+ {l:2,h:"Schlüssel-Schloss oder Induced Fit",p:"Schalte zwischen den Modellen um und beobachte die Mulde in Zeitlupe. Beschreibe den Unterschied in einem Satz.",set:()=>mSet(3,20,0,true,.3)},
+ {l:2,h:"Der Verlauf",p:"Starte mit 100 Substratteilchen. Warum wird die blaue Kurve gegen Ende immer flacher, obwohl die Enzyme gleich bleiben?",set:()=>mSet(5,100,0,false,3)},
+ {l:3,h:"Wechselzahl",p:"Bestimme bei viel Substrat die Wechselzahl im Modell. Wie viel schneller ist echte Katalase? Rechne den Faktor aus."}]);
+
+/* ===================== Station: Energie ===================== */
+const CAT={none:{n:"ohne Katalysator",Ea:75},pt:{n:"Braunstein / Platin",Ea:49},kat:{n:"Katalase",Ea:23}};
+let eCat="kat",eT=37,eRun=true;const EB=[];
+const PROF=c=>{const Ea=CAT[c].Ea;return c=="kat"?[[0,0],[.2,0],[.34,Ea*.85],[.44,-12],[.56,Ea],[.8,-98],[1,-98]]:[[0,0],[.2,0],[.5,Ea],[.8,-98],[1,-98]]};
+function prof(c,xi){const P=PROF(c);for(let i=0;i<P.length-1;i++){const[a,ea]=P[i],[b,eb]=P[i+1];if(xi<=b){const t=(xi-a)/(b-a),u=(1-Math.cos(Math.PI*clamp(t,0,1)))/2;return ea+(eb-ea)*u}}return P[P.length-1][1]}
+function eReset(){EB.length=0;for(let i=0;i<40;i++)EB.push({side:0,xi:.03+Math.random()*.15,e:0,ph:Math.random(),dur:.4+Math.random()*.3,tr:-1})}
+eReset();
+const kTv=()=>7.7*(eT+273.15)/310.15;
+function eStep(dt){const Ea=CAT[eCat].Ea,k=kTv();for(const b of EB){if(b.tr>=0){b.tr+=dt/1.1;b.xi=.2+(.84-.2)*Math.min(1,b.tr);if(b.tr>=1){b.tr=-1;b.side=1;b.xi=.82+Math.random()*.15}continue}
+ b.ph+=dt/b.dur;if(b.ph>=1){b.ph=0;b.dur=.35+Math.random()*.35;b.e=-k*Math.log(Math.random()+1e-12);if(b.side==1)b.e*=.4;
+  if(b.side==0&&b.e>=Ea){b.tr=0;b.e=0}else{b.xi=clamp(b.xi+(Math.random()-.5)*.03,b.side?.8:.02,b.side?.98:.19)}}}}
+const eC=canv("eC",o=>{const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const L=58,R=18,T=26,B=44;const X=v=>L+v*(w-L-R),Y=E=>T+(90-E)/(200)*(h-T-B);
+ x.strokeStyle=col("--grid");x.lineWidth=1;for(let E=-100;E<=80;E+=20){x.beginPath();x.moveTo(L,Y(E));x.lineTo(w-R,Y(E));x.stroke();txt(x,String(E),L-6,Y(E),{a:"right",size:12,c:col("--mut")})}
+ x.save();x.translate(14,(T+h-B)/2);x.rotate(-Math.PI/2);txt(x,"Energie in kJ/mol",0,0,{a:"center",size:13,w:600,c:col("--mut")});x.restore();
+ txt(x,"Reaktionsverlauf →",(L+w-R)/2,h-14,{a:"center",size:13,w:600,c:col("--mut")});
+ for(const c of["none","pt","kat"]){if(c==eCat)continue;x.strokeStyle=alpha(col("--mut"),.35);x.setLineDash([5,5]);x.lineWidth=1.5;x.beginPath();for(let i=0;i<=200;i++){const v=i/200;i?x.lineTo(X(v),Y(prof(c,v))):x.moveTo(X(v),Y(prof(c,v)))}x.stroke();x.setLineDash([])}
+ x.strokeStyle=col("--ink");x.lineWidth=3;x.beginPath();for(let i=0;i<=300;i++){const v=i/300;i?x.lineTo(X(v),Y(prof(eCat,v))):x.moveTo(X(v),Y(prof(eCat,v)))}x.stroke();
+ const Ea=CAT[eCat].Ea,pk=eCat=="kat"?.56:.5;x.strokeStyle=col("--acc");x.lineWidth=2;x.beginPath();x.moveTo(X(.12),Y(0));x.lineTo(X(.12),Y(Ea));x.stroke();x.setLineDash([3,4]);x.beginPath();x.moveTo(X(.12),Y(Ea));x.lineTo(X(pk),Y(Ea));x.stroke();x.setLineDash([]);
+ txt(x,"E_A = "+Ea+" kJ/mol",X(.12)+4,Y(Ea)-12,{size:14,w:700,c:col("--acc")});
+ x.strokeStyle=col("--prod");x.lineWidth=2;x.beginPath();x.moveTo(X(.9),Y(0));x.lineTo(X(.9),Y(-98));x.stroke();x.setLineDash([3,4]);x.beginPath();x.moveTo(X(.2),Y(0));x.lineTo(X(.9),Y(0));x.stroke();x.setLineDash([]);
+ txt(x,"ΔH = −98 kJ/mol",X(.9)-6,Y(-49),{a:"right",size:13,w:700,c:col("--prod")});
+ txt(x,"2 H₂O₂",X(.1),Y(0)+20,{a:"center",size:15,w:700});txt(x,"2 H₂O + O₂",X(.9),Y(-98)+20,{a:"center",size:15,w:700});
+ if(eCat=="kat"&&document.body.dataset.lvl>1)txt(x,"ES-Komplex",X(.44),Y(-12)+18,{a:"center",size:12,c:col("--mut")});
+ for(const b of EB){let E=prof(eCat,b.xi);if(b.tr<0)E+=Math.min(b.e,85-E)*Math.sin(Math.PI*b.ph);else E+=3;const bx=X(b.xi),by=Y(E)-7;x.fillStyle=col(b.side||b.tr>=0?"--prod":"--sub");x.beginPath();x.arc(bx,by,6,0,7);x.fill();x.strokeStyle="rgba(0,0,0,.3)";x.lineWidth=1;x.stroke()}
+ txt(x,CAT[eCat].n+" · "+eT+" °C",w-R,T-10,{a:"right",size:13,w:600,c:col("--mut")})});
+const eH=canv("eH",o=>{const k=kTv(),Ea=CAT[eCat].Ea;chart(o,{x0:0,x1:90,y0:0,y1:1.05,xl:"Energie eines Teilchens in kJ/mol",yl:"Anteil",extra:(x,X,Y)=>{
+ x.fillStyle=alpha(col("--acc"),.25);x.beginPath();x.moveTo(X(Ea),Y(0));for(let E=Ea;E<=90;E+=.5)x.lineTo(X(E),Y(Math.exp(-E/k)));x.lineTo(X(90),Y(0));x.closePath();x.fill();
+ x.strokeStyle=col("--ink");x.lineWidth=2;x.beginPath();for(let E=0;E<=90;E+=.5)E?x.lineTo(X(E),Y(Math.exp(-E/k))):x.moveTo(X(E),Y(1));x.stroke();
+ for(const c of["none","pt","kat"]){x.strokeStyle=col(c==eCat?"--acc":"--mut");x.lineWidth=c==eCat?2.5:1;x.setLineDash(c==eCat?[]:[4,4]);x.beginPath();x.moveTo(X(CAT[c].Ea),Y(0));x.lineTo(X(CAT[c].Ea),Y(1));x.stroke();x.setLineDash([]);txt(x,CAT[c].Ea+"",X(CAT[c].Ea)+3,Y(.95),{size:11,c:col("--mut")})}}})});
+function eUpd(){const RT=RG*(eT+273.15)/1000,Ea=CAT[eCat].Ea,f=Math.exp(-Ea/RT),fac=Math.exp((75-Ea)/RT),n=EB.filter(b=>b.side==1).length;
+ kpi("eK",[["Umgesetzt",n+" von 40"],["Energieberg",Ea+" kJ/mol"],["Genug Energie hat","1 von "+sci(1/f,2)],["Schneller als ohne",eCat=="none"?"–":sci(fac,2)+"-mal"]]);
+ $("#eInfo").innerHTML=eCat=="none"?"Ohne Katalysator schafft kaum ein Teilchen den hohen Berg. Erhöhe die Temperatur oder wähle einen Katalysator.":eCat=="pt"?"Braunstein senkt den Berg etwas. Er ist ein anorganischer Katalysator und kein Enzym.":"Katalase senkt den Berg stark. Start (2 H₂O₂) und Ziel (2 H₂O + O₂) bleiben gleich hoch.";
+ $("#eArr").innerHTML=`k = A · e<sup>−E<sub>A</sub>/(R·T)</sup><br>R·T = ${de(RT,3)} kJ/mol bei ${de(eT+273.15,4)} K<br>e<sup>−E<sub>A</sub>/(R·T)</sup> = ${sci(f,2)}`;eH.redraw()}
+const eSetCat=seg("eCat",v=>{eCat=v;eUpd();eC.redraw()});
+$("#eT").oninput=e=>{eT=+e.target.value;$("#eTo").textContent=eT+" °C";eUpd()};
+$("#eGo").onclick=()=>{eRun=!eRun;$("#eGo").textContent=eRun?"Pause":"Weiter"};
+$("#eRe").onclick=()=>{eReset();eUpd()};
+function eSet(c,T){eCat=c;eSetCat(c);eT=T;$("#eT").value=T;$("#eTo").textContent=T+" °C";eReset();eUpd();if(!eRun)$("#eGo").onclick()}
+tasks("energie",[
+ {l:1,h:"Ohne Hilfe",p:"Wähle „ohne“ bei 20 °C. Wie viele Teilchen kommen in einer Minute über den Berg? Vergleiche mit Katalase.",set:()=>eSet("none",20)},
+ {l:1,h:"Was ändert das Enzym?",p:"Vergleiche die drei Kurven. Was wird anders, was bleibt gleich? Liefert das Enzym Energie?",set:()=>eSet("kat",37)},
+ {l:1,h:"Wärme statt Enzym",p:"Erhöhe ohne Katalysator die Temperatur auf 100 °C. Warum ist das für eine lebende Zelle keine Lösung?",set:()=>eSet("none",100)},
+ {l:2,h:"Der Anteil zählt",p:"Lies im Diagramm ab, wie sich die Fläche rechts von der Linie ändert, wenn du den Katalysator wechselst. Was bedeutet die Fläche?",set:()=>eSet("pt",37)},
+ {l:3,h:"Um welchen Faktor?",p:"Berechne mit der Arrhenius-Gleichung, wie viel schneller H₂O₂ mit Katalase bei 37 °C zerfällt als ohne. Vergleiche mit dem angezeigten Wert."}]);
+
+/* ===================== Station: Temperatur & pH ===================== */
+const TP=new Pot({nE:8,nS:120,keep:true});let tRun=true;const tSerT=[],tSerP=[];const ECOL={katalase:"--enz",amylase:"--sub",pepsin:"--inh",trypsin:"--allo",taq:"--prod"};
+$("#tEnz").innerHTML=Object.entries(ENZ).map(([k,e])=>`<option value="${k}">${e.n}</option>`).join("");
+const tC=canv("tC",o=>drawPot(o,TP));
+const tGT=canv("tGT",o=>{const ym=Math.max(4,...tSerT.flatMap(s=>s.pts.map(p=>p[1])))*1.15;chart(o,{x0:0,x1:100,y0:0,y1:ym,xl:"Temperatur in °C",yl:"Umsätze pro s",series:tSerT.map(s=>({pts:s.pts,c:ECOL[s.enz],line:true})),legend:[...new Set(tSerT.map(s=>s.enz))].map(k=>[ENZ[k].n.split(" (")[0],ECOL[k]])})});
+const tGP=canv("tGP",o=>{const ym=Math.max(4,...tSerP.flatMap(s=>s.pts.map(p=>p[1])))*1.15;chart(o,{x0:0,x1:14,y0:0,y1:ym,xl:"pH-Wert",yl:"Umsätze pro s",series:tSerP.map(s=>({pts:s.pts,c:ECOL[s.enz],line:true})),legend:[...new Set(tSerP.map(s=>s.enz))].map(k=>[ENZ[k].n.split(" (")[0],ECOL[k]])})});
+function tUpd(){const d=TP.E.filter(e=>e.dead).length;kpi("tK",[["Temperatur",TP.o.T+" °C"],["pH",de(TP.o.pH,2)],["intakte Enzyme",(TP.E.length-d)+" von "+TP.E.length],["Umsätze pro s",de(TP.rate(),2)]]);
+ const e=ENZ[TP.o.enz],g=gpH(TP.o.pH,e);$("#tInfo").innerHTML=(d==TP.E.length?"<b>Alle Enzyme sind denaturiert.</b> Kühle ab – werden sie wieder aktiv? Mit „Frische Enzyme“ beginnst du neu.":d?`${d} Enzym${d>1?"e sind":" ist"} denaturiert und bleib${d>1?"en":"t"} es, auch wenn du abkühlst.`:"Alle Enzyme sind intakt.")+(g<.5?"<br>Bei diesem pH-Wert ist das aktive Zentrum verformt. Substrat bindet nur selten.":"")}
+$("#tEnz").onchange=e=>{TP.o.enz=e.target.value;TP.reset()};
+$("#tT").oninput=e=>{TP.o.T=+e.target.value;$("#tTo").textContent=e.target.value+" °C"};
+$("#tP").oninput=e=>{TP.o.pH=+e.target.value;$("#tPo").textContent=de(+e.target.value,2)};
+$("#tGo").onclick=()=>{tRun=!tRun;$("#tGo").textContent=tRun?"Pause":"Weiter"};
+$("#tNew").onclick=()=>TP.reset();
+let busy=false;
+async function series(btns,list,fn,prog){if(busy)return;busy=true;btns.forEach(b=>b.disabled=true);const pts=[];list.push({pts,enz:TP.o.enz});for(let i=0;i<fn.n;i++){pts.push(fn.at(i));prog(i+1,fn.n);await sleep()}btns.forEach(b=>b.disabled=false);busy=false;$("#tProg").textContent=""}
+const SB=()=>[$("#tSerT"),$("#tSerP"),$("#kSer"),$("#kPt"),$("#hSer")];
+$("#tSerT").onclick=()=>{const o={enz:TP.o.enz,pH:TP.o.pH,nE:8,nS:150};series(SB(),tSerT,{n:21,at:i=>{const T=i*5;return[T,measure(Object.assign({},o,{T}),30,0)]}},(i,n)=>{$("#tProg").textContent=`Messe … ${i} von ${n}`;tGT.redraw()})};
+$("#tSerP").onclick=()=>{const o={enz:TP.o.enz,T:TP.o.T,nE:8,nS:150};series(SB(),tSerP,{n:25,at:i=>{const p=1+i*.5;return[p,measure(Object.assign({},o,{pH:p}),25,0)]}},(i,n)=>{$("#tProg").textContent=`Messe … ${i} von ${n}`;tGP.redraw()})};
+$("#tClrT").onclick=()=>{tSerT.length=0;tGT.redraw()};$("#tClrP").onclick=()=>{tSerP.length=0;tGP.redraw()};
+function tSet(enz,T,pH){$("#tEnz").value=enz;TP.o.enz=enz;TP.o.T=T;TP.o.pH=pH;$("#tT").value=T;$("#tTo").textContent=T+" °C";$("#tP").value=pH;$("#tPo").textContent=de(pH,2);TP.reset();if(!tRun)$("#tGo").onclick()}
+tasks("temperatur",[
+ {l:1,h:"Optimum finden",p:"Vermute: Bei welcher Temperatur arbeitet Katalase am schnellsten? Nimm dann die Messreihe auf und vergleiche.",set:()=>tSet("katalase",37,7)},
+ {l:1,h:"Zu heiß – und wieder kalt",p:"Stell 70 °C ein und warte, bis alle Enzyme denaturiert sind. Kühle dann auf 37 °C ab. Was passiert? Vergleiche mit einem gekochten Ei.",set:()=>tSet("katalase",70,7)},
+ {l:1,h:"Im Kühlschrank",p:"Stell 4 °C ein. Sind die Enzyme kaputt oder nur langsam? Erwärme danach auf 37 °C. Warum halten Lebensmittel im Kühlschrank länger?",set:()=>tSet("katalase",4,7)},
+ {l:2,h:"Magen und Mund",p:"Nimm die pH-Messreihe für Pepsin und für Amylase auf. Warum hört die Stärkeverdauung durch Speichel im Magen auf?",set:()=>tSet("pepsin",37,2)},
+ {l:2,h:"Bakterien aus heißen Quellen",p:"Nimm die Temperatur-Messreihe für Taq-Polymerase auf und vergleiche mit Katalase. Wozu braucht man so ein Enzym im PCR-Test?",set:()=>tSet("taq",72,8.3)},
+ {l:3,h:"Warum ist die Kurve schief?",p:"Erkläre, warum die Optimumskurve links flach ansteigt, rechts aber steil abfällt. Welche zwei Vorgänge stecken dahinter?"}]);
+
+/* ===================== Station: Substratmenge ===================== */
+const KP=new Pot({nE:5,nS:30,keep:true});let kRun=true,kLB=false;const kPts=[];
+const kC=canv("kC",o=>drawPot(o,KP));
+function mmFit(pts){if(pts.length<3)return null;let best=null;for(let i=0;i<=300;i++){const K=2*10**(i/100);let a=0,b=0;for(const[S,v]of pts){const f=S/(K+S);a+=v*f;b+=f*f}const V=a/b;let e=0;for(const[S,v]of pts)e+=(v-V*S/(K+S))**2;if(!best||e<best.e)best={K,V,e}}return best}
+const kG=canv("kG",o=>{const f=mmFit(kPts);
+ if(kLB){const P=kPts.filter(p=>p[1]>0).map(p=>[1/p[0],1/p[1]]);const xm=Math.max(.1,...P.map(p=>p[0]))*1.1,ym=Math.max(.2,...P.map(p=>p[1]))*1.15;
+  chart(o,{x0:0,x1:xm,y0:0,y1:ym,xl:"1 / Substratmenge",yl:"1 / v",series:[{pts:P,c:"--sub"}].concat(f?[{fn:u=>(f.K*u+1)/f.V,c:"--acc",pts:[]}]:[])});return}
+ const ym=Math.max(4,...kPts.map(p=>p[1]),f?f.V:0)*1.15;
+ chart(o,{x0:0,x1:200,y0:0,y1:ym,xl:"Substratteilchen im Becher",yl:"Umsätze pro s",series:[{pts:kPts,c:"--sub"}].concat(f&&document.body.dataset.lvl>1?[{fn:S=>f.V*S/(f.K+S),c:"--acc",pts:[]}]:[]),
+  extra:(x,X,Y)=>{if(!f||document.body.dataset.lvl<2)return;x.strokeStyle=col("--acc");x.setLineDash([5,4]);x.lineWidth=1.5;x.beginPath();x.moveTo(X(0),Y(f.V));x.lineTo(X(200),Y(f.V));x.moveTo(X(0),Y(f.V/2));x.lineTo(X(f.K),Y(f.V/2));x.lineTo(X(f.K),Y(0));x.stroke();x.setLineDash([]);txt(x,"v_max",X(196),Y(f.V)-9,{a:"right",size:12,w:700,c:col("--acc")});txt(x,"K_M",X(f.K)+4,Y(0)-10,{size:12,w:700,c:col("--acc")})}})});
+function kUpd(){const busyE=KP.E.filter(e=>e.st==1).length;kpi("kK",[["Substrat",KP.count("S")+busyE],["Enzyme",KP.E.length],["davon besetzt",busyE],["Umsätze pro s",de(KP.rate(),2)]]);
+ $("#kInfo").innerHTML=busyE>=KP.E.length-0?"Alle Enzyme sind besetzt – das ist die Höchstgeschwindigkeit.":busyE/KP.E.length>.6?"Die meisten Enzyme sind besetzt.":"Viele Enzyme warten auf ein Substratteilchen."}
+$("#kS").oninput=e=>{$("#kSo").textContent=e.target.value;KP.o.nS=+e.target.value;KP.setN("S",Math.max(0,+e.target.value-KP.E.filter(q=>q.st==1).length))};
+$("#kE").oninput=e=>{$("#kEo").textContent=e.target.value;KP.o.nE=+e.target.value;KP.setE(+e.target.value)};
+$("#kKeep").onchange=e=>KP.o.keep=e.target.checked;
+$("#kGo").onclick=()=>{kRun=!kRun;$("#kGo").textContent=kRun?"Pause":"Weiter"};
+$("#kRe").onclick=()=>{KP.reset()};
+$("#kLB").onclick=()=>{kLB=!kLB;$("#kLB").setAttribute("aria-pressed",kLB);kG.redraw()};
+function kFitTxt(){const f=mmFit(kPts);$("#kFit").innerHTML=f&&document.body.dataset.lvl>1?`Angepasst: v<sub>max</sub> ≈ ${de(f.V,2)} Umsätze pro s, K<sub>M</sub> ≈ ${de(f.K,2)} Teilchen.`+(document.body.dataset.lvl>2?` Pro Enzym: ${de(f.V/KP.o.nE,2)} pro s.`:""):kPts.length?"":"Nimm Messpunkte auf. Jeder Punkt ist eine eigene Simulation über 20 s."}
+$("#kPt").onclick=async()=>{if(busy)return;busy=true;const S=KP.o.nS;kPts.push([S,measure({nE:KP.o.nE,nS:S},20,2)]);busy=false;kG.redraw();kFitTxt()};
+$("#kSer").onclick=()=>{const L=[5,10,20,30,45,65,90,120,160,200],nE=KP.o.nE,tmp=[];series(SB(),tmp,{n:L.length,at:i=>{const p=[L[i],measure({nE,nS:L[i]},20,2)];kPts.push(p);return p}},(i,n)=>{$("#kFit").textContent=`Messe … ${i} von ${n}`;kG.redraw()}).then(()=>{kG.redraw();kFitTxt()})};
+$("#kClr").onclick=()=>{kPts.length=0;kG.redraw();kFitTxt()};
+function kSet(S,E){$("#kS").value=S;$("#kSo").textContent=S;$("#kE").value=E;$("#kEo").textContent=E;KP.o.nS=S;KP.o.nE=E;KP.reset();if(!kRun)$("#kGo").onclick()}
+tasks("konzentration",[
+ {l:1,h:"Wenig Substrat",p:"Stell 5 Substratteilchen ein. Was machen die meisten Enzyme? Verdopple die Menge – wie ändert sich die Geschwindigkeit?",set:()=>kSet(5,5)},
+ {l:1,h:"Ganz viel Substrat",p:"Stell 200 Substratteilchen ein. Wie viele Enzyme sind besetzt? Würden 400 Teilchen noch helfen?",set:()=>kSet(200,5)},
+ {l:1,h:"Die Kurve",p:"Nimm die ganze Messreihe auf. Beschreibe die Form der Kurve mit eigenen Worten und erkläre sie mit dem Bild oben."},
+ {l:2,h:"Mehr Enzym",p:"Nimm eine Messreihe mit 5 und eine mit 10 Enzymen auf (Löschen dazwischen). Wie ändern sich v_max und K_M?",set:()=>kSet(60,10)},
+ {l:3,h:"Lineweaver-Burk",p:"Schalte auf Lineweaver-Burk um. Lies v_max und K_M aus Achsenabschnitt und Steigung ab und vergleiche mit der angepassten Kurve."}]);
+
+/* ===================== Station: Hemmung ===================== */
+const HP=new Pot({nE:5,nS:30,keep:true,I:15});let hRun=true,hTy="I";const hS1=[],hS2=[];let hTy2="I";
+const HNAME={I:"kompetitiver Hemmstoff",A:"allosterischer Hemmstoff",M:"Schwermetall (Quecksilber)"};
+const hC=canv("hC",o=>drawPot(o,HP));
+const hG=canv("hG",o=>{const ym=Math.max(4,...hS1.map(p=>p[1]),...hS2.map(p=>p[1]))*1.15;const f1=mmFit(hS1),f2=mmFit(hS2);const lv=document.body.dataset.lvl>1;
+ chart(o,{x0:0,x1:200,y0:0,y1:ym,xl:"Substratteilchen im Becher",yl:"Umsätze pro s",series:[{pts:hS1,c:"--sub",line:!lv},{pts:hS2,c:"--inh",line:!lv}].concat(lv&&f1?[{fn:S=>f1.V*S/(f1.K+S),c:"--sub",pts:[]}]:[]).concat(lv&&f2?[{fn:S=>f2.V*S/(f2.K+S),c:"--inh",pts:[],dash:[6,4]}]:[]),legend:hS1.length?[["ohne Hemmstoff","--sub"],["mit "+HNAME[hTy2].split(" (")[0],"--inh"]]:null})});
+function hLeg(){$("#hLeg").innerHTML=`<span><i style="background:var(--enz)"></i>Enzym</span><span><i style="background:var(--sub)"></i>Substrat</span><span><i style="background:var(--prod)"></i>Produkt</span><span><i style="background:var(--${hTy=="I"?"inh":hTy=="A"?"allo":"metal"})"></i>${HNAME[hTy]}</span>`}
+function hUpd(){const bl=HP.E.filter(e=>e.st==2).length,al=HP.E.filter(e=>e.allo>0).length,mt=HP.E.filter(e=>e.metal).length;
+ kpi("hK",[["Enzyme arbeiten",HP.E.filter(e=>e.st==1).length+" von "+HP.E.length],["blockiert",hTy=="I"?bl:hTy=="A"?al:mt],["Umsätze pro s",de(HP.rate(),2)]]);
+ $("#hInfo").innerHTML=hTy=="I"?"Der rote Hemmstoff sieht aus wie das Substrat. Er setzt sich ins aktive Zentrum, wird aber nicht umgebaut und löst sich nach einer Weile wieder.":hTy=="A"?"Der violette Hemmstoff dockt an der Rückseite an. Das Enzym verbiegt sich, und das aktive Zentrum passt nicht mehr.":"Quecksilber bindet fest und verformt das Enzym dauerhaft. "+(mt?`Schon ${mt} Enzym${mt>1?"e sind":" ist"} unbrauchbar.`:"")}
+function hApply(){HP.o.I=HP.o.A=HP.o.M=0;HP.o[hTy]=+$("#hN").value;HP.o.nS=+$("#hS").value;HP.reset();hLeg()}
+seg("hTy",v=>{hTy=v;hApply()});
+$("#hN").oninput=e=>{$("#hNo").textContent=e.target.value};$("#hN").onchange=hApply;
+$("#hS").oninput=e=>{$("#hSo").textContent=e.target.value;HP.o.nS=+e.target.value;HP.setN("S",Math.max(0,+e.target.value-HP.E.filter(q=>q.st==1).length))};
+$("#hGo").onclick=()=>{hRun=!hRun;$("#hGo").textContent=hRun?"Pause":"Weiter"};
+$("#hRe").onclick=hApply;
+$("#hSer").onclick=async()=>{if(busy)return;busy=true;SB().forEach(b=>b.disabled=true);hS1.length=0;hS2.length=0;hTy2=hTy;const L=[5,10,20,35,55,80,110,150,200],n=+$("#hN").value;
+ for(let i=0;i<L.length;i++){hS1.push([L[i],measure({nE:5,nS:L[i]},20,2)]);const o={nE:5,nS:L[i]};o[hTy]=n;hS2.push([L[i],measure(o,20,hTy=="M"?8:2)]);$("#hNote").textContent=`Messe … ${i+1} von ${L.length}`;hG.redraw();await sleep()}
+ busy=false;SB().forEach(b=>b.disabled=false);const f1=mmFit(hS1),f2=mmFit(hS2);
+ $("#hNote").innerHTML=document.body.dataset.lvl>1&&f1&&f2?`Ohne: v<sub>max</sub> ≈ ${de(f1.V,2)}, K<sub>M</sub> ≈ ${de(f1.K,2)} · Mit: v<sub>max</sub> ≈ ${de(f2.V,2)}, K<sub>M</sub> ≈ ${de(f2.K,2)}`:"Vergleiche die beiden Kurven vor allem bei viel Substrat (rechts)."};
+$("#hClr").onclick=()=>{hS1.length=0;hS2.length=0;hG.redraw();$("#hNote").textContent=""};
+function hSet(t,n,S){hTy=t;seg("hTy",v=>{hTy=v;hApply()})(t);$("#hN").value=n;$("#hNo").textContent=n;$("#hS").value=S;$("#hSo").textContent=S;hApply();if(!hRun)$("#hGo").onclick()}
+tasks("hemmung",[
+ {l:1,h:"Konkurrenz um den Platz",p:"Beobachte den kompetitiven Hemmstoff. Erhöhe dann das Substrat auf 200. Wer gewinnt den Platz im aktiven Zentrum?",set:()=>hSet("I",20,20)},
+ {l:1,h:"Verbogen",p:"Wähle den allosterischen Hemmstoff. Hilft hier mehr Substrat? Nimm beide Messreihen auf und vergleiche rechts im Diagramm.",set:()=>hSet("A",20,100)},
+ {l:1,h:"Gift",p:"Gib 8 Quecksilber-Teilchen dazu und warte eine Minute. Warum sind Schwermetalle giftig – und warum wirkt schon wenig?",set:()=>hSet("M",8,40)},
+ {l:2,h:"Kurven deuten",p:"Nimm für kompetitive und allosterische Hemmung je beide Messreihen auf. Wie ändern sich v_max und K_M jeweils?"},
+ {l:3,h:"Medikamente",p:"Viele Medikamente sind Enzymhemmer (z. B. Ibuprofen, Penicillin). Begründe, warum ein kompetitiver Hemmer eine höhere Dosis braucht, wenn viel Substrat vorhanden ist."}]);
+
+/* ===================== Station: Katalase ===================== */
+const SAMP={wasser:{n:"Wasser (Kontrolle)",s:"Wasser",c:"#bfdcf5",a:0,enz:false},sand:{n:"Sand",s:"Sand",c:"#d9c7a0",a:0,enz:false},
+ kart:{n:"Kartoffel, roh",s:"Kartoffel",c:"#eadba8",a:.3,enz:true},kartg:{n:"Kartoffel, gekocht",s:"Kart. gek.",c:"#d0b878",a:.3,enz:true,cooked:true},
+ leber:{n:"Leber, roh",s:"Leber",c:"#8b2f2f",a:1,enz:true},leberg:{n:"Leber, gekocht",s:"Leber gek.",c:"#6e5142",a:1,enz:true,cooked:true},
+ hefe:{n:"Hefe",s:"Hefe",c:"#e3cfa6",a:.55,enz:true},braun:{n:"Braunstein (MnO₂)",s:"Braunstein",c:"#3b3530",a:.5,enz:false}};
+const ADD=[{n:"–",pH:7,hm:1},{n:"Essig",pH:3,hm:1},{n:"Natronlauge",pH:12,hm:1},{n:"Kupfersulfat",pH:6,hm:.08}];
+let cTubes=["wasser","kart","kartg","leber","braun"],cT=20,cAdd=0,cFast=false,cRun=false,cTime=0,cGlow=-1,cGlowT=0;const cH=[0,0,0,0,0],cRows=[];
+$("#cSel").innerHTML=cTubes.map((t,i)=>`<div class="tr"><b>${i+1}</b><select data-i="${i}">${Object.entries(SAMP).map(([k,s])=>`<option value="${k}"${k==t?" selected":""}>${s.n}</option>`).join("")}</select></div>`).join("");
+$("#cGl").innerHTML=cTubes.map((t,i)=>`<option value="${i}">${i+1}</option>`).join("");
+$$("#cSel select").forEach(s=>s.onchange=()=>{cTubes[+s.dataset.i]=s.value;cH[+s.dataset.i]=0;cRun=false;cTime=0;cC.redraw();cUpd()});
+function cRate(k){const s=SAMP[k],ad=ADD[cAdd];if(!s.a)return .003;if(!s.enz)return s.a*Math.exp(-49000/RG*(1/(cT+273.15)-1/310.15))*(cAdd==3?.9:1);
+ const alive=s.cooked?.01:Math.exp(-hazT(cT,ENZ.katalase.Tm)*60);return s.a*kfT(cT)*alive*gpH(ad.pH,ENZ.katalase)*ad.hm}
+const foam=(k,t)=>8*(1-Math.exp(-cRate(k)*t/20));
+const cC=canv("cC",o=>{const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const n=5,tw=Math.min(70,w/(n*1.9)),gap=(w-n*tw)/(n+1),top=h*.12,bot=h-60,cm=(bot-top)/12;
+ x.fillStyle=alpha(col(cT>45?"#f08a24":cT<10?"#3d7ddb":"#7fb3e0"),.2);x.fillRect(gap*.5,bot-cm*4.5,w-gap,cm*4.5+14);
+ for(let i=0;i<n;i++){const x0=gap+i*(tw+gap),k=cTubes[i],s=SAMP[k],liq=bot-cm*3,hf=cH[i];
+  x.fillStyle=alpha(col("#bfdcf5"),.6);x.fillRect(x0+3,liq,tw-6,bot-liq);
+  x.fillStyle=s.c;if(k!="wasser"){x.beginPath();x.ellipse(x0+tw/2,bot-tw*.22,tw*.32,tw*.18,0,0,7);x.fill()}
+  if(hf>0.02){const fy=liq-hf*cm;const r=rngB(i*97+7);x.fillStyle="rgba(255,255,255,.92)";x.fillRect(x0+3,fy,tw-6,liq-fy);x.strokeStyle="rgba(120,140,160,.5)";for(let q=0;q<hf*14;q++){const bx=x0+6+r()*(tw-12),by=fy+r()*(liq-fy),br=1.5+r()*3.5;x.beginPath();x.arc(bx,by,br,0,7);x.stroke()}}
+  if(cRun){const rr=cRate(k);const r=Math.random;x.fillStyle="rgba(255,255,255,.9)";for(let q=0;q<Math.min(25,rr*30);q++){x.beginPath();x.arc(x0+6+r()*(tw-12),liq+r()*(bot-liq),1+r()*2,0,7);x.fill()}}
+  x.strokeStyle=col("--ink");x.lineWidth=2;x.beginPath();x.moveTo(x0,top);x.lineTo(x0,bot-tw/2);x.arc(x0+tw/2,bot-tw/2,tw/2,Math.PI,0,true);x.lineTo(x0+tw,top);x.stroke();
+  x.strokeStyle=col("--mut");x.lineWidth=1;for(let c=0;c<=8;c++){const yy=liq-c*cm;x.beginPath();x.moveTo(x0+tw,yy);x.lineTo(x0+tw-(c%2?5:10),yy);x.stroke();if(c%2==0&&c)txt(x,c+"",x0+tw+3,yy,{size:10,c:col("--mut")})}
+  txt(x,(i+1)+"",x0+tw/2,top-14,{a:"center",size:15,w:700});txt(x,s.s,x0+tw/2,bot+16,{a:"center",size:13,w:600});txt(x,de(hf,2)+" cm",x0+tw/2,bot+34,{a:"center",size:12,c:col("--mut")});
+  if(cGlow==i){const st=Math.min(1,cGlowT/1.2),ox=x0+tw/2,oy=liq-hf*cm-14-(1-st)*40;x.strokeStyle="#a0763f";x.lineWidth=5;x.beginPath();x.moveTo(ox+30,oy-90);x.lineTo(ox,oy);x.stroke();
+   const on=hf>.4&&st>=1;const fl=on?14+Math.sin(cGlowT*20)*3:4;const g=x.createRadialGradient(ox,oy,0,ox,oy,fl*2);g.addColorStop(0,on?"#fff7c2":"#ff8a3a");g.addColorStop(.4,on?"#ffb020":"#d9480f");g.addColorStop(1,"rgba(255,120,0,0)");x.fillStyle=g;x.beginPath();x.arc(ox,oy,fl*2,0,7);x.fill()}}
+ txt(x,`Wasserbad ${cT} °C  ·  t = ${de(Math.min(60,cTime),2)} s`,w-12,18,{a:"right",size:14,w:700})});
+function rngB(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s^=s>>>17;s^=s<<5;return(s>>>0)/4294967296}}
+function cUpd(){$("#cInfo").innerHTML=cRun?"Versuch läuft …":cTime>=60?"Fertig. Die Werte stehen im Protokoll. Prüfe mit dem Glimmspan, wo Sauerstoff entstanden ist.":"Wähle die Proben und starte. Ändere immer nur eine Größe.";$("#cGo").textContent=cRun?"läuft …":"Versuch starten";$("#cGo").disabled=cRun}
+function cTab(){$("#cTab").innerHTML=cRows.map((r,i)=>`<tr><td>${i+1}</td><td>${r[0]}</td><td class="n">${r[1]} °C</td><td>${r[2]}</td><td class="n">${de(r[3],2)} cm</td></tr>`).join("")||`<tr><td colspan="5" class="mut">Noch keine Messwerte.</td></tr>`}
+cTab();
+$("#cGo").onclick=()=>{cTime=0;cH.fill(0);cRun=true;cGlow=-1;cUpd()};
+$("#cFast").onclick=()=>{cFast=!cFast;$("#cFast").setAttribute("aria-pressed",cFast)};
+$("#cT").oninput=e=>{cT=+e.target.value;$("#cTo").textContent=cT+" °C";cC.redraw()};
+$("#cAdd").onchange=e=>cAdd=+e.target.value;
+$("#cGlB").onclick=()=>{cGlow=+$("#cGl").value;cGlowT=0};
+$("#cClr").onclick=()=>{cRows.length=0;cTab()};
+$("#cCsv").onclick=()=>{const t="Probe;Temperatur in °C;Zusatz;Schaumhöhe in cm\n"+cRows.map(r=>[r[0],r[1],r[2],String(r[3]).replace(".",",")].join(";")).join("\n");
+ const ok=()=>{$("#cMsg").textContent="Kopiert – in Excel oder GeoGebra einfügen."};
+ if(navigator.clipboard&&isSecureContext)navigator.clipboard.writeText(t).then(ok,()=>fb());else fb();
+ function fb(){const a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy");ok()}catch(e){}a.remove()}};
+function cStep(dt){if(cGlow>=0)cGlowT+=dt;if(!cRun)return;cTime+=dt*(cFast?6:1);for(let i=0;i<5;i++)cH[i]=foam(cTubes[i],Math.min(60,cTime));
+ if(cTime>=60){cRun=false;for(let i=0;i<5;i++){const m=Math.max(0,cH[i]*(1+.06*gauss())+.05*gauss());cH[i]=Math.round(m*10)/10;cRows.push([SAMP[cTubes[i]].n,cT,ADD[cAdd].n,cH[i]])}cTab();cUpd()}}
+function cSet(tubes,T,add){cTubes=tubes.slice();$$("#cSel select").forEach((s,i)=>s.value=cTubes[i]);cT=T;$("#cT").value=T;$("#cTo").textContent=T+" °C";cAdd=add;$("#cAdd").value=add;cH.fill(0);cTime=0;cRun=false;cGlow=-1;cUpd();cC.redraw()}
+tasks("katalase",[
+ {l:1,h:"Welche Probe schäumt?",p:"Vermute zuerst eine Reihenfolge, dann starte: Wasser, rohe Kartoffel, gekochte Kartoffel, rohe Leber, Braunstein. Wozu ist das Wasser-Röhrchen da?",set:()=>cSet(["wasser","kart","kartg","leber","braun"],20,0)},
+ {l:1,h:"Sauerstoff nachweisen",p:"Halte nach dem Versuch den Glimmspan in die Röhrchen 1 und 4. Was beobachtest du, und was beweist das?",set:()=>cSet(["wasser","kart","kartg","leber","braun"],20,0)},
+ {l:1,h:"Roh und gekocht",p:"Vergleiche rohe und gekochte Leber mit Braunstein. Warum schäumt Braunstein auch nach dem Erhitzen noch?",set:()=>cSet(["leber","leberg","braun","kart","kartg"],20,0)},
+ {l:2,h:"Temperaturreihe",p:"Fünfmal rohe Leber: Miss bei 0, 20, 40, 60 und 80 °C (jedes Mal neu starten). Zeichne das Diagramm mit den kopierten Werten in Excel.",set:()=>cSet(["leber","leber","leber","leber","leber"],0,0)},
+ {l:2,h:"Säure und Schwermetall",p:"Wiederhole den Versuch mit Leber und Kartoffel mit Essig und mit Kupfersulfat. Welcher Zusatz wirkt wie welcher Hemmstoff aus der Station davor?",set:()=>cSet(["leber","kart","hefe","braun","wasser"],20,1)},
+ {l:3,h:"Versuch planen",p:"Plane einen Versuch, mit dem du zeigst, dass Hefe weniger Katalase enthält als Leber. Welche Größen musst du gleich halten? Wie oft wiederholst du die Messung?"}]);
+
+/* ===================== Schleife ===================== */
+let last=performance.now();
+function loop(now){const dt=clamp((now-last)/1000,0,.05);last=now;
+ if(cur=="modell"){if(mRun){const n=mSpd>1?3:1;for(let i=0;i<n;i++)MP.step(dt*mSpd/n)}mC.redraw();if(document.body.dataset.lvl>1)mT.redraw();mUpd()}
+ else if(cur=="energie"){if(eRun)eStep(dt);eC.redraw();if(now-(loop.eu||0)>250){loop.eu=now;eUpd()}}
+ else if(cur=="temperatur"){if(tRun)TP.step(dt);tC.redraw();tUpd()}
+ else if(cur=="konzentration"){if(kRun)KP.step(dt);kC.redraw();kUpd()}
+ else if(cur=="hemmung"){if(hRun)HP.step(dt);hC.redraw();hUpd()}
+ else if(cur=="katalase"){cStep(dt);cC.redraw()}
+ requestAnimationFrame(loop)}
+try{const l=localStorage.getItem("enzlvl");if(l)setLvl(l)}catch(e){}
+document.body.addEventListener("click",e=>{if(e.target.closest(".lvl")){kG.redraw();kFitTxt();hG.redraw();eC.redraw();eH.redraw()}});
+addEventListener("keydown",e=>{if(e.target.closest("input,select,textarea"))return;if(e.code=="Space"){const b={modell:"#mGo",energie:"#eGo",temperatur:"#tGo",konzentration:"#kGo",hemmung:"#hGo",katalase:"#cGo"}[cur];if(b){e.preventDefault();$(b).click()}}});
+route();hLeg();eUpd();mUpd();kFitTxt();cUpd();requestAnimationFrame(loop);
+</script>
+</body>
+</html>

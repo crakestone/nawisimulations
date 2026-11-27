@@ -33,6 +33,7 @@ Schlagwörter. Ist nicht klar, in welches Fach eine neue Simulation gehört: nac
 | `Relativitätstheorie/` | `Relativitaetslabor.html` | Lichtuhr und Myonen, Gleichzeitigkeit, Längenkontraktion (Leiter-Garage), Geschwindigkeitsaddition, Zwillingsparadoxon, Raumzeit-Diagramm, Lichtmauer & E = mc², GPS, Doppler-Effekt; Wechsel des Bezugssystems |
 | `Radioaktivität/` | `Radioaktivitaetslabor.html` | Atomkern & Isotope mit Periodensystem, Nuklidkarte (Z 0–118), Zerfallsarten, Zerfallsgesetz (Würfelmodell), Zerfallsreihen & Gleichgewicht, Strahlung messen & abschirmen, Nebelkammer, C-14-Datierung, Strahlung im Alltag (Österreich) |
 | `Kernenergie/` | `Kernenergielabor.html` | Kernspaltung, Kettenreaktion, Kernreaktor (Fukushima/Tschernobyl-Szenario), Kernfusion (Tokamak, Lawson), Sonne, Energie aus Masse, Tschernobyl & Fukushima, Cäsium in Österreich; Reaktor und Fusion anschaulich oder mit Zahlen |
+| `Enzyme/` | `Enzymlabor.html` | **Biologie:** Enzym und Substrat als Teilchen (Schlüssel-Schloss, Induced Fit), Aktivierungsenergie, Temperatur und pH mit Messreihen, Sättigungskurve (Michaelis-Menten), Hemmstoffe, Katalase-Versuch |
 
 ## Stoßprozesse – Stoss-Simulation.html
 
@@ -269,3 +270,16 @@ In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabo
 - Reaktor: Punktkinetik mit verzögerten Neutronen, Temperaturrückkopplung und Nachzerfallswärme; Druckwasser- oder RBMK-Typ; Szenarien Normalbetrieb, Fukushima, Tschernobyl.
 - Reaktor und Fusion mit Umschalter **Anschaulich | Mit Zahlen** (Niveau „Einfach“ startet anschaulich).
 - Freisetzungen nach UNSCEAR; Cäsium-137 in Österreich (Mittel 21 kBq/m², Spitzen über 150 kBq/m²) nach AGES.
+
+## Enzyme – Enzymlabor.html (Biologie)
+
+- Sechs Stationen, direkt aufrufbar: `#modell`, `#energie`, `#temperatur`, `#konzentration`, `#hemmung`, `#katalase`; jeweils mit Aufträgen, Erklärungen und drei Niveaustufen.
+- **Enzym & Substrat:** Teilchen-Becher mit Enzymen (aktives Zentrum als Mulde), Substrat, Produkten und nicht passenden Molekülen; Zähler zeigt, dass Enzyme nicht verbraucht werden. Ab *Mittel*: Schlüssel-Schloss oder Induced Fit, Zeitverlauf; *Anspruchsvoll*: Wechselzahl.
+- **Aktivierungsenergie:** Energiediagramm für H₂O₂ ohne Katalysator (75 kJ/mol), mit Braunstein (49 kJ/mol) und Katalase (23 kJ/mol, mit ES-Komplex); Teilchen springen über den Berg; Anteil mit genug Energie und Beschleunigungsfaktor bei wählbarer Temperatur; Arrhenius ab *Anspruchsvoll*.
+- **Temperatur & pH:** fünf Enzyme (Katalase, Amylase, Pepsin, Trypsin, Taq-Polymerase); Denaturierung bleibt beim Abkühlen; Messreihen über Temperatur und pH, bei denen jeder Punkt eine eigene Simulation ist.
+- **Substratmenge:** Sättigungskurve entsteht aus den Zusammenstößen; Anpassung von v_max und K_M; Lineweaver-Burk ab *Anspruchsvoll*.
+- **Hemmstoffe:** kompetitiv, allosterisch, Schwermetall; Messreihen mit und ohne Hemmstoff.
+- **Versuch: Katalase:** fünf Röhrchen mit Leber, Kartoffel (roh/gekocht), Hefe, Braunstein, Wasser, Sand; Wasserbad, Essig, Natronlauge, Kupfersulfat; Glimmspanprobe; Messprotokoll mit CSV-Export.
+
+Modell: Moleküle bewegen sich mit Zufallsrichtung, die Geschwindigkeit wächst mit √T. Substrat bindet nur, wenn es auf das aktive Zentrum trifft (Wahrscheinlichkeit nach pH-Glockenkurve). Umbauzeit nach Arrhenius (E_A = 50 kJ/mol); Denaturierung zufällig mit stark steigender Rate oberhalb einer Grenztemperatur. Kompetitiver Hemmstoff besetzt das Zentrum für 1,6–4 s, allosterischer verformt das Enzym für 2,5–5,5 s, Schwermetall bindet dauerhaft.
+
