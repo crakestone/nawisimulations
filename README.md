@@ -7,7 +7,7 @@ und keine Internetverbindung nötig.
 ## Startseite
 
 `index.html` ist die Startseite „NaWi zum Ausprobieren“ (Tafel & Heft mit einem Sonnensystem der Fächer). Mit GitHub Pages
-ist sie unter `https://crakestone.github.io/physicssimulations/` erreichbar.
+ist sie unter `https://crakestone.github.io/nawisimulations/` erreichbar.
 
 Jedes **Fach** ist ein Planet (Physik, Chemie, Biologie, Mathematik, Informatik, Geographie), jede Simulation ein Mond
 ihres Fach-Planeten. Fächer ohne Simulation werden als „noch leer“ angezeigt. Ein Klick auf einen Planeten zeigt darunter
@@ -29,6 +29,8 @@ Schlagwörter. Ist nicht klar, in welches Fach eine neue Simulation gehört: nac
 | `Halbleiter/` | `Halbleiterlabor.html` | Bändermodell, Dotierung, innerer und äußerer Photoeffekt, pn-Übergang, Solarzelle, LED |
 | `Quantenphysik/` | `Quantenlabor.html` | Photoeffekt, Spektren, Doppelspalt mit Einzelobjekten (mit Zeigermodell) und Mach-Zehnder-Interferometer mit Quantenradierer |
 | `Relativitätstheorie/` | `Relativitaetslabor.html` | Lichtuhr und Myonen, Gleichzeitigkeit, Längenkontraktion (Leiter-Garage), Geschwindigkeitsaddition, Zwillingsparadoxon, Raumzeit-Diagramm, Lichtmauer & E = mc², GPS, Doppler-Effekt; Wechsel des Bezugssystems |
+| `Radioaktivität/` | `Radioaktivitaetslabor.html` | Atomkern & Isotope mit Periodensystem, Nuklidkarte (Z 0–118), Zerfallsarten, Zerfallsgesetz (Würfelmodell), Zerfallsreihen & Gleichgewicht, Strahlung messen & abschirmen, Nebelkammer, C-14-Datierung, Strahlung im Alltag (Österreich) |
+| `Kernenergie/` | `Kernenergielabor.html` | Kernspaltung, Kettenreaktion, Kernreaktor (Fukushima/Tschernobyl-Szenario), Kernfusion (Tokamak, Lawson), Sonne, Energie aus Masse, Tschernobyl & Fukushima, Cäsium in Österreich; Reaktor und Fusion anschaulich oder mit Zahlen |
 
 ## Stoßprozesse – Stoss-Simulation.html
 
@@ -213,3 +215,17 @@ Modell: ħ²/(2m_e) = 0,0381 eV·nm², Gitterkonstante der 1D-Modelle a = 0,4 nm
 ## Navigation
 
 In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“, „Stromkreislabor“, „Quantenlabor“, „Halbleiterlabor“, „Bandstrukturlabor“ oder „Relativitätslabor“) zurück zur Startseite `index.html`.
+
+## Radioaktivität – Radioaktivitaetslabor.html
+
+- Neun Stationen, direkt aufrufbar: `#kern`, `#nuklidkarte`, `#zerfallsarten`, `#zerfallsgesetz`, `#zerfallsreihen`, `#strahlung`, `#nebelkammer`, `#datierung`, `#alltag`.
+- Rund 250 stabile und 150 radioaktive Nuklide mit gemessenen Halbwertszeiten; übrige Felder der Nuklidkarte mit dem Tröpfchenmodell abgeschätzt (blass dargestellt).
+- Zerfallsreihen nach den Bateman-Gleichungen mit Verzweigungen; Geigerzähler mit Nullrate, Abstandsgesetz, Abschirmung und Messprotokoll zum Kopieren.
+- Dosiswerte für Österreich nach „Radioaktivität und Strahlung in Österreich 2023“ (BMK/BMSGPK).
+
+## Kernenergie – Kernenergielabor.html
+
+- Acht Stationen, direkt aufrufbar: `#spaltung`, `#kettenreaktion`, `#reaktor`, `#fusion`, `#sonne`, `#energie`, `#unfaelle`, `#caesium`.
+- Reaktor: Punktkinetik mit verzögerten Neutronen, Temperaturrückkopplung und Nachzerfallswärme; Druckwasser- oder RBMK-Typ; Szenarien Normalbetrieb, Fukushima, Tschernobyl.
+- Reaktor und Fusion mit Umschalter **Anschaulich | Mit Zahlen** (Niveau „Einfach“ startet anschaulich).
+- Freisetzungen nach UNSCEAR; Cäsium-137 in Österreich (Mittel 21 kBq/m², Spitzen über 150 kBq/m²) nach AGES.

@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kernenergielabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+
+/* VOICE: sachliches Laborheft für die Oberstufe, ruhig und genau
+   IDEA: die Karlsruher Nuklidkarte – Kästchen, Farbcode, Verschiebungspfeile
+   PICTURE: jede Station zeigt ihr Experiment groß und bedienbar
+   COLOUR and TYPE: Weiß bzw. Nacht, Tinte, Nuklidkartenfarben schwarz/blau/rot/gelb/grün; Archivo + Source Sans 3
+   LAYOUT: Stationsleiste, Experiment groß links, Regler rechts, darunter Aufträge und Erklärung */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#111419);--ink:light-dark(#15181d,#e9ecf1);--mut:light-dark(#566170,#9ea8b5);
+--line:light-dark(#d8dde4,#2d343e);--soft:light-dark(#f2f4f7,#191e25);--card:light-dark(#ffffff,#161b21);
+--acc:light-dark(#1e5cbc,#78a9ff);--accink:light-dark(#ffffff,#0e1320);
+--stab:light-dark(#1b1d21,#e4e4e4);--stabt:light-dark(#ffffff,#111111);
+--bm:#3d7ddb;--bp:#e2475b;--al:#f1c21b;--sf:#3aa45c;--pr:#f08a24;--ga:#8a5cc7;
+--prot:#d8433d;--neut:light-dark(#8d97a5,#aab3c0);--grid:light-dark(#e9ecf0,#232931)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Source Sans 3",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Archivo,system-ui,sans-serif;line-height:1.08;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4vw,40px)}h2{font-size:clamp(24px,3vw,32px)}h3{font-size:18px;margin-bottom:6px}
+header{padding:18px max(4vw,14px) 0;border-bottom:1px solid var(--line)}
+.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.top p{margin:4px 0 0;color:var(--mut);max-width:62ch}
+.lvl{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:10px}
+.lvl button{border:0;background:none;color:var(--ink);padding:8px 12px;border-radius:7px;font:600 15px "Source Sans 3",sans-serif;cursor:pointer;min-height:40px}
+.lvl button[aria-pressed=true]{background:var(--acc);color:var(--accink)}
+nav.scroll{display:flex;gap:2px;margin-top:14px;overflow-x:auto;scrollbar-width:thin}
+nav a{flex:none;padding:10px 14px;color:var(--mut);text-decoration:none;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap}
+nav a.on{color:var(--ink);border-color:var(--acc)}
+nav a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.st{display:none;padding:22px max(4vw,14px) 40px;max-width:1500px;margin:0 auto}
+.st.on{display:block}
+.lead{color:var(--mut);max-width:75ch;margin:6px 0 16px}
+.work{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+@media(max-width:980px){.work{grid-template-columns:minmax(0,1fr)}}
+.stage{display:grid;gap:12px}
+.fig{position:relative;min-height:340px;background:var(--soft);border-radius:12px;overflow:hidden;touch-action:none}
+.fig>canvas{position:absolute;inset:0;width:100%;height:100%}
+.fig.tall{height:min(66vh,560px)}.fig.mid{height:360px}.fig.low{height:260px;min-height:220px}
+.ctrl{display:grid;gap:12px;background:var(--soft);padding:14px;border-radius:12px}
+.ctrl .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ctrl label{font-weight:600;font-size:15px}
+.lab{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-size:15px}
+.ctrl .lab output{font-weight:400;color:var(--mut);white-space:nowrap}
+button.b,select{font:600 15px "Source Sans 3",sans-serif;min-height:44px;padding:8px 13px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button.b.pri{background:var(--acc);border-color:var(--acc);color:var(--accink)}
+button.b.sm{min-height:36px;padding:5px 10px;font-size:14px}
+button.b[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+select{font-weight:400;font-size:16px;width:100%}
+input[type=range]{width:100%;accent-color:var(--acc);min-height:30px}
+input[type=text]{font:16px "Source Sans 3",sans-serif;padding:9px 11px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);min-height:44px;width:100%}
+.chk{display:flex;gap:8px;align-items:center;font-weight:400!important;cursor:pointer;min-height:32px}
+.chk input{width:20px;height:20px;accent-color:var(--acc)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.info .big{font:700 40px/1 Archivo,sans-serif;margin:4px 0 8px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:15px}.kv dt{color:var(--mut)}.kv dd{margin:0;font-weight:600}
+.nc{display:inline-flex;align-items:center;white-space:nowrap}
+.nc .sp{display:inline-flex;flex-direction:column;align-items:flex-end;font-size:.6em;line-height:1.02;margin-right:.06em}
+.nc sup,.nc sub{vertical-align:baseline;font-size:1em;line-height:1.02}
+.eq{font-size:clamp(20px,2.6vw,30px);font-family:Archivo,sans-serif;display:flex;flex-wrap:wrap;gap:.35em;align-items:center}
+.tag{display:inline-block;padding:2px 9px;border-radius:99px;font-size:14px;font-weight:700;color:#111}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--mut)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid rgba(0,0,0,.2)}
+.tasks{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:20px}
+.task{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.task p{margin:0;font-size:15.5px}
+.task .lv{font-size:13px;font-weight:700;color:var(--mut)}
+.task button{align-self:flex-start;margin-top:auto}
+.expl{margin-top:20px;border-top:1px solid var(--line);padding-top:6px}
+details summary{cursor:pointer;font-weight:700;padding:10px 0;font-family:Archivo,sans-serif;font-size:18px}
+details .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px 28px}
+details p{margin:0 0 10px;max-width:70ch}
+body[data-lvl="1"] .l2,body[data-lvl="1"] .l3,body[data-lvl="2"] .l3{display:none!important}
+.pse{display:grid;grid-template-columns:repeat(18,minmax(30px,1fr));gap:2px;min-width:640px}
+.pse button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:4px;padding:2px 0;cursor:pointer;font:700 13px/1.1 "Source Sans 3",sans-serif;min-height:38px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pse button small{font-weight:400;font-size:10.5px;color:var(--mut)}
+.pse button.rad{background:repeating-linear-gradient(135deg,rgba(241,194,27,.55) 0 5px,rgba(241,194,27,.25) 5px 10px)}
+.pse button.on{outline:3px solid var(--acc);outline-offset:-1px}
+.pse .gap{height:8px}
+.scroll{overflow-x:auto}
+.strip{display:flex;gap:3px;flex-wrap:wrap}
+.strip button{min-width:44px;min-height:40px;border-radius:5px;border:2px solid transparent;font:700 13px "Source Sans 3",sans-serif;cursor:pointer;color:#111}
+.strip button.on{border-color:var(--ink)}
+.bars{display:grid;gap:3px}
+.bar{display:grid;grid-template-columns:62px 82px minmax(0,1fr) 84px;gap:8px;align-items:center;font-size:14px;cursor:pointer;padding:2px 4px;border-radius:6px}
+.bar:hover,.bar.on{background:var(--soft)}
+.bar .tr{height:14px;background:var(--grid);border-radius:3px;overflow:hidden}.bar .tr i{display:block;height:100%}
+.bar .v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.bar .t{color:var(--mut);white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dose{display:grid;gap:6px}
+.dose .r{display:grid;grid-template-columns:minmax(0,190px) minmax(0,1fr) 70px;gap:10px;align-items:center;font-size:15px}
+.dose .r .tr{height:20px;background:var(--grid);border-radius:4px;overflow:hidden}.dose .r .tr i{display:block;height:100%}
+.dose .r .v{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.big2{font:700 clamp(30px,4vw,44px)/1 Archivo,sans-serif}
+.mut{color:var(--mut)}.small{font-size:14px}
+.gm{font:700 34px/1 "Archivo",monospace;font-variant-numeric:tabular-nums}
+.note{font-size:14px;color:var(--mut);margin:6px 0 0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px}
+@media(max-width:600px){table{font-size:13px}.bar{grid-template-columns:52px 70px minmax(0,1fr) 70px;font-size:13px}.dose .r{grid-template-columns:110px minmax(0,1fr) 62px;font-size:14px}.fig.tall{height:430px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.kpi div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.kpi span{display:block;font-size:13px;color:var(--mut)}.kpi b{font:700 22px/1.15 Archivo,sans-serif;font-variant-numeric:tabular-nums}
+.msg{padding:10px 12px;border-radius:10px;font-weight:600;background:var(--soft)}
+.msg.warn{background:rgba(226,71,91,.14);color:var(--ink)}
+.msg.ok{background:rgba(58,164,92,.14)}
+section[data-v=q] .num{display:none!important}section[data-v=n] .qual{display:none!important}
+.vm{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);padding:4px;border-radius:10px}.vm button{flex:1;border:0;background:none;color:var(--ink);min-height:40px;border-radius:7px;font:600 15px "Source Sans 3",sans-serif;cursor:pointer}.vm button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.tl{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.tl li{display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;font-size:15.5px}
+.tl li b{font-variant-numeric:tabular-nums}
+.pp{display:grid;gap:8px}
+.pp .st2{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);opacity:.45}
+.pp .st2.on{opacity:1;border-color:var(--acc);box-shadow:0 0 0 2px var(--acc) inset}
+</style>
+</head>
+<body data-lvl="1">
+<header>
+ <div class="top">
+  <div><h1><a id="home" href="../index.html" style="color:inherit;text-decoration:none" title="Zur Startseite">Kernenergielabor</a></h1><p>Kernspaltung, Kettenreaktion und Reaktor, Kernfusion in der Sonne und im Fusionsreaktor – und was bei Tschernobyl und Fukushima geschah. Grundlagen zu Zerfall und Strahlung: <a href="https://claude.ai/artifact/Ddo1bkhX2cHK2P2nqaMkPv" style="color:var(--acc)">Radioaktivitätslabor</a>.</p></div>
+  <div class="lvl" role="group" aria-label="Niveau"><button data-l="1" aria-pressed="true">Einfach</button><button data-l="2" aria-pressed="false">Mittel</button><button data-l="3" aria-pressed="false">Anspruchsvoll</button></div>
+ </div>
+ <nav class="scroll" id="nav"><a href="#spaltung">Kernspaltung</a><a href="#kettenreaktion">Kettenreaktion</a><a href="#reaktor">Kernreaktor</a><a href="#fusion">Kernfusion</a><a href="#sonne">Die Sonne</a><a href="#energie">Energie aus Masse</a><a href="#unfaelle">Tschernobyl &amp; Fukushima</a><a href="#caesium">Cäsium in Österreich</a></nav>
+</header>
+
+<!-- ========== SPALTUNG ========== -->
+<section class="st" id="st-spaltung">
+ <h2>Kernspaltung</h2>
+ <p class="lead">Trifft ein langsames Neutron einen Uran-235-Kern, gerät der Kern ins Schwingen wie ein Wassertropfen, schnürt sich ein und zerplatzt in zwei mittelschwere Kerne. Dabei werden 2 bis 3 neue Neutronen und rund 200 MeV Energie frei.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig mid"><canvas id="fC"></canvas></div>
+   <div class="card"><div class="eq" id="fEq"></div><p class="note" id="fNote"></p></div>
+   <div class="grid2">
+    <div class="card"><h3>Wohin geht die Energie? (≈ 200 MeV pro Spaltung)</h3><div class="dose" id="fE"></div></div>
+    <div class="card l2"><h3>Welche Bruchstücke entstehen?</h3><div class="fig low" style="height:220px;min-height:200px"><canvas id="fY"></canvas></div><p class="note"><span id="fYn">0</span> Spaltungen gesammelt. Meist zerfällt der Kern ungleich: ein Bruchstück um A ≈ 95, eines um A ≈ 139.</p></div>
+   </div>
+  </div>
+  <aside class="ctrl">
+   <div><label>Zielkern</label><div class="row" id="fT"><button class="b" data-ft="u5" aria-pressed="true">U-235</button><button class="b" data-ft="u8" aria-pressed="false">U-238</button><button class="b l2" data-ft="pu" aria-pressed="false">Pu-239</button></div></div>
+   <div><label>Neutron</label><div class="row"><button class="b" data-fn="s" aria-pressed="true">langsam (thermisch)</button><button class="b" data-fn="f" aria-pressed="false">schnell</button></div></div>
+   <div class="row"><button class="b pri" id="fGo">Neutron schießen</button><button class="b" id="fMany">100 Spaltungen</button></div>
+   <button class="b" id="fSlow" aria-pressed="false">Zeitlupe</button>
+   <div class="card small" id="fInfo"></div>
+   <div class="card small l3" id="fQ"></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-spaltung"></div>
+ <div class="expl"><details><summary>Erklärung: Tröpfchenmodell, Energie, Spaltprodukte</summary><div class="cols">
+  <p><b>Tröpfchenmodell.</b> Ein schwerer Kern verhält sich ähnlich wie ein Flüssigkeitstropfen: Die Kernkraft wirkt wie eine Oberflächenspannung, die elektrische Abstoßung der 92 Protonen drückt ihn auseinander. Das eingefangene Neutron bringt genug Energie, damit die Verformung „über den Berg“ kommt.</p>
+  <p><b>Woher kommt die Energie?</b> Mittelschwere Kerne sind stärker gebunden (≈ 8,5 MeV pro Nukleon) als Uran (≈ 7,6 MeV). Die Differenz von etwa 0,9 MeV mal 236 Nukleonen ergibt rund 200 MeV. Die Bruchstücke sind zusammen um etwa 0,1 % leichter als der Ausgangskern: E = Δm · c².</p>
+  <p><b>Spaltprodukte.</b> Die Bruchstücke haben zu viele Neutronen und sind daher β⁻-Strahler, z. B. I-131, Cs-137, Sr-90. Sie erzeugen auch nach dem Abschalten eines Reaktors noch Wärme (Nachzerfallswärme).</p>
+  <p class="l2"><b>U-235 und U-238.</b> U-235 wird von langsamen Neutronen sehr leicht gespalten. U-238 fängt langsame Neutronen meist nur ein und wird über U-239 und Np-239 zu Plutonium-239 („Brüten“). Nur sehr schnelle Neutronen können U-238 spalten.</p>
+  <p class="l3"><b>Entdeckung.</b> Otto Hahn und Fritz Straßmann fanden 1938 Barium in bestrahltem Uran. Lise Meitner und Otto Frisch – Meitner stammte aus Wien – deuteten das Ergebnis Anfang 1939 als Spaltung und berechneten die Energie mit dem Tröpfchenmodell.</p>
+ </div></details></div>
+</section>
+
+<!-- ========== KETTENREAKTION ========== -->
+<section class="st" id="st-kettenreaktion">
+ <h2>Kettenreaktion</h2>
+ <p class="lead">Jede Spaltung setzt 2 bis 3 Neutronen frei, die weitere Kerne spalten können. Ob die Kette abbricht, gleichmäßig weiterläuft oder lawinenartig wächst, hängt davon ab, wie viele dieser Neutronen wieder eine Spaltung auslösen.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="kC"></canvas></div>
+   <div class="fig low"><canvas id="kP"></canvas></div>
+  </div>
+  <aside class="ctrl">
+   <div class="kpi"><div><span>Neutronen</span><b id="kN">0</b></div><div><span>Spaltungen</span><b id="kF">0</b></div><div><span>Multiplikationsfaktor k</span><b id="kK">–</b></div></div>
+   <div class="msg" id="kMsg">Schieße ein Neutron in den Brennstoff.</div>
+   <div class="row"><button class="b pri" id="kGo">Neutron schießen</button><button class="b" id="kRes">Neu aufbauen</button></div>
+   <div><div class="lab"><span>Anteil Uran-235 (Anreicherung)</span><output id="kEO"></output></div><input type="range" id="kE" min="0" max="100" step="1" value="100"></div>
+   <div><div class="lab"><span>Größe des Brennstoffs</span><output id="kSO"></output></div><input type="range" id="kS" min="3" max="20" step="1" value="12"></div>
+   <div><div class="lab"><span>Steuerstäbe</span><output id="kRO"></output></div><input type="range" id="kR" min="0" max="8" step="1" value="0"></div>
+   <label class="chk"><input type="checkbox" id="kM" checked>Moderator (bremst Neutronen ab)</label>
+   <div><div class="lab"><span>Tempo</span><output id="kVO"></output></div><input type="range" id="kV" min="0" max="3" step="1" value="1"></div>
+   <div class="legend"><span><i style="background:var(--al)"></i>U-235</span><span><i style="background:var(--neut)"></i>U-238</span><span><i style="background:var(--bp)"></i>Neutron</span><span><i style="background:#2b2f36"></i>Steuerstab</span><span><i style="background:transparent"></i>Ring: gespalten</span><span class="l2"><i style="background:var(--ga)"></i>U-238 hat Neutron eingefangen</span></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-kettenreaktion"></div>
+ <div class="expl"><details><summary>Erklärung: kritisch, unterkritisch, überkritisch</summary><div class="cols">
+  <p><b>Multiplikationsfaktor k.</b> k gibt an, wie viele neue Spaltungen eine Spaltung im Mittel auslöst. k &lt; 1: Die Kette stirbt aus (unterkritisch). k = 1: Die Zahl der Spaltungen bleibt gleich (kritisch, Reaktor im Normalbetrieb). k &gt; 1: Lawine (überkritisch).</p>
+  <p><b>Wo gehen Neutronen verloren?</b> Sie entweichen aus dem Brennstoff (je kleiner, desto mehr), werden von U-238 eingefangen oder von Steuerstäben aus Bor oder Cadmium geschluckt.</p>
+  <p><b>Kritische Masse.</b> Erst ab einer bestimmten Größe treffen genug Neutronen auf Kerne, bevor sie entweichen. Bei reinem U-235 sind das etwa 50 kg (eine Kugel von rund 17 cm Durchmesser).</p>
+  <p class="l2"><b>Moderator und Anreicherung.</b> Langsame Neutronen spalten U-235 viel leichter. Wasser oder Graphit bremsen sie ab. Darum genügt Reaktoren Uran mit 3 bis 5 % U-235; Natururan hat nur 0,72 %.</p>
+  <p class="l3"><b>Vereinfachung.</b> Die Simulation verwendet keine echten Wirkungsquerschnitte; die Trefferradien sind so gewählt, dass die Effekte sichtbar werden. In einer Atombombe ist die Anreicherung über 80 % und es gibt keinen Moderator – die Kette läuft in Mikrosekunden ab.</p>
+ </div></details></div>
+</section>
+
+<!-- ========== REAKTOR ========== -->
+<section class="st" id="st-reaktor" data-v="q">
+ <h2>Kernreaktor</h2>
+ <p class="lead">Ein Kraftwerk hält die Kettenreaktion genau bei k = 1. Steuerstäbe regeln die Leistung, Wasser kühlt den Kern und treibt über Dampf eine Turbine an. Was passiert, wenn die Kühlung ausfällt – oder der Reaktor instabil wird?</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="rC"></canvas></div>
+   <div class="fig low"><canvas id="rP"></canvas></div>
+  </div>
+  <aside class="ctrl">
+<div class="vm" role="group" aria-label="Darstellung"><button data-vm="reaktor:q" aria-pressed="true">Anschaulich</button><button data-vm="reaktor:n" aria-pressed="false">Mit Zahlen</button></div>
+   <div class="kpi"><div><span>Leistung</span><b id="rPw">–</b></div><div><span>Temperatur</span><b id="rTe">–</b></div><div><span>Strom</span><b id="rEl">–</b></div><div class="num"><span>Nachwärme</span><b id="rDh">–</b></div><div class="num"><span>Multiplikationsfaktor k</span><b id="rK">–</b></div><div class="num l2"><span>Reaktivität</span><b id="rRh">–</b></div></div>
+   <div class="qual"><div class="lab"><span>Leistung</span></div><div class="tr" style="height:14px;background:var(--grid);border-radius:4px;overflow:hidden"><i id="rPb" style="display:block;height:100%;background:var(--bp);width:0"></i></div><div class="lab" style="margin-top:6px"><span>Temperatur</span></div><div class="tr" style="height:14px;background:var(--grid);border-radius:4px;overflow:hidden"><i id="rTb" style="display:block;height:100%;background:var(--bm);width:0"></i></div></div>
+   <div class="msg" id="rMsg"></div>
+   <div><div class="lab"><span>Steuerstäbe eingefahren</span><output id="rIO"></output></div><input type="range" id="rI" min="0" max="100" value="20"></div>
+   <div class="row"><button class="b" id="rPump" aria-pressed="true">Kühlpumpen an</button><button class="b" id="rEcc" aria-pressed="false">Notkühlung</button></div>
+   <button class="b pri" id="rScram" style="background:var(--bp);border-color:var(--bp)">Schnellabschaltung (SCRAM)</button>
+   <div><label for="rType">Reaktortyp</label><select id="rType"><option value="pwr">Druckwasserreaktor (selbststabilisierend)</option><option value="rbmk">RBMK wie in Tschernobyl (positiver Dampfblasenkoeffizient)</option></select></div>
+   <div><label for="rScn">Szenario</label><select id="rScn"><option value="">– auswählen –</option><option value="norm">Normalbetrieb</option><option value="fuku">Fukushima: Abschaltung, dann Stromausfall</option><option value="cher">Tschernobyl: Test bei niedriger Leistung</option></select></div>
+   <div><div class="lab"><span>Zeitraffer</span><output id="rVO"></output></div><input type="range" id="rV" min="0" max="4" step="1" value="1"></div>
+   <div class="row"><button class="b" id="rRun">Pause</button><button class="b" id="rRes">Neustart</button></div>
+   <p class="note num">Stark vereinfachtes Modell: Punktkinetik mit verzögerten Neutronen, Temperaturrückkopplung, drei Gruppen Nachzerfallswärme. Werte grob wie bei einem 3000-MW-Reaktor.</p><p class="note qual">Vereinfachtes Modell eines großen Kernkraftwerks. Die Balken zeigen, wie stark der Reaktor arbeitet und wie heiß er ist.</p>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-reaktor"></div>
+ <div class="expl"><details><summary>Erklärung: Regelung, Nachzerfallswärme, Stabilität</summary><div class="cols">
+  <p><b>Aufbau.</b> Im Druckwasserreaktor erhitzt der Kern Wasser unter hohem Druck auf etwa 320 °C. Im Dampferzeuger entsteht Dampf, der eine Turbine mit Generator antreibt. Nur etwa ein Drittel der Wärme wird zu Strom, der Rest geht über Kühlturm oder Fluss an die Umgebung.</p>
+  <p><b>Selbstregelung.</b> Wird das Wasser wärmer, bremst es Neutronen schlechter ab und U-238 fängt mehr Neutronen ein: Die Leistung sinkt von selbst wieder (negativer Temperaturkoeffizient).</p>
+  <p><b>Nachzerfallswärme.</b> Auch nach der Abschaltung zerfallen die Spaltprodukte weiter: Kurz danach sind es noch rund 6 % der Leistung, nach einer Stunde etwa 1,5 %. Ohne Kühlung schmilzt der Kern – genau das geschah 2011 in Fukushima.</p>
+  <p class="l2"><b>Verzögerte Neutronen.</b> 0,65 % der Neutronen werden erst Sekunden später von Spaltprodukten ausgesandt. Sie machen den Reaktor regelbar. Übersteigt die Reaktivität diesen Anteil („prompt kritisch“), wächst die Leistung in Millisekunden – so in Tschernobyl 1986.</p>
+  <p class="l3"><b>Punktkinetik.</b> Mit einer Gruppe verzögerter Neutronen und der Prompt-Jump-Näherung gilt dC/dt = λC·ρ/(β−ρ), P ∝ λC/(β−ρ). Zusätzlich: ρ = ρ<sub>Stäbe</sub> + α<sub>T</sub>(T − T₀) (+ Dampfblasenterm beim RBMK).</p>
+ </div></details></div>
+</section>
+
+<!-- ========== FUSION ========== -->
+<section class="st" id="st-fusion" data-v="q">
+ <h2>Kernfusion</h2>
+ <p class="lead">Leichte Kerne verschmelzen und setzen dabei Energie frei. Doch sie stoßen sich elektrisch ab – erst bei über 100 Millionen Grad sind Deuterium und Tritium schnell genug, um sich nahe genug zu kommen.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig mid"><canvas id="uC"></canvas></div>
+   <div class="grid2">
+    <div class="card l2"><h3>Coulomb-Wall</h3><div class="fig low" style="height:220px;min-height:200px"><canvas id="uW"></canvas></div><p class="note num">Klassisch bräuchte man rund 400 keV. Dank Tunneleffekt reichen 10–20 keV, aber nur selten.</p><p class="note qual">Die Kerne müssen einen „Berg“ aus elektrischer Abstoßung überwinden. Nur sehr schnelle Kerne schaffen es – manchmal tunneln sie auch hindurch.</p></div>
+    <div class="card"><h3 class="num">Fusionsreaktor: Lawson-Kriterium</h3><h3 class="qual">Fusionskraftwerk: Kommt mehr Energie heraus?</h3><div class="fig low num" style="height:220px;min-height:200px"><canvas id="uL"></canvas></div><div class="dose qual" id="uBal" style="margin-top:6px"></div></div>
+   </div>
+  </div>
+  <aside class="ctrl">
+<div class="vm" role="group" aria-label="Darstellung"><button data-vm="fusion:q" aria-pressed="true">Anschaulich</button><button data-vm="fusion:n" aria-pressed="false">Mit Zahlen</button></div>
+   <div class="kpi"><div><span>Temperatur</span><b id="uTO">–</b></div><div><span>Fusionen</span><b id="uN">0</b></div></div>
+   <div><div class="lab"><span>Temperatur des Plasmas</span><output id="uTv"></output></div><input type="range" id="uT" min="0" max="100" value="84"></div>
+   <label class="chk"><input type="checkbox" id="uB" checked>Magnetischer Einschluss (Tokamak)</label>
+   <p class="note num">Damit man überhaupt Fusionen sieht, ist die Reaktionswahrscheinlichkeit pro Stoß 2000-fach vergrößert.</p>
+   <div class="card small num"><b>D + T → He-4 + n + 17,6 MeV</b><br>Der Heliumkern (3,5 MeV) bleibt im Plasma und heizt es, das Neutron (14,1 MeV) fliegt hinaus und gibt seine Energie in der Wand ab.</div><div class="card small qual"><b>Deuterium + Tritium → Helium + Neutron + Energie</b><br>Der Heliumkern bleibt im Plasma und hält es heiß. Das Neutron fliegt hinaus und erwärmt die Wand – diese Wärme könnte ein Kraftwerk nutzen.</div>
+   <div class="card" id="uLc"><h3 class="qual" style="font-size:16px">Stellschrauben eines Fusionskraftwerks</h3>
+    <div><div class="lab"><span><span class="num">Dichte n</span><span class="qual">Wie dicht ist das Plasma?</span></span><output id="unO"></output></div><input type="range" id="un" min="19" max="21" step="0.05" value="20"></div>
+    <div><div class="lab"><span><span class="num">Temperatur T</span><span class="qual">Wie heiß ist es?</span></span><output id="uTkO"></output></div><input type="range" id="uTk" min="0" max="2" step="0.01" value="0.9"></div>
+    <div><div class="lab"><span><span class="num">Energieeinschlusszeit τ</span><span class="qual">Wie lange hält es die Wärme?</span></span><output id="utO"></output></div><input type="range" id="ut" min="-1" max="1" step="0.01" value="0.57"></div>
+    <div class="row"><button class="b sm" data-lp="jet">JET 1997</button><button class="b sm" data-lp="iter">ITER-Ziel</button></div>
+    <div class="msg" id="uQ"></div>
+   </div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-fusion"></div>
+ <div class="expl"><details><summary>Erklärung: Plasma, Einschluss, Fusionsforschung</summary><div class="cols">
+  <p><b>Warum so heiß?</b> Zwei positive Kerne stoßen sich ab. Erst bei sehr hohen Geschwindigkeiten kommen sie sich so nahe (etwa 10⁻¹⁵ m), dass die starke Kernkraft sie verschmelzen kann. Bei über 100 Millionen Grad sind alle Elektronen abgestreift: Das Gas ist ein Plasma.</p>
+  <p><b>Einschluss.</b> Kein Material hält solche Temperaturen aus. Im Tokamak hält ein ringförmiges Magnetfeld die geladenen Teilchen von der Wand fern. ITER in Südfrankreich ist der größte Tokamak, an dem auch Österreich über EURATOM beteiligt ist.</p>
+  <p class="l2"><b>Brennstoff.</b> Deuterium gibt es im Meerwasser (eines von 6400 Wasserstoffatomen). Tritium ist radioaktiv (T½ = 12,3 a) und wird im Reaktor aus Lithium erbrütet: n + ⁶Li → T + He-4.</p>
+  <p class="l3"><b>Lawson-Kriterium.</b> Ein Plasma „zündet“, wenn die Heizung durch die α-Teilchen die Verluste (Abstrahlung und Wärmeleitung) deckt. Für D-T heißt das grob n · T · τ &gt; 3 · 10²¹ keV · s/m³. Q = Fusionsleistung / Heizleistung; ITER soll Q = 10 erreichen.</p>
+ </div></details></div>
+</section>
+
+<!-- ========== SONNE ========== -->
+<section class="st" id="st-sonne">
+ <h2>Die Sonne – ein Fusionsreaktor</h2>
+ <p class="lead">Im Kern der Sonne verschmelzen bei 15 Millionen Grad jede Sekunde rund 600 Millionen Tonnen Wasserstoff zu Helium. Die Proton-Proton-Kette in drei Schritten:</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig mid"><canvas id="sC"></canvas></div>
+   <div class="pp" id="sSteps"></div>
+  </div>
+  <aside class="ctrl">
+   <div class="row"><button class="b pri" id="sNext">Nächster Schritt</button><button class="b" id="sAuto" aria-pressed="false">Automatisch</button></div>
+   <div class="kpi"><div><span>Verbrauchte Protonen</span><b id="sP">0</b></div><div><span>Helium-4</span><b id="sHe">0</b></div><div><span>Energie</span><b id="sE">0 MeV</b></div></div>
+   <div class="card small"><b>Bilanz:</b> 4 p → He-4 + 2 e⁺ + 2 ν + 26,7 MeV. Das Helium ist um 0,7 % leichter als die vier Protonen.</div>
+   <div class="card small"><h3>Die Sonne in Zahlen</h3><dl class="kv"><dt>Leistung</dt><dd>3,8 · 10²⁶ W</dd><dt>Masseverlust</dt><dd>4,3 Mio. t pro Sekunde</dd><dt>Kerntemperatur</dt><dd>15 Mio. K</dd><dt>Neutrinos auf der Erde</dt><dd>≈ 65 Mrd. pro cm² und s</dd><dt>Leistungsdichte im Kern</dt><dd>≈ 280 W/m³</dd></dl><p class="note">Die Leistungsdichte im Sonnenkern ist kleiner als die eines Komposthaufens – die Sonne ist nur riesig groß.</p></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-sonne"></div>
+ <div class="expl"><details><summary>Erklärung: Warum die Sonne so lange brennt</summary><div class="cols">
+  <p><b>Der langsame erste Schritt.</b> Damit zwei Protonen zu Deuterium werden, muss sich während der Begegnung ein Proton in ein Neutron umwandeln (schwache Wechselwirkung). Das ist so unwahrscheinlich, dass ein Proton im Mittel Milliarden Jahre darauf wartet. Darum brennt die Sonne etwa 10 Milliarden Jahre lang.</p>
+  <p><b>Tunneleffekt.</b> 15 Millionen Grad sind eigentlich zu kalt, um den Coulomb-Wall zu überwinden. Nur durch den quantenmechanischen Tunneleffekt verschmelzen überhaupt Kerne.</p>
+  <p class="l2"><b>Energie.</b> Von den 26,7 MeV tragen die Neutrinos etwa 2 % davon; sie verlassen die Sonne sofort. Die übrige Energie braucht als Strahlung rund 100 000 Jahre bis an die Oberfläche.</p>
+  <p class="l3"><b>CNO-Zyklus.</b> In Sternen, die schwerer als etwa 1,3 Sonnenmassen sind, dominiert ein Kreislauf, in dem Kohlenstoff, Stickstoff und Sauerstoff als Katalysatoren wirken. Netto entsteht auch hier aus 4 Protonen ein Heliumkern.</p>
+ </div></details></div>
+</section>
+
+<!-- ========== ENERGIE ========== -->
+<section class="st" id="st-energie">
+ <h2>Energie aus Masse</h2>
+ <p class="lead">Kernreaktionen setzen pro Kilogramm Millionen Mal mehr Energie frei als chemische Reaktionen – weil dabei ein messbarer Teil der Masse in Energie umgewandelt wird: E = m · c².</p>
+ <div class="grid2">
+  <div class="card"><h3>Energie pro Kilogramm Brennstoff (logarithmisch)</h3><div class="dose" id="eBar"></div><p class="note">Die Balken sind logarithmisch: Ein Zwölftel der Breite entspricht einem Faktor 10.</p></div>
+  <div class="card"><h3>Bindungsenergie pro Nukleon</h3><div class="fig low" style="height:280px"><canvas id="eB"></canvas></div><p class="note">Werte gemessen (gerundet). Fusion klettert von links, Spaltung von rechts zum Maximum bei Eisen und Nickel.</p></div>
+ </div>
+ <div class="grid2" style="margin-top:14px">
+  <div class="card"><h3>Rechner: Wie viel Brennstoff braucht ein Haushalt?</h3>
+   <div class="ctrl" style="background:none;padding:0"><div><div class="lab"><span>Strombedarf pro Jahr</span><output id="eHO"></output></div><input type="range" id="eH" min="500" max="10000" step="100" value="3500"></div></div>
+   <div class="dose" id="eHh" style="margin-top:10px"></div><p class="note">Mit Kraftwerkswirkungsgraden: Kernkraftwerk und Kohle 33 %, Fusion angenommen 33 %, Benzin im Generator 30 %.</p></div>
+  <div class="card l2"><h3>Masse in Energie</h3><div class="ctrl" style="background:none;padding:0"><div><div class="lab"><span>Umgewandelte Masse</span><output id="eMO"></output></div><input type="range" id="eM" min="-9" max="0" step="0.05" value="-3"></div></div>
+   <p class="big2" id="eMr" style="margin:10px 0"></p><p id="eMt" class="small"></p>
+   <p class="note">Bei der Spaltung werden etwa 0,09 % der Masse umgewandelt, bei der D-T-Fusion 0,38 %, bei chemischen Reaktionen nur rund 0,000 000 05 %.</p></div>
+ </div>
+ <div class="tasks" id="tk-energie"></div>
+</section>
+
+<!-- ========== UNFÄLLE ========== -->
+<section class="st" id="st-unfaelle">
+ <h2>Tschernobyl 1986 &amp; Fukushima 2011</h2>
+ <p class="lead">Die beiden schwersten Unfälle in Kernkraftwerken, beide auf der höchsten Stufe 7 der internationalen Bewertungsskala INES – aber mit ganz verschiedenen Ursachen.</p>
+ <div class="grid2">
+  <div class="card"><h3>Tschernobyl, Ukraine – 26. April 1986</h3><ul class="tl">
+   <li><b>Reaktor</b><span>Block 4, RBMK: graphitmoderiert, wassergekühlt, positiver Dampfblasenkoeffizient</span></li>
+   <li><b>Auslöser</b><span>Ein Sicherheitstest bei zu niedriger Leistung, viele Steuerstäbe gezogen, Sicherheitssysteme abgeschaltet</span></li>
+   <li><b>01:23 Uhr</b><span>Mehr Dampf → mehr Reaktivität → mehr Leistung. Die Schnellabschaltung verstärkte den Anstieg zunächst (Graphitspitzen der Stäbe). Der Reaktor wurde prompt kritisch.</span></li>
+   <li><b>Folgen</b><span>Dampfexplosion zerstörte Reaktor und Gebäude; Graphitbrand über rund 10 Tage trug Radioaktivität hoch in die Luft. 30-km-Sperrzone.</span></li>
+   <li><b>Österreich</b><span>Ab 29./30. April zogen die Luftmassen über Österreich; wo es regnete, wurde viel Cäsium im Boden abgelagert.</span></li>
+  </ul><p class="note">Im Reaktor-Simulator: Szenario „Tschernobyl“.</p></div>
+  <div class="card"><h3>Fukushima Daiichi, Japan – 11. März 2011</h3><ul class="tl">
+   <li><b>Reaktoren</b><span>Siedewasserreaktoren, Blöcke 1–3 in Betrieb</span></li>
+   <li><b>Auslöser</b><span>Erdbeben der Stärke 9: Die Reaktoren schalteten korrekt ab. Der folgende Tsunami überflutete die Notstromdiesel.</span></li>
+   <li><b>Stunden danach</b><span>Ohne Strom keine Kühlung. Die Nachzerfallswärme ließ in drei Blöcken den Kern schmelzen.</span></li>
+   <li><b>Folgen</b><span>Heiße Hüllrohre reagierten mit Wasserdampf zu Wasserstoff → Explosionen in Gebäuden 1, 3 und 4. Evakuierung im Umkreis von 20 km. Der Großteil der Freisetzung trieb aufs Meer.</span></li>
+  </ul><p class="note">Im Reaktor-Simulator: Szenario „Fukushima“.</p></div>
+ </div>
+ <div class="grid2" style="margin-top:14px">
+  <div class="card"><h3>Freigesetzte Radioaktivität (PBq = 10¹⁵ Bq, logarithmisch)</h3><div id="uRel"></div><p class="note">Schätzwerte nach UNSCEAR, zusammengestellt vom japanischen Umweltministerium. Fukushima: nur Freisetzung in die Luft.</p></div>
+  <div class="card"><h3>Was ist heute noch übrig?</h3><div class="ctrl" style="background:none;padding:0"><div><div class="lab"><span>Jahr</span><output id="uYO"></output></div><input type="range" id="uY" min="1986" max="2150" step="1" value="2026"></div><div class="row"><button class="b sm" data-ua="c" aria-pressed="true">Tschernobyl</button><button class="b sm" data-ua="f" aria-pressed="false">Fukushima</button></div></div><div class="fig low" style="margin-top:10px"><canvas id="uD"></canvas></div><div class="dose" id="uDr" style="margin-top:8px"></div></div>
+ </div>
+ <div class="tasks" id="tk-unfaelle"></div>
+ <div class="expl"><details><summary>Erklärung: Welche Stoffe sind gefährlich?</summary><div class="cols">
+  <p><b>Edelgase (Xe-133).</b> Wurden in großen Mengen frei, verteilen sich aber und werden kaum vom Körper aufgenommen; nach wenigen Wochen zerfallen.</p>
+  <p><b>Iod-131 (8 Tage).</b> Reichert sich in der Schilddrüse an. Kurz nach einem Unfall gefährlich, vor allem für Kinder; dagegen helfen Kaliumiodid-Tabletten, die die Schilddrüse mit stabilem Iod „sättigen“.</p>
+  <p><b>Cäsium-137 (30 Jahre).</b> Verhält sich chemisch wie Kalium, verteilt sich im ganzen Körper. Wegen der langen Halbwertszeit bestimmt es die Belastung über Jahrzehnte – auch in Österreich.</p>
+  <p class="l2"><b>Strontium-90 (29 Jahre).</b> Verhält sich wie Calcium und lagert sich in Knochen ein. Es wurde in Tschernobyl vor allem nahe am Reaktor abgelagert, weil es schwer flüchtig ist.</p>
+ </div></details></div>
+</section>
+
+<!-- ========== CÄSIUM ========== -->
+<section class="st" id="st-caesium">
+ <h2>Tschernobyl-Cäsium in Österreich</h2>
+ <p class="lead">Österreich gehörte zu den am stärksten betroffenen Ländern Mittel- und Westeuropas. Wie viel Cäsium-137 abgelagert wurde, hing davon ab, ob es Ende April 1986 regnete. 40 Jahre später ist noch etwa 40 % davon im Boden – und im Wald kreist es bis heute.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig mid"><canvas id="cC"></canvas></div>
+   <div class="card"><h3>Vom Boden auf den Teller</h3><div class="fig low" style="height:230px;min-height:210px"><canvas id="cF"></canvas></div><p class="note" id="cFn"></p></div>
+  </div>
+  <aside class="ctrl">
+   <div><label for="cL">Ort (Bodenbelastung 1986)</label><select id="cL"><option value="21">Österreich-Mittelwert: 21 kBq/m²</option><option value="5">wenig belastet (Beispielwert): 5 kBq/m²</option><option value="60">stärker belastet, z. B. Teile von OÖ oder Salzburg (Beispielwert): 60 kBq/m²</option><option value="150">Spitzenwert: über 150 kBq/m²</option></select></div>
+   <div><div class="lab"><span>Jahr</span><output id="cYO"></output></div><input type="range" id="cY" min="1986" max="2100" value="2026"></div>
+   <div class="kpi"><div><span>Cs-137 im Boden</span><b id="cNow">–</b></div><div><span>Anteil von 1986</span><b id="cPct">–</b></div></div>
+   <div class="card"><h3>Dosisrechner Wildbret &amp; Pilze</h3>
+    <div><label for="cFood">Lebensmittel</label><select id="cFood"><option value="250">Wildschwein, Mittelwert einer Studie (≈ 250 Bq/kg)</option><option value="16">Wildschwein aus dem Handel (≈ 16 Bq/kg)</option><option value="4710">Wildschwein, Höchstwert (4710 Bq/kg)</option><option value="45">Eierschwammerl, Median (45 Bq/kg)</option><option value="600">Grenzwert (600 Bq/kg)</option></select></div>
+    <div style="margin-top:8px"><div class="lab"><span>Portionen (250 g) pro Jahr</span><output id="cPO"></output></div><input type="range" id="cP" min="0" max="100" value="10"></div>
+    <p class="big2" id="cDose" style="margin:8px 0 2px;font-size:28px"></p><p class="small" id="cDoseT"></p>
+   </div>
+   <p class="note">Dosiskoeffizient Cs-137 beim Essen: 1,3 · 10⁻⁸ Sv/Bq (Erwachsene). Messwerte: AGES, Sozialministerium.</p>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-caesium"></div>
+ <div class="expl"><details><summary>Erklärung: Warum gerade Wild und Pilze?</summary><div class="cols">
+  <p><b>Acker und Wiese.</b> Dort ist das Cäsium fest an Tonminerale gebunden und für Pflanzen kaum verfügbar. Bei landwirtschaftlichen Produkten spielt es deshalb keine Rolle mehr.</p>
+  <p><b>Wald.</b> In der Humusschicht bleibt das Cäsium pflanzenverfügbar. Pilze reichern es an, Wildschweine fressen Pilze (auch unterirdische) und wühlen im Boden. Darum liegt manches Wildschwein heute noch über dem Grenzwert von 600 Bq/kg.</p>
+  <p><b>Wo war es viel?</b> Höher belastete Gebiete liegen vor allem im westlichen Niederösterreich, in der westlichen Obersteiermark, in weiten Teilen Oberösterreichs und Salzburgs sowie im Koralpengebiet. Die Cäsiumkarte des Umweltbundesamts zeigt die Werte für ganz Österreich.</p>
+  <p class="l2"><b>Einordnung.</b> Tschernobyl trägt heute nur einen sehr kleinen Teil zur mittleren Strahlenbelastung in Österreich bei – weniger als ein Hundertstel dessen, was Radon verursacht.</p>
+ </div></details></div>
+</section>
+
+<script>
+{
+const YR=3.15576e7;
+const SUPD="⁰¹²³⁴⁵⁶⁷⁸⁹";const sup=n=>String(n).replace(/-/g,"⁻").replace(/\d/g,d=>SUPD[d]);
+const de=(x,p=3)=>Number(x.toPrecision(p)).toLocaleString("de-AT",{maximumFractionDigits:10});
+function sci(x,p=3){if(x===0)return"0";const e=Math.floor(Math.log10(Math.abs(x)));if(e>=-2&&e<4)return de(x,p);const m=x/10**e;return de(m,p)+" · 10"+sup(e)}
+function fmtT(s){if(s==null)return"unbekannt (Modell)";if(!isFinite(s))return"stabil";const y=s/YR;
+ if(s<1e-9)return sci(s)+" s";if(s<1e-6)return de(s*1e9)+" ns";if(s<1e-3)return de(s*1e6)+" µs";if(s<1)return de(s*1e3)+" ms";if(s<120)return de(s)+" s";if(s<7200)return de(s/60)+" min";if(s<2*DY)return de(s/HR)+" h";if(y<1)return de(s/DY)+" Tage";if(y<1e4)return de(y,4)+" Jahre";return sci(y)+" Jahre"}
+const nucH=(Z,A,meta)=>`<span class="nc"><span class="sp"><sup>${A}${meta?"m":""}</sup><sub>${Z}</sub></span>${sym(Z)}</span>`;
+const nucS=(Z,A)=>`${sym(Z)}-${A}`;
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function pois(m){if(m<=0)return 0;if(m<40){const L=Math.exp(-m);let k=0,p=1;do{k++;p*=Math.random()}while(p>L);return k-1}return Math.max(0,Math.round(m+Math.sqrt(m)*gauss()))}
+/* Farben aus CSS auflösen (auch light-dark) */
+const probe=document.createElement("i");probe.style.display="none";document.body.appendChild(probe);let CC={};
+function col(v){if(CC[v])return CC[v];probe.style.color=v.startsWith("var")?v:`var(${v})`;return CC[v]=getComputedStyle(probe).color}
+const mcol=m=>col(MODE[m]?MODE[m][1]:"var(--mut)");
+function alpha(c,a){const m=c.match(/[\d.]+/g);return m?`rgba(${m[0]},${m[1]},${m[2]},${a})`:c}
+/* Canvas */
+const REG=[];
+function canv(id,draw){const c=document.getElementById(id);const o={c,draw,x:null,w:0,h:0};const fit=()=>{const r=c.getBoundingClientRect();if(!r.width||!r.height)return;const d=devicePixelRatio||1;c.width=Math.round(r.width*d);c.height=Math.round(r.height*d);o.w=r.width;o.h=r.height;o.x=c.getContext("2d");o.x.setTransform(d,0,0,d,0,0);draw(o)};o.fit=fit;o.redraw=()=>{if(o.x&&o.w)draw(o)};const ro=new ResizeObserver(fit);ro.observe(c);REG.push(o);return o}
+const redrawAll=()=>{CC={};REG.forEach(o=>o.redraw())};
+new MutationObserver(redrawAll).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme","class","style"]});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",redrawAll);
+function txt(x,s,X,Y,o={}){x.font=`${o.w||400} ${o.size||13}px "Source Sans 3",system-ui,sans-serif`;x.fillStyle=o.c||col("--ink");x.textAlign=o.a||"left";x.textBaseline=o.b||"middle";x.fillText(s,X,Y)}
+function ball(x,X,Y,r,c){const g=x.createRadialGradient(X-r*.35,Y-r*.4,r*.1,X,Y,r);g.addColorStop(0,"rgba(255,255,255,.85)");g.addColorStop(.25,c);g.addColorStop(1,alpha(c,1).replace("rgba","rgba"));x.fillStyle=g;x.beginPath();x.arc(X,Y,r,0,7);x.fill();x.strokeStyle="rgba(0,0,0,.25)";x.lineWidth=Math.max(.5,r*.06);x.stroke()}
+function rng(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s^=s>>>17;s^=s<<5;return(s>>>0)/4294967296}}
+const PACK={};
+function pack(A,Z){const k=A+"/"+Z;if(PACK[k])return PACK[k];const pts=[];for(let i=0;i<A;i++){const r=Math.sqrt(i+.5),t=i*2.39996;pts.push({x:r*Math.cos(t),y:r*Math.sin(t),p:false})}
+ const idx=[...Array(A).keys()],R=rng(A*131+7);for(let i=A-1;i>0;i--){const j=Math.floor(R()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]]}
+ for(let i=0;i<Z&&i<A;i++)pts[idx[i]].p=true;pts.order=[...pts.keys()].sort((a,b)=>pts[b].y-pts[a].y||0);return PACK[k]=pts}
+function drawNucleus(x,cx,cy,A,Z,R,o={}){if(A<1)return;const pts=pack(A,Z),s=R/Math.sqrt(A+.5),rb=s*.9;const pc=col("--prot"),nc=col("--neut");
+ const ord=[...Array(A).keys()].sort((a,b)=>(pts[a].x+pts[a].y)-(pts[b].x+pts[b].y));
+ for(const i of ord){const p=pts[i];let c=p.p?pc:nc;if(o.hl===i&&o.hlc)c=o.hlc;const w=o.wob?Math.sin(o.t*20+i)*o.wob:0;ball(x,cx+p.x*s+w,cy+p.y*s+w*.6,rb,c);if(o.hl===i){x.strokeStyle=col("--ink");x.lineWidth=2;x.beginPath();x.arc(cx+p.x*s,cy+p.y*s,rb+2,0,7);x.stroke()}}}
+/* Tasks */
+const TL=["","einfach","mittel","anspruchsvoll"];
+function tasks(id,list){const el=document.getElementById("tk-"+id);el.innerHTML="";list.forEach(t=>{const d=document.createElement("div");d.className="task"+(t.l==2?" l2":t.l==3?" l3":"");d.innerHTML=`<span class="lv">${TL[t.l]}</span><h3>${t.h}</h3><p>${t.p}</p>`;if(t.set){const b=document.createElement("button");b.className="b sm";b.textContent="Einstellen";b.onclick=()=>{t.set();document.getElementById("st-"+id).scrollIntoView({behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"})};d.appendChild(b)}el.appendChild(d)})}
+/* Niveau */
+function setLvl(l){document.body.dataset.lvl=l;$$(".lvl button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l==l));try{localStorage.setItem("kelvl",l)}catch(e){}setTimeout(()=>{REG.forEach(o=>o.fit())},20)}
+$$(".lvl button").forEach(b=>b.onclick=()=>setLvl(b.dataset.l));
+/* Routing */
+const VIEWS=["kern","nuklidkarte","zerfallsarten","zerfallsgesetz","zerfallsreihen","strahlung","nebelkammer","datierung","alltag"];let cur="kern";
+function route(){const h=location.hash.slice(1);cur=VIEWS.includes(h)?h:"kern";$$(".st").forEach(s=>s.classList.toggle("on",s.id=="st-"+cur));$$("#nav a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")=="#"+cur));setTimeout(()=>REG.forEach(o=>o.fit()),10)}
+addEventListener("hashchange",route);
+function go(v){if(location.hash!="#"+v)location.hash=v;else route();scrollTo(0,0)}
+
+/* ===================== SPALTUNG ===================== */
+const FP={u5:{Z:92,A:235,pairs:[[56,141,36,92,3],[54,140,38,94,2],[55,137,37,96,3],[53,131,39,102,3],[50,132,42,101,3],[52,134,40,100,2],[57,145,35,88,3],[58,144,34,89,3],[60,147,32,86,3],[54,139,38,95,2]]},pu:{Z:94,A:239,pairs:[[54,134,40,103,3],[56,144,38,93,3],[55,138,39,99,3],[52,135,42,102,3],[58,143,36,94,3]]},u8:{Z:92,A:238,pairs:[[56,144,36,91,4],[54,140,38,95,4],[55,140,37,94,5]]}};
+const F={tgt:"u5",fast:false,ph:-1,res:null,slow:false,y:new Array(181).fill(0),n:0};
+const NAMES={92:"Uran",94:"Plutonium",56:"Barium",36:"Krypton",54:"Xenon",38:"Strontium",55:"Caesium",37:"Rubidium",53:"Iod",39:"Yttrium",50:"Zinn",42:"Molybdän",52:"Tellur",40:"Zirconium",57:"Lanthan",35:"Brom",58:"Cer",34:"Selen",60:"Neodym",32:"Germanium"};
+const SYM={92:"U",94:"Pu",56:"Ba",36:"Kr",54:"Xe",38:"Sr",55:"Cs",37:"Rb",53:"I",39:"Y",50:"Sn",42:"Mo",52:"Te",40:"Zr",57:"La",35:"Br",58:"Ce",34:"Se",60:"Nd",32:"Ge",93:"Np"};
+const nuc=(Z,A)=>`<span class="nc"><span class="sp"><sup>${A}</sup><sub>${Z}</sub></span>${SYM[Z]||"?"}</span>`;
+function yieldSample(){/* Doppelhöcker */const h=Math.random()<.5;return Math.round((h?95.5:139.5)+gauss()*5.5)}
+function fShoot(){const t=FP[F.tgt];let r;
+ if(F.tgt=="u8"&&!F.fast)r={type:"cap"};else if(F.tgt=="u8"&&F.fast&&Math.random()>.35)r={type:"sc"};else if(F.tgt!="u8"&&F.fast&&Math.random()<.75)r={type:"sc"};else{const p=t.pairs[Math.floor(Math.random()*t.pairs.length)];r={type:"fis",p}}
+ F.res=r;F.ph=0;fUpd()}
+function fUpd(){const t=FP[F.tgt],r=F.res;let eq="",note="";
+ if(!r){eq=`${nuc(t.Z,t.A)} + <span class="nc"><span class="sp"><sup>1</sup><sub>0</sub></span>n</span> → ?`;note="Drücke „Neutron schießen“."}
+ else if(r.type=="fis"){const p=r.p;eq=`${nuc(t.Z,t.A)} + n → ${nuc(t.Z,t.A+1)}* → ${nuc(p[0],p[1])} + ${nuc(p[2],p[3])} + ${p[4]} n`;note=`${NAMES[t.Z]}-${t.A+1} ist stark angeregt und spaltet sich in ${NAMES[p[0]]}-${p[1]} und ${NAMES[p[2]]}-${p[3]}. Prüfe: ${p[0]} + ${p[2]} = ${p[0]+p[2]} Protonen, ${p[1]} + ${p[3]} + ${p[4]} = ${p[1]+p[3]+p[4]} Nukleonen.`}
+ else if(r.type=="cap"){eq=`${nuc(92,238)} + n → ${nuc(92,239)} → ${nuc(93,239)} + e⁻ → ${nuc(94,239)} + e⁻`;note="Das langsame Neutron wird nur eingefangen. Über zwei β⁻-Zerfälle (23 min, 2,4 Tage) entsteht Plutonium-239 – so „brütet“ jeder Reaktor Plutonium."}
+ else{eq=`${nuc(t.Z,t.A)} + n → ${nuc(t.Z,t.A)} + n`;note=F.tgt=="u8"?"Diesmal prallt das schnelle Neutron nur ab. Schnelle Neutronen spalten U-238 manchmal, aber selten.":"Das schnelle Neutron ist an U-235 vorbeigeflogen bzw. abgeprallt. Schnelle Neutronen spalten U-235 viel seltener als langsame – darum braucht ein Reaktor einen Moderator."}
+ $("#fEq").innerHTML=eq;$("#fNote").textContent=note;
+ $("#fInfo").innerHTML=F.tgt=="u5"?"<b>Uran-235</b> macht 0,72 % des Natururans aus. Mit langsamen Neutronen spaltet es sehr leicht.":F.tgt=="u8"?"<b>Uran-238</b> (99,27 % des Natururans) lässt sich mit langsamen Neutronen nicht spalten.":"<b>Plutonium-239</b> entsteht im Reaktor aus U-238 und ist ebenfalls gut spaltbar.";
+ $("#fQ").innerHTML="<b>Massenbilanz (Ba-141 + Kr-92 + 3 n)</b><br>vorher: 235,04393 u + 1,00866 u = 236,05259 u<br>nachher: 140,91441 u + 91,92616 u + 3 · 1,00866 u = 235,86656 u<br>Δm = 0,18603 u ≙ 0,18603 · 931,5 MeV ≈ <b>173 MeV</b> (Bewegungsenergie direkt nach der Spaltung)"}
+const FEN=[["Bewegungsenergie der Bruchstücke",169,"--bp"],["Neutrinos (aus β-Zerfällen, entweichen)",9,"--mut"],["Zerfälle der Spaltprodukte (β, γ) – Nachwärme",13,"--al"],["Sofortige γ-Strahlung",7,"--ga"],["Bewegungsenergie der Neutronen",5,"--bm"]];
+$("#fE").innerHTML=FEN.map(r=>`<div class="r"><span>${r[0]}</span><span class="tr"><i style="width:${r[1]/170*100}%;background:var(${r[2]})"></i></span><span class="v">${r[1]} MeV</span></div>`).join("");
+const fc=canv("fC",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const t=FP[F.tgt],r=F.res,p=Math.max(0,F.ph);const cx=W*.5,cy=H*.52,R=Math.min(H*.26,W*.15);
+ const pc=col("--prot"),nc=col("--neut");
+ if(F.ph<0||!r){drawNucleus(x,cx,cy,t.A,t.Z,R);txt(x,`${SYM[t.Z]}-${t.A}`,cx,cy-R-18,{a:"center",w:700,size:17});return}
+ const nIn=Math.min(1,p/.3);const nx=20+(cx-R-20)*nIn;
+ if(p<.3){drawNucleus(x,cx,cy,t.A,t.Z,R);ball(x,nx,cy,6,nc);txt(x,F.fast?"schnelles Neutron":"langsames Neutron",nx,cy-16,{a:"center",size:13,w:700});return}
+ if(r.type=="sc"){drawNucleus(x,cx,cy,t.A,t.Z,R);const q=(p-.3)/.7;ball(x,cx-R-10-q*W*.3,cy-q*H*.35,6,nc);txt(x,"Neutron prallt ab",W/2,H-16,{a:"center",c:col("--mut")});return}
+ if(r.type=="cap"){const q=(p-.3)/.7;drawNucleus(x,cx,cy,239,92,R*1.01,{wob:q<.3?1.5:0,t:q*20});txt(x,q<.4?"U-239":q<.7?"→ β⁻ → Np-239":"→ β⁻ → Pu-239",cx,cy-R-18,{a:"center",w:700,size:17});if(q>.4){ball(x,cx+R+(q-.4)*W*.6,cy-30,4,col("--bm"));txt(x,"e⁻",cx+R+(q-.4)*W*.6+10,cy-42,{w:700})}return}
+ const P=r.p;const q=(p-.3)/.7;
+ if(q<.45){const e=q/.45;const sx=1+e*.55,sy=1-e*.3;x.save();x.translate(cx,cy);x.scale(sx,sy);x.translate(-cx,-cy);drawNucleus(x,cx,cy,t.A+1,t.Z,R,{wob:1.2,t:q*30});x.restore();if(e>.5){x.fillStyle=alpha(col("--bg"),.0)}txt(x,`${SYM[t.Z]}-${t.A+1}* schwingt und schnürt sich ein`,cx,cy-R-18,{a:"center",w:700,size:15});return}
+ const e=(q-.45)/.55,d=e*W*.32;const R1=R*Math.cbrt(P[1]/t.A),R2=R*Math.cbrt(P[3]/t.A);
+ drawNucleus(x,cx-R*.6-d,cy-d*.15,P[1],P[0],R1);drawNucleus(x,cx+R*.6+d,cy+d*.12,P[3],P[2],R2);
+ txt(x,`${SYM[P[0]]}-${P[1]}`,cx-R*.6-d,cy-d*.15-R1-14,{a:"center",w:700,size:16});txt(x,`${SYM[P[2]]}-${P[3]}`,cx+R*.6+d,cy+d*.12-R2-14,{a:"center",w:700,size:16});
+ for(let i=0;i<P[4];i++){const a=-1.2+i*2.4/(P[4]-1||1)+.6;const L=R*.3+e*Math.min(W,H)*.55;ball(x,cx+Math.cos(a+1.4)*L*.9,cy+Math.sin(a+1.4)*L,5,nc)}
+ if(e>.3){x.strokeStyle=alpha(col("--ga"),Math.max(0,1-e));x.lineWidth=2;for(let i=0;i<6;i++){const a=i*1.05;x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+Math.cos(a)*e*W*.5,cy+Math.sin(a)*e*H*.6);x.stroke()}}
+ txt(x,"≈ 200 MeV",W-14,24,{a:"right",w:700,size:16,c:col("--bp")})});
+const fy=canv("fY",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const L=36,B=H-24,T=10,R=W-8;const X=A=>L+(A-70)/(165-70)*(R-L);x.strokeStyle=col("--line");x.beginPath();x.moveTo(L,T);x.lineTo(L,B);x.lineTo(R,B);x.stroke();[80,100,120,140,160].forEach(a=>txt(x,a,X(a),B+12,{a:"center",c:col("--mut"),size:12}));txt(x,"Massenzahl A",R,T+4,{a:"right",c:col("--mut"),size:12});
+ const mx=Math.max(1,...F.y);const bw=(R-L)/95;x.fillStyle=col("--bm");for(let a=70;a<=165;a++){const v=F.y[a];if(v){const h=v/mx*(B-T-10);x.fillRect(X(a)-bw/2,B-h,Math.max(1,bw-1),h)}}
+ x.strokeStyle=col("--bp");x.lineWidth=2;x.setLineDash([5,4]);x.beginPath();for(let a=70;a<=165;a++){const g=Math.exp(-((a-95.5)**2)/(2*5.5**2))+Math.exp(-((a-139.5)**2)/(2*5.5**2));const v=g/(Math.sqrt(2*Math.PI)*5.5)*F.n;const y=B-v/mx*(B-T-10);a==70?x.moveTo(X(a),y):x.lineTo(X(a),y)}if(F.n>20)x.stroke();x.setLineDash([])});
+function fAdd(n){for(let i=0;i<n;i++){const a1=yieldSample();const nu=Math.random()<.5?2:3;const a2=236-nu-a1;if(a1>=70&&a1<=165)F.y[a1]++;if(a2>=70&&a2<=165)F.y[a2]++;F.n++}$("#fYn").textContent=F.n;fy.redraw()}
+$("#fGo").onclick=()=>{fShoot();if(F.res.type=="fis"){const P=F.res.p;F.y[P[1]]++;F.y[P[3]]++;F.n++;$("#fYn").textContent=F.n;fy.redraw()}};
+$("#fMany").onclick=()=>fAdd(100);$("#fSlow").onclick=e=>{F.slow=!F.slow;e.target.setAttribute("aria-pressed",F.slow)};
+$$("[data-ft]").forEach(b=>b.onclick=()=>{F.tgt=b.dataset.ft;$$("[data-ft]").forEach(q=>q.setAttribute("aria-pressed",q==b));F.res=null;F.ph=-1;fUpd();fc.redraw()});
+$$("[data-fn]").forEach(b=>b.onclick=()=>{F.fast=b.dataset.fn=="f";$$("[data-fn]").forEach(q=>q.setAttribute("aria-pressed",q==b))});
+tasks("spaltung",[
+ {l:1,h:"Die erste Spaltung",p:"Schieße ein langsames Neutron auf U-235. Was entsteht? Prüfe mit der Gleichung, ob Protonen- und Nukleonenzahl erhalten bleiben."},
+ {l:1,h:"Immer gleich?",p:"Schieße mehrmals. Entstehen immer dieselben Bruchstücke? Wie viele Neutronen werden jeweils frei?"},
+ {l:1,h:"U-238",p:"Wähle U-238 und ein langsames Neutron. Was passiert stattdessen? Was entsteht am Ende?",set:()=>{$$("[data-ft]")[1].click();$$("[data-fn]")[0].click()}},
+ {l:1,h:"Schnell oder langsam?",p:"Schieße 10-mal schnelle und 10-mal langsame Neutronen auf U-235. Welche spalten häufiger? Warum braucht ein Reaktor deshalb einen Moderator?"},
+ {l:2,h:"Häufigkeit der Bruchstücke",p:"Sammle 1000 Spaltungen. Wo liegen die zwei Maxima? Warum gibt es kaum Bruchstücke mit A ≈ 117 (symmetrische Spaltung)?",set:()=>fAdd(900)},
+ {l:2,h:"Energiebilanz",p:"Welcher Anteil der 200 MeV wird im Reaktor sofort zu Wärme, welcher erst später? Welcher geht ganz verloren?"},
+ {l:3,h:"Massendefekt nachrechnen",p:"Rechne die Massenbilanz für Xe-140 + Sr-94 + 2 n nach (m(Xe-140) = 139,92165 u, m(Sr-94) = 93,91536 u). Vergleiche mit Ba-141 + Kr-92."},
+ {l:3,h:"200 MeV pro Spaltung",p:"Wie viele Spaltungen pro Sekunde braucht ein Reaktor mit 3000 MW Wärmeleistung? Wie viel U-235 wird pro Tag gespalten?"}
+]);
+
+/* ===================== KETTENREAKTION ===================== */
+const KR={nuc:[],neu:[],rods:[],fis:0,born:0,ended:0,hist:[],t:0,R:0,cx:0,cy:0,sc:1,grid:null,stop:false,spd:[.5,1,2,4]};
+function kBuild(){const c=kc;if(!c.w)return;const W=c.w,H=c.h;const S=+$("#kS").value;const R=Math.min(W,H)*.46*(S/20);KR.R=R;KR.cx=W/2;KR.cy=H/2;const sp=Math.min(W,H)*.92/20/1.6*.9;KR.sp=sp;KR.nuc=[];const en=+$("#kE").value/100;
+ for(let gx=-R;gx<=R;gx+=sp)for(let gy=-R;gy<=R;gy+=sp){const jx=gx+(Math.random()-.5)*sp*.5,jy=gy+(Math.random()-.5)*sp*.5;if(jx*jx+jy*jy<R*R)KR.nuc.push({x:KR.cx+jx,y:KR.cy+jy,t:Math.random()<en?5:8,st:0,fl:0})}
+ const nr=+$("#kR").value;KR.rods=[];for(let i=0;i<nr;i++){const fx=KR.cx-R+(i+1)*2*R/(nr+1);KR.rods.push(fx)}
+ KR.grid=new Map();const g=sp*1.2;KR.g=g;KR.nuc.forEach((n,i)=>{const k=Math.floor(n.x/g)+","+Math.floor(n.y/g);if(!KR.grid.has(k))KR.grid.set(k,[]);KR.grid.get(k).push(i)});
+ KR.neu=[];KR.fis=0;KR.born=0;KR.ended=0;KR.hist=[];KR.t=0;KR.stop=false;kMsg("Schieße ein Neutron in den Brennstoff.","");kStat();kc.redraw();kp.redraw()}
+function kMsg(t,c){const m=$("#kMsg");m.textContent=t;m.className="msg "+(c||"")}
+function kSpawn(x,y,n){for(let i=0;i<n;i++){const a=Math.random()*6.283;KR.neu.push({x,y,vx:Math.cos(a),vy:Math.sin(a),age:0});KR.born++}}
+function kStep(dt){if(KR.stop)return;const mod=$("#kM").checked;const v=KR.sp*(mod?5:9);const r5=KR.sp*(mod?.42:.16),r8=KR.sp*(mod?.16:.1);const rodw=KR.sp*.5;
+ const add=[];for(const n of KR.neu){if(n.dead)continue;const steps=Math.max(1,Math.ceil(v*dt/(KR.sp*.3)));for(let s=0;s<steps&&!n.dead;s++){n.x+=n.vx*v*dt/steps;n.y+=n.vy*v*dt/steps;
+  const dx=n.x-KR.cx,dy=n.y-KR.cy;if(dx*dx+dy*dy>KR.R*KR.R*1.02){n.dead=true;KR.ended++;break}
+  for(const rx of KR.rods)if(Math.abs(n.x-rx)<rodw/2){n.dead=true;KR.ended++;break}if(n.dead)break;
+  const gx=Math.floor(n.x/KR.g),gy=Math.floor(n.y/KR.g);for(let a=-1;a<=1&&!n.dead;a++)for(let b=-1;b<=1&&!n.dead;b++){const L=KR.grid.get((gx+a)+","+(gy+b));if(!L)continue;for(const i of L){const q=KR.nuc[i];if(q.st)continue;const d2=(q.x-n.x)**2+(q.y-n.y)**2;const r=q.t==5?r5:r8;if(d2<r*r){if(q.t==5){q.st=1;q.fl=1;KR.fis++;n.dead=true;KR.ended++;add.push([q.x,q.y,Math.random()<.45?2:3]);KR.hist.push(KR.t)}else if(Math.random()<.5){q.st=2;q.fl=1;n.dead=true;KR.ended++}break}}}}}
+ add.forEach(a=>kSpawn(...a));KR.neu=KR.neu.filter(n=>!n.dead);KR.t+=dt;KR.nuc.forEach(q=>{if(q.fl>0)q.fl=Math.max(0,q.fl-dt*1.5)});
+ if(KR.neu.length>1500){KR.stop=true;kMsg("Überkritisch: Die Zahl der Neutronen wächst lawinenartig – in einer Bombe in Millionstelsekunden. Simulation angehalten.","warn")}
+ else if(KR.neu.length==0&&KR.born>0){const left=KR.nuc.filter(q=>q.t==5&&!q.st).length;kMsg(left?"Die Kette ist abgebrochen: Zu viele Neutronen gingen verloren (unterkritisch).":"Kein U-235 mehr übrig – der Brennstoff ist verbraucht.",left?"":"ok")}}
+function kStat(){$("#kN").textContent=KR.neu.length;$("#kF").textContent=KR.fis;$("#kK").textContent=KR.ended>15?de(2.55*KR.fis/KR.ended,2):"–"}
+const kc=canv("kC",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);if(!KR.nuc.length&&W)kBuild();x.fillStyle=$("#kM").checked?alpha(col("--bm"),.08):"transparent";x.beginPath();x.arc(KR.cx,KR.cy,KR.R,0,7);x.fill();x.strokeStyle=col("--line");x.lineWidth=2;x.stroke();
+ const r=KR.sp*.28,a5=col("--al"),a8=col("--neut"),bp=col("--bp");
+ KR.nuc.forEach(q=>{x.beginPath();x.arc(q.x,q.y,r,0,7);if(q.st==1){x.strokeStyle=alpha(col("--mut"),.6);x.lineWidth=1;x.stroke()}else{x.fillStyle=q.st==2?alpha(col("--ga"),.8):q.t==5?a5:a8;x.fill()}if(q.fl>0){x.strokeStyle=alpha(bp,q.fl);x.lineWidth=2;x.beginPath();x.arc(q.x,q.y,r+(1-q.fl)*KR.sp*1.2,0,7);x.stroke()}});
+ x.fillStyle="#2b2f36";KR.rods.forEach(rx=>{x.fillRect(rx-KR.sp*.25,KR.cy-KR.R,KR.sp*.5,KR.R*2)});
+ x.fillStyle=bp;KR.neu.forEach(n=>{x.beginPath();x.arc(n.x,n.y,2.4,0,7);x.fill()});
+ txt(x,$("#kM").checked?"mit Moderator":"ohne Moderator",12,18,{c:col("--mut")})});
+const kp=canv("kP",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const L=44,B=H-26,T=12,R=W-10;x.strokeStyle=col("--line");x.beginPath();x.moveTo(L,T);x.lineTo(L,B);x.lineTo(R,B);x.stroke();txt(x,"Spaltungen pro Zeitabschnitt (logarithmisch)",L+6,T+4,{w:700,size:13});txt(x,"Zeit →",R,B+14,{a:"right",c:col("--mut"),size:12});
+ if(!KR.hist.length)return;const bw=.4,nb=Math.max(20,Math.ceil(KR.t/bw));const bins=new Array(nb).fill(0);KR.hist.forEach(t=>bins[Math.min(nb-1,Math.floor(t/bw))]++);const lm=Math.log10(Math.max(10,...bins)*2);
+ x.fillStyle=col("--al");const w=(R-L)/nb;bins.forEach((v,i)=>{if(!v)return;const h=(Math.log10(v+1)/lm)*(B-T-10);x.fillRect(L+i*w+.5,B-h,Math.max(1,w-1),h)});[1,10,100].forEach(v=>{const y=B-Math.log10(v+1)/lm*(B-T-10);if(y>T)txt(x,v,L-4,y,{a:"right",c:col("--mut"),size:12})})});
+$("#kGo").onclick=()=>{if(KR.stop)kBuild();const a=Math.PI*(.9+Math.random()*.2);KR.neu.push({x:KR.cx-KR.R*.98,y:KR.cy+(Math.random()-.5)*KR.R*.3,vx:1,vy:(Math.random()-.5)*.2,age:0});KR.born++;kMsg("Kettenreaktion läuft …","")};
+$("#kRes").onclick=kBuild;["kE","kS","kR"].forEach(i=>$("#"+i).oninput=()=>{kLab();kBuild()});$("#kM").onchange=()=>kc.redraw();$("#kV").oninput=kLab;
+function kLab(){$("#kEO").textContent=$("#kE").value+" %";$("#kSO").textContent=$("#kS").value;$("#kRO").textContent=$("#kR").value;$("#kVO").textContent=KR.spd[$("#kV").value]+"×"}
+const kSet=(e,s,r,m)=>{$("#kE").value=e;$("#kS").value=s;$("#kR").value=r;$("#kM").checked=m;kLab();kBuild()};
+tasks("kettenreaktion",[
+ {l:1,h:"Die Lawine",p:"Reines U-235, große Kugel, ohne Steuerstäbe: Schieße ein Neutron. Wie entwickelt sich die Zahl der Spaltungen?",set:()=>kSet(100,16,0,true)},
+ {l:1,h:"Zu klein",p:"Verkleinere den Brennstoff Schritt für Schritt. Ab welcher Größe bricht die Kette fast immer ab? Warum? (Stichwort: kritische Masse)",set:()=>kSet(100,5,0,true)},
+ {l:1,h:"Steuerstäbe",p:"Große Kugel, reines U-235: Wie viele Steuerstäbe brauchst du, damit die Kette nicht mehr lawinenartig wächst? Lies k ab.",set:()=>kSet(100,16,3,true)},
+ {l:2,h:"Natururan",p:"Stelle 1 % U-235 ein (ähnlich Natururan) und schieße mehrmals. Was hindert die Kette? Welche Rolle spielt U-238?",set:()=>kSet(1,20,0,true)},
+ {l:2,h:"Reaktoruran",p:"Finde Einstellungen für Anreicherung und Steuerstäbe, bei denen k möglichst nahe an 1 liegt. Warum ist das für ein Kraftwerk ideal?",set:()=>kSet(30,18,2,true)},
+ {l:2,h:"Ohne Moderator",p:"Schalte den Moderator aus. Wie verändert sich die nötige Größe bzw. Anreicherung? Warum brauchen Atombomben hochangereichertes Material?",set:()=>kSet(100,16,0,false)},
+ {l:3,h:"Generationen",p:"Bei k = 2 verdoppelt sich die Zahl der Spaltungen jede Generation. Wie viele Generationen braucht es, um 1 kg U-235 (2,6 · 10²⁴ Kerne) zu spalten? Eine Generation dauert in einer Bombe etwa 10 ns."}
+]);
+
+/* ===================== REAKTOR ===================== */
+const RC={t:0,C:0,P:3000,T:315,ins:.2,pump:true,ecc:false,scram:false,scT:0,run:true,dec:[0,0,0],hist:[],dead:null,type:"pwr",tur:0};
+const BETA=.0065,LAM=.08,PN=3000,TIN=280,HC=75,CTH=400;const DG=[[.03,.1],[.02,.002],[.015,1e-5]];
+function rReset(P){RC.t=0;RC.P=P;RC.scram=false;RC.scT=0;RC.dec=DG.map(g=>g[0]*P);RC.T=TIN+P*1.065/HC;RC.ins=0;RC.ins=Math.max(0,Math.min(1,rRho()/.06));$("#rI").value=Math.round(RC.ins*100);RC.C=P*BETA/LAM;RC.hist=[];RC.dead=null}
+function rRod(){let ins=RC.ins;if(RC.scram){const sp=RC.type=="rbmk"?.05:1.5;ins=Math.min(1,RC.insS+sp*RC.scT)}return ins}
+function rRho(){const ins=rRod();let rho=.02-.06*ins;if(RC.type=="pwr")rho+=-4e-4*(RC.T-290);else{rho+=-2e-4*(RC.T-290);const vd=Math.max(0,Math.min(1,(RC.T-305)/30));rho+=.013*vd;if(RC.scram&&RC.scT<3)rho+=.004*Math.sin(Math.PI*RC.scT/3)}return rho}
+function rStep(dt){if(RC.dead)return;RC.t+=dt;if(RC.scram)RC.scT+=dt;const rho=rRho();
+ if(rho<BETA*.97){const dC=LAM*RC.C*rho/(BETA-rho);RC.C=Math.max(1e-6,RC.C+dC*dt);RC.P=Math.max(0,LAM*RC.C/(BETA-rho))}else{const g=(rho-BETA)/1e-3;RC.P*=Math.exp(Math.min(g*dt,30));RC.C=RC.P*BETA/LAM}
+ let D=0;RC.dec.forEach((d,i)=>{RC.dec[i]=d+(DG[i][0]*RC.P-d)*DG[i][1]*dt*1;D+=RC.dec[i]});RC.D=D;
+ const cool=(RC.pump?1:0)+(RC.ecc?.6:0);const Ptot=RC.P+D;RC.T+=(Ptot-HC*cool*(RC.T-TIN))/CTH*dt;
+ if(RC.P>40*PN){RC.dead="explo"}else if(RC.T>2200)RC.dead="melt"}
+function rTick(dtr){if(!RC.run)return;const f=[1,10,60,600,3600][$("#rV").value];let rem=dtr*f;let n=0;while(rem>0&&n<4000){const rho=rRho();const h=rho>BETA*.9?2e-4:rho>.003?.01:Math.min(.2,rem);rStep(Math.min(h,rem));rem-=h;n++}
+ const last=RC.hist[RC.hist.length-1];if(!last||RC.t-last.t>Math.max(.2,f*.05))RC.hist.push({t:RC.t,P:RC.P+RC.D,T:RC.T});while(RC.hist.length>600)RC.hist.shift();RC.tur=(RC.tur+dtr*Math.min(30,RC.P/PN*12))%6.283;rUi()}
+function fmtP(P){return P>=1e3?de(P/1e3,3)+" GW":de(Math.max(P,0),3)+" MW"}
+function fmtTime(s){if(s<120)return de(s,3)+" s";if(s<7200)return de(s/60,3)+" min";if(s<172800)return de(s/3600,3)+" h";return de(s/86400,3)+" Tage"}
+const VM={reaktor:"q",fusion:"q"};
+function setVM(st,v){VM[st]=v;$("#st-"+st).dataset.v=v;$$(`[data-vm^="${st}:"]`).forEach(b=>b.setAttribute("aria-pressed",b.dataset.vm==st+":"+v));setTimeout(()=>REG.forEach(o=>o.fit()),10);if(st=="reaktor")rUi();else{uLab();uLaw();uw.redraw()}}
+$$("[data-vm]").forEach(b=>b.onclick=()=>{const [st,v]=b.dataset.vm.split(":");setVM(st,v)});
+$$(".lvl button").forEach(b=>b.addEventListener("click",()=>{const v=b.dataset.l=="1"?"q":"n";setVM("reaktor",v);setVM("fusion",v)}));
+const qP=f=>f<.005?"aus":f<.05?"sehr gering":f<.35?"gering":f<.8?"mittel":f<1.2?"volle Leistung":"viel zu hoch!";
+const qT=T=>T<200?"kalt":T<340?"normal":T<420?"heiß":T<1200?"überhitzt":T<2200?"glühend heiß":"geschmolzen";
+function rUi(){const q=VM.reaktor=="q";const Pt=RC.P+(RC.D||0);const elP=RC.pump&&RC.T>250?RC.P*.33:0;
+ $("#rPw").textContent=q?qP(Pt/PN):fmtP(Pt);$("#rTe").textContent=q?qT(RC.T):Math.round(RC.T)+" °C";$("#rEl").textContent=q?(elP>500?"viel":elP>20?"wenig":"keiner"):fmtP(elP);
+ $("#rDh").textContent=fmtP(RC.D||0);$("#rK").textContent=de(1/(1-rRho()),4);$("#rRh").textContent=de(rRho()/BETA,2)+" β";
+ $("#rPb").style.width=Math.min(100,Math.max(0,Pt/PN*80))+"%";$("#rTb").style.width=Math.min(100,Math.max(0,(RC.T-20)/2200*100))+"%";$("#rTb").style.background=RC.T>420?"var(--bp)":"var(--bm)";
+ const ins=rRod();$("#rIO").textContent=q?(ins<.1?"fast ganz draußen":ins<.4?"ein Stück drin":ins<.9?"weit drin":"ganz drin"):Math.round(ins*100)+" %";
+ $("#rVO").textContent=q?["Echtzeit","10-mal schneller","60-mal schneller","600-mal schneller","3600-mal schneller"][$("#rV").value]:["1 s/s","10 s/s","1 min/s","10 min/s","1 h/s"][$("#rV").value];
+ let m,c="";const rho=rRho();if(RC.dead=="explo"){m="Leistungsexkursion! Die Leistung stieg in Sekundenbruchteilen auf ein Vielfaches – Dampfexplosion, der Reaktor ist zerstört (Tschernobyl).";c="warn"}else if(RC.dead=="melt"){m="Kernschmelze: Die Brennstäbe sind geschmolzen (Fukushima Blöcke 1–3).";c="warn"}
+ else if(rho>=BETA*.97){m=q?"Außer Kontrolle! Die Leistung wächst in Sekundenbruchteilen – schneller als jede Regelung.":"PROMPT KRITISCH – die Leistung wächst ohne verzögerte Neutronen in Millisekunden!";c="warn"}else if(RC.T>1200){m=q?"Viel zu heiß: Die Hüllen der Brennstäbe zersetzen sich, dabei entsteht Wasserstoff (Explosionsgefahr).":"Über 1200 °C: Die Zirkonium-Hüllrohre reagieren mit Dampf, Wasserstoff entsteht.";c="warn"}else if(RC.T>400){m="Der Kern überhitzt – Kühlung reicht nicht für die Nachzerfallswärme.";c="warn"}
+ else if(RC.scram&&RC.P<50){m=q?"Abgeschaltet – keine Kettenreaktion mehr. Aber die Spaltprodukte zerfallen weiter und heizen: Der Kern muss weiter gekühlt werden.":`Abgeschaltet seit ${fmtTime(RC.scT)}. Es bleibt Nachzerfallswärme von ${fmtP(RC.D)} – sie muss weiter gekühlt werden.`;c="ok"}else if(Math.abs(rho)<3e-4){m=q?"Im Gleichgewicht: Jede Spaltung löst genau eine neue aus – die Leistung bleibt gleich.":"Kritisch: k = 1, die Leistung ist stabil.";c="ok"}else m=rho>0?"Überkritisch: Die Leistung steigt.":"Unterkritisch: Die Leistung sinkt.";
+ const el=$("#rMsg");el.textContent=(RC.hint&&!RC.dead&&RC.t<7200?RC.hint+" – ":"")+m;el.className="msg "+c;rc.redraw();rpl.redraw()}
+const rc=canv("rC",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const s=Math.min(W/760,H/420);x.save();x.translate((W-760*s)/2,(H-420*s)/2);x.scale(s,s);
+ const T=RC.T,hot=Math.max(0,Math.min(1,(T-280)/60)),glow=Math.max(0,Math.min(1,(T-500)/1500));const wc=`rgb(${Math.round(60+180*hot)},${Math.round(130-40*hot)},${Math.round(220-150*hot)})`;
+ x.fillStyle=col("--card");x.strokeStyle=col("--ink");x.lineWidth=2;x.beginPath();x.roundRect(60,70,170,300,40);x.fill();x.stroke();
+ x.fillStyle=alpha(wc,.55);x.beginPath();x.roundRect(68,80,154,282,34);x.fill();
+ const Pn=Math.min(1,(RC.P+(RC.D||0))/PN);for(let i=0;i<7;i++){const fx=82+i*20;x.fillStyle=glow>0?`rgb(${Math.round(150+105*glow)},${Math.round(90+80*glow)},40)`:col("--al");x.fillRect(fx,170,9,170);x.fillStyle=`rgba(255,176,0,${Pn*.5})`;x.fillRect(fx-2,170,13,170)}
+ const ins=rRod();for(let i=0;i<6;i++){const rx=91+i*20;x.fillStyle="#2b2f36";x.fillRect(rx,40,6,(ins*170)+120)}txt(x,"Steuerstäbe",145,30,{a:"center",w:700,size:14});txt(x,"Reaktorkern",145,388,{a:"center",w:700,size:14});
+ x.strokeStyle=wc;x.lineWidth=10;x.beginPath();x.moveTo(230,120);x.lineTo(330,120);x.moveTo(330,320);x.lineTo(230,320);x.stroke();
+ x.fillStyle=col("--card");x.strokeStyle=col("--ink");x.lineWidth=2;x.beginPath();x.roundRect(330,90,90,250,30);x.fill();x.stroke();txt(x,"Dampf-",375,365,{a:"center",w:700,size:13});txt(x,"erzeuger",375,382,{a:"center",w:700,size:13});
+ x.strokeStyle=alpha(col("--mut"),.8);x.lineWidth=7;x.beginPath();x.moveTo(420,130);x.lineTo(500,130);x.stroke();
+ if(RC.pump&&RC.T>250&&RC.P>30){for(let i=0;i<5;i++){const yy=110+((RC.t*30+i*40)%60);x.fillStyle=alpha(col("--mut"),.5);x.beginPath();x.arc(450+i*10,yy,4,0,7);x.fill()}}
+ x.save();x.translate(540,130);x.rotate(RC.tur);x.fillStyle=col("--mut");for(let i=0;i<6;i++){x.rotate(1.047);x.fillRect(-3,0,6,34)}x.restore();x.strokeStyle=col("--ink");x.beginPath();x.arc(540,130,36,0,7);x.stroke();txt(x,"Turbine",540,182,{a:"center",w:700,size:13});
+ x.fillStyle=col("--card");x.beginPath();x.roundRect(600,105,70,50,8);x.fill();x.stroke();txt(x,"Generator",635,130,{a:"center",w:700,size:12});
+ const el=RC.pump&&RC.T>250?Math.min(1,RC.P/PN):0;x.strokeStyle=col("--al");x.lineWidth=3;x.beginPath();x.moveTo(670,130);x.lineTo(720,130);x.lineTo(720,230);x.stroke();x.fillStyle=`rgba(255,210,58,${.25+.75*el})`;x.beginPath();x.arc(720,250,18,0,7);x.fill();x.strokeStyle=col("--ink");x.stroke();txt(x,"Netz",720,282,{a:"center",size:13,w:700});
+ x.strokeStyle=col("--ink");x.beginPath();x.arc(280,320,14,0,7);x.stroke();x.fillStyle=RC.pump?col("--sf"):col("--bp");x.beginPath();x.arc(280,320,8,0,7);x.fill();txt(x,"Pumpe "+(RC.pump?"an":"aus"),280,346,{a:"center",size:12,w:700});
+ if(RC.ecc){txt(x,"Notkühlung speist ein",145,58,{a:"center",size:12,c:col("--bm"),w:700})}
+ if(RC.dead=="explo"){x.fillStyle="rgba(226,71,91,.25)";x.fillRect(0,0,760,420);txt(x,"Explosion",380,210,{a:"center",w:700,size:34,c:col("--bp")})}
+ if(RC.dead=="melt"){x.fillStyle="rgba(255,120,0,.85)";x.beginPath();x.ellipse(145,330,70,25,0,0,7);x.fill();txt(x,"Kernschmelze",145,250,{a:"center",w:700,size:20,c:col("--bp")})}
+ x.restore()});
+const rpl=canv("rP",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const h=RC.hist;const L=50,B=H-26,T=14,R=W-50;x.strokeStyle=col("--line");x.beginPath();x.moveTo(L,T);x.lineTo(L,B);x.lineTo(R,B);x.lineTo(R,T);x.stroke();
+ txt(x,VM.reaktor=="q"?"Leistung":"Leistung (log.)",L+6,T+2,{w:700,size:12,c:col("--bp")});txt(x,"Temperatur",R-6,T+2,{a:"right",w:700,size:12,c:col("--bm")});
+ const Y=P=>B-(Math.log10(Math.max(P,1))/5)*(B-T),YT=t=>B-Math.min(1,(t-0)/1500)*(B-T);const qq=VM.reaktor=="q";if(qq){txt(x,"viel",L-4,Y(3000),{a:"right",size:11,c:col("--mut")});txt(x,"wenig",L-4,Y(3),{a:"right",size:11,c:col("--mut")});txt(x,"heiß",R+4,YT(1200),{size:11,c:col("--mut")});txt(x,"normal",R+4,YT(300),{size:11,c:col("--mut")})}else{[1,100,1e4].forEach(v=>txt(x,v>=1e3?v/1e3+" GW":v+" MW",L-4,Y(v),{a:"right",size:11,c:col("--mut")}));[300,1200].forEach(v=>txt(x,v+" °C",R+4,YT(v),{size:11,c:col("--mut")}))}
+ if(h.length<2)return;const t0=h[0].t,t1=h[h.length-1].t||1;const X=t=>L+(t-t0)/(t1-t0||1)*(R-L);
+ x.strokeStyle=col("--bp");x.lineWidth=2;x.beginPath();h.forEach((p,i)=>i?x.lineTo(X(p.t),Y(p.P)):x.moveTo(X(p.t),Y(p.P)));x.stroke();x.strokeStyle=col("--bm");x.beginPath();h.forEach((p,i)=>i?x.lineTo(X(p.t),YT(p.T)):x.moveTo(X(p.t),YT(p.T)));x.stroke();if(VM.reaktor=="q")txt(x,"Zeit →",R,B+14,{a:"right",c:col("--mut"),size:12});else{txt(x,fmtTime(t1-t0),R,B+14,{a:"right",c:col("--mut"),size:12});txt(x,"Zeitraum:",R-70,B+14,{a:"right",c:col("--mut"),size:12})}});
+$("#rI").oninput=e=>{if(!RC.scram)RC.ins=+e.target.value/100;rUi()};
+$("#rPump").onclick=e=>{RC.pump=!RC.pump;e.target.setAttribute("aria-pressed",RC.pump);e.target.textContent=RC.pump?"Kühlpumpen an":"Kühlpumpen aus";rUi()};
+$("#rEcc").onclick=e=>{RC.ecc=!RC.ecc;e.target.setAttribute("aria-pressed",RC.ecc);rUi()};
+$("#rScram").onclick=()=>{if(RC.scram)return;RC.scram=true;RC.scT=0;RC.insS=RC.ins;rUi()};
+$("#rType").onchange=e=>{RC.type=e.target.value;rUi()};$("#rRun").onclick=e=>{RC.run=!RC.run;e.target.textContent=RC.run?"Pause":"Weiter"};
+$("#rRes").onclick=()=>{rScn($("#rScn").value||"norm")};
+function setPump(on){RC.pump=on;const b=$("#rPump");b.setAttribute("aria-pressed",on);b.textContent=on?"Kühlpumpen an":"Kühlpumpen aus"}
+function rScn(s){RC.ecc=false;$("#rEcc").setAttribute("aria-pressed",false);setPump(true);
+ if(s=="cher"){RC.type="rbmk";$("#rType").value="rbmk";rReset(200);$("#rV").value=0;RC.hint="Ziehe die Steuerstäbe langsam heraus, um die Leistung zu erhöhen – wie die Mannschaft 1986. Was passiert?"}
+ else if(s=="fuku"){RC.type="pwr";$("#rType").value="pwr";rReset(3000);RC.scram=true;RC.scT=0;RC.insS=RC.ins;setPump(false);$("#rV").value=3;RC.hint="Der Reaktor ist abgeschaltet, aber der Strom für die Pumpen fehlt. Beobachte die Temperatur. Schalte rechtzeitig die Notkühlung ein!"}
+ else{RC.type="pwr";$("#rType").value="pwr";rReset(3000);$("#rV").value=1;RC.hint=""}
+ RC.run=true;$("#rRun").textContent="Pause";rUi()}
+$("#rScn").onchange=e=>{if(e.target.value)rScn(e.target.value)};
+rReset(3000);
+tasks("reaktor",[
+ {l:1,h:"Leistung regeln",p:"Fahre die Steuerstäbe weiter hinein und wieder heraus. Wie reagiert die Leistung? Stellt sich jedes Mal ein neuer stabiler Wert ein?",set:()=>rScn("norm")},
+ {l:1,h:"Abschalten",p:"Drücke SCRAM. Fällt die Leistung auf null? Wie groß ist die Wärmeleistung nach 1 Minute, nach 1 Stunde?",set:()=>{rScn("norm");setTimeout(()=>$("#rScram").click(),300)}},
+ {l:1,h:"Fukushima",p:"Wähle das Szenario Fukushima. Wie lange dauert es, bis der Kern über 1200 °C heiß wird? Was hätte geholfen?",set:()=>rScn("fuku")},
+ {l:1,h:"Tschernobyl",p:"Wähle das Szenario Tschernobyl und ziehe die Steuerstäbe langsam heraus. Was ist anders als beim Druckwasserreaktor?",set:()=>rScn("cher")},
+ {l:2,h:"Selbstregelung",p:"Schalte im Normalbetrieb die Pumpen aus, ohne abzuschalten. Warum sinkt die Leistung von selbst? Vergleiche mit dem RBMK-Typ.",set:()=>rScn("norm")},
+ {l:2,h:"Prompt kritisch",p:"Beobachte im Tschernobyl-Szenario die Reaktivität in Vielfachen von β. Was passiert bei 1 β? Warum sind verzögerte Neutronen so wichtig?",set:()=>rScn("cher")},
+ {l:2,h:"Die Graphitspitzen",p:"Im Tschernobyl-Szenario: Drücke SCRAM, sobald die Leistung zu steigen beginnt. Warum hilft das beim RBMK nicht sofort?",set:()=>rScn("cher")},
+ {l:3,h:"Nachwärme abschätzen",p:"Lies die Nachzerfallswärme nach 10 s, 10 min und 10 h ab. Vergleiche mit der Faustformel P/P₀ ≈ 0,066 · t^(−0,2) (t in s)."}
+]);
+
+/* ===================== FUSION ===================== */
+const U={p:[],cnt:0,fl:[],T:0};
+const uTemp=()=>{const v=+$("#uT").value;return 1e6*10**(v/100*Math.log10(400))};/* 1 Mio .. 400 Mio K */
+function uInit(){const c=uc;if(!c.w)return;U.p=[];for(let i=0;i<70;i++)U.p.push(uNew(i%2?"D":"T"))}
+function uNew(k,x,y){const c=uc;const m=k=="D"?2:k=="T"?3:k=="He"?4:1;if(x==null&&$("#uB").checked){const a=Math.random()*6.283,r=Math.sqrt(Math.random())*Math.min(c.w,c.h)*.4;x=c.w/2+Math.cos(a)*r;y=c.h/2+Math.sin(a)*r}return{k,m,x:x??Math.random()*c.w,y:y??Math.random()*c.h,vx:0,vy:0,init:true}}
+function uTherm(p){const kT=uTemp()*8.617e-8;const s=Math.sqrt(kT/p.m);p.vx=gauss()*s;p.vy=gauss()*s}
+function uStep(dt){const c=uc;if(!c.w)return;if(!U.p.length)uInit();const kT=uTemp()*8.617e-8;const vs=c.w/2.2/Math.sqrt(40/2.5);const tok=$("#uB").checked;
+ U.p.forEach(p=>{if(p.init){uTherm(p);p.init=false}if(Math.random()<dt*.6&&p.k!="n"&&p.k!="He")uTherm(p);p.x+=p.vx*vs*dt;p.y+=p.vy*vs*dt;
+  if(p.k=="n"){if(p.x<0||p.x>c.w||p.y<0||p.y>c.h)p.dead=true;return}
+  if(tok){const cx=c.w/2,cy=c.h/2,dx=p.x-cx,dy=p.y-cy,r=Math.hypot(dx,dy),R0=Math.min(c.w,c.h)*.42;if(r>R0){const nx=dx/r,ny=dy/r,vn=p.vx*nx+p.vy*ny;if(vn>0){p.vx-=2*vn*nx;p.vy-=2*vn*ny}}}
+  if(p.x<0){p.x=0;p.vx=Math.abs(p.vx);if(!tok)p.cool=1}if(p.x>c.w){p.x=c.w;p.vx=-Math.abs(p.vx);if(!tok)p.cool=1}if(p.y<0){p.y=0;p.vy=Math.abs(p.vy);if(!tok)p.cool=1}if(p.y>c.h){p.y=c.h;p.vy=-Math.abs(p.vy);if(!tok)p.cool=1}
+  if(p.cool){p.vx*=.4;p.vy*=.4;p.cool=0}if(p.k=="He"){p.life=(p.life||3)-dt;if(p.life<0)p.dead=true}});
+ const rr=9;const fu=[];const P=U.p;for(let i=0;i<P.length;i++){const a=P[i];if(a.dead||a.k=="n"||a.k=="He")continue;for(let j=i+1;j<P.length;j++){const b=P[j];if(b.dead||b.k=="n"||b.k=="He")continue;const dx=b.x-a.x,dy=b.y-a.y,d2=dx*dx+dy*dy;if(d2<rr*rr&&d2>0){const d=Math.sqrt(d2),nx=dx/d,ny=dy/d;const rv=(a.vx-b.vx)*nx+(a.vy-b.vy)*ny;if(rv<=0)continue;
+   const mr=a.m*b.m/(a.m+b.m);const E=.5*mr*rv*rv;/* keV */const EG=(a.k!=b.k)?1180:986;const pf=Math.min(1,2000*Math.exp(-Math.sqrt(EG/Math.max(E,1e-3))));
+   if(a.k!=b.k&&Math.random()<pf){fu.push([a,b]);break}const ja=2*b.m/(a.m+b.m)*rv,jb=2*a.m/(a.m+b.m)*rv;a.vx-=ja*nx;a.vy-=ja*ny;b.vx+=jb*nx;b.vy+=jb*ny}}}
+ fu.forEach(([a,b])=>{if(a.dead||b.dead)return;a.dead=b.dead=true;U.cnt++;const x=(a.x+b.x)/2,y=(a.y+b.y)/2;const an=Math.random()*6.283;const he=uNew("He",x,y);he.vx=Math.cos(an)*4;he.vy=Math.sin(an)*4;he.init=false;const n=uNew("n",x,y);n.vx=-Math.cos(an)*14;n.vy=-Math.sin(an)*14;n.init=false;U.p.push(he,n);U.fl.push({x,y,t:1});U.p.push(uNew("D"),uNew("T"))});
+ U.p=U.p.filter(p=>!p.dead);U.fl.forEach(f=>f.t-=dt*1.5);U.fl=U.fl.filter(f=>f.t>0)}
+const uc=canv("uC",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const T=uTemp();const g=Math.min(1,Math.log10(T/1e6)/2.6);x.fillStyle=`rgba(${Math.round(120+100*g)},${Math.round(60+20*g)},${Math.round(160-40*g)},${.08+.25*g})`;x.fillRect(0,0,W,H);
+ if($("#uB").checked){x.strokeStyle=alpha(col("--acc"),.6);x.lineWidth=3;x.setLineDash([8,6]);x.beginPath();x.arc(W/2,H/2,Math.min(W,H)*.42,0,7);x.stroke();x.setLineDash([]);txt(x,"Magnetfeld hält das Plasma",W/2,H/2-Math.min(W,H)*.42-10,{a:"center",c:col("--acc"),w:700,size:13})}else txt(x,"ohne Einschluss: Teilchen kühlen an der Wand ab",12,H-14,{c:col("--mut"),size:13});
+ const C={D:col("--bm"),T:col("--sf"),He:col("--al"),n:col("--neut")};U.p.forEach(p=>{if(p.k=="n"){x.strokeStyle=C.n;x.lineWidth=2;x.beginPath();x.moveTo(p.x,p.y);x.lineTo(p.x-p.vx*1.5,p.y-p.vy*1.5);x.stroke();ball(x,p.x,p.y,3,C.n);return}ball(x,p.x,p.y,p.k=="T"?6.5:p.k=="He"?7:5.5,C[p.k])});
+ U.fl.forEach(f=>{x.strokeStyle=alpha(col("--bp"),f.t);x.lineWidth=2;x.beginPath();x.arc(f.x,f.y,(1-f.t)*40+6,0,7);x.stroke();txt(x,VM.fusion=="q"?"Energie!":"17,6 MeV",f.x,f.y-(1-f.t)*40-14,{a:"center",w:700,size:12,c:alpha(col("--bp"),f.t)})});
+ const lg=[["D (Deuterium)",C.D],["T (Tritium)",C.T],["He-4",C.He],["Neutron",C.n]];lg.forEach((l,i)=>{ball(x,16,18+i*20,5,l[1]);txt(x,l[0],28,18+i*20,{size:12})})});
+const qTf=T=>{const r=T/15e6;return r<.5?"kühler als der Sonnenkern":r<1.5?"wie im Sonnenkern":r<4?de(r,1)+"-mal Sonnenkern":"über "+Math.floor(r)+"-mal Sonnenkern"};
+function uLab(){const T=uTemp(),q=VM.fusion=="q";$("#uTv").textContent=q?qTf(T):de(T/1e6,2)+" Mio. K";$("#uTO").textContent=q?(T<3e7?"zu kalt":T<8e7?"knapp":"heiß genug"):de(T/1e6,2)+" Mio. K";$("#uN").textContent=U.cnt}
+$("#uT").oninput=()=>{uLab();uw.redraw()};$("#uB").onchange=()=>{if($("#uB").checked)uInit();uc.redraw()};
+const uw=canv("uW",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const L=40,B=H-26,T=12,R=W-10;const rmax=12;const X=r=>L+r/rmax*(R-L),Vm=600;const Y=v=>B-(v+150)/(Vm+150)*(B-T);
+ x.strokeStyle=col("--line");x.beginPath();x.moveTo(L,T);x.lineTo(L,B);x.lineTo(R,B);x.stroke();const qw=VM.fusion=="q";txt(x,qw?"Abstand →":"Abstand in fm →",R,B+14,{a:"right",c:col("--mut"),size:12});txt(x,qw?"Energie":"Energie (keV)",L+4,T+2,{c:col("--mut"),size:12});
+ const r0=3.5;x.strokeStyle=col("--bp");x.lineWidth=2.5;x.beginPath();for(let i=0;i<=200;i++){const r=.2+i/200*(rmax-.2);const v=r<r0?-150:1440/r;i?x.lineTo(X(r),Y(Math.min(Vm,v))):x.moveTo(X(r),Y(Math.min(Vm,v)))}x.stroke();txt(x,qw?"Abstoßung":"Coulomb-Abstoßung",X(6),Y(1440/6)-12,{size:12,c:col("--bp"),w:700});txt(x,"Kernkraft",X(1.6),Y(-150)-10,{a:"center",size:12,c:col("--bp"),w:700});
+ const E=uTemp()*8.617e-8*1.5;x.strokeStyle=col("--acc");x.setLineDash([5,4]);x.beginPath();x.moveTo(X(1440/Math.max(E,3)),Y(E));x.lineTo(R,Y(E));x.stroke();x.setLineDash([]);txt(x,qw?"typische Energie der Kerne":"mittlere Energie "+de(E,2)+" keV",R,Y(E)-10,{a:"right",size:12,c:col("--acc"),w:700});
+ x.strokeStyle=alpha(col("--sf"),.8);x.setLineDash([2,3]);x.beginPath();x.moveTo(X(r0),Y(E));x.lineTo(X(Math.min(rmax,1440/Math.max(E,3))),Y(E));x.stroke();x.setLineDash([]);txt(x,"Tunneln",X(r0)+4,Y(E)+12,{size:12,c:col("--sf")})});
+/* Lawson */
+const SV=[[1,5.5e-27],[2,2.6e-25],[5,1.3e-23],[10,1.1e-22],[20,4.2e-22],[50,8.7e-22],[100,8.5e-22]];
+function sigv(T){if(T<=1)return SV[0][1]*Math.pow(T,6);for(let i=1;i<SV.length;i++)if(T<=SV[i][0]){const a=SV[i-1],b=SV[i];const f=Math.log(T/a[0])/Math.log(b[0]/a[0]);return Math.exp(Math.log(a[1])+f*Math.log(b[1]/a[1]))}return SV[SV.length-1][1]}
+function law(){const n=10**+$("#un").value,T=10**+$("#uTk").value,tau=10**+$("#ut").value;const E=17.6e3*1.602e-16;const Pf=n*n/4*sigv(T)*17.6*1.602e-13;const Pa=Pf*.2;const Pb=5.35e-37*n*n*Math.sqrt(T);const W=3*n*T*1.602e-16;const Pt=W/tau;const Ph=Pb+Pt-Pa;return{n,T,tau,Pf,Pa,Pb,Pt,Ph,Q:Ph>0?Pf/Ph:Infinity,trip:n*T*tau}}
+const q3=(v,a,b)=>v<a+(b-a)/3?"gering":v<a+2*(b-a)/3?"mittel":"hoch";
+function uLaw(){const L=law(),q=VM.fusion=="q";$("#unO").textContent=q?q3(+$("#un").value,19,21):sci(L.n,2)+" m⁻³";$("#uTkO").textContent=q?q3(+$("#uTk").value,0,2):de(L.T,3)+" keV ≈ "+de(L.T*11.6,3)+" Mio. K";$("#utO").textContent=q?q3(+$("#ut").value,-1,1):de(L.tau,2)+" s";
+ const hin=Math.max(0,L.Ph),her=L.Pf,mx=Math.max(hin,her,1);$("#uBal").innerHTML=[["Heizung (hinein)",hin,"--bm"],["Fusion (heraus)",her,"--bp"]].map(r=>`<div class="r" style="grid-template-columns:minmax(0,130px) minmax(0,1fr) 0"><span>${r[0]}</span><span class="tr"><i style="width:${Math.max(1,r[1]/mx*100)}%;background:var(${r[2]})"></i></span><span></span></div>`).join("");
+ if(q){const el=$("#uQ");if(!isFinite(L.Q)){el.textContent="Das Plasma brennt von selbst weiter – man muss gar nicht mehr heizen!";el.className="msg ok"}else if(L.Q>=1){el.textContent=L.Q>=5?"Es kommt deutlich mehr Energie heraus, als man hineinsteckt!":"Es kommt etwas mehr Energie heraus, als man hineinsteckt.";el.className="msg ok"}else{el.textContent="Noch zu wenig: Man muss mehr heizen, als die Fusion liefert.";el.className="msg"}ul.redraw();return}
+ const el=$("#uQ");if(!isFinite(L.Q)){el.textContent=`Zündung! Die α-Heizung deckt alle Verluste. n·T·τ = ${sci(L.trip,2)} keV·s/m³`;el.className="msg ok"}else{el.textContent=`Q = ${de(L.Q,2)} · Fusionsleistung ${sci(L.Pf/1e6,2)} MW/m³ · n·T·τ = ${sci(L.trip,2)} keV·s/m³`;el.className="msg"+(L.Q>=1?" ok":"")}ul.redraw()}
+["un","uTk","ut"].forEach(i=>$("#"+i).oninput=uLaw);
+$$("[data-lp]").forEach(b=>b.onclick=()=>{if(b.dataset.lp=="jet"){$("#un").value=Math.log10(4e19);$("#uTk").value=Math.log10(10);$("#ut").value=0}else{$("#un").value=20;$("#uTk").value=Math.log10(8);$("#ut").value=Math.log10(3.7)}uLaw()});
+const ul=canv("uL",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const L0=46,B=H-26,T=12,R=W-10;const X=t=>L0+Math.log10(t)/2*(R-L0),Y=v=>B-(Math.log10(v)-19)/3*(B-T);x.strokeStyle=col("--line");x.beginPath();x.moveTo(L0,T);x.lineTo(L0,B);x.lineTo(R,B);x.stroke();
+ [1,10,100].forEach(t=>txt(x,t+" keV",X(t),B+14,{a:"center",c:col("--mut"),size:12}));[19,20,21,22].forEach(e=>txt(x,"10"+sup(e),L0-4,Y(10**e),{a:"right",c:col("--mut"),size:12}));txt(x,"n · τ (s/m³)",L0+4,T+2,{c:col("--mut"),size:12});
+ const need=t=>{const sv=sigv(t);const den=(17.6*.2*1.602e-13*sv/4)-5.35e-37*Math.sqrt(t);return den>0?3*t*1.602e-16/den:Infinity};
+ [[1,"Zündung",col("--bp")]].forEach(()=>{x.strokeStyle=col("--bp");x.lineWidth=2.5;x.beginPath();let st=false;for(let i=0;i<=200;i++){const t=10**(i/100);const v=need(t);if(!isFinite(v)||v>1e22||v<1e19){st=false;continue}st?x.lineTo(X(t),Y(v)):x.moveTo(X(t),Y(v));st=true}x.stroke()});
+ const Lw=law();const px=X(Lw.T),py=Y(Math.max(1e19,Math.min(1e22,Lw.n*Lw.tau)));ball(x,px,py,6,col("--acc"));txt(x,"Zündkurve",X(40),Y(need(40))-12,{a:"center",c:col("--bp"),w:700,size:12})});
+tasks("fusion",[
+ {l:1,h:"Zu kalt",p:"Stelle die Temperatur auf 10 Mio. K. Wie oft gibt es Fusionen? Erhöhe Schritt für Schritt: Ab welcher Temperatur geht es richtig los?",set:()=>{$("#uT").value=13;uLab()}},
+ {l:1,h:"Was entsteht?",p:"Beobachte eine Fusion genau. Welche Teilchen entstehen? Welches verlässt das Plasma, welches bleibt?"},
+ {l:1,h:"Einschluss",p:"Schalte das Magnetfeld aus. Was passiert mit Teilchen, die die Wand berühren? Warum braucht ein Fusionsreaktor einen Einschluss?",set:()=>{$("#uB").checked=false;$("#uT").value=80;uLab()}},
+ {l:2,h:"Der Coulomb-Wall",p:"Vergleiche die mittlere Energie bei 15 Mio. K (Sonnenkern) und bei 150 Mio. K mit der Höhe des Walls. Warum fusionieren trotzdem Kerne?"},
+ {l:3,h:"Q = 1 und Zündung",p:"Starte mit JET 1997. Welche Größe musst du am stärksten verändern, um Q = 1 und schließlich Zündung zu erreichen? Vergleiche mit dem ITER-Ziel.",set:()=>$$("[data-lp]")[0].click()},
+ {l:3,h:"Optimale Temperatur",p:"Halte n und τ fest und verändere T. Wo liegt das Minimum der Zündkurve? Warum ist heißer nicht immer besser?"}
+]);
+
+/* ===================== SONNE ===================== */
+const SS={step:0,p:0,he:0,E:0,auto:false,t:0};
+const STEPS=[["1. Zwei Protonen werden zu Deuterium","p + p → d + e⁺ + ν (0,42 MeV + 1,02 MeV aus der Paarvernichtung). Sehr langsam: Ein Proton wartet im Mittel Milliarden Jahre.",1.44],["2. Deuterium und Proton werden zu Helium-3","d + p → He-3 + γ (5,49 MeV). Geht in etwa einer Sekunde.",5.49],["3. Zwei Helium-3 werden zu Helium-4","He-3 + He-3 → He-4 + p + p (12,86 MeV). Dafür müssen Schritte 1 und 2 je zweimal passiert sein.",12.86]];
+$("#sSteps").innerHTML=STEPS.map((s,i)=>`<div class="st2" data-s="${i}"><b>${s[0]}</b><br><span class="small">${s[1]}</span></div>`).join("");
+function sNext(){SS.step=(SS.step+1)%4;SS.t=0;if(SS.step==1){SS.p+=4;SS.E+=2*1.44}if(SS.step==2){SS.E+=2*5.49;SS.p+=2}if(SS.step==3){SS.E+=12.86;SS.he++;SS.p-=2}sUi()}
+function sUi(){$$("#sSteps .st2").forEach((d,i)=>d.classList.toggle("on",i==SS.step-1));$("#sP").textContent=SS.p;$("#sHe").textContent=SS.he;$("#sE").textContent=de(SS.E||0,4)+" MeV";sc.redraw()}
+$("#sNext").onclick=sNext;$("#sAuto").onclick=e=>{SS.auto=!SS.auto;e.target.setAttribute("aria-pressed",SS.auto)};
+const sc=canv("sC",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const g=x.createRadialGradient(W*.1,H*.5,10,W*.1,H*.5,W*.6);g.addColorStop(0,"rgba(255,190,60,.55)");g.addColorStop(1,"rgba(255,190,60,0)");x.fillStyle=g;x.fillRect(0,0,W,H);
+ const pc=col("--prot"),nc=col("--neut"),q=Math.min(1,SS.t/1.2),cy=H/2,r=9;const P=(X,Y)=>ball(x,X,Y,r,pc),N=(X,Y)=>ball(x,X,Y,r,nc);
+ const lab=(s,X,Y)=>txt(x,s,X,Y,{a:"center",w:700,size:14});
+ if(SS.step==0){txt(x,"Drücke „Nächster Schritt“",W/2,cy,{a:"center",c:col("--mut"),size:15});return}
+ if(SS.step==1){const d=(1-q)*W*.18;[-1,1].forEach(s=>{const yy=cy+s*H*.22;P(W*.3-d,yy);P(W*.3+d,yy);if(q>=1){N(W*.3+r*1.6,yy);lab("d",W*.3+r*.8,yy-22);ball(x,W*.3+60+q*40,yy-30,4,col("--bp"));txt(x,"e⁺",W*.3+110,yy-40,{w:700});txt(x,"ν",W*.3-60,yy+30,{w:700,c:col("--mut")})}});lab("p + p → d + e⁺ + ν",W*.7,cy,{});return}
+ if(SS.step==2){const d=(1-q)*W*.15;[-1,1].forEach(s=>{const yy=cy+s*H*.22;P(W*.3,yy);N(W*.3+r*1.6,yy);P(W*.3+r*3.2+d,yy);if(q>=1){lab("He-3",W*.3+r*1.6,yy-24);x.strokeStyle=col("--ga");x.lineWidth=2;x.beginPath();for(let i=0;i<40;i++)x.lineTo(W*.3+r*4+i*3,yy+18+Math.sin(i*.8)*5);x.stroke();txt(x,"γ",W*.3+r*4+125,yy+18,{w:700,c:col("--ga")})}});lab("d + p → He-3 + γ",W*.7,cy);return}
+ if(SS.step==3){const d=(1-q)*W*.12;const c=W*.32;[[-1,P],[1,N]];P(c-d-r*1.6,cy-r);N(c-d,cy);P(c-d-r*.8,cy+r*1.2);P(c+d+r*1.6,cy-r);N(c+d,cy+r*.2);P(c+d+r*.8,cy+r*1.4);if(q>=1){lab("He-4",c,cy-38);txt(x,"+ 2 p",c,cy+44,{a:"center",w:700})}lab("He-3 + He-3 → He-4 + 2 p",W*.72,cy)}});
+tasks("sonne",[
+ {l:1,h:"Bilanz",p:"Gehe alle drei Schritte durch. Wie viele Protonen werden insgesamt verbraucht, wie viele kommen wieder heraus? Was entsteht netto?"},
+ {l:1,h:"Masseverlust der Sonne",p:"Die Sonne verliert jede Sekunde 4,3 Millionen Tonnen Masse. Wohin? Wird die Sonne dadurch merklich leichter? (Sonnenmasse: 2 · 10³⁰ kg)"},
+ {l:2,h:"E = mc²",p:"Berechne aus 4 m(p) = 4 · 1,007276 u und m(He-4) = 4,001506 u den Massendefekt. Vergleiche mit 26,7 MeV (Elektronenmassen berücksichtigen!)."},
+ {l:2,h:"Neutrinos",p:"Pro He-4 entstehen 2 Neutrinos. Schätze aus der Sonnenleistung, wie viele Neutrinos pro Sekunde entstehen, und prüfe die Zahl auf der Erde."},
+ {l:3,h:"Komposthaufen",p:"Im Sonnenkern werden nur etwa 280 W pro m³ frei. Warum ist die Sonne trotzdem so hell? Warum wäre die pp-Kette für ein Kraftwerk ungeeignet?"}
+]);
+
+/* ===================== ENERGIE ===================== */
+const EB=[["Akku (Lithium-Ionen)",7.2e5,"--sf"],["Holz",1.5e7,"--sf"],["Steinkohle",2.9e7,"--mut"],["Benzin",4.3e7,"--mut"],["Wasserstoff (verbrannt)",1.2e8,"--bm"],["Uran-235 (Spaltung)",8.2e13,"--al"],["Deuterium-Tritium (Fusion)",3.4e14,"--bp"],["Materie + Antimaterie",9e16,"--ga"]];
+$("#eBar").innerHTML=EB.map(r=>`<div class="r"><span>${r[0]}</span><span class="tr"><i style="width:${(Math.log10(r[1])-5)/12*100}%;background:var(${r[2]})"></i></span><span class="v">${sci(r[1],2)} J</span></div>`).join("");
+const BA=[[2,1.11],[3,2.83],[4,7.07],[6,5.33],[7,5.61],[9,6.46],[12,7.68],[14,7.48],[16,7.98],[20,8.03],[24,8.26],[28,8.45],[32,8.49],[40,8.55],[48,8.67],[56,8.79],[62,8.79],[70,8.73],[80,8.71],[90,8.71],[100,8.68],[120,8.5],[140,8.38],[160,8.21],[180,8.06],[200,7.91],[208,7.87],[220,7.73],[235,7.59],[238,7.57]];
+const eb=canv("eB",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const L=40,B=H-24,T=12,R=W-10;const X=a=>L+a/245*(R-L),Y=v=>B-v/9.5*(B-T);x.strokeStyle=col("--line");x.beginPath();x.moveTo(L,T);x.lineTo(L,B);x.lineTo(R,B);x.stroke();[0,2,4,6,8].forEach(v=>txt(x,v,L-6,Y(v),{a:"right",c:col("--mut"),size:12}));[50,100,150,200].forEach(a=>txt(x,a,X(a),B+12,{a:"center",c:col("--mut"),size:12}));txt(x,"MeV pro Nukleon",L+4,T+2,{c:col("--mut"),size:12});txt(x,"Massenzahl A",R,B-10,{a:"right",c:col("--mut"),size:12});
+ x.strokeStyle=col("--acc");x.lineWidth=2.5;x.beginPath();BA.forEach((p,i)=>i?x.lineTo(X(p[0]),Y(p[1])):x.moveTo(X(p[0]),Y(p[1])));x.stroke();BA.forEach(p=>ball(x,X(p[0]),Y(p[1]),2.5,col("--acc")));
+ [[4,"He-4",12,-12,"left"],[56,"Fe-56",0,-14,"center"],[235,"U-235",-4,16,"right"],[2,"H-2",8,0,"left"]].forEach(([a,l,dx,dy,al])=>{const p=BA.find(q=>q[0]==a);txt(x,l,X(a)+dx,Y(p[1])+dy,{w:700,size:12,a:al})});
+ const arr=(x1,y1,x2,y2,c,l)=>{x.strokeStyle=c;x.fillStyle=c;x.lineWidth=3;x.beginPath();x.moveTo(x1,y1);x.lineTo(x2,y2);x.stroke();const a=Math.atan2(y2-y1,x2-x1);x.beginPath();x.moveTo(x2,y2);x.lineTo(x2-10*Math.cos(a-.4),y2-10*Math.sin(a-.4));x.lineTo(x2-10*Math.cos(a+.4),y2-10*Math.sin(a+.4));x.fill();txt(x,l,(x1+x2)/2+24,(y1+y2)/2+18,{a:"center",w:700,size:13,c})};
+ arr(X(8),Y(5),X(40),Y(7.6),col("--bp"),"Fusion");arr(X(225),Y(6.6),X(130),Y(7.6),col("--al"),"Spaltung")});
+function eUpd(){const kwh=+$("#eH").value;$("#eHO").textContent=kwh.toLocaleString("de-AT")+" kWh";const J=kwh*3.6e6;const rows=[["Uran-235",J/.33/8.2e13*1000,"g","--al"],["Deuterium + Tritium",J/.33/3.4e14*1000,"g","--bp"],["Steinkohle",J/.33/2.9e7,"kg","--mut"],["Benzin",J/.3/4.3e7,"kg","--mut"]];
+ $("#eHh").innerHTML=rows.map(r=>`<div class="r"><span>${r[0]}</span><span class="tr"><i style="width:${Math.max(1,(Math.log10(r[1]*(r[2]=="kg"?1000:1))+1)/8*100)}%;background:var(${r[3]})"></i></span><span class="v">${de(r[1],2)} ${r[2]}</span></div>`).join("");
+ const m=10**+$("#eM").value;$("#eMO").textContent=m>=1?de(m,2)+" kg":m>=1e-3?de(m*1e3,2)+" g":m>=1e-6?de(m*1e6,2)+" mg":de(m*1e9,2)+" µg";const E=m*9e16;$("#eMr").textContent=sci(E,3)+" J";$("#eMt").textContent=`= ${sci(E/3.6e6,3)} kWh ≈ Strombedarf von ${sci(E/3.6e6/3500,2)} Haushalten für ein Jahr (3500 kWh) ≈ ${sci(E/4.184e12,2)} Kilotonnen TNT`}
+["eH","eM"].forEach(i=>$("#"+i).oninput=eUpd);eUpd();
+tasks("energie",[
+ {l:1,h:"Millionenfach",p:"Um welchen Faktor liefert Uran-235 mehr Energie pro Kilogramm als Steinkohle? Lies die Balken ab und rechne nach."},
+ {l:1,h:"Ein Jahr Strom",p:"Wie viel Uran-235 braucht ein Haushalt mit 3500 kWh pro Jahr? Vergleiche mit der Masse eines Stücks Würfelzucker (3 g)."},
+ {l:2,h:"Warum Eisen?",p:"Erkläre mit der Bindungsenergiekurve, warum man aus Eisen weder durch Spaltung noch durch Fusion Energie gewinnen kann."},
+ {l:2,h:"Wie viel Masse verschwindet?",p:"Ein Kernkraftwerk erzeugt ein Jahr lang 3000 MW Wärme. Wie viel Masse wird dabei in Energie umgewandelt?",set:()=>{$("#eM").value=Math.log10(3000e6*3.156e7/9e16);eUpd()}},
+ {l:3,h:"Sprengkraft",p:"Bei der Hiroshima-Bombe wurde etwa 0,7 g Masse umgewandelt. Berechne die Energie in Kilotonnen TNT (1 kt = 4,184 · 10¹² J).",set:()=>{$("#eM").value=Math.log10(7e-4);eUpd()}}
+]);
+
+/* ===================== UNFÄLLE ===================== */
+const REL=[["Xenon-133","5,2 Tage",6500,11000],["Iod-131","8,0 Tage",1760,160],["Caesium-134","2,1 Jahre",47,18],["Caesium-137","30 Jahre",85,15],["Strontium-90","29 Jahre",10,.14]];
+$("#uRel").innerHTML=`<div class="dose">${REL.map(r=>`<div class="r"><span><b>${r[0]}</b> <span class="mut small">(${r[1]})</span></span><span><span class="tr" style="display:block;margin-bottom:3px"><i style="width:${(Math.log10(r[2])+1)/5.1*100}%;background:var(--bp)"></i></span><span class="tr" style="display:block"><i style="width:${(Math.log10(r[3])+1)/5.1*100}%;background:var(--bm)"></i></span></span><span class="v">${r[2].toLocaleString("de-AT")}<br>${r[3].toLocaleString("de-AT")}</span></div>`).join("")}</div><div class="legend" style="margin-top:6px"><span><i style="background:var(--bp)"></i>Tschernobyl</span><span><i style="background:var(--bm)"></i>Fukushima</span></div>`;
+const UD={acc:"c"};const HLD={I:8.02/365.25,Cs4:2.065,Cs7:30.08,Sr:28.8};
+const ud=canv("uD",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const y0=UD.acc=="c"?1986:2011;const L=48,B=H-26,T=12,R=W-10;const X=y=>L+(y-y0)/(2150-y0)*(R-L),Y=v=>B-(Math.log10(v)+3)/7*(B-T);
+ x.strokeStyle=col("--line");x.beginPath();x.moveTo(L,T);x.lineTo(L,B);x.lineTo(R,B);x.stroke();[y0,2050,2100,2150].forEach(y=>txt(x,y,X(y),B+14,{a:y==2150?"right":y==y0?"left":"center",c:col("--mut"),size:12}));[-2,0,2,4].forEach(e=>txt(x,"10"+sup(e),L-4,Y(10**e),{a:"right",c:col("--mut"),size:12}));txt(x,"noch vorhanden in PBq",L+6,T+2,{c:col("--mut"),size:12});
+ const idx=UD.acc=="c"?2:3;const S=[["Iod-131",REL[1][idx],HLD.I,"--ga"],["Caesium-134",REL[2][idx],HLD.Cs4,"--al"],["Caesium-137",REL[3][idx],HLD.Cs7,"--bp"],["Strontium-90",REL[4][idx],HLD.Sr,"--sf"]];
+ S.forEach(s=>{x.strokeStyle=col(s[3]);x.lineWidth=2.5;x.beginPath();let st=false;for(let y=y0;y<=2150;y+=.2){const v=s[1]*Math.pow(.5,(y-y0)/s[2]);if(v<1e-3){break}st?x.lineTo(X(y),Y(v)):x.moveTo(X(y),Y(v));st=true}x.stroke()});
+ const yr=Math.max(y0,+$("#uY").value);x.strokeStyle=col("--acc");x.lineWidth=2;x.beginPath();x.moveTo(X(yr),T);x.lineTo(X(yr),B);x.stroke();
+ $("#uDr").innerHTML=S.map(s=>{const v=s[1]*Math.pow(.5,(yr-y0)/s[2]);return`<div class="r"><span>${s[0]}</span><span class="tr"><i style="width:${Math.max(0,(Math.log10(Math.max(v,1e-3))+3)/7*100)}%;background:var(${s[3]})"></i></span><span class="v">${v<1e-3?"≈ 0":sci(v,2)} PBq</span></div>`}).join("")});
+$("#uY").oninput=()=>{$("#uYO").textContent=$("#uY").value;ud.redraw()};$$("[data-ua]").forEach(b=>b.onclick=()=>{UD.acc=b.dataset.ua;$$("[data-ua]").forEach(q=>q.setAttribute("aria-pressed",q==b));if(UD.acc=="f"&&+$("#uY").value<2011)$("#uY").value=2011;$("#uYO").textContent=$("#uY").value;ud.redraw()});
+tasks("unfaelle",[
+ {l:1,h:"Zwei Unfälle vergleichen",p:"Lies die Zeitleisten. Was war die Ursache in Tschernobyl, was in Fukushima? War in Fukushima der Reaktor beim Unfall noch in Betrieb?"},
+ {l:1,h:"Wie viel mehr?",p:"Um welchen Faktor wurde in Tschernobyl mehr Iod-131 und mehr Caesium-137 freigesetzt als in Fukushima?"},
+ {l:1,h:"Was bleibt?",p:"Schiebe das Jahr auf 2026. Welche Stoffe aus Tschernobyl sind praktisch verschwunden, welche noch da? Begründe mit der Halbwertszeit.",set:()=>{$("#uY").value=2026;$("#uY").oninput()}},
+ {l:2,h:"Iodtabletten",p:"Warum werden Kaliumiodid-Tabletten nur in den ersten Tagen nach einem Unfall empfohlen? Wie viel Iod-131 ist nach 80 Tagen noch übrig?"},
+ {l:2,h:"Im Simulator nachstellen",p:"Spiele im Kernreaktor beide Szenarien durch. Erkläre den Unterschied zwischen „Leistungsexkursion“ und „Kernschmelze durch Nachwärme“."},
+ {l:3,h:"Wann ist Cs-137 weg?",p:"Nach wie vielen Jahren ist von den 85 PBq Cs-137 aus Tschernobyl weniger als 1 PBq übrig? Rechne und prüfe im Diagramm."}
+]);
+
+/* ===================== CÄSIUM ===================== */
+const cRes=()=>{const y=+$("#cY").value,b=+$("#cL").value;return{y,b,v:b*Math.pow(.5,(y-1986)/30.08)}};
+const ccv=canv("cC",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const L=50,B=H-28,T=14,R=W-12;const X=y=>L+(y-1986)/(2100-1986)*(R-L),Y=v=>B-v/160*(B-T);x.strokeStyle=col("--line");x.beginPath();x.moveTo(L,T);x.lineTo(L,B);x.lineTo(R,B);x.stroke();
+ [1986,2000,2016,2026,2046,2076,2100].forEach(y=>txt(x,y,X(y),B+14,{a:"center",c:col("--mut"),size:12}));[0,50,100,150].forEach(v=>txt(x,v,L-6,Y(v),{a:"right",c:col("--mut"),size:12}));txt(x,"Cs-137 im Boden in kBq/m²",L+6,T+2,{w:700,size:13});
+ [[150,"Spitzenwert"],[60,"stärker belastet"],[21,"Mittelwert"],[5,"wenig belastet"]].forEach(([b,l])=>{const on=b==+$("#cL").value;x.strokeStyle=on?col("--bp"):alpha(col("--mut"),.45);x.lineWidth=on?3:1.5;x.beginPath();for(let y=1986;y<=2100;y++){const v=b*Math.pow(.5,(y-1986)/30.08);y==1986?x.moveTo(X(y),Y(v)):x.lineTo(X(y),Y(v))}x.stroke();if(b>5)txt(x,l,X(1986)+8,Y(b)+(b==21?-10:-8),{size:12,c:on?col("--bp"):col("--mut"),w:on?700:400})});
+ const r=cRes();x.strokeStyle=col("--acc");x.setLineDash([4,4]);x.beginPath();x.moveTo(X(r.y),T);x.lineTo(X(r.y),B);x.stroke();x.setLineDash([]);ball(x,X(r.y),Y(r.v),6,col("--bp"));
+ for(let k=1;k<=3;k++){const y=1986+30.08*k;if(y<=2100)txt(x,k+"·T½",X(y),T+16,{a:"center",c:col("--mut"),size:11})}});
+const cf=canv("cF",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const r=cRes();const items=[["Waldboden",r.v+" kBq/m²","--mut"],["Pilze","bis über 2000 Bq/kg","--al"],["Wildschwein","Ø ≈ 250, Spitzen > 4000 Bq/kg","--bp"],["Mensch","Dosis siehe Rechner","--bm"]];const n=items.length;const w=(W-40)/n;
+ items.forEach((it,i)=>{const cx=20+w*i+w/2,cy=H*.45;x.fillStyle=alpha(col(it[2]),.18);x.strokeStyle=col(it[2]);x.lineWidth=2;x.beginPath();x.roundRect(cx-w*.42,cy-40,w*.84,80,12);x.fill();x.stroke();txt(x,it[0],cx,cy-14,{a:"center",w:700,size:15});txt(x,i==0?de(r.v,3)+" kBq/m²":it[1],cx,cy+12,{a:"center",size:12,c:col("--mut")});
+  if(i<n-1){const ax=cx+w*.42+2,bx=cx+w*.58-2;x.strokeStyle=col("--ink");x.lineWidth=2;x.beginPath();x.moveTo(ax,cy);x.lineTo(bx,cy);x.stroke();x.beginPath();x.moveTo(bx,cy);x.lineTo(bx-7,cy-5);x.lineTo(bx-7,cy+5);x.closePath();x.fillStyle=col("--ink");x.fill()}});
+ txt(x,"Acker und Wiese: Cäsium an Ton gebunden – kaum Aufnahme in Pflanzen",W/2,H-16,{a:"center",size:12,c:col("--mut")})});
+function cUpd(){const r=cRes();$("#cYO").textContent=r.y;$("#cNow").textContent=de(r.v,3)+" kBq/m²";$("#cPct").textContent=de(r.v/r.b*100,3)+" %";
+ const bq=+$("#cFood").value,np=+$("#cP").value;$("#cPO").textContent=np;const intake=bq*.25*np;const mSv=intake*1.3e-8*1e3;$("#cDose").textContent=(mSv<.01?de(mSv*1000,2)+" µSv":de(mSv,2)+" mSv")+" pro Jahr";$("#cDoseT").textContent=`Aufnahme ${Math.round(intake).toLocaleString("de-AT")} Bq Cs-137 – das sind ${de(mSv/6*100,2)} % der mittleren Jahresdosis in Österreich (≈ 6 mSv).`;
+ $("#cFn").textContent=`Bei ${de(r.b,3)} kBq/m² im Jahr 1986 sind ${r.y} noch ${de(r.v,3)} kBq/m² übrig. Wie viel davon in Pilze und Wild gelangt, hängt stark von Boden und Pilzart ab.`;ccv.redraw();cf.redraw()}
+["cL","cY","cFood","cP"].forEach(i=>$("#"+i).oninput=cUpd);
+tasks("caesium",[
+ {l:1,h:"40 Jahre danach",p:"Wie viel Prozent des Cäsiums von 1986 ist 2026 noch im Boden? Wann ist nur noch ein Viertel da?"},
+ {l:1,h:"Regen macht den Unterschied",p:"Warum ist die Belastung in Österreich regional so unterschiedlich, obwohl die Luftmassen überall durchzogen?"},
+ {l:1,h:"Ein Wildschweinbraten",p:"Wie hoch ist die Dosis bei zehn Portionen Wildschwein pro Jahr mit Mittelwert, mit Handelsware und mit dem Höchstwert? Vergleiche mit 6 mSv.",set:()=>{$("#cFood").value="250";$("#cP").value=10;cUpd()}},
+ {l:2,h:"Warum der Wald?",p:"Erkläre, warum Getreide und Milch heute kein Tschernobyl-Cäsium mehr enthalten, Pilze und Wildschweine aber schon."},
+ {l:2,h:"Grenzwert",p:"Wie viele Portionen Fleisch mit genau 600 Bq/kg müsste man essen, um 1 mSv zusätzlich zu erhalten?",set:()=>{$("#cFood").value="600";cUpd()}},
+ {l:3,h:"Ökologische Halbwertszeit",p:"In Wildschweinen sinkt der Cs-137-Gehalt langsamer als nach der physikalischen Halbwertszeit zu erwarten. Welche Gründe könnte das haben? Recherchiere das „Wildschwein-Paradoxon“."}
+]);
+
+/* ===================== Schleife ===================== */
+let last=performance.now();
+function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;
+ if(cur=="spaltung"&&F.ph>=0&&F.ph<1){F.ph=Math.min(1,F.ph+dt*(F.slow?.12:.45));fc.redraw()}
+ else if(cur=="kettenreaktion"){const s=KR.spd[$("#kV").value];kStep(dt*s);kStat();kc.redraw();if(Math.random()<.2)kp.redraw()}
+ else if(cur=="reaktor")rTick(dt);
+ else if(cur=="fusion"){uStep(dt);uc.redraw();$("#uN").textContent=U.cnt}
+ else if(cur=="sonne"){SS.t+=dt;if(SS.auto&&SS.t>2.2)sNext();sc.redraw()}
+ requestAnimationFrame(loop)}
+try{const l=localStorage.getItem("kelvl");if(l)setLvl(l)}catch(e){}
+VIEWS.splice(0,VIEWS.length,"spaltung","kettenreaktion","reaktor","fusion","sonne","energie","unfaelle","caesium");
+{const v=document.body.dataset.lvl=="1"?"q":"n";VM.reaktor=v;VM.fusion=v;$("#st-reaktor").dataset.v=v;$("#st-fusion").dataset.v=v;$$("[data-vm]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.vm.endsWith(":"+v)))}
+route();fUpd();kLab();uLab();uLaw();sUi();rScn("norm");$("#uYO").textContent=$("#uY").value;cUpd();
+requestAnimationFrame(loop);
+}
+</script>
+<script>{const h=document.getElementById("home");if(!(location.protocol=="file:"||location.hostname.endsWith("github.io"))){h.removeAttribute("href");h.removeAttribute("title")}}</script>
+</body>
+</html>

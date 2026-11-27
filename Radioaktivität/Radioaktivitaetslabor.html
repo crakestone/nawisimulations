@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Radioaktivitätslabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: sachliches Laborheft für die Oberstufe, ruhig und genau
+   IDEA: die Karlsruher Nuklidkarte – Kästchen, Farbcode, Verschiebungspfeile
+   PICTURE: jede Station zeigt ihr Experiment groß und bedienbar
+   COLOUR and TYPE: Weiß bzw. Nacht, Tinte, Nuklidkartenfarben schwarz/blau/rot/gelb/grün; Archivo + Source Sans 3
+   LAYOUT: Stationsleiste, Experiment groß links, Regler rechts, darunter Aufträge und Erklärung */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#111419);--ink:light-dark(#15181d,#e9ecf1);--mut:light-dark(#566170,#9ea8b5);
+--line:light-dark(#d8dde4,#2d343e);--soft:light-dark(#f2f4f7,#191e25);--card:light-dark(#ffffff,#161b21);
+--acc:light-dark(#1e5cbc,#78a9ff);--accink:light-dark(#ffffff,#0e1320);
+--stab:light-dark(#1b1d21,#e4e4e4);--stabt:light-dark(#ffffff,#111111);
+--bm:#3d7ddb;--bp:#e2475b;--al:#f1c21b;--sf:#3aa45c;--pr:#f08a24;--ga:#8a5cc7;
+--prot:#d8433d;--neut:light-dark(#8d97a5,#aab3c0);--grid:light-dark(#e9ecf0,#232931)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Source Sans 3",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Archivo,system-ui,sans-serif;line-height:1.08;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4vw,40px)}h2{font-size:clamp(24px,3vw,32px)}h3{font-size:18px;margin-bottom:6px}
+header{padding:18px max(4vw,14px) 0;border-bottom:1px solid var(--line)}
+.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.top p{margin:4px 0 0;color:var(--mut);max-width:62ch}
+.lvl{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:10px}
+.lvl button{border:0;background:none;color:var(--ink);padding:8px 12px;border-radius:7px;font:600 15px "Source Sans 3",sans-serif;cursor:pointer;min-height:40px}
+.lvl button[aria-pressed=true]{background:var(--acc);color:var(--accink)}
+nav.scroll{display:flex;gap:2px;margin-top:14px;overflow-x:auto;scrollbar-width:thin}
+nav a{flex:none;padding:10px 14px;color:var(--mut);text-decoration:none;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap}
+nav a.on{color:var(--ink);border-color:var(--acc)}
+nav a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.st{display:none;padding:22px max(4vw,14px) 40px;max-width:1500px;margin:0 auto}
+.st.on{display:block}
+.lead{color:var(--mut);max-width:75ch;margin:6px 0 16px}
+.work{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+@media(max-width:980px){.work{grid-template-columns:minmax(0,1fr)}}
+.stage{display:grid;gap:12px}
+.fig{position:relative;min-height:340px;background:var(--soft);border-radius:12px;overflow:hidden;touch-action:none}
+.fig>canvas{position:absolute;inset:0;width:100%;height:100%}
+.fig.tall{height:min(66vh,560px)}.fig.mid{height:360px}.fig.low{height:260px;min-height:220px}
+.ctrl{display:grid;gap:12px;background:var(--soft);padding:14px;border-radius:12px}
+.ctrl .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ctrl label{font-weight:600;font-size:15px}
+.lab{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-size:15px}
+.ctrl .lab output{font-weight:400;color:var(--mut);white-space:nowrap}
+button.b,select{font:600 15px "Source Sans 3",sans-serif;min-height:44px;padding:8px 13px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button.b.pri{background:var(--acc);border-color:var(--acc);color:var(--accink)}
+button.b.sm{min-height:36px;padding:5px 10px;font-size:14px}
+button.b[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+select{font-weight:400;font-size:16px;width:100%}
+input[type=range]{width:100%;accent-color:var(--acc);min-height:30px}
+input[type=text]{font:16px "Source Sans 3",sans-serif;padding:9px 11px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);min-height:44px;width:100%}
+.chk{display:flex;gap:8px;align-items:center;font-weight:400!important;cursor:pointer;min-height:32px}
+.chk input{width:20px;height:20px;accent-color:var(--acc)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.info .big{font:700 40px/1 Archivo,sans-serif;margin:4px 0 8px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:15px}.kv dt{color:var(--mut)}.kv dd{margin:0;font-weight:600}
+.nc{display:inline-flex;align-items:center;white-space:nowrap}
+.nc .sp{display:inline-flex;flex-direction:column;align-items:flex-end;font-size:.6em;line-height:1.02;margin-right:.06em}
+.nc sup,.nc sub{vertical-align:baseline;font-size:1em;line-height:1.02}
+.eq{font-size:clamp(20px,2.6vw,30px);font-family:Archivo,sans-serif;display:flex;flex-wrap:wrap;gap:.35em;align-items:center}
+.tag{display:inline-block;padding:2px 9px;border-radius:99px;font-size:14px;font-weight:700;color:#111}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--mut)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid rgba(0,0,0,.2)}
+.tasks{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:20px}
+.task{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.task p{margin:0;font-size:15.5px}
+.task .lv{font-size:13px;font-weight:700;color:var(--mut)}
+.task button{align-self:flex-start;margin-top:auto}
+.expl{margin-top:20px;border-top:1px solid var(--line);padding-top:6px}
+details summary{cursor:pointer;font-weight:700;padding:10px 0;font-family:Archivo,sans-serif;font-size:18px}
+details .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px 28px}
+details p{margin:0 0 10px;max-width:70ch}
+body[data-lvl="1"] .l2,body[data-lvl="1"] .l3,body[data-lvl="2"] .l3{display:none!important}
+.pse{display:grid;grid-template-columns:repeat(18,minmax(30px,1fr));gap:2px;min-width:640px}
+.pse button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:4px;padding:2px 0;cursor:pointer;font:700 13px/1.1 "Source Sans 3",sans-serif;min-height:38px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pse button small{font-weight:400;font-size:10.5px;color:var(--mut)}
+.pse button.rad{background:repeating-linear-gradient(135deg,rgba(241,194,27,.55) 0 5px,rgba(241,194,27,.25) 5px 10px)}
+.pse button.on{outline:3px solid var(--acc);outline-offset:-1px}
+.pse .gap{height:8px}
+.scroll{overflow-x:auto}
+.strip{display:flex;gap:3px;flex-wrap:wrap}
+.strip button{min-width:44px;min-height:40px;border-radius:5px;border:2px solid transparent;font:700 13px "Source Sans 3",sans-serif;cursor:pointer;color:#111}
+.strip button.on{border-color:var(--ink)}
+.bars{display:grid;gap:3px}
+.bar{display:grid;grid-template-columns:62px 82px minmax(0,1fr) 84px;gap:8px;align-items:center;font-size:14px;cursor:pointer;padding:2px 4px;border-radius:6px}
+.bar:hover,.bar.on{background:var(--soft)}
+.bar .tr{height:14px;background:var(--grid);border-radius:3px;overflow:hidden}.bar .tr i{display:block;height:100%}
+.bar .v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.bar .t{color:var(--mut);white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dose{display:grid;gap:6px}
+.dose .r{display:grid;grid-template-columns:minmax(0,190px) minmax(0,1fr) 70px;gap:10px;align-items:center;font-size:15px}
+.dose .r .tr{height:20px;background:var(--grid);border-radius:4px;overflow:hidden}.dose .r .tr i{display:block;height:100%}
+.dose .r .v{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.big2{font:700 clamp(30px,4vw,44px)/1 Archivo,sans-serif}
+.mut{color:var(--mut)}.small{font-size:14px}
+.gm{font:700 34px/1 "Archivo",monospace;font-variant-numeric:tabular-nums}
+.note{font-size:14px;color:var(--mut);margin:6px 0 0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px}
+@media(max-width:600px){table{font-size:13px}.bar{grid-template-columns:52px 70px minmax(0,1fr) 70px;font-size:13px}.dose .r{grid-template-columns:110px minmax(0,1fr) 62px;font-size:14px}.fig.tall{height:430px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body data-lvl="1">
+<header>
+ <div class="top">
+  <div><h1><a id="home" href="../index.html" style="color:inherit;text-decoration:none" title="Zur Startseite">Radioaktivitätslabor</a></h1><p>Atomkerne bauen, Zerfälle beobachten, Halbwertszeiten messen, Zerfallsreihen verfolgen, Strahlung abschirmen und Proben datieren. Weiter mit Spaltung, Fusion, Tschernobyl und Fukushima im <a href="https://claude.ai/artifact/Bqz3rR5eJVvrsUVQfqm7zT" style="color:var(--acc)">Kernenergielabor</a>.</p></div>
+  <div class="lvl" role="group" aria-label="Niveau">
+   <button data-l="1" aria-pressed="true">Einfach</button><button data-l="2" aria-pressed="false">Mittel</button><button data-l="3" aria-pressed="false">Anspruchsvoll</button>
+  </div>
+ </div>
+ <nav class="scroll" id="nav">
+  <a href="#kern">Atomkern &amp; Isotope</a><a href="#nuklidkarte">Nuklidkarte</a><a href="#zerfallsarten">Zerfallsarten</a><a href="#zerfallsgesetz">Zerfallsgesetz</a><a href="#zerfallsreihen">Zerfallsreihen</a><a href="#strahlung">Strahlung messen</a><a href="#nebelkammer">Nebelkammer</a><a href="#datierung">Datierung</a><a href="#alltag">Strahlung im Alltag</a>
+ </nav>
+</header>
+
+<!-- ============ 1 KERN ============ -->
+<section class="st" id="st-kern">
+ <h2>Atomkern bauen &amp; Isotope</h2>
+ <p class="lead">Ein Kern besteht aus Protonen und Neutronen. Die Protonenzahl legt das Element fest, die Neutronenzahl das Isotop. Nur bestimmte Mischungen sind stabil – alle anderen zerfallen.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="kC"></canvas></div>
+   <div class="card"><h3>Alle Isotope dieses Elements</h3><div class="strip" id="kStrip"></div><p class="note">Farbe wie in der Nuklidkarte: schwarz stabil, blau β⁻, rot β⁺/EC, gelb α. Blasse Felder sind mit einem Kernmodell abgeschätzt.</p></div>
+  </div>
+  <aside class="ctrl">
+   <div class="card info" id="kInfo"></div>
+   <div><label>Protonen</label><div class="row"><button class="b" data-k="p-1">− Proton</button><button class="b pri" data-k="p+1">+ Proton</button></div></div>
+   <div><label>Neutronen</label><div class="row"><button class="b" data-k="n-1">− Neutron</button><button class="b pri" data-k="n+1">+ Neutron</button></div></div>
+   <div class="row"><button class="b" id="kDecay">Zerfallen lassen</button><button class="b" id="kToMap">In der Nuklidkarte zeigen</button></div>
+   <div><label for="kPreset">Beispiele</label><select id="kPreset"></select></div>
+   <div class="legend"><span><i style="background:var(--prot)"></i>Proton</span><span><i style="background:var(--neut)"></i>Neutron</span></div>
+   <div class="l2 card"><h3>Bindungsenergie pro Nukleon</h3><div class="fig low" style="min-height:190px;height:190px"><canvas id="kBE"></canvas></div><p class="note">Tröpfchenmodell (Weizsäcker-Formel). Maximum bei Eisen und Nickel: leichte Kerne gewinnen Energie durch Fusion, schwere durch Spaltung.</p></div>
+  </aside>
+ </div>
+ <div class="card" style="margin-top:16px"><h3>Periodensystem – ein Element anklicken</h3>
+  <div class="scroll"><div class="pse" id="pse"></div></div>
+  <p class="note">Zahl im Feld: Anzahl der stabilen Isotope. Gelb schraffiert: Element hat kein einziges stabiles Isotop (Technetium, Promethium und alles ab Polonium; Bismut zählt als praktisch stabil).</p></div>
+ <div class="tasks" id="tk-kern"></div>
+ <div class="expl"><details><summary>Erklärung: Kernbausteine, Isotope, Schreibweise</summary><div class="cols">
+  <p><b>Bausteine.</b> Protonen (positiv) und Neutronen (neutral) heißen zusammen Nukleonen. Ihre Anzahl ist die Massenzahl A = Z + N. Die starke Kernkraft hält sie auf kurze Distanz (etwa 10⁻¹⁵ m) zusammen, die elektrische Abstoßung der Protonen wirkt dagegen.</p>
+  <p><b>Element und Isotop.</b> Die Protonenzahl Z (Ordnungszahl) bestimmt das Element und damit seinen Platz im Periodensystem. Atome mit gleichem Z, aber verschiedener Neutronenzahl sind Isotope desselben Elements: Kohlenstoff-12, -13 und -14 verhalten sich chemisch gleich, ihre Kerne aber nicht.</p>
+  <p><b>Schreibweise.</b> Oben links steht die Massenzahl, unten links die Ordnungszahl: <span class="nc"><span class="sp"><sup>14</sup><sub>6</sub></span>C</span>. Gesprochen: Kohlenstoff-14 oder C-14.</p>
+  <p><b>Stabilität.</b> Leichte stabile Kerne haben etwa gleich viele Protonen und Neutronen. Schwere brauchen deutlich mehr Neutronen (Blei-208: 82 Protonen, 126 Neutronen), weil die Abstoßung der Protonen mit Z² wächst. Zu viele Neutronen → β⁻-Zerfall, zu wenige → β⁺-Zerfall oder Elektroneneinfang, sehr schwere Kerne → α-Zerfall.</p>
+  <p class="l2"><b>Größe.</b> Der Kernradius ist ungefähr r = 1,2 fm · A<sup>1/3</sup>. Ein Atom ist rund 100 000-mal größer als sein Kern; die Hülle im Bild ist also nicht maßstäblich.</p>
+  <p class="l3"><b>Massendefekt.</b> Ein Kern ist leichter als die Summe seiner Nukleonen. Die fehlende Masse entspricht nach E = mc² der Bindungsenergie. Die Weizsäcker-Formel setzt sie aus Volumen-, Oberflächen-, Coulomb-, Asymmetrie- und Paarungsterm zusammen.</p>
+ </div></details></div>
+</section>
+
+<!-- ============ 2 NUKLIDKARTE ============ -->
+<section class="st" id="st-nuklidkarte">
+ <h2>Nuklidkarte</h2>
+ <p class="lead">Jedes Kästchen ist ein Nuklid: nach rechts mehr Neutronen, nach oben mehr Protonen. Die schwarzen stabilen Kerne bilden ein schmales „Tal der Stabilität“. Ziehen verschiebt, Mausrad oder Knöpfe zoomen, Klicken wählt aus.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="mC"></canvas></div>
+   <div class="legend" id="mLeg"></div>
+  </div>
+  <aside class="ctrl">
+   <div class="card info" id="mInfo"></div>
+   <div class="row"><button class="b pri" id="mPath">Zerfall verfolgen</button><button class="b" id="mClear">Pfad löschen</button></div>
+   <div><label for="mFind">Nuklid suchen</label><div class="row" style="flex-wrap:nowrap"><input type="text" id="mFind" placeholder="z. B. U-238, C14, Cs-137"><button class="b" id="mGo">Los</button></div></div>
+   <div><label>Ausschnitt</label><div class="row"><button class="b sm" data-v="all">Ganze Karte</button><button class="b sm" data-v="light">Leichte Kerne</button><button class="b sm" data-v="heavy">Schwere Kerne</button><button class="b sm" data-v="in">+</button><button class="b sm" data-v="out">−</button></div></div>
+   <div>
+    <label class="chk"><input type="checkbox" id="mArr" checked>Verschiebungspfeile am gewählten Kern</label>
+    <label class="chk"><input type="checkbox" id="mNZ">Linie N = Z</label>
+    <label class="chk l2"><input type="checkbox" id="mMag">Magische Zahlen 2, 8, 20, 28, 50, 82, 126</label>
+    <label class="chk"><input type="checkbox" id="mReal">Nur Nuklide mit echten Messdaten</label>
+   </div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-nuklidkarte"></div>
+ <div class="expl"><details><summary>Erklärung: Farben, Verschiebungssätze, Modell</summary><div class="cols">
+  <p><b>Farbcode.</b> Wie auf der Karlsruher Nuklidkarte: schwarz stabil, blau β⁻, rot β⁺ oder Elektroneneinfang, gelb α, grün Spontanspaltung, orange Protonenemission.</p>
+  <p><b>Verschiebungssätze (Soddy und Fajans).</b> α: zwei Felder nach links und zwei nach unten (Z − 2, N − 2). β⁻: ein Feld nach links oben (Z + 1, N − 1). β⁺/EC: ein Feld nach rechts unten (Z − 1, N + 1). γ: kein Feldwechsel.</p>
+  <p><b>Echte Daten und Modell.</b> Rund 250 stabile Nuklide und etwa 150 wichtige radioaktive Nuklide sind mit gemessenen Halbwertszeiten hinterlegt (kräftige Farbe). Die übrigen Felder (blass) sind mit dem Tröpfchenmodell abgeschätzt: Es sagt die Zerfallsart grob richtig voraus, aber keine Halbwertszeit. Die echte Karte kennt über 3000 Nuklide.</p>
+  <p class="l2"><b>Magische Zahlen.</b> Kerne mit 2, 8, 20, 28, 50, 82 oder 126 Protonen bzw. Neutronen sind besonders stabil (abgeschlossene Schalen, Schalenmodell). Zinn (Z = 50) hat deshalb 10 stabile Isotope, Blei-208 ist doppelt magisch.</p>
+ </div></details></div>
+</section>
+
+<!-- ============ 3 ZERFALLSARTEN ============ -->
+<section class="st" id="st-zerfallsarten">
+ <h2>Zerfallsarten</h2>
+ <p class="lead">Ein instabiler Kern wird stabiler, indem er ein Teilchen oder Energie abgibt. Wähle eine Zerfallsart und ein Beispiel und beobachte, was im Kern passiert.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig mid"><canvas id="zC"></canvas></div>
+   <div class="card"><div class="eq" id="zEq"></div><p class="note" id="zRule"></p></div>
+   <div class="grid2">
+    <div class="card"><h3>Verschiebung in der Nuklidkarte</h3><div class="fig low" style="height:220px;min-height:200px"><canvas id="zMini"></canvas></div></div>
+    <div class="card l2" id="zBil"></div>
+   </div>
+   <div class="card l3"><h3 id="zSpT">Energiespektrum</h3><div class="fig low" style="height:220px;min-height:200px"><canvas id="zSp"></canvas></div><p class="note" id="zSpN"></p></div>
+  </div>
+  <aside class="ctrl">
+   <div><label>Zerfallsart</label><div class="row" id="zType"></div></div>
+   <div><label for="zEx">Beispiel</label><select id="zEx"></select></div>
+   <div class="row"><button class="b pri" id="zPlay" aria-pressed="false">Noch einmal</button><button class="b" id="zSlow" aria-pressed="false">Zeitlupe</button></div>
+   <div class="card small" id="zFact"></div>
+   <div class="card l3 small" id="zQuark"></div>
+  </aside>
+ </div>
+ <div class="card" style="margin-top:16px"><h3>Die drei Strahlungsarten im Vergleich</h3><div class="scroll"><table>
+  <thead><tr><th>Strahlung</th><th>Was fliegt weg?</th><th>Ladung</th><th>Masse</th><th>Reichweite in Luft</th><th>Abschirmung</th><th>Ionisierung</th></tr></thead>
+  <tbody>
+  <tr><td><span class="tag" style="background:var(--al)">α</span></td><td>Heliumkern (2 p + 2 n)</td><td>+2e</td><td>≈ 4 u</td><td>wenige cm</td><td>Blatt Papier, Haut</td><td>sehr stark</td></tr>
+  <tr><td><span class="tag" style="background:var(--bm);color:#fff">β⁻</span> <span class="tag" style="background:var(--bp);color:#fff">β⁺</span></td><td>Elektron bzw. Positron (+ Neutrino)</td><td>−e bzw. +e</td><td>≈ 1/1836 u</td><td>bis einige m</td><td>wenige mm Aluminium</td><td>mittel</td></tr>
+  <tr><td><span class="tag" style="background:var(--ga);color:#fff">γ</span></td><td>energiereiches Photon</td><td>0</td><td>0</td><td>sehr weit</td><td>dickes Blei, Beton – nie ganz</td><td>gering</td></tr>
+  </tbody></table></div></div>
+ <div class="tasks" id="tk-zerfallsarten"></div>
+ <div class="expl"><details><summary>Erklärung: Was passiert beim Zerfall?</summary><div class="cols">
+  <p><b>α-Zerfall.</b> Sehr schwere Kerne stoßen einen Heliumkern ab. Z sinkt um 2, A um 4. Alle α-Teilchen eines Übergangs haben dieselbe Energie (Linienspektrum).</p>
+  <p><b>β⁻-Zerfall.</b> Bei Neutronenüberschuss wandelt sich im Kern ein Neutron in ein Proton um; ein Elektron und ein Antineutrino werden ausgesandt. Das Elektron war vorher nicht im Kern – es entsteht erst. Z steigt um 1, A bleibt.</p>
+  <p><b>β⁺-Zerfall und Elektroneneinfang.</b> Bei Protonenüberschuss wird ein Proton zum Neutron. Entweder fliegt ein Positron und ein Neutrino weg, oder der Kern fängt ein Elektron aus der innersten Schale ein. Z sinkt um 1.</p>
+  <p><b>γ-Strahlung.</b> Nach einem α- oder β-Zerfall ist der Tochterkern oft noch angeregt. Er gibt die Energie als Photon ab, ohne dass sich Z oder A ändern – ähnlich wie ein Atom Licht aussendet, nur mit rund einer Million Mal mehr Energie.</p>
+  <p class="l3"><b>Neutrino-Rätsel.</b> Die Elektronen beim β-Zerfall haben ein kontinuierliches Energiespektrum. Pauli schloss 1930 daraus, dass ein unsichtbares drittes Teilchen die restliche Energie mitnimmt. Nachgewiesen wurde das Neutrino erst 1956.</p>
+ </div></details></div>
+</section>
+
+<!-- ============ 4 ZERFALLSGESETZ ============ -->
+<section class="st" id="st-zerfallsgesetz">
+ <h2>Zerfallsgesetz</h2>
+ <p class="lead">Wann ein einzelner Kern zerfällt, ist reiner Zufall. Bei sehr vielen Kernen ergibt sich trotzdem ein genaues Gesetz: Nach jeder Halbwertszeit ist nur noch die Hälfte übrig.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="grid2" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))">
+    <div class="fig mid" id="gGridF"><canvas id="gGrid"></canvas></div>
+    <div class="fig mid"><canvas id="gPlot"></canvas></div>
+   </div>
+   <div class="card l2"><div class="row" style="justify-content:space-between"><h3 id="gAT">Aktivität: Zerfälle pro Zeitabschnitt</h3><select id="gAsel" class="l3" style="width:auto"><option value="a">Aktivität</option><option value="h">Lebensdauern der Kerne</option></select></div><div class="fig low"><canvas id="gAct"></canvas></div></div>
+  </div>
+  <aside class="ctrl">
+   <div class="card"><div class="row" style="justify-content:space-between;align-items:baseline"><span class="mut">Unzerfallen</span><span class="big2" id="gN">0</span></div><div class="row" style="justify-content:space-between"><span class="mut">Zeit</span><b id="gT">0</b></div><div class="row" style="justify-content:space-between"><span class="mut">Gemessene Halbwertszeit</span><b id="gTm">–</b></div><div class="row l3" style="justify-content:space-between"><span class="mut">Aus Ausgleichsgerade</span><b id="gTf">–</b></div></div>
+   <div><label>Modell</label><div class="row"><button class="b" data-gm="w" aria-pressed="false">Würfel</button><button class="b" data-gm="k" aria-pressed="true">Atomkerne</button></div></div>
+   <div><label for="gN0">Anzahl am Anfang</label><select id="gN0"><option>36</option><option selected>400</option><option>1600</option><option>6400</option></select></div>
+   <div id="gTbox"><div class="lab"><span>Halbwertszeit</span><output id="gThO"></output></div><input type="range" id="gTh" min="2" max="60" value="10"></div>
+   <div class="row"><button class="b pri" id="gRun">Start</button><button class="b" id="gStep">Ein Schritt</button><button class="b" id="gRes">Neu</button></div>
+   <div><div class="lab"><span>Tempo</span><output id="gSpO"></output></div><input type="range" id="gSp" min="0" max="4" step="1" value="2"></div>
+   <div>
+    <label class="chk"><input type="checkbox" id="gTheo" checked>Kurve N(t) = N₀ · (½)<sup>t/T½</sup> zeigen</label>
+    <label class="chk"><input type="checkbox" id="gHalf" checked>Halbwertszeit-Linien</label>
+    <label class="chk l3"><input type="checkbox" id="gLog">Logarithmische Achse (ln N)</label>
+   </div>
+   <p class="note">Tipp: Klicke einen einzelnen Kern im Raster an, um ihn zu beobachten.</p>
+   <div class="card small" id="gWatch">Kein Kern beobachtet.</div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-zerfallsgesetz"></div>
+ <div class="expl"><details><summary>Erklärung: Zufall, Halbwertszeit, Aktivität</summary><div class="cols">
+  <p><b>Zufall.</b> Jeder Kern hat in jeder Sekunde dieselbe Wahrscheinlichkeit zu zerfallen – egal wie alt er ist. Ein Kern „altert“ nicht. Darum kann man für einen einzelnen Kern nie sagen, wann er zerfällt.</p>
+  <p><b>Halbwertszeit.</b> In der Zeit T½ zerfällt im Mittel die Hälfte der noch vorhandenen Kerne. Nach 2 T½ ist ein Viertel übrig, nach 3 T½ ein Achtel: N(t) = N₀ · (½)<sup>t/T½</sup>.</p>
+  <p><b>Würfelmodell.</b> Jeder Würfel ist ein Kern; wer eine Sechs würfelt, „zerfällt“. Pro Wurf zerfällt also 1/6. Nach etwa 3,8 Würfen ist die Hälfte weg – das ist die Halbwertszeit der Würfel.</p>
+  <p class="l2"><b>Aktivität.</b> Die Aktivität A ist die Anzahl der Zerfälle pro Sekunde, gemessen in Becquerel (1 Bq = 1 Zerfall pro Sekunde). Sie ist proportional zur Zahl der vorhandenen Kerne: A = λ · N. Daher nimmt sie mit derselben Halbwertszeit ab.</p>
+  <p class="l3"><b>Exponentialgesetz.</b> N(t) = N₀ · e<sup>−λt</sup> mit der Zerfallskonstante λ = ln 2 / T½. Trägt man ln N über t auf, entsteht eine Gerade mit der Steigung −λ. Die mittlere Lebensdauer ist τ = 1/λ ≈ 1,44 · T½.</p>
+ </div></details></div>
+</section>
+
+<!-- ============ 5 ZERFALLSREIHEN ============ -->
+<section class="st" id="st-zerfallsreihen">
+ <h2>Zerfallsreihen &amp; radioaktives Gleichgewicht</h2>
+ <p class="lead">Schwere Kerne wie Uran-238 zerfallen nicht direkt in etwas Stabiles, sondern über eine Kette von Tochterkernen bis zum Blei. Schiebe die Zeit und beobachte, wie sich die Töchter aufbauen.</p>
+ <div class="work">
+  <div class="stage" id="rStage">
+   <div class="fig mid" id="rMapF"><canvas id="rMap"></canvas></div>
+   <div class="card" id="rBarsC"><div class="row" style="justify-content:space-between"><h3 id="rBarT">Zusammensetzung</h3><span class="mut small" id="rBarS"></span></div><div class="bars" id="rBars"></div></div>
+   <div class="fig mid l2" id="rPlotF"><canvas id="rPlot"></canvas></div>
+   <div class="fig mid" id="rMTF" style="display:none"><canvas id="rMT"></canvas></div>
+  </div>
+  <aside class="ctrl">
+   <div><label for="rCh">Reihe</label><select id="rCh"><option value="u238">Uran-Radium-Reihe (U-238)</option><option value="th232">Thorium-Reihe (Th-232)</option><option value="u235">Uran-Actinium-Reihe (U-235)</option><option value="np237">Neptunium-Reihe (Np-237)</option><option value="mt">Mutter–Tochter (Gleichgewicht)</option></select></div>
+   <div id="rChainCtl">
+    <div class="lab"><span>Zeit seit Beginn</span><output id="rTO"></output></div><input type="range" id="rT" min="0" max="1000" value="600">
+    <div class="row" style="margin-top:6px"><button class="b pri" id="rPlay">Abspielen</button></div>
+    <div style="margin-top:8px"><label>Anzeige</label><div class="row"><button class="b sm" data-rv="n" aria-pressed="true">Anteil der Atome</button><button class="b sm l2" data-rv="a" aria-pressed="false">Aktivität</button></div></div>
+    <p class="note">Start: reines Ausgangsnuklid. Die Zeitskala ist logarithmisch – jeder Schritt nach rechts ist ein Vielfaches.</p>
+   </div>
+   <div id="rMTCtl" style="display:none">
+    <div><label for="rMTp">Beispiel</label><select id="rMTp"><option value="0">Mo-99 → Tc-99m (Nuklearmedizin)</option><option value="1">Ra-226 → Rn-222</option><option value="2">Sr-90 → Y-90</option><option value="3">Kurzlebige Mutter, langlebige Tochter</option><option value="4">Eigene Werte</option></select></div>
+    <div><div class="lab"><span>T½ Mutter</span><output id="rT1O"></output></div><input type="range" id="rT1" min="-1" max="7" step="0.01" value="1.82"></div>
+    <div><div class="lab"><span>T½ Tochter</span><output id="rT2O"></output></div><input type="range" id="rT2" min="-1" max="7" step="0.01" value="0.78"></div>
+    <label class="chk"><input type="checkbox" id="rMTa" checked>Aktivitäten statt Anzahlen</label>
+    <div class="card small" id="rMTi"></div>
+   </div>
+   <div class="card small" id="rInfo"></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-zerfallsreihen"></div>
+ <div class="expl"><details><summary>Erklärung: vier Reihen, Gleichgewicht, Radon</summary><div class="cols">
+  <p><b>Vier Reihen.</b> Beim α-Zerfall sinkt A um 4, beim β-Zerfall bleibt A gleich. Daher bleibt der Rest von A bei Division durch 4 in einer Reihe immer gleich: Thorium-Reihe 4n, Neptunium-Reihe 4n+1, Uran-Radium-Reihe 4n+2, Uran-Actinium-Reihe 4n+3.</p>
+  <p><b>Warum es die Neptunium-Reihe in der Natur nicht mehr gibt.</b> Np-237 hat „nur“ 2,1 Millionen Jahre Halbwertszeit. Seit die Erde vor 4,5 Milliarden Jahren entstand, ist es praktisch vollständig zerfallen. U-238, U-235 und Th-232 sind langlebig genug.</p>
+  <p class="l2"><b>Säkulares Gleichgewicht.</b> Ist die Mutter viel langlebiger als alle Töchter, stellt sich nach einiger Zeit ein Zustand ein, in dem jedes Glied der Kette gleich viele Zerfälle pro Sekunde hat. In Uranerz hat deshalb jedes der 14 Zerfallsglieder dieselbe Aktivität wie das Uran selbst.</p>
+  <p class="l2"><b>Radon.</b> Rn-222 aus der Uranreihe ist ein Edelgas. Es kann aus Boden und Gestein in Häuser gelangen. Seine kurzlebigen Folgeprodukte Po-218 und Po-214 lagern sich in der Lunge ab und sind in Österreich der größte Beitrag zur Strahlenbelastung.</p>
+  <p class="l3"><b>Bateman-Gleichungen.</b> dN<sub>i</sub>/dt = λ<sub>i−1</sub>N<sub>i−1</sub> − λ<sub>i</sub>N<sub>i</sub>. Die Simulation löst sie Schritt für Schritt auf einer logarithmischen Zeitachse; Verzweigungen (z. B. Bi-212: 64 % β⁻, 36 % α) sind berücksichtigt.</p>
+ </div></details></div>
+</section>
+
+<!-- ============ 6 STRAHLUNG ============ -->
+<section class="st" id="st-strahlung">
+ <h2>Strahlung messen &amp; abschirmen</h2>
+ <p class="lead">Ein Geiger-Müller-Zählrohr zählt die Teilchen, die es treffen. Ändere Quelle, Abstand und Abschirmung und finde heraus, was α-, β- und γ-Strahlung aufhält.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig mid"><canvas id="sC"></canvas></div>
+   <div class="card"><div class="row" style="justify-content:space-between"><h3>Messprotokoll</h3><div class="row"><button class="b sm" id="sCopy">Als Tabelle kopieren</button><button class="b sm" id="sClr">Leeren</button></div></div>
+    <div class="scroll"><table id="sTab"><thead><tr><th>Nr.</th><th>Quelle</th><th>Absorber</th><th class="n">Abstand</th><th class="n">Messzeit</th><th class="n">Impulse</th><th class="n">Zählrate</th><th class="n l3">ohne Nullrate</th></tr></thead><tbody></tbody></table></div>
+    <p class="note" id="sCopyN"></p></div>
+   <div class="card l2"><div class="row" style="justify-content:space-between"><h3>Diagramm aus dem Protokoll</h3><select id="sX" style="width:auto"><option value="d">Zählrate über Abstand</option><option value="x">Zählrate über Dicke</option></select></div><div class="fig low"><canvas id="sPlot"></canvas></div><p class="note" id="sPlotN">Punkte mit derselben Quelle wie gerade eingestellt.</p></div>
+   <div class="card l2"><h3>Ablenkung im Magnetfeld</h3><div class="fig low"><canvas id="sB"></canvas></div><div class="lab" style="margin-top:8px"><span>Magnetfeld (in die Bildebene)</span><output id="sBO"></output></div><input type="range" id="sBv" min="0" max="0.5" step="0.005" value="0.06"><p class="note">Positive Teilchen werden nach oben, negative nach unten abgelenkt. Die schweren α-Teilchen kaum, die leichten Elektronen stark – mit unterschiedlichen Energien verschieden stark. γ bleibt gerade.</p></div>
+  </div>
+  <aside class="ctrl">
+   <div class="card"><div class="row" style="justify-content:space-between;align-items:baseline"><span class="mut">Zählrohr</span><span class="gm" id="sCnt">0</span></div><div class="row" style="justify-content:space-between"><span class="mut">Zählrate (gleitend)</span><b id="sRate">–</b></div></div>
+   <div><label for="sSrc">Quelle</label><select id="sSrc"><option value="a">Am-241 (α-Strahler)</option><option value="b">Sr-90 / Y-90 (β-Strahler)</option><option value="g">Co-60 (γ-Strahler)</option><option value="m">Ra-226 mit Folgeprodukten (α, β, γ)</option><option value="0">keine Quelle (nur Nullrate)</option></select></div>
+   <div><div class="lab"><span>Abstand Quelle – Zählrohr</span><output id="sDO"></output></div><input type="range" id="sD" min="1" max="50" step="0.5" value="3"></div>
+   <div><label for="sMat">Absorber</label><select id="sMat"><option value="none">kein Absorber</option><option value="pap">Papier</option><option value="al">Aluminium</option><option value="pb">Blei</option></select></div>
+   <div id="sXbox"><div class="lab"><span>Dicke</span><output id="sXO"></output></div><input type="range" id="sXv" min="0" max="100" value="10"></div>
+   <div><label for="sTm">Messzeit</label><select id="sTm"><option value="10">10 s</option><option value="60" selected>60 s</option><option value="100">100 s</option></select></div>
+   <div class="row"><button class="b pri" id="sMeas">Messen</button><button class="b" id="sSnd" aria-pressed="false">Knacken hören</button></div>
+   <label class="chk"><input type="checkbox" id="sBg" checked>Nullrate (natürliche Umgebungsstrahlung)</label>
+   <p class="note">Modell: Abstandsgesetz mit Zählrohr-Öffnung, α-Reichweite in Luft, β-Reichweite in Materie, γ-Schwächung exponentiell (Halbwertsdicke Blei ≈ 1 cm). Die Zählraten sind Beispielwerte.</p>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-strahlung"></div>
+ <div class="expl"><details><summary>Erklärung: Nullrate, Abstand, Abschirmung</summary><div class="cols">
+  <p><b>Nullrate.</b> Auch ohne Präparat tickt das Zählrohr: Strahlung aus Boden, Luft (Radon), Baustoffen und dem Weltall. Typisch sind ein paar zehn Impulse pro Minute. Für genaue Messungen zieht man sie ab.</p>
+  <p><b>Abstand.</b> Die Strahlung verteilt sich auf eine Kugeloberfläche, die mit r² wächst. Doppelter Abstand – ein Viertel der Zählrate. α-Teilchen kommen in Luft ohnehin nur wenige Zentimeter weit.</p>
+  <p><b>Abschirmung.</b> α: ein Blatt Papier reicht. β: einige Millimeter Aluminium stoppen alle Elektronen. γ: wird nur geschwächt, nie ganz gestoppt; jede Halbwertsdicke halbiert die Intensität.</p>
+  <p class="l3"><b>Statistik.</b> Zählergebnisse schwanken zufällig (Poisson-Verteilung). Bei N gezählten Impulsen ist die Unsicherheit etwa √N. 100 Impulse: ±10 %, 10 000 Impulse: ±1 %. Längere Messzeit macht Ergebnisse genauer.</p>
+ </div></details></div>
+</section>
+
+<!-- ============ NEBELKAMMER ============ -->
+<section class="st" id="st-nebelkammer">
+ <h2>Nebelkammer</h2>
+ <p class="lead">In einer Nebelkammer ist die Luft mit Alkoholdampf übersättigt. Ein geladenes Teilchen ionisiert auf seinem Weg die Luft, an den Ionen kondensieren winzige Tröpfchen – wie ein Kondensstreifen am Himmel. So wird Strahlung sichtbar. Klicke eine Spur an, um zu erfahren, was sie verursacht hat.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall" style="background:#07090c"><canvas id="nC"></canvas></div>
+   <div class="card" id="nInfo"><p class="mut">Klicke auf eine Spur.</p></div>
+  </div>
+  <aside class="ctrl">
+   <div><label for="nSrc">Was liegt in der Kammer?</label><select id="nSrc"><option value="0">nichts (nur Umgebungsstrahlung)</option><option value="a">Am-241 (α-Strahler)</option><option value="b">Sr-90 (β-Strahler)</option><option value="th">Glühstrumpf mit Thorium</option><option value="g">Co-60 (γ-Strahler) außerhalb</option></select></div>
+   <label class="chk l2"><input type="checkbox" id="nB">Magnetfeld (in die Bildebene)</label>
+   <div class="row"><button class="b" id="nRun">Pause</button><button class="b" id="nClr">Kammer leeren</button></div>
+   <div class="card"><h3>Gezählte Spuren</h3><div class="dose" id="nCnt"></div></div>
+   <div class="card small"><b>Spuren erkennen</b><br><b>α:</b> kurz (einige cm), dick, gerade.<br><b>β:</b> dünn, länger, oft verbogen und zittrig.<br><b>Myon:</b> dünn, schnurgerade, quer durch die ganze Kammer.<br><b>γ:</b> selbst unsichtbar – nur die Elektronen, die es aus Atomen schlägt, hinterlassen kurze, krumme Spuren.</div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-nebelkammer"></div>
+ <div class="expl"><details><summary>Erklärung: Wie funktioniert die Nebelkammer?</summary><div class="cols">
+  <p><b>Aufbau.</b> Eine Schale wird von unten mit Trockeneis (−78 °C) gekühlt, oben verdunstet Isopropanol aus einem Filzstreifen. Knapp über dem kalten Boden entsteht eine Schicht übersättigten Dampfes – dort bilden sich die Spuren.</p>
+  <p><b>Warum α dick und kurz?</b> α-Teilchen sind schwer, doppelt geladen und langsam. Sie ionisieren sehr stark und verlieren ihre Energie nach wenigen Zentimetern. Elektronen sind leicht und schnell: Sie ionisieren schwach und werden von Atomen leicht abgelenkt.</p>
+  <p><b>Myonen.</b> Kosmische Strahlung erzeugt in der Hochatmosphäre Myonen, schwere Verwandte des Elektrons. Etwa eines pro Quadratzentimeter und Minute erreicht den Erdboden. Sie sind so schnell, dass sie fast gerade durch die Kammer fliegen.</p>
+  <p class="l2"><b>Thoron-Gabeln.</b> Aus dem Glühstrumpf entweicht das Gas Rn-220 (T½ = 56 s). Zerfällt es in der Kammer, folgt nach durchschnittlich 0,2 s der α-Zerfall von Po-216 am selben Ort: Zwei α-Spuren bilden ein V.</p>
+  <p class="l3"><b>Geschichte.</b> C. T. R. Wilson baute 1911 die erste Nebelkammer (Nobelpreis 1927). Mit ihr wurden 1932 das Positron und 1936 das Myon entdeckt. Victor Franz Hess, der 1912 bei Ballonfahrten die kosmische Strahlung fand, war Österreicher (Nobelpreis 1936).</p>
+ </div></details></div>
+</section>
+
+<!-- ============ 7 DATIERUNG ============ -->
+<section class="st" id="st-datierung">
+ <h2>Radiokarbon-Datierung</h2>
+ <p class="lead">Lebewesen nehmen ständig Kohlenstoff auf, darunter eine winzige Menge radioaktives C-14. Nach dem Tod kommt kein neues dazu – die C-14-Aktivität sinkt mit 5730 Jahren Halbwertszeit. Wer sie misst, kann das Alter berechnen.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig mid"><canvas id="dC"></canvas></div>
+   <div class="card" id="dRes"><p class="mut">Wähle eine Probe und starte die Messung.</p></div>
+  </div>
+  <aside class="ctrl">
+   <div><label for="dS">Probe</label><select id="dS"></select></div>
+   <div><div class="lab"><span>Kohlenstoff in der Probe</span><output id="dMO"></output></div><input type="range" id="dM" min="0" max="4" step="0.05" value="2"></div>
+   <div><div class="lab"><span>Messzeit</span><output id="dTO"></output></div><input type="range" id="dT" min="0" max="4" step="0.05" value="2.5"></div>
+   <button class="b pri" id="dGo">Messen</button>
+   <div class="card small"><b>Bezugswert:</b> Lebendes Material hat etwa 13,6 C-14-Zerfälle pro Minute und Gramm Kohlenstoff (0,23 Bq/g).</div>
+   <p class="note">Vereinfachung: Der C-14-Gehalt der Luft war früher nicht genau gleich; echte Labore korrigieren das mit Baumring-Kalibrierkurven. Die Probenalter hier sind gerundete Richtwerte.</p>
+  </aside>
+ </div>
+ <div class="grid2" style="margin-top:16px">
+  <div class="card"><h3>Woher kommt C-14?</h3><p>In 10 bis 15 km Höhe treffen Neutronen aus der kosmischen Strahlung auf Stickstoff:</p><p class="eq" style="font-size:22px"><span class="nc"><span class="sp"><sup>1</sup><sub>0</sub></span>n</span> + <span class="nc"><span class="sp"><sup>14</sup><sub>7</sub></span>N</span> → <span class="nc"><span class="sp"><sup>14</sup><sub>6</sub></span>C</span> + <span class="nc"><span class="sp"><sup>1</sup><sub>1</sub></span>p</span></p><p>Das C-14 wird zu CO₂, gelangt über Photosynthese in Pflanzen und über die Nahrung in Tiere und Menschen. Etwa eines von einer Billion Kohlenstoffatomen ist C-14. Es zerfällt wieder durch β⁻-Zerfall zu N-14.</p></div>
+  <div class="card l2"><h3>Andere Uhren in der Natur</h3><div class="scroll"><table><thead><tr><th>Methode</th><th>Zerfall</th><th class="n">T½</th><th>Wofür</th></tr></thead><tbody>
+   <tr><td>Radiokarbon</td><td>C-14 → N-14</td><td class="n">5730 a</td><td>Holz, Knochen, Textilien bis etwa 50 000 a</td></tr>
+   <tr><td>Tritium</td><td>H-3 → He-3</td><td class="n">12,3 a</td><td>Alter von Grundwasser, Wein</td></tr>
+   <tr><td>Kalium-Argon</td><td>K-40 → Ar-40</td><td class="n">1,25 · 10⁹ a</td><td>Vulkangestein, Fossilfundschichten</td></tr>
+   <tr><td>Rubidium-Strontium</td><td>Rb-87 → Sr-87</td><td class="n">4,97 · 10¹⁰ a</td><td>sehr alte Gesteine, Meteoriten</td></tr>
+   <tr><td>Uran-Blei</td><td>U-238 → … → Pb-206</td><td class="n">4,47 · 10⁹ a</td><td>Zirkonkristalle, Alter der Erde (4,5 Mrd. a)</td></tr>
+   </tbody></table></div></div>
+ </div>
+ <div class="tasks" id="tk-datierung"></div>
+ <div class="expl"><details><summary>Erklärung: Altersformel und Grenzen</summary><div class="cols">
+  <p><b>Prinzip.</b> Verhältnis der gemessenen Aktivität A zur Aktivität lebenden Materials A₀: Ist nur noch die Hälfte da, ist die Probe 5730 Jahre alt, bei einem Viertel 11 460 Jahre.</p>
+  <p class="l2"><b>Formel.</b> Aus A = A₀ · (½)<sup>t/T½</sup> folgt t = T½ · log₂(A₀/A) = (T½ / ln 2) · ln(A₀/A).</p>
+  <p><b>Grenzen.</b> Nach etwa 50 000 Jahren (rund neun Halbwertszeiten) ist weniger als ein Fünfhundertstel übrig – zu wenig zum Messen. Kohle und Erdöl sind Millionen Jahre alt und enthalten praktisch kein C-14 mehr.</p>
+  <p class="l3"><b>Messunsicherheit.</b> Bei n gezählten Zerfällen ist die relative Unsicherheit 1/√n; das ergibt eine Altersunsicherheit von etwa 8270 a / √n. Moderne Labore zählen deshalb die C-14-Atome direkt mit einem Beschleuniger-Massenspektrometer (AMS), z. B. VERA an der Universität Wien.</p>
+ </div></details></div>
+</section>
+
+<!-- ============ 8 ALLTAG ============ -->
+<section class="st" id="st-alltag">
+ <h2>Strahlung im Alltag &amp; Strahlenschutz</h2>
+ <p class="lead">Wir alle sind ständig ionisierender Strahlung ausgesetzt. In Österreich sind es im Mittel rund 6 Millisievert pro Jahr – der größte Teil davon stammt aus dem Edelgas Radon.</p>
+ <div class="grid2">
+  <div class="card"><h3>Mittlere Jahresdosis in Österreich</h3><div class="dose" id="aAvg"></div><p class="note">Effektive Dosis pro Person und Jahr. Quelle: BMK/BMSGPK, „Radioaktivität und Strahlung in Österreich 2023“ (gerundet). Die Werte einzelner Personen schwanken stark, vor allem wegen Radon und Medizin.</p></div>
+  <div class="card"><h3>Meine Jahresdosis – eine Abschätzung</h3>
+   <div class="ctrl" style="background:none;padding:0">
+    <div><div class="lab"><span>Radon in der Wohnung</span><output id="aRnO"></output></div><input type="range" id="aRn" min="10" max="1000" step="5" value="50"></div>
+    <div><div class="lab"><span>Stunden pro Jahr drinnen</span><output id="aHO"></output></div><input type="range" id="aH" min="3000" max="8760" step="10" value="7000"></div>
+    <div><div class="lab"><span>Flugstunden pro Jahr</span><output id="aFO"></output></div><input type="range" id="aF" min="0" max="200" step="1" value="10"></div>
+    <div class="row"><label style="flex:1">Röntgen Brustkorb</label><button class="b sm" data-a="x-">−</button><b id="aX">0</b><button class="b sm" data-a="x+">+</button></div>
+    <div class="row"><label style="flex:1">CT Kopf</label><button class="b sm" data-a="c-">−</button><b id="aC">0</b><button class="b sm" data-a="c+">+</button></div>
+   </div>
+   <div class="dose" id="aMine" style="margin-top:10px"></div>
+   <p class="note">Radon: UNSCEAR-Faktor 9 nSv pro Stunde und Bq/m³. Flug: etwa 5 µSv pro Stunde in Reiseflughöhe. Röntgen Brustkorb ≈ 0,02 mSv, CT Kopf ≈ 2 mSv (typisch, je nach Gerät verschieden). Draußen, Nahrung: Mittelwerte.</p>
+  </div>
+ </div>
+ <div class="grid2" style="margin-top:14px">
+  <div class="card"><h3>Die vier A des Strahlenschutzes</h3><p><b>Abstand</b> – doppelter Abstand, ein Viertel der Strahlung.<br><b>Abschirmung</b> – Papier gegen α, Aluminium gegen β, Blei und Beton gegen γ.<br><b>Aufenthaltsdauer</b> – die Dosis wächst mit der Zeit.<br><b>Aktivität</b> – so schwache Quellen wie möglich verwenden.</p><p><b>Inkorporation vermeiden:</b> α-Strahler sind außen harmlos, eingeatmet oder verschluckt aber besonders gefährlich – deshalb im Labor nicht essen, trinken oder schminken.</p></div>
+  <div class="card"><h3>Grenz- und Richtwerte</h3><div class="scroll"><table><tbody>
+   <tr><td>Zusätzliche Dosis für die Bevölkerung (Grenzwert)</td><td class="n">1 mSv/a</td></tr>
+   <tr><td>Beruflich strahlenexponierte Personen (Grenzwert)</td><td class="n">20 mSv/a</td></tr>
+   <tr><td>Radon-Referenzwert in Aufenthaltsräumen und am Arbeitsplatz</td><td class="n">300 Bq/m³</td></tr>
+   <tr><td>Radon-Arbeitsplätze: Maßnahmen ab</td><td class="n">6 mSv/a</td></tr>
+  </tbody></table></div><p class="note">Österreichisches Strahlenschutzrecht bzw. Radonschutzverordnung. Die Dosiseinheit Sievert berücksichtigt, wie schädlich eine Strahlenart für den Körper ist; das Becquerel zählt nur Zerfälle pro Sekunde.</p></div>
+ </div>
+ <div class="tasks" id="tk-alltag"></div>
+ <div class="expl"><details><summary>Erklärung: Becquerel, Gray, Sievert</summary><div class="cols">
+  <p><b>Becquerel (Bq).</b> Aktivität einer Quelle: Zerfälle pro Sekunde. Ein Mensch enthält rund 4000 Bq Kalium-40 und einige tausend Bq C-14.</p>
+  <p><b>Gray (Gy).</b> Energiedosis: absorbierte Strahlungsenergie pro Kilogramm, 1 Gy = 1 J/kg.</p>
+  <p><b>Sievert (Sv).</b> Äquivalent- bzw. effektive Dosis: Energiedosis mal Wichtungsfaktor. α-Strahlung zählt 20-fach, β und γ einfach. Daher ist eingeatmetes Radon mit seinen α-strahlenden Folgeprodukten so wirksam.</p>
+  <p class="l2"><b>Radon in Österreich.</b> Wie viel Radon in ein Haus gelangt, hängt vom Untergrund ab (Granit und Gneis z. B. im Mühl- und Waldviertel, manche Alpentäler). Auf der Radonkarte der AGES lässt sich das Radonpotenzial nachsehen. Lüften und dichte Keller senken die Belastung.</p>
+ </div></details></div>
+</section>
+
+<script>
+{
+/* ======================= Grunddaten ======================= */
+const YR=3.15576e7,DY=86400,HR=3600,MN=60;
+const EL=("n:Neutron|H:Wasserstoff|He:Helium|Li:Lithium|Be:Beryllium|B:Bor|C:Kohlenstoff|N:Stickstoff|O:Sauerstoff|F:Fluor|Ne:Neon|Na:Natrium|Mg:Magnesium|Al:Aluminium|Si:Silicium|P:Phosphor|S:Schwefel|Cl:Chlor|Ar:Argon|K:Kalium|Ca:Calcium|Sc:Scandium|Ti:Titan|V:Vanadium|Cr:Chrom|Mn:Mangan|Fe:Eisen|Co:Cobalt|Ni:Nickel|Cu:Kupfer|Zn:Zink|Ga:Gallium|Ge:Germanium|As:Arsen|Se:Selen|Br:Brom|Kr:Krypton|Rb:Rubidium|Sr:Strontium|Y:Yttrium|Zr:Zirconium|Nb:Niob|Mo:Molybdän|Tc:Technetium|Ru:Ruthenium|Rh:Rhodium|Pd:Palladium|Ag:Silber|Cd:Cadmium|In:Indium|Sn:Zinn|Sb:Antimon|Te:Tellur|I:Iod|Xe:Xenon|Cs:Caesium|Ba:Barium|La:Lanthan|Ce:Cer|Pr:Praseodym|Nd:Neodym|Pm:Promethium|Sm:Samarium|Eu:Europium|Gd:Gadolinium|Tb:Terbium|Dy:Dysprosium|Ho:Holmium|Er:Erbium|Tm:Thulium|Yb:Ytterbium|Lu:Lutetium|Hf:Hafnium|Ta:Tantal|W:Wolfram|Re:Rhenium|Os:Osmium|Ir:Iridium|Pt:Platin|Au:Gold|Hg:Quecksilber|Tl:Thallium|Pb:Blei|Bi:Bismut|Po:Polonium|At:Astat|Rn:Radon|Fr:Francium|Ra:Radium|Ac:Actinium|Th:Thorium|Pa:Protactinium|U:Uran|Np:Neptunium|Pu:Plutonium|Am:Americium|Cm:Curium|Bk:Berkelium|Cf:Californium|Es:Einsteinium|Fm:Fermium|Md:Mendelevium|No:Nobelium|Lr:Lawrencium|Rf:Rutherfordium|Db:Dubnium|Sg:Seaborgium|Bh:Bohrium|Hs:Hassium|Mt:Meitnerium|Ds:Darmstadtium|Rg:Roentgenium|Cn:Copernicium|Nh:Nihonium|Fl:Flerovium|Mc:Moscovium|Lv:Livermorium|Ts:Tenness|Og:Oganesson").split("|").map(s=>s.split(":"));
+const sym=Z=>EL[Z]?EL[Z][0]:"?", ename=Z=>EL[Z]?EL[Z][1]:"?";
+const STABLE={1:[1,2],2:[3,4],3:[6,7],4:[9],5:[10,11],6:[12,13],7:[14,15],8:[16,17,18],9:[19],10:[20,21,22],11:[23],12:[24,25,26],13:[27],14:[28,29,30],15:[31],16:[32,33,34,36],17:[35,37],18:[36,38,40],19:[39,41],20:[40,42,43,44,46,48],21:[45],22:[46,47,48,49,50],23:[50,51],24:[50,52,53,54],25:[55],26:[54,56,57,58],27:[59],28:[58,60,61,62,64],29:[63,65],30:[64,66,67,68,70],31:[69,71],32:[70,72,73,74,76],33:[75],34:[74,76,77,78,80,82],35:[79,81],36:[78,80,82,83,84,86],37:[85],38:[84,86,87,88],39:[89],40:[90,91,92,94,96],41:[93],42:[92,94,95,96,97,98,100],44:[96,98,99,100,101,102,104],45:[103],46:[102,104,105,106,108,110],47:[107,109],48:[106,108,110,111,112,114,116],49:[113],50:[112,114,115,116,117,118,119,120,122,124],51:[121,123],52:[120,122,123,124,125,126,128,130],53:[127],54:[124,126,128,129,130,131,132,134,136],55:[133],56:[130,132,134,135,136,137,138],57:[139],58:[136,138,140,142],59:[141],60:[142,143,145,146,148,150],62:[144,149,150,152,154],63:[151,153],64:[154,155,156,157,158,160],65:[159],66:[156,158,160,161,162,163,164],67:[165],68:[162,164,166,167,168,170],69:[169],70:[168,170,171,172,173,174,176],71:[175],72:[176,177,178,179,180],73:[181],74:[180,182,183,184,186],75:[185],76:[184,187,188,189,190,192],77:[191,193],78:[192,194,195,196,198],79:[197],80:[196,198,199,200,201,202,204],81:[203,205],82:[204,206,207,208],83:[209]};
+/* Z, A, Zerfallsart, Halbwertszeit (s), Hinweis */
+const RAW=[[0,1,"b-",610,"freies Neutron"],[1,3,"b-",12.32*YR,"Tritium"],[2,6,"b-",0.807],[3,8,"b-",0.839],[4,7,"ec",53.22*DY],[4,8,"a",8.2e-17,"zerfällt sofort in zwei α-Teilchen"],[4,10,"b-",1.387e6*YR],[4,11,"b-",13.8],[5,8,"b+",0.77],[5,12,"b-",0.0202],[6,10,"b+",19.3],[6,11,"b+",20.36*MN,"PET-Diagnostik"],[6,14,"b-",5730*YR,"Radiokarbon-Datierung"],[6,15,"b-",2.45],[7,13,"b+",9.965*MN],[7,16,"b-",7.13],[8,15,"b+",122.2],[8,19,"b-",26.9],[9,18,"b+",109.77*MN,"wichtigster PET-Stoff"],[9,20,"b-",11.0],[11,22,"b+",2.602*YR],[11,24,"b-",14.96*HR],[12,27,"b-",9.46*MN],[13,26,"b+",7.17e5*YR],[13,28,"b-",2.245*MN],[14,31,"b-",157.4*MN],[14,32,"b-",153*YR],[15,30,"b+",2.5*MN,"erstes künstlich erzeugtes Radionuklid (1934)"],[15,32,"b-",14.27*DY],[15,33,"b-",25.3*DY],[16,35,"b-",87.4*DY],[17,36,"b-",3.01e5*YR],[17,38,"b-",37.2*MN],[18,37,"ec",35.0*DY],[18,39,"b-",269*YR],[18,41,"b-",109.6*MN],[19,40,"b-",1.248e9*YR,"89 % β⁻, 11 % EC; in jedem Menschen"],[19,42,"b-",12.36*HR],[20,41,"ec",9.94e4*YR],[20,45,"b-",162.6*DY],[24,51,"ec",27.7*DY],[25,54,"ec",312.2*DY],[26,55,"ec",2.744*YR],[26,59,"b-",44.5*DY],[27,57,"ec",271.7*DY],[27,58,"b+",70.86*DY],[27,60,"b-",5.271*YR,"γ-Quelle in Medizin und Technik"],[28,63,"b-",101.2*YR],[29,64,"b+",12.7*HR,"zerfällt auch durch β⁻"],[30,65,"ec",243.9*DY],[31,68,"b+",67.7*MN],[36,85,"b-",10.75*YR],[37,87,"b-",4.97e10*YR],[38,89,"b-",50.6*DY],[38,90,"b-",28.8*YR,"Spaltprodukt, lagert sich in Knochen ein"],[39,90,"b-",64.0*HR],[42,99,"b-",65.9*HR,"Mutter von Tc-99m"],[43,98,"b-",4.2e6*YR],[43,99,"b-",2.11e5*YR,"angeregt als Tc-99m (6,01 h) der wichtigste Stoff der Nuklearmedizin"],[53,125,"ec",59.4*DY],[53,129,"b-",1.57e7*YR],[53,131,"b-",8.02*DY,"Spaltprodukt; Schilddrüse"],[54,133,"b-",5.25*DY],[54,135,"b-",9.14*HR],[55,134,"b-",2.065*YR],[55,137,"b-",30.08*YR,"Spaltprodukt; Tschernobyl-Cäsium in Österreichs Böden"],[56,140,"b-",12.75*DY],[61,145,"ec",17.7*YR],[61,147,"b-",2.62*YR],[77,192,"b-",73.8*DY],[81,207,"b-",4.77*MN],[81,208,"b-",3.05*MN],[81,209,"b-",2.16*MN],[82,209,"b-",3.25*HR],[82,210,"b-",22.2*YR],[82,211,"b-",36.1*MN],[82,212,"b-",10.64*HR],[82,214,"b-",26.8*MN],[83,210,"b-",5.012*DY],[83,211,"a",2.14*MN],[83,212,"b-",60.55*MN,"64 % β⁻, 36 % α"],[83,213,"b-",45.6*MN,"98 % β⁻, 2 % α"],[83,214,"b-",19.9*MN],[84,210,"a",138.38*DY],[84,212,"a",2.99e-7],[84,213,"a",3.7e-6],[84,214,"a",1.643e-4],[84,215,"a",1.781e-3],[84,216,"a",0.145],[84,218,"a",3.10*MN],[85,217,"a",0.0323],[86,219,"a",3.96],[86,220,"a",55.6,"„Thoron“"],[86,222,"a",3.8235*DY,"Radon – Edelgas aus dem Boden"],[87,221,"a",4.8*MN],[87,223,"b-",22.0*MN],[88,223,"a",11.43*DY],[88,224,"a",3.632*DY],[88,225,"b-",14.9*DY],[88,226,"a",1600*YR,"von Marie und Pierre Curie entdeckt"],[88,228,"b-",5.75*YR],[89,225,"a",9.92*DY],[89,227,"b-",21.77*YR,"98,6 % β⁻"],[89,228,"b-",6.15*HR],[90,227,"a",18.7*DY],[90,228,"a",1.912*YR],[90,229,"a",7900*YR],[90,230,"a",7.54e4*YR],[90,231,"b-",25.52*HR],[90,232,"a",1.405e10*YR,"häufigstes Thorium"],[90,234,"b-",24.10*DY],[91,231,"a",3.276e4*YR],[91,233,"b-",26.97*DY],[91,234,"b-",70.2,"als Pa-234m (1,17 min)"],[92,233,"a",1.592e5*YR],[92,234,"a",2.455e5*YR],[92,235,"a",7.04e8*YR,"0,72 % des natürlichen Urans; spaltbar"],[92,236,"a",2.342e7*YR],[92,238,"a",4.468e9*YR,"99,27 % des natürlichen Urans"],[92,239,"b-",23.45*MN],[93,237,"a",2.144e6*YR],[93,239,"b-",2.356*DY],[94,238,"a",87.7*YR,"Radionuklidbatterien in Raumsonden"],[94,239,"a",2.411e4*YR],[94,240,"a",6561*YR],[94,241,"b-",14.29*YR],[94,244,"a",8.0e7*YR],[95,241,"a",432.2*YR,"in Rauchmeldern"],[96,244,"a",18.1*YR],[98,252,"a",2.645*YR,"3 % Spontanspaltung; Neutronenquelle"],[100,256,"sf",157.6*MN],[118,294,"a",7e-4,"schwerstes bekanntes Element"]];
+const DATA={};RAW.forEach(r=>DATA[r[0]+"-"+r[1]]={mode:r[2],T:r[3],note:r[4]||""});
+const MODE={s:["stabil","var(--stab)"],"b-":["β⁻-Zerfall","var(--bm)"],"b+":["β⁺-Zerfall / Elektroneneinfang","var(--bp)"],ec:["Elektroneneinfang (EC)","var(--bp)"],a:["α-Zerfall","var(--al)"],sf:["Spontanspaltung","var(--sf)"],p:["Protonenemission","var(--pr)"]};
+/* Tröpfchenmodell */
+const cbrt=Math.cbrt;
+function Bsemf(Z,N,pair){const A=Z+N;if(A<=1||Z<0||N<0)return 0;let b=15.75*A-17.8*cbrt(A*A)-0.711*Z*(Z-1)/cbrt(A)-23.7*(N-Z)**2/A;if(pair){const d=11.18/Math.sqrt(A);if(Z%2==0&&N%2==0)b+=d;else if(Z%2&&N%2)b-=d}return Math.max(b,0)}
+const Zc=A=>A/(1.98+0.0155*cbrt(A*A));
+const NC=[];for(let Z=0;Z<=118;Z++){let best=0,bd=1e9;for(let N=0;N<220;N++){const d=Math.abs(Zc(Z+N)-Z);if(d<bd){bd=d;best=N}}NC[Z]=best}
+const isStable=(Z,A)=>!!(STABLE[Z]&&STABLE[Z].includes(A));
+function exists(Z,N){const A=Z+N;if(Z<0||N<0||A<1)return false;if(isStable(Z,A)||DATA[Z+"-"+A])return true;if(Z<9||Z>118)return false;
+ if(Z>100)return Math.abs(N-NC[Z])<=Math.max(2,7-(Z-100)/4);
+ const nc=NC[Z],up=0.25*nc+4-Math.max(0,Z-60)*0.6,dn=0.22*nc+3;if(N-nc>up||nc-N>dn)return false;
+ const Sn=Bsemf(Z,N)-Bsemf(Z,N-1),Sp=Bsemf(Z,N)-Bsemf(Z-1,N);return Sn>1.6&&Sp>-0.6}
+function modelMode(Z,N){const A=Z+N,d=Z-Zc(A),Sp=Bsemf(Z,N)-Bsemf(Z-1,N);
+ if(d>0&&Sp<0.6)return"p";if(Z>=100&&A>=256&&Math.abs(d)<2.5&&Z%2==0)return"sf";
+ if(Z>=84||A>=212){if(d<-1.8)return"b-";if(d>7&&Z<90)return"b+";return"a"}return d>0?"b+":"b-"}
+function info(Z,N){const A=Z+N;if(!exists(Z,N))return null;const o={Z,N,A,s:sym(Z),name:ename(Z)};
+ if(isStable(Z,A))return Object.assign(o,{mode:"s",T:Infinity,real:true,note:Z==83?"praktisch stabil (α-Zerfall mit T½ ≈ 2 · 10¹⁹ a)":""});
+ const d=DATA[Z+"-"+A];if(d)return Object.assign(o,{mode:d.mode,T:d.T,real:true,note:d.note});
+ return Object.assign(o,{mode:modelMode(Z,N),T:null,real:false,note:""})}
+function dau(Z,N,m){if(m=="a")return[Z-2,N-2];if(m=="b-")return[Z+1,N-1];if(m=="b+"||m=="ec")return[Z-1,N+1];if(m=="p")return[Z-1,N];return null}
+const CELLS=[];for(let Z=0;Z<=118;Z++)for(let N=0;N<=184;N++){const c=info(Z,N);if(c)CELLS.push(c)}
+const CMAP={};CELLS.forEach(c=>CMAP[c.Z+"-"+c.N]=c);
+const cell=(Z,N)=>CMAP[Z+"-"+N]||null;
+/* Formatierung */
+const SUPD="⁰¹²³⁴⁵⁶⁷⁸⁹";const sup=n=>String(n).replace(/-/g,"⁻").replace(/\d/g,d=>SUPD[d]);
+const de=(x,p=3)=>Number(x.toPrecision(p)).toLocaleString("de-AT",{maximumFractionDigits:10});
+function sci(x,p=3){if(x===0)return"0";const e=Math.floor(Math.log10(Math.abs(x)));if(e>=-2&&e<4)return de(x,p);const m=x/10**e;return de(m,p)+" · 10"+sup(e)}
+function fmtT(s){if(s==null)return"unbekannt (Modell)";if(!isFinite(s))return"stabil";const y=s/YR;
+ if(s<1e-9)return sci(s)+" s";if(s<1e-6)return de(s*1e9)+" ns";if(s<1e-3)return de(s*1e6)+" µs";if(s<1)return de(s*1e3)+" ms";if(s<120)return de(s)+" s";if(s<7200)return de(s/60)+" min";if(s<2*DY)return de(s/HR)+" h";if(y<1)return de(s/DY)+" Tage";if(y<1e4)return de(y,4)+" Jahre";return sci(y)+" Jahre"}
+const nucH=(Z,A,meta)=>`<span class="nc"><span class="sp"><sup>${A}${meta?"m":""}</sup><sub>${Z}</sub></span>${sym(Z)}</span>`;
+const nucS=(Z,A)=>`${sym(Z)}-${A}`;
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function pois(m){if(m<=0)return 0;if(m<40){const L=Math.exp(-m);let k=0,p=1;do{k++;p*=Math.random()}while(p>L);return k-1}return Math.max(0,Math.round(m+Math.sqrt(m)*gauss()))}
+/* Farben aus CSS auflösen (auch light-dark) */
+const probe=document.createElement("i");probe.style.display="none";document.body.appendChild(probe);let CC={};
+function col(v){if(CC[v])return CC[v];probe.style.color=v.startsWith("var")?v:`var(${v})`;return CC[v]=getComputedStyle(probe).color}
+const mcol=m=>col(MODE[m]?MODE[m][1]:"var(--mut)");
+function alpha(c,a){const m=c.match(/[\d.]+/g);return m?`rgba(${m[0]},${m[1]},${m[2]},${a})`:c}
+/* Canvas */
+const REG=[];
+function canv(id,draw){const c=document.getElementById(id);const o={c,draw,x:null,w:0,h:0};const fit=()=>{const r=c.getBoundingClientRect();if(!r.width||!r.height)return;const d=devicePixelRatio||1;c.width=Math.round(r.width*d);c.height=Math.round(r.height*d);o.w=r.width;o.h=r.height;o.x=c.getContext("2d");o.x.setTransform(d,0,0,d,0,0);draw(o)};o.fit=fit;o.redraw=()=>{if(o.x&&o.w)draw(o)};const ro=new ResizeObserver(fit);ro.observe(c);REG.push(o);return o}
+const redrawAll=()=>{CC={};REG.forEach(o=>o.redraw())};
+new MutationObserver(redrawAll).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme","class","style"]});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",redrawAll);
+function txt(x,s,X,Y,o={}){x.font=`${o.w||400} ${o.size||13}px "Source Sans 3",system-ui,sans-serif`;x.fillStyle=o.c||col("--ink");x.textAlign=o.a||"left";x.textBaseline=o.b||"middle";x.fillText(s,X,Y)}
+function ball(x,X,Y,r,c){const g=x.createRadialGradient(X-r*.35,Y-r*.4,r*.1,X,Y,r);g.addColorStop(0,"rgba(255,255,255,.85)");g.addColorStop(.25,c);g.addColorStop(1,alpha(c,1).replace("rgba","rgba"));x.fillStyle=g;x.beginPath();x.arc(X,Y,r,0,7);x.fill();x.strokeStyle="rgba(0,0,0,.25)";x.lineWidth=Math.max(.5,r*.06);x.stroke()}
+function rng(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s^=s>>>17;s^=s<<5;return(s>>>0)/4294967296}}
+const PACK={};
+function pack(A,Z){const k=A+"/"+Z;if(PACK[k])return PACK[k];const pts=[];for(let i=0;i<A;i++){const r=Math.sqrt(i+.5),t=i*2.39996;pts.push({x:r*Math.cos(t),y:r*Math.sin(t),p:false})}
+ const idx=[...Array(A).keys()],R=rng(A*131+7);for(let i=A-1;i>0;i--){const j=Math.floor(R()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]]}
+ for(let i=0;i<Z&&i<A;i++)pts[idx[i]].p=true;pts.order=[...pts.keys()].sort((a,b)=>pts[b].y-pts[a].y||0);return PACK[k]=pts}
+function drawNucleus(x,cx,cy,A,Z,R,o={}){if(A<1)return;const pts=pack(A,Z),s=R/Math.sqrt(A+.5),rb=s*.9;const pc=col("--prot"),nc=col("--neut");
+ const ord=[...Array(A).keys()].sort((a,b)=>(pts[a].x+pts[a].y)-(pts[b].x+pts[b].y));
+ for(const i of ord){const p=pts[i];let c=p.p?pc:nc;if(o.hl===i&&o.hlc)c=o.hlc;const w=o.wob?Math.sin(o.t*20+i)*o.wob:0;ball(x,cx+p.x*s+w,cy+p.y*s+w*.6,rb,c);if(o.hl===i){x.strokeStyle=col("--ink");x.lineWidth=2;x.beginPath();x.arc(cx+p.x*s,cy+p.y*s,rb+2,0,7);x.stroke()}}}
+/* Tasks */
+const TL=["","einfach","mittel","anspruchsvoll"];
+function tasks(id,list){const el=document.getElementById("tk-"+id);el.innerHTML="";list.forEach(t=>{const d=document.createElement("div");d.className="task"+(t.l==2?" l2":t.l==3?" l3":"");d.innerHTML=`<span class="lv">${TL[t.l]}</span><h3>${t.h}</h3><p>${t.p}</p>`;if(t.set){const b=document.createElement("button");b.className="b sm";b.textContent="Einstellen";b.onclick=()=>{t.set();document.getElementById("st-"+id).scrollIntoView({behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"})};d.appendChild(b)}el.appendChild(d)})}
+/* Niveau */
+function setLvl(l){document.body.dataset.lvl=l;$$(".lvl button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l==l));try{localStorage.setItem("radlvl",l)}catch(e){}setTimeout(()=>{REG.forEach(o=>o.fit())},20)}
+$$(".lvl button").forEach(b=>b.onclick=()=>setLvl(b.dataset.l));
+/* Routing */
+const VIEWS=["kern","nuklidkarte","zerfallsarten","zerfallsgesetz","zerfallsreihen","strahlung","nebelkammer","datierung","alltag"];let cur="kern";
+function route(){const h=location.hash.slice(1);cur=VIEWS.includes(h)?h:"kern";$$(".st").forEach(s=>s.classList.toggle("on",s.id=="st-"+cur));$$("#nav a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")=="#"+cur));setTimeout(()=>REG.forEach(o=>o.fit()),10)}
+addEventListener("hashchange",route);
+function go(v){if(location.hash!="#"+v)location.hash=v;else route();scrollTo(0,0)}
+
+/* ======================= 1 KERN ======================= */
+const K={Z:6,N:8,emit:null,t:0};
+const KP=[["Wasserstoff-1 (normaler Wasserstoff)",1,0],["Deuterium (H-2)",1,1],["Tritium (H-3)",1,2],["Helium-4 (α-Teilchen)",2,2],["Kohlenstoff-12",6,6],["Kohlenstoff-14",6,8],["Sauerstoff-16",8,8],["Kalium-40",19,21],["Eisen-56",26,30],["Cobalt-60",27,33],["Strontium-90",38,52],["Iod-131",53,78],["Caesium-137",55,82],["Blei-208 (doppelt magisch)",82,126],["Radon-222",86,136],["Radium-226",88,138],["Uran-235",92,143],["Uran-238",92,146],["Plutonium-239",94,145]];
+$("#kPreset").innerHTML='<option value="">– auswählen –</option>'+KP.map((p,i)=>`<option value="${i}">${p[0]}</option>`).join("");
+$("#kPreset").onchange=e=>{const p=KP[e.target.value];if(p)setK(p[1],p[2])};
+const kc=canv("kC",drawK);
+function setK(Z,N){K.Z=Math.max(0,Math.min(118,Z));K.N=Math.max(0,Math.min(184,N));updK()}
+$$("[data-k]").forEach(b=>b.onclick=()=>{const [t,d]=[b.dataset.k[0],+b.dataset.k.slice(1)];if(t=="p")setK(K.Z+d,K.N);else setK(K.Z,K.N+d)});
+function stateTxt(c){if(!c)return{t:"existiert nicht",c:"var(--mut)"};return{t:c.mode=="s"?"stabil":"radioaktiv – "+MODE[c.mode][0],c:MODE[c.mode][1]}}
+function updK(){const {Z,N}=K,A=Z+N,c=info(Z,N);const el=$("#kInfo");
+ if(A==0){el.innerHTML="<p>Noch keine Nukleonen. Füge ein Proton oder Neutron hinzu.</p>"}
+ else{const st=stateTxt(c);const T=c?(c.mode=="s"?"–":fmtT(c.T)):"–";const D=c&&dau(Z,N,c.mode);
+ el.innerHTML=`<div class="big">${Z>0?nucH(Z,A):"Neutron"}</div><div style="font-weight:700;font-size:18px">${Z>0?ename(Z)+"-"+A:(N==1?"freies Neutron":N+" Neutronen")}</div>
+ <p style="margin:6px 0"><span class="tag" style="background:${st.c};color:${c&&(c.mode=="s"||c.mode=="b-"||c.mode=="b+"||c.mode=="ec")?"#fff":"#111"}">${st.t}</span></p>
+ <dl class="kv"><dt>Protonen Z</dt><dd>${Z}</dd><dt>Neutronen N</dt><dd>${N}</dd><dt>Nukleonen A</dt><dd>${A}</dd><dt>Halbwertszeit</dt><dd>${T}</dd>${D&&exists(D[0],D[1])?`<dt>Tochterkern</dt><dd>${nucS(D[0],D[0]+D[1])}</dd>`:""}
+ <dt class="l2">Kernradius</dt><dd class="l2">${de(1.2*cbrt(A),2)} fm</dd><dt class="l3">Bindungsenergie</dt><dd class="l3">${A>=4?de(Bsemf(Z,N,1),4)+" MeV":"–"}</dd></dl>
+ ${!c?`<p class="note">Diese Kombination ist so instabil, dass sie praktisch nicht existiert. ${Z>N+2?"Zu viele Protonen – sie stoßen sich ab.":N>Z*2+4||N>NC[Z]+10?"Viel zu viele Neutronen – sie werden sofort abgestoßen.":""}</p>`:c.real?(c.note?`<p class="note">${c.note}</p>`:""):`<p class="note">Zerfallsart mit dem Kernmodell abgeschätzt.</p>`}`}
+ $("#kDecay").disabled=!(c&&c.mode!="s"&&c.mode!="sf");
+ const ns=[];for(let n=0;n<=184;n++)if(exists(Z,n))ns.push(n);
+ $("#kStrip").innerHTML=Z==0?"<span class='mut'>–</span>":ns.map(n=>{const q=info(Z,n);return`<button data-n="${n}" class="${n==N?"on":""}" style="background:${mcol(q.mode)};opacity:${q.real?1:.45};color:${q.mode=="s"?col("--stabt"):"#111"}" title="${nucS(Z,Z+n)}: ${stateTxt(q).t}">${Z+n}</button>`}).join("");
+ $$("#pse button").forEach(b=>b.classList.toggle("on",+b.dataset.z==Z));kc.redraw();kbe.redraw()}
+$("#kStrip").onclick=e=>{const b=e.target.closest("button");if(b)setK(K.Z,+b.dataset.n)};
+$("#kDecay").onclick=()=>{const c=info(K.Z,K.N);if(!c||c.mode=="s")return;const D=dau(K.Z,K.N,c.mode);if(!D)return;K.emit={m:c.mode,t:0,from:[K.Z,K.N]};setK(D[0],D[1])};
+$("#kToMap").onclick=()=>{M.sel={Z:K.Z,N:K.N};M.path=[];go("nuklidkarte");setTimeout(()=>{mCenter(K.Z,K.N,14);updM()},40)};
+function drawK(o){const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const {Z,N}=K,A=Z+N,c=info(Z,N);const cx=W/2,cy=H/2;
+ const Rmax=Math.min(W,H)*.30,R=Math.max(14,Rmax*Math.min(1,.35+cbrt(A)/cbrt(250)*.65));
+ if(Z>0){x.strokeStyle=alpha(col("--mut"),.35);x.setLineDash([3,5]);x.lineWidth=1;const Rh=Math.min(W,H)*.45;x.beginPath();x.arc(cx,cy,Rh,0,7);x.stroke();x.setLineDash([]);
+  const ne=Math.min(Z,60);for(let i=0;i<ne;i++){const a=i/ne*6.283+K.t*.4;ball(x,cx+Rh*Math.cos(a),cy+Rh*Math.sin(a),3.2,col("--bm"))}
+  txt(x,Z>60?`Atomhülle mit ${Z} Elektronen (nicht maßstäblich)`:"Atomhülle (nicht maßstäblich)",cx,cy+Rh+14>H-8?H-10:cy+Rh+14,{a:"center",c:col("--mut"),size:13})}
+ if(c&&c.mode!="s"){const g=x.createRadialGradient(cx,cy,R*.6,cx,cy,R*1.5);g.addColorStop(0,alpha(mcol(c.mode),.45));g.addColorStop(1,alpha(mcol(c.mode),0));x.fillStyle=g;x.beginPath();x.arc(cx,cy,R*1.5,0,7);x.fill()}
+ drawNucleus(x,cx,cy,A,Z,R,{wob:c&&c.mode!="s"?Math.min(1.6,R*.02):0,t:K.t});
+ if(!c&&A>0){txt(x,"existiert so nicht",cx,cy-R-16,{a:"center",w:700,c:col("--bp"),size:15})}
+ if(K.emit){const e=K.emit,p=e.t,d=p*Math.max(W,H)*.6,ang=-.6;const ex=cx+Math.cos(ang)*(R+d),ey=cy+Math.sin(ang)*(R+d);
+  if(e.m=="a"){[[0,0,1],[1,0,0],[0,1,0],[1,1,1]].forEach(q=>ball(x,ex+q[0]*9-4,ey+q[1]*9-4,6,q[2]?col("--prot"):col("--neut")));txt(x,"α",ex+14,ey-14,{w:700,size:16})}
+  else if(e.m=="b-"){ball(x,ex,ey,5,col("--bm"));txt(x,"e⁻",ex+10,ey-10,{w:700,size:15});txt(x,"ν̄",cx-Math.cos(ang)*(R+d*.9),cy+(R+d*.9)*.5,{w:700,c:col("--mut"),size:15})}
+  else if(e.m=="b+"||e.m=="ec"||e.m=="p"){if(e.m!="ec"){ball(x,ex,ey,5,e.m=="p"?col("--prot"):col("--bp"));txt(x,e.m=="p"?"p":"e⁺",ex+10,ey-10,{w:700,size:15})}txt(x,"ν",cx-Math.cos(ang)*(R+d*.9),cy+(R+d*.9)*.5,{w:700,c:col("--mut"),size:15})}}
+ txt(x,Z>0?`${ename(Z)}-${A}`:A?"Neutronen":"",14,20,{w:700,size:16});txt(x,`${Z} p · ${N} n`,14,40,{c:col("--mut")})}
+const kbe=canv("kBE",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const L=34,B=H-24,T=10,R=W-8;const X=A=>L+(A/260)*(R-L),Y=v=>B-(v/9.5)*(B-T);
+ x.strokeStyle=col("--line");x.beginPath();x.moveTo(L,T);x.lineTo(L,B);x.lineTo(R,B);x.stroke();[0,4,8].forEach(v=>txt(x,v,L-6,Y(v),{a:"right",c:col("--mut"),size:12}));[50,100,150,200,250].forEach(a=>txt(x,a,X(a),B+12,{a:"center",c:col("--mut"),size:12}));txt(x,"MeV",L+4,T+4,{c:col("--mut"),size:12});
+ x.strokeStyle=col("--acc");x.lineWidth=2;x.beginPath();for(let A=4;A<=260;A++){const Z=Math.round(Zc(A)),v=Bsemf(Z,A-Z)/A;A==4?x.moveTo(X(A),Y(v)):x.lineTo(X(A),Y(v))}x.stroke();
+ const A=K.Z+K.N;if(A>=4){const v=Bsemf(K.Z,K.N,1)/A;ball(x,X(A),Y(v),5,col("--bp"));txt(x,de(v,3)+" MeV",Math.min(X(A)+8,R-60),Y(v)-10,{w:700,size:12})}});
+/* PSE */
+function psePos(Z){if(Z==1)return[1,1];if(Z==2)return[1,18];if(Z<=10)return[2,Z<=4?Z-2:Z+8];if(Z<=18)return[3,Z<=12?Z-10:Z];if(Z<=36)return[4,Z-18];if(Z<=54)return[5,Z-36];if(Z<=86){if(Z<=56)return[6,Z-54];if(Z<=71)return[9,Z-54];return[6,Z-68]}if(Z<=88)return[7,Z-86];if(Z<=103)return[10,Z-86];return[7,Z-100]}
+{let h="";for(let Z=1;Z<=118;Z++){const [r,c]=psePos(Z);const n=(STABLE[Z]||[]).length;h+=`<button data-z="${Z}" class="${n?"":"rad"}" style="grid-row:${r};grid-column:${c}" title="${ename(Z)} (Z = ${Z})"><span>${sym(Z)}</span><small>${n||"–"}</small></button>`}
+ h+=`<div class="gap" style="grid-row:8;grid-column:1/19"></div><div style="grid-row:6;grid-column:3;font-size:11px;color:var(--mut);display:flex;align-items:center;justify-content:center">57–71</div><div style="grid-row:7;grid-column:3;font-size:11px;color:var(--mut);display:flex;align-items:center;justify-content:center">89–103</div>`;$("#pse").innerHTML=h}
+$("#pse").onclick=e=>{const b=e.target.closest("button");if(!b)return;const Z=+b.dataset.z;const st=STABLE[Z];let N;if(st&&st.length)N=st[Math.floor((st.length-1)/2)]-Z;else{let best=null;RAW.forEach(r=>{if(r[0]==Z&&(!best||r[3]>best[3]))best=r});N=best?best[1]-Z:NC[Z]}setK(Z,N)};
+tasks("kern",[
+ {l:1,h:"Isotope von Wasserstoff",p:"Baue Wasserstoff-1, dann füge Neutronen hinzu. Wie heißen H-2 und H-3? Welches ist radioaktiv, und was entsteht bei seinem Zerfall?",set:()=>setK(1,0)},
+ {l:1,h:"Kohlenstoff-12 und -14",p:"Vergleiche C-12 und C-14. Was ist gleich, was verschieden? Lass C-14 zerfallen: Welches Element entsteht?",set:()=>setK(6,8)},
+ {l:1,h:"Was legt das Element fest?",p:"Ändere bei Sauerstoff-16 nur die Neutronenzahl, dann nur die Protonenzahl. Wann ändert sich der Name im Periodensystem?",set:()=>setK(8,8)},
+ {l:1,h:"Elemente ohne stabile Isotope",p:"Suche im Periodensystem die schraffierten Felder vor Polonium. Welche zwei Elemente mitten im Periodensystem haben kein stabiles Isotop?"},
+ {l:2,h:"Das Verhältnis N : Z",p:"Notiere N/Z für C-12, Fe-56, Sn-120 und Pb-208. Wie ändert sich das Verhältnis bei schweren Kernen und warum?",set:()=>setK(26,30)},
+ {l:2,h:"Zu viele, zu wenige Neutronen",p:"Starte bei Na-23 und füge Neutronen hinzu, dann entferne welche. Welche Zerfallsart tritt jeweils auf? Formuliere eine Regel.",set:()=>setK(11,12)},
+ {l:2,h:"Uran zerfällt",p:"Starte bei U-238 und drücke mehrmals „Zerfallen lassen“. Notiere jeden Zwischenkern. Wo endet die Kette?",set:()=>setK(92,146)},
+ {l:3,h:"Bindungsenergie",p:"Vergleiche die Bindungsenergie pro Nukleon von H-2, He-4, Fe-56 und U-235 im Diagramm. Begründe, warum Fusion leichter und Spaltung schwerer Kerne Energie freisetzen.",set:()=>setK(26,30)},
+ {l:3,h:"Kerngröße",p:"Berechne für Pb-208 mit r = 1,2 fm · A^(1/3) den Radius und vergleiche mit dem Atomradius von etwa 175 pm. Wie groß wäre das Atom, wenn der Kern 1 cm groß wäre?",set:()=>setK(82,126)}
+]);
+
+/* ======================= 2 NUKLIDKARTE ======================= */
+const M={cs:5,ox:30,oy:400,sel:{Z:6,N:8},path:[],init:false,drag:null};
+const mc=canv("mC",drawM);
+function mFit(z0,z1,n0,n1){const W=mc.w,H=mc.h;if(!W)return;const cs=Math.min((W-50)/(n1-n0+1),(H-44)/(z1-z0+1));M.cs=Math.max(2,cs);M.ox=40-n0*M.cs+((W-50)-(n1-n0+1)*M.cs)/2;M.oy=H-30+z0*M.cs-((H-44)-(z1-z0+1)*M.cs)/2;M.init=true}
+function mCenter(Z,N,cs){M.cs=cs||M.cs;M.ox=mc.w/2-(N+.5)*M.cs;M.oy=mc.h/2+(Z+.5)*M.cs;M.init=true;mc.redraw()}
+function drawM(o){const x=o.x,W=o.w,H=o.h;if(!M.init)mFit(0,118,0,180);x.clearRect(0,0,W,H);const cs=M.cs,real=$("#mReal").checked;
+ const X=N=>M.ox+N*cs,Y=Z=>M.oy-(Z+1)*cs;const st=col("--stabt");
+ for(const c of CELLS){if(real&&!c.real)continue;const px=X(c.N),py=Y(c.Z);if(px>W||py>H||px+cs<0||py+cs<0)continue;x.globalAlpha=c.real?1:.42;x.fillStyle=mcol(c.mode);const g=cs>6?Math.max(.5,cs*.06):0;x.fillRect(px+g/2,py+g/2,cs-g,cs-g);
+  if(cs>=20){x.globalAlpha=1;const tc=c.mode=="s"?st:"#111";if(cs>=30)txt(x,c.s+" "+c.A,px+cs/2,py+cs*.3,{a:"center",w:700,size:Math.min(14,cs*.26),c:tc});else txt(x,c.A,px+cs/2,py+cs/2,{a:"center",w:700,size:Math.min(12,cs*.4),c:tc});
+   if(cs>=46&&c.mode!="s")txt(x,c.T==null?"Modell":fmtT(c.T).replace(" Jahre"," a").replace(" Tage"," d"),px+cs/2,py+cs*.68,{a:"center",size:Math.min(12,cs*.2),c:tc})}}
+ x.globalAlpha=1;
+ if($("#mNZ").checked){x.strokeStyle=col("--ink");x.setLineDash([5,4]);x.lineWidth=1.2;x.beginPath();x.moveTo(X(0),Y(-1));x.lineTo(X(130),Y(129));x.stroke();x.setLineDash([]);if(cs>2)txt(x,"N = Z",X(26)+4,Y(26)-4,{w:700,size:13})}
+ if($("#mMag").checked&&document.body.dataset.lvl>1){x.strokeStyle=alpha(col("--ink"),.6);x.lineWidth=1.3;[2,8,20,28,50,82,126].forEach(m=>{x.beginPath();x.moveTo(X(m),Y(-1));x.lineTo(X(m),Y(120));x.moveTo(X(m+1),Y(-1));x.lineTo(X(m+1),Y(120));x.stroke();if(m<=118){x.beginPath();x.moveTo(X(0),Y(m-1));x.lineTo(X(185),Y(m-1));x.moveTo(X(0),Y(m));x.lineTo(X(185),Y(m));x.stroke()}txt(x,m,X(m)+cs/2,Math.max(12,Math.min(H-38,Y(Math.min(118,m+20)))),{a:"center",w:700,size:12})})}
+ if(M.path.length>1){x.strokeStyle=col("--ink");x.lineWidth=Math.max(2,cs*.12);x.lineJoin="round";x.beginPath();M.path.forEach((p,i)=>{const px=X(p[1])+cs/2,py=Y(p[0])+cs/2;i?x.lineTo(px,py):x.moveTo(px,py)});x.stroke();M.path.forEach(p=>{x.fillStyle=col("--ink");x.beginPath();x.arc(X(p[1])+cs/2,Y(p[0])+cs/2,Math.max(2.5,cs*.14),0,7);x.fill()})}
+ const s=M.sel;if(s){const px=X(s.N),py=Y(s.Z);x.strokeStyle=col("--acc");x.lineWidth=3;x.strokeRect(px-2,py-2,cs+4,cs+4);
+  const c=cell(s.Z,s.N);if($("#mArr").checked&&c){[["a",col("--al")],["b-",col("--bm")],["b+",col("--bp")]].forEach(([m,cl])=>{const D=dau(s.Z,s.N,m);const on=c.mode==m||(m=="b+"&&c.mode=="ec");const fx=px+cs/2,fy=py+cs/2,tx=X(D[1])+cs/2,ty=Y(D[0])+cs/2;x.strokeStyle=on?col("--ink"):alpha(col("--mut"),.6);x.lineWidth=on?Math.max(2.5,cs*.1):1.5;x.setLineDash(on?[]:[4,4]);x.beginPath();x.moveTo(fx,fy);x.lineTo(tx,ty);x.stroke();x.setLineDash([]);const a=Math.atan2(ty-fy,tx-fx),hs=Math.max(7,cs*.25);x.fillStyle=on?col("--ink"):alpha(col("--mut"),.6);x.beginPath();x.moveTo(tx,ty);x.lineTo(tx-hs*Math.cos(a-.4),ty-hs*Math.sin(a-.4));x.lineTo(tx-hs*Math.cos(a+.4),ty-hs*Math.sin(a+.4));x.fill();
+   txt(x,m=="a"?"α":m=="b-"?"β⁻":"β⁺",tx+(tx-fx)*.25+(m=="b+"?8:-8),ty+(ty-fy)*.25,{a:"center",w:700,size:14,c:on?col("--ink"):col("--mut")})})}}
+ x.fillStyle=alpha(col("--bg"),.88);x.fillRect(0,H-22,W,22);x.fillRect(0,0,30,H);
+ const step=cs>=14?5:cs>=5?10:20;for(let n=0;n<=184;n+=step){const px=X(n)+cs/2;if(px>34&&px<W-120)txt(x,n,px,H-11,{a:"center",c:col("--mut"),size:12})}
+ for(let z=0;z<=118;z+=step){const py=Y(z)+cs/2;if(py>8&&py<H-24)txt(x,cs>=10?sym(z):z,15,py,{a:"center",c:col("--mut"),size:12,w:cs>=10?700:400})}
+ txt(x,"Neutronenzahl N →",W-8,H-11,{a:"right",w:700,size:12,c:col("--ink")});x.save();x.translate(9,60);x.rotate(-Math.PI/2);x.restore();txt(x,"Z ↑",34,12,{w:700,size:13})}
+function updM(){const s=M.sel,c=s&&cell(s.Z,s.N);const el=$("#mInfo");if(!c){el.innerHTML="<p>Klicke ein Kästchen an.</p>";mc.redraw();return}
+ const D=dau(c.Z,c.N,c.mode),dc=D&&cell(D[0],D[1]);
+ el.innerHTML=`<div class="big">${c.Z?nucH(c.Z,c.A):"n"}</div><div style="font-weight:700;font-size:18px">${c.Z?c.name+"-"+c.A:"freies Neutron"}</div><p style="margin:6px 0"><span class="tag" style="background:${MODE[c.mode][1]};color:${["s","b-","b+","ec"].includes(c.mode)?"#fff":"#111"}">${MODE[c.mode][0]}</span></p>
+ <dl class="kv"><dt>Z / N / A</dt><dd>${c.Z} / ${c.N} / ${c.A}</dd><dt>Halbwertszeit</dt><dd>${c.mode=="s"?"–":fmtT(c.T)}</dd>${dc?`<dt>Tochter</dt><dd>${nucS(dc.Z,dc.A)}</dd>`:""}<dt>Daten</dt><dd>${c.real?"gemessen":"Modell-Abschätzung"}</dd></dl>${c.note?`<p class="note">${c.note}</p>`:""}`;mc.redraw()}
+function mPath(){const s=M.sel;if(!s)return;let Z=s.Z,N=s.N;M.path=[[Z,N]];for(let i=0;i<60;i++){const c=cell(Z,N);if(!c||c.mode=="s"||c.mode=="sf")break;const D=dau(Z,N,c.mode);if(!D||!cell(D[0],D[1]))break;[Z,N]=D;M.path.push([Z,N])}
+ const last=cell(Z,N);$("#mInfo").insertAdjacentHTML("beforeend",`<p class="note"><b>Pfad:</b> ${M.path.map(p=>p[0]?nucS(p[0],p[0]+p[1]):"n").join(" → ")}${last&&last.mode=="s"?" (stabil)":""}</p>`);mc.redraw()}
+$("#mPath").onclick=()=>{updM();mPath()};$("#mClear").onclick=()=>{M.path=[];updM()};
+["mArr","mNZ","mMag","mReal"].forEach(i=>$("#"+i).onchange=()=>mc.redraw());
+$$("[data-v]").forEach(b=>b.onclick=()=>{const v=b.dataset.v;if(v=="all")mFit(0,118,0,180);else if(v=="light")mFit(0,20,0,28);else if(v=="heavy")mFit(78,96,118,150);else{const f=v=="in"?1.5:1/1.5;zoomAt(mc.w/2,mc.h/2,f)}mc.redraw()});
+function zoomAt(px,py,f){const ncs=Math.max(2,Math.min(90,M.cs*f));const k=ncs/M.cs;M.ox=px-(px-M.ox)*k;M.oy=py-(py-M.oy)*k;M.cs=ncs}
+function findNuc(q){q=q.trim().replace(/\s+/g,"");let m=q.match(/^([A-Za-z]{1,2})-?(\d{1,3})m?$/)||q.match(/^(\d{1,3})([A-Za-z]{1,2})$/);if(!m)return null;let s,A;if(/^\d/.test(m[1])){A=+m[1];s=m[2]}else{s=m[1];A=+m[2]}s=s[0].toUpperCase()+s.slice(1).toLowerCase();const Z=EL.findIndex(e=>e[0]==s);if(Z<0)return null;return{Z,N:A-Z}}
+function mFind(){const r=findNuc($("#mFind").value);if(!r){$("#mInfo").innerHTML="<p>Nicht gefunden. Schreibweise z. B. „U-238“ oder „C14“.</p>";return}M.sel=r;M.path=[];mCenter(r.Z,r.N,Math.max(M.cs,22));updM()}
+$("#mGo").onclick=mFind;$("#mFind").onkeydown=e=>{if(e.key=="Enter")mFind()};
+{const c=mc.c;let pts=new Map();c.addEventListener("pointerdown",e=>{c.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.offsetX,y:e.offsetY});M.drag={x:e.offsetX,y:e.offsetY,moved:false,d0:0};if(pts.size==2){const [a,b]=[...pts.values()];M.drag.d0=Math.hypot(a.x-b.x,a.y-b.y)}});
+ c.addEventListener("pointermove",e=>{if(!M.drag||!pts.has(e.pointerId))return;const p=pts.get(e.pointerId);if(pts.size==2){p.x=e.offsetX;p.y=e.offsetY;const [a,b]=[...pts.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);if(M.drag.d0){zoomAt((a.x+b.x)/2,(a.y+b.y)/2,d/M.drag.d0);M.drag.d0=d;M.drag.moved=true;mc.redraw()}return}const dx=e.offsetX-p.x,dy=e.offsetY-p.y;if(Math.abs(e.offsetX-M.drag.x)+Math.abs(e.offsetY-M.drag.y)>5)M.drag.moved=true;if(M.drag.moved){M.ox+=dx;M.oy+=dy;mc.redraw()}p.x=e.offsetX;p.y=e.offsetY});
+ c.addEventListener("pointerup",e=>{if(M.drag&&!M.drag.moved&&pts.size==1){const N=Math.floor((e.offsetX-M.ox)/M.cs),Z=Math.floor((M.oy-e.offsetY)/M.cs);if(cell(Z,N)){M.sel={Z,N};M.path=[];updM()}}pts.delete(e.pointerId);if(!pts.size)M.drag=null});
+ c.addEventListener("pointercancel",e=>{pts.delete(e.pointerId);M.drag=null});
+ c.addEventListener("wheel",e=>{e.preventDefault();zoomAt(e.offsetX,e.offsetY,e.deltaY<0?1.18:1/1.18);mc.redraw()},{passive:false})}
+$("#mLeg").innerHTML=[["s","stabil"],["b-","β⁻"],["b+","β⁺ / EC"],["a","α"],["sf","Spontanspaltung"],["p","Protonenemission"]].map(([m,t])=>`<span><i style="background:${MODE[m][1]}"></i>${t}</span>`).join("")+`<span><i style="background:var(--bm);opacity:.42"></i>blass: Modell</span>`;
+const selM=(Z,N,cs)=>{M.sel={Z,N};M.path=[];mCenter(Z,N,cs||22);updM()};
+tasks("nuklidkarte",[
+ {l:1,h:"Das Tal der Stabilität",p:"Betrachte die ganze Karte. Wo liegen die schwarzen Felder? Verläuft das Band entlang der Linie N = Z? Schalte die Linie dazu.",set:()=>{mFit(0,118,0,180);$("#mNZ").checked=true;updM()}},
+ {l:1,h:"Blau unten, rot oben",p:"Zoome auf die leichten Kerne. Auf welcher Seite des Stabilitätsbands liegen die β⁻-Strahler (blau), auf welcher die β⁺-Strahler (rot)? Was haben die blauen Kerne „zu viel“?",set:()=>{mFit(0,20,0,28);M.sel={Z:6,N:8};updM()}},
+ {l:1,h:"Verschiebungspfeile",p:"Wähle C-14, dann Rn-222. Wohin zeigt der dicke Pfeil? Lies ab: Wie ändern sich Z und N bei β⁻ und bei α?",set:()=>selM(6,8)},
+ {l:2,h:"Vom Uran zum Blei",p:"Wähle U-238 und drücke „Zerfall verfolgen“. Zähle die α- und β⁻-Schritte. Prüfe: 238 − 4 · (Anzahl α) muss 206 ergeben.",set:()=>selM(92,146,18)},
+ {l:2,h:"Magische Zahlen",p:"Schalte die magischen Zahlen ein. Bei welchen Z gibt es besonders viele stabile Isotope? Zähle die stabilen Isotope von Zinn (Z = 50).",set:()=>{$("#mMag").checked=true;selM(50,70,12)}},
+ {l:2,h:"Spaltprodukte",p:"Suche Sr-90, I-131 und Cs-137. Alle drei entstehen bei der Kernspaltung. Warum sind sie β⁻-Strahler? (Tipp: Uran hat viel mehr Neutronen pro Proton als mittelschwere Kerne.)",set:()=>selM(55,82,24)},
+ {l:3,h:"Wo endet die Karte?",p:"Zoome an den rechten und linken Rand der Karte. Warum gibt es keine Kerne mit beliebig vielen Neutronen? Was passiert ganz links (orange)?",set:()=>{mFit(40,70,40,110);updM()}},
+ {l:3,h:"Kein stabiles Technetium",p:"Zoome auf Z = 43 und Z = 61. Warum gibt es dort kein stabiles Isotop, obwohl die Nachbarn viele haben? (Tipp: ungerade Z und die Mattauch’sche Isobarenregel.)",set:()=>selM(43,55,24)}
+]);
+
+/* ======================= 3 ZERFALLSARTEN ======================= */
+const ZT={a:"α",b:"β⁻",p:"β⁺",g:"γ",e:"EC"};
+const ZX={a:[[88,226,"4,78 MeV","Radium-226 im Uranerz"],[95,241,"5,49 MeV","Americium-241 im Rauchmelder"],[84,210,"5,30 MeV","Polonium-210"],[92,238,"4,20 MeV","Uran-238"]],
+ b:[[6,14,0.156,"Kohlenstoff-14"],[55,137,0.514,"Caesium-137 (zu Ba-137m)"],[38,90,0.546,"Strontium-90"],[1,3,0.0186,"Tritium"],[27,60,0.318,"Cobalt-60 (dann γ)"]],
+ p:[[9,18,0.634,"Fluor-18 (PET)"],[11,22,0.546,"Natrium-22"],[6,11,0.960,"Kohlenstoff-11"]],
+ g:[[56,137,"662 keV","Ba-137m nach Cs-137"],[43,99,"140 keV","Tc-99m (Nuklearmedizin)"],[28,60,"1,17 und 1,33 MeV","Ni-60 nach Co-60"]],
+ e:[[4,7,"0,86 MeV","Beryllium-7"],[19,40,"1,50 MeV","Kalium-40 (11 % der Zerfälle)"],[26,55,"0,23 MeV","Eisen-55"]]};
+const Zs={type:"a",ex:0,t:0,slow:false,hl:0};
+$("#zType").innerHTML=Object.entries(ZT).map(([k,v])=>`<button class="b${k=="e"?" l2":""}" data-zt="${k}" aria-pressed="${k=="a"}">${v}</button>`).join("");
+$$("[data-zt]").forEach(b=>b.onclick=()=>{Zs.type=b.dataset.zt;Zs.ex=0;$$("[data-zt]").forEach(q=>q.setAttribute("aria-pressed",q==b));zFill();zUpd()});
+function zFill(){$("#zEx").innerHTML=ZX[Zs.type].map((e,i)=>`<option value="${i}">${e[3]}</option>`).join("")}
+$("#zEx").onchange=e=>{Zs.ex=+e.target.value;zUpd()};
+$("#zPlay").onclick=()=>{Zs.t=0};$("#zSlow").onclick=e=>{Zs.slow=!Zs.slow;e.target.setAttribute("aria-pressed",Zs.slow)};
+function zCur(){const e=ZX[Zs.type][Zs.ex],Z=e[0],A=e[1];let d,parts;
+ if(Zs.type=="a")d=[Z-2,A-4];else if(Zs.type=="b")d=[Z+1,A];else if(Zs.type=="p"||Zs.type=="e")d=[Z-1,A];else d=[Z,A];return{Z,A,dZ:d[0],dA:d[1],E:e[2],name:e[3]}}
+const part=(A,Z,s)=>`<span class="nc"><span class="sp"><sup>${A}</sup><sub>${Z}</sub></span>${s}</span>`;
+function zUpd(){const c=zCur(),t=Zs.type;const P=nucH(c.Z,c.A,t=="g"),D=nucH(c.dZ,c.dA);let eq,rule,fact,bil,q;
+ if(t=="a"){eq=`${P} → ${D} + ${part(4,2,"He")}`;rule="α-Zerfall: Ordnungszahl − 2, Massenzahl − 4. Der Tochterkern steht im Periodensystem zwei Plätze weiter vorne.";fact=`Das α-Teilchen fliegt mit ${c.E} weg – rund 5 % der Lichtgeschwindigkeit. In Luft kommt es nur etwa 3 bis 5 cm weit.`;q="Beim α-Zerfall ändert sich kein Nukleon: Ein fertiges Teilchen aus 2 Protonen und 2 Neutronen „tunnelt“ durch den Potenzialwall des Kerns (Gamow 1928). Je größer die Energie, desto kürzer die Halbwertszeit."}
+ else if(t=="b"){eq=`${P} → ${D} + ${part(0,"−1","e")} + ν̄<sub>e</sub>`;rule="β⁻-Zerfall: Ordnungszahl + 1, Massenzahl bleibt gleich. Ein Neutron wird zum Proton.";fact=`Höchstenergie des Elektrons: ${de(c.E,3)} MeV. Die Energie teilt sich zufällig zwischen Elektron und Antineutrino auf.`;q="Quark-Ebene: In einem Neutron (udd) wird ein d-Quark zu einem u-Quark (uud = Proton). Vermittelt wird das von der schwachen Wechselwirkung über ein W⁻-Boson, das sofort in e⁻ und ν̄ zerfällt."}
+ else if(t=="p"){eq=`${P} → ${D} + ${part(0,"+1","e")} + ν<sub>e</sub>`;rule="β⁺-Zerfall: Ordnungszahl − 1, Massenzahl bleibt gleich. Ein Proton wird zum Neutron.";fact=`Höchstenergie des Positrons: ${de(c.E,3)} MeV. Das Positron trifft bald auf ein Elektron: Beide zerstrahlen in zwei γ-Quanten mit je 511 keV, die in entgegengesetzte Richtungen fliegen – das nutzt die PET-Untersuchung.`;q="Quark-Ebene: Ein u-Quark wird zum d-Quark (uud → udd), über ein W⁺-Boson. Ein freies Proton kann das nicht, weil es leichter als ein Neutron ist; im Kern liefert die Bindungsenergie die nötige Energie."}
+ else if(t=="g"){eq=`${P} → ${D} + γ`;rule="γ-Strahlung: Z und A bleiben gleich. Der angeregte Kern („m“ = metastabil oder *) gibt Energie als Photon ab.";fact=`Energie des γ-Quants: ${c.E}. Zum Vergleich: sichtbares Licht hat etwa 2 eV, also eine Million Mal weniger.`;q="Die Kernzustände sind gequantelt wie die Energieniveaus der Hülle. Darum hat jedes Nuklid seine typischen γ-Linien – damit identifiziert man Radionuklide in Proben (γ-Spektroskopie, z. B. Cs-137 an 662 keV)."}
+ else{eq=`${P} + ${part(0,"−1","e")} → ${D} + ν<sub>e</sub>`;rule="Elektroneneinfang: Der Kern fängt ein Elektron aus der innersten Schale (K-Schale) ein. Z − 1, A bleibt.";fact=`Freiwerdende Energie: ${c.E}, fast alles nimmt das Neutrino mit. Die Lücke in der K-Schale wird aufgefüllt – dabei entsteht Röntgenstrahlung.`;q="Elektroneneinfang konkurriert mit β⁺: Ist die Energiedifferenz kleiner als 1,022 MeV (zwei Elektronenmassen), ist nur Elektroneneinfang möglich."}
+ $("#zEq").innerHTML=eq;$("#zRule").textContent=rule;$("#zFact").innerHTML=`<b>${c.name}</b><br>${fact}`;$("#zQuark").innerHTML=`<b>Genauer hingeschaut</b><br>${q}`;
+ const dz=c.dZ-c.Z,da=c.dA-c.A;$("#zBil").innerHTML=`<h3>Bilanz</h3><table><thead><tr><th></th><th class="n">vorher</th><th class="n">nachher</th></tr></thead><tbody>
+ <tr><td>Ladung (Ordnungszahlen)</td><td class="n">${c.Z}${t=="e"?" + (−1)":""}</td><td class="n">${c.dZ}${t=="a"?" + 2":t=="b"?" + (−1)":t=="p"?" + 1":""}</td></tr>
+ <tr><td>Nukleonen (Massenzahlen)</td><td class="n">${c.A}</td><td class="n">${c.dA}${t=="a"?" + 4":""}</td></tr></tbody></table><p class="note">Ladung und Nukleonenzahl bleiben bei jedem Zerfall erhalten.${t=="b"||t=="p"?" Für die Leptonen gilt: Elektron und Antineutrino bzw. Positron und Neutrino entstehen immer paarweise.":""}</p>`;
+ const isB=t=="b"||t=="p";$("#zSpT").textContent=isB?"Energiespektrum der "+(t=="b"?"Elektronen":"Positronen"):"Energiespektrum: scharfe Linie";$("#zSpN").textContent=isB?"Kontinuierlich: Die Teilchen haben jede Energie zwischen 0 und der Höchstenergie. Den Rest trägt das (Anti-)Neutrino.":"Alle α-Teilchen bzw. γ-Quanten eines Übergangs haben dieselbe Energie.";
+ const A=c.A;Zs.hl=(pack(A,c.Z).findIndex(q=>t=="b"?!q.p:q.p));Zs.t=0;zm.redraw();zsp.redraw()}
+const zc=canv("zC",drawZ);
+function drawZ(o){const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const c=zCur(),t=Zs.type,p=Zs.t;const cx=W*.3,cy=H*.55,R=Math.min(H*.3,W*.18);const emitAt=t=="e"?.35:.25;const after=p>emitAt;
+ const Z=after?c.dZ:c.Z,A=after?c.dA:c.A;let hlc=null;
+ if(t=="b"||t=="p"||t=="e"){const pc=col("--prot"),nc=col("--neut");const f=Math.min(1,Math.max(0,(p-emitAt+.08)/.12));hlc=t=="b"?(f>.5?pc:nc):(f>.5?nc:pc)}
+ const Zd=(t=="b"||t=="p"||t=="e")?c.Z:Z;drawNucleus(x,cx,cy,A,Zd,R,{wob:p<emitAt?1.5:0,t:p*10,hl:(t=="b"||t=="p"||t=="e")?Zs.hl:-1,hlc});
+ if(t=="g"&&!after){const g=x.createRadialGradient(cx,cy,R*.5,cx,cy,R*1.4);g.addColorStop(0,alpha(col("--ga"),.5));g.addColorStop(1,alpha(col("--ga"),0));x.fillStyle=g;x.beginPath();x.arc(cx,cy,R*1.4,0,7);x.fill()}
+ const lab=after?(c.dZ?`${sym(c.dZ)}-${c.dA}`:""):`${sym(c.Z)}-${c.A}${t=="g"?"m":""}`;txt(x,lab,cx,cy-R-22,{a:"center",w:700,size:18});txt(x,after?"Tochterkern":"Mutterkern",cx,cy+R+20,{a:"center",c:col("--mut"),size:14});
+ if(t=="e"){const Rk=R*1.45,ang=-2.2+Math.min(p/emitAt,1)*.0;x.strokeStyle=alpha(col("--mut"),.6);x.setLineDash([3,4]);x.beginPath();x.arc(cx,cy,Rk,0,7);x.stroke();x.setLineDash([]);txt(x,"K-Schale",cx+Rk*.72,cy-Rk*.78,{c:col("--mut"),size:12});
+  if(p<emitAt){const f=Math.max(0,(p-.08)/(emitAt-.08));const rr=Rk*(1-f*.9),aa=-2.2+p*3;ball(x,cx+rr*Math.cos(aa),cy+rr*Math.sin(aa),5,col("--bm"));txt(x,"e⁻",cx+rr*Math.cos(aa)-14,cy+rr*Math.sin(aa)-10,{w:700,size:14})}}
+ if(after){const f=(p-emitAt)/(1-emitAt),L=W*.62;const ex=cx+R+f*L,ey=cy-f*H*.18;
+  if(t=="a"){[[0,0,1],[1,0,0],[0,1,0],[1,1,1]].forEach(q=>ball(x,ex+q[0]*13-6,ey+q[1]*13-6,8,q[2]?col("--prot"):col("--neut")));txt(x,"α-Teilchen",ex,ey-24,{a:"center",w:700,size:15})}
+  if(t=="b"||t=="p"){ball(x,ex,ey,6,t=="b"?col("--bm"):col("--bp"));txt(x,t=="b"?"Elektron e⁻":"Positron e⁺",ex,ey-18,{a:"center",w:700,size:15});const nx=cx+R+f*L*.85,ny=cy+f*H*.25;x.strokeStyle=col("--mut");x.setLineDash([2,3]);x.beginPath();x.arc(nx,ny,5,0,7);x.stroke();x.setLineDash([]);txt(x,t=="b"?"Antineutrino ν̄":"Neutrino ν",nx,ny+18,{a:"center",c:col("--mut"),size:14});
+   if(t=="p"&&f>.8&&document.body.dataset.lvl>1){const k=(f-.8)/.2;ball(x,ex+6,ey,4,col("--bm"));x.strokeStyle=col("--ga");x.lineWidth=2;[-1,1].forEach(s=>{x.beginPath();for(let i=0;i<30;i++){const u=i/29*60*k;x.lineTo(ex+u*.3*s,ey+s*u+Math.sin(i)*3)}x.stroke()});txt(x,"2 γ (je 511 keV)",ex-50,ey+40,{w:700,size:13,c:col("--ga")})}}
+  if(t=="g"||t=="e"){x.strokeStyle=t=="g"?col("--ga"):alpha(col("--ga"),.7);x.lineWidth=2.5;x.beginPath();for(let i=0;i<=60;i++){const u=i/60,px=ex-50+u*50,py=ey+Math.sin(u*30)*7*Math.sin(u*Math.PI);i?x.lineTo(px,py):x.moveTo(px,py)}x.stroke();txt(x,t=="g"?"γ-Quant":"Neutrino ν →",ex-25,ey-20,{a:"center",w:700,size:15,c:t=="g"?col("--ga"):col("--mut")})}}
+ txt(x,ZT[t]+"-Zerfall",14,20,{w:700,size:16});if(Zs.slow)txt(x,"Zeitlupe",14,40,{c:col("--mut")})}
+const zm=canv("zMini",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const c=zCur(),N0=c.A-c.Z;const cs=Math.min((W-20)/6,(H-20)/5);const ox=(W-6*cs)/2,oy=(H-5*cs)/2;
+ for(let i=0;i<6;i++)for(let j=0;j<5;j++){const N=N0-3+i,Z=c.Z+2-j;const q=cell(Z,N);x.fillStyle=q?alpha(mcol(q.mode),q.real?1:.45):col("--grid");x.fillRect(ox+i*cs+1,oy+j*cs+1,cs-2,cs-2);if(q&&Z>=0)txt(x,`${sym(Z)} ${Z+N}`,ox+i*cs+cs/2,oy+j*cs+cs/2,{a:"center",w:700,size:Math.min(13,cs*.25),c:q.mode=="s"?col("--stabt"):"#111"})}
+ const pos=(Z,N)=>[ox+(N-N0+3)*cs+cs/2,oy+(c.Z+2-Z)*cs+cs/2];const [fx,fy]=pos(c.Z,N0),[tx,ty]=pos(c.dZ,c.dA-c.dZ);x.strokeStyle=col("--acc");x.lineWidth=3;x.strokeRect(fx-cs/2,fy-cs/2,cs,cs);
+ if(fx!=tx||fy!=ty){x.strokeStyle=col("--ink");x.lineWidth=3;x.beginPath();x.moveTo(fx,fy);x.lineTo(tx,ty);x.stroke();const a=Math.atan2(ty-fy,tx-fx);x.fillStyle=col("--ink");x.beginPath();x.moveTo(tx,ty);x.lineTo(tx-12*Math.cos(a-.4),ty-12*Math.sin(a-.4));x.lineTo(tx-12*Math.cos(a+.4),ty-12*Math.sin(a+.4));x.fill()}else txt(x,"bleibt im selben Feld",W/2,H-8,{a:"center",c:col("--mut"),size:12});
+ txt(x,"N →",W-6,H-6,{a:"right",c:col("--mut"),size:12,b:"bottom"});txt(x,"Z ↑",4,10,{c:col("--mut"),size:12})});
+const zsp=canv("zSp",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const c=zCur(),t=Zs.type;const L=40,B=H-28,T=12,R=W-12;x.strokeStyle=col("--line");x.beginPath();x.moveTo(L,T);x.lineTo(L,B);x.lineTo(R,B);x.stroke();txt(x,"Energie →",R,B+16,{a:"right",c:col("--mut"),size:12});txt(x,"Anzahl",L+4,T+2,{c:col("--mut"),size:12});
+ if(t=="b"||t=="p"){const Q=c.E,m=0.511;let mx=0;const f=[];for(let i=0;i<=200;i++){const E=Q*i/200;const pp=Math.sqrt(E*E+2*E*m);const v=pp*(E+m)*(Q-E)**2*(t=="b"?(1+0.6*Math.exp(-E/Q*4)):(1-0.6*Math.exp(-E/Q*4)));f.push(v);mx=Math.max(mx,v)}
+  x.fillStyle=alpha(t=="b"?col("--bm"):col("--bp"),.35);x.strokeStyle=t=="b"?col("--bm"):col("--bp");x.lineWidth=2;x.beginPath();x.moveTo(L,B);f.forEach((v,i)=>x.lineTo(L+(R-L-20)*i/200,B-(B-T-8)*v/mx));x.lineTo(R-20,B);x.closePath();x.fill();x.stroke();txt(x,"0",L,B+16,{a:"center",c:col("--mut"),size:12});txt(x,"E_max = "+de(Q,3)+" MeV",R-20,B+16,{a:"center",w:700,size:12})}
+ else{const px=L+(R-L)*.6;x.strokeStyle=t=="a"?col("--al"):col("--ga");x.lineWidth=5;x.beginPath();x.moveTo(px,B);x.lineTo(px,T+12);x.stroke();txt(x,c.E,px,T+4,{a:"center",w:700,size:13})}});
+tasks("zerfallsarten",[
+ {l:1,h:"α-Zerfall",p:"Beobachte Ra-226. Was verlässt den Kern? Welches Element entsteht? Wie viele Plätze rückt es im Periodensystem nach vorne?",set:()=>{$$("[data-zt]")[0].click()}},
+ {l:1,h:"Woher kommt das Elektron?",p:"Wähle β⁻ mit C-14 und schalte die Zeitlupe ein. Beobachte das markierte Nukleon. War das Elektron vorher im Kern?",set:()=>{$$("[data-zt]")[1].click();Zs.slow=true;$("#zSlow").setAttribute("aria-pressed",true)}},
+ {l:1,h:"γ ändert nichts?",p:"Wähle γ. Was ändert sich am Kern, was nicht? Warum taucht γ-Strahlung oft zusammen mit α oder β auf?",set:()=>{$$("[data-zt]")[3].click()}},
+ {l:1,h:"Gleichungen ergänzen",p:"Schreibe die Zerfallsgleichungen für Am-241 (α), Sr-90 (β⁻) und Na-22 (β⁺) auf und kontrolliere mit der Simulation."},
+ {l:2,h:"Bilanz prüfen",p:"Kontrolliere für jedes Beispiel in der Bilanz-Tabelle: Bleiben Ladung und Nukleonenzahl erhalten? Wie ist es beim Elektroneneinfang?"},
+ {l:2,h:"PET-Untersuchung",p:"Wähle F-18. Was passiert mit dem Positron? Warum kann ein Detektorring daraus den Ort im Körper bestimmen?",set:()=>{$$("[data-zt]")[2].click()}},
+ {l:3,h:"Das fehlende Teilchen",p:"Vergleiche das Spektrum von α und β⁻. Warum spricht das kontinuierliche β-Spektrum für ein drittes Teilchen? Wie viel Energie trägt das Neutrino, wenn das Elektron 0,05 MeV hat (C-14)?",set:()=>{$$("[data-zt]")[1].click()}},
+ {l:3,h:"Energie aus Masse",p:"Berechne die Energie beim α-Zerfall von Ra-226 aus den Atommassen: m(Ra-226) = 226,02541 u, m(Rn-222) = 222,01758 u, m(He-4) = 4,00260 u; 1 u ≙ 931,5 MeV."}
+]);
+
+/* ======================= 4 ZERFALLSGESETZ ======================= */
+const G={mode:"k",N0:400,T:10,run:false,t:0,alive:null,dt:null,face:null,flash:null,rec:[],dec:[],watch:-1,acc:0};
+const SPD=[.25,.5,1,2,5];
+function gReset(){G.N0=+$("#gN0").value;G.T=G.mode=="w"?Math.log(.5)/Math.log(5/6):+$("#gTh").value;G.t=0;G.alive=new Uint8Array(G.N0).fill(1);G.dt=new Float64Array(G.N0).fill(-1);G.face=new Uint8Array(G.N0);G.flash=new Float32Array(G.N0);G.rec=[{t:0,N:G.N0}];G.dec=[];G.watch=-1;G.run=false;$("#gRun").textContent="Start";gUpd();gg.redraw();gp.redraw();ga.redraw()}
+function gCount(){let n=0;for(let i=0;i<G.N0;i++)n+=G.alive[i];return n}
+function gStepW(){if(G.mode!="w")return;G.t+=1;for(let i=0;i<G.N0;i++)if(G.alive[i]){const f=1+Math.floor(Math.random()*6);G.face[i]=f;if(f==6){G.alive[i]=0;G.dt[i]=G.t;G.flash[i]=1;G.dec.push(G.t)}}G.rec.push({t:G.t,N:gCount()})}
+function gStepK(dt){const p=1-Math.pow(.5,dt/G.T);for(let i=0;i<G.N0;i++)if(G.alive[i]&&Math.random()<p){G.alive[i]=0;const td=G.t+Math.random()*dt;G.dt[i]=td;G.flash[i]=1;G.dec.push(td)}G.t+=dt}
+function gTick(dtr){for(let i=0;i<G.N0;i++)if(G.flash[i]>0)G.flash[i]=Math.max(0,G.flash[i]-dtr*1.5);if(!G.run)return;const s=SPD[$("#gSp").value];
+ if(G.mode=="w"){G.acc+=dtr*s;if(G.acc>.7){G.acc=0;gStepW()}}else{const dt=dtr*s;gStepK(dt);const last=G.rec[G.rec.length-1];if(G.t-last.t>=G.T/20)G.rec.push({t:G.t,N:gCount()})}
+ const n=gCount();if(n==0||G.t>G.T*14){G.run=false;$("#gRun").textContent="Weiter"}gUpd()}
+function gHalf(){const h=G.N0/2;for(let i=1;i<G.rec.length;i++)if(G.rec[i].N<=h){const a=G.rec[i-1],b=G.rec[i];return a.t+(a.N-h)/(a.N-b.N||1)*(b.t-a.t)}return null}
+function gFit(){const P=G.rec.filter(r=>r.N>Math.max(3,G.N0*.04));if(P.length<4)return null;let sx=0,sy=0,sxx=0,sxy=0;P.forEach(r=>{const y=Math.log(r.N);sx+=r.t;sy+=y;sxx+=r.t*r.t;sxy+=r.t*y});const n=P.length,k=(n*sxy-sx*sy)/(n*sxx-sx*sx);return{k,b:(sy-k*sx)/n}}
+const unit=()=>G.mode=="w"?" Würfe":" s";
+function gUpd(){const n=gCount();$("#gN").textContent=n.toLocaleString("de-AT");$("#gT").textContent=(G.mode=="w"?G.t:de(G.t,3))+unit();const h=gHalf();$("#gTm").textContent=h?de(h,3)+unit():"–";const f=gFit();$("#gTf").textContent=f&&f.k<0?de(-Math.LN2/f.k,3)+unit()+` (λ = ${de(-f.k,3)}${G.mode=="w"?" pro Wurf":" s⁻¹"})`:"–";
+ $("#gThO").textContent=G.T+" s";$("#gSpO").textContent=SPD[$("#gSp").value]+"×";
+ if(G.watch>=0){const i=G.watch;$("#gWatch").innerHTML=G.alive[i]?`Kern Nr. ${i+1} beobachtet: <b>noch nicht zerfallen</b> (Alter ${G.mode=="w"?G.t:de(G.t,3)}${unit()}).`:`Kern Nr. ${i+1} ist nach <b>${G.mode=="w"?G.dt[i]:de(G.dt[i],3)}${unit()}</b> zerfallen. Ein anderer Kern zerfällt zu einer ganz anderen Zeit – probiere es aus.`}gp.redraw();ga.redraw()}
+const gg=canv("gGrid",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);if(!G.alive)return;const n=Math.ceil(Math.sqrt(G.N0)),cs=Math.min(W,H)/n,ox=(W-cs*n)/2,oy=(H-cs*n)/2;o.geo={n,cs,ox,oy};
+ const ac=col(G.mode=="w"?"--card":"--al"),dc=alpha(col("--mut"),.22),fc=col("--bp");
+ for(let i=0;i<G.N0;i++){const X=ox+(i%n)*cs,Y=oy+Math.floor(i/n)*cs,g=cs>8?1.5:cs>4?.6:0;
+  x.fillStyle=G.alive[i]?ac:(G.flash[i]>0?alpha(fc,.3+.7*G.flash[i]):dc);
+  if(G.mode=="w"&&cs>14){x.beginPath();x.roundRect(X+g,Y+g,cs-2*g,cs-2*g,cs*.18);x.fill();if(G.alive[i]||G.flash[i]>0){x.strokeStyle=col("--line");x.lineWidth=1;x.stroke();const f=G.face[i];if(f)pips(x,X+cs/2,Y+cs/2,cs*.7,f,G.alive[i]?col("--ink"):"#fff")}}
+  else if(cs>6){x.beginPath();x.arc(X+cs/2,Y+cs/2,cs/2-g,0,7);x.fill()}else x.fillRect(X,Y,cs-g,cs-g);
+  if(i==G.watch){x.strokeStyle=col("--acc");x.lineWidth=3;x.strokeRect(X,Y,cs,cs)}}});
+function pips(x,cx,cy,s,f,c){const P={1:[[0,0]],2:[[-1,-1],[1,1]],3:[[-1,-1],[0,0],[1,1]],4:[[-1,-1],[1,-1],[-1,1],[1,1]],5:[[-1,-1],[1,-1],[0,0],[-1,1],[1,1]],6:[[-1,-1],[1,-1],[-1,0],[1,0],[-1,1],[1,1]]};x.fillStyle=c;P[f].forEach(([a,b])=>{x.beginPath();x.arc(cx+a*s*.3,cy+b*s*.3,s*.09,0,7);x.fill()})}
+gg.c.addEventListener("click",e=>{const g=gg.geo;if(!g)return;const i=Math.floor((e.offsetY-g.oy)/g.cs)*g.n+Math.floor((e.offsetX-g.ox)/g.cs);if(i>=0&&i<G.N0){G.watch=i;gUpd();gg.redraw()}});
+const gp=canv("gPlot",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);if(!G.alive)return;const lg=$("#gLog").checked&&document.body.dataset.lvl>2;const L=52,B=H-34,T=30,R=W-12;const tmax=Math.max(G.T*5,G.t*1.05);
+ const X=t=>L+t/tmax*(R-L),Y=N=>lg?B-(Math.log(Math.max(N,.5))-Math.log(.5))/(Math.log(G.N0)-Math.log(.5))*(B-T):B-N/G.N0*(B-T);
+ x.strokeStyle=col("--line");x.lineWidth=1;x.beginPath();x.moveTo(L,T);x.lineTo(L,B);x.lineTo(R,B);x.stroke();
+ if($("#gHalf").checked){x.setLineDash([3,4]);x.strokeStyle=alpha(col("--mut"),.7);for(let k=1;k<=4;k++){const y=Y(G.N0/2**k),xx=X(G.T*k);if(xx>R)break;x.beginPath();x.moveTo(L,y);x.lineTo(xx,y);x.lineTo(xx,B);x.stroke();txt(x,k==1?"T½":k+"·T½",xx,B+12,{a:"center",c:col("--mut"),size:12});txt(x,"N₀/"+2**k,L-4,y,{a:"right",c:col("--mut"),size:12})}x.setLineDash([])}
+ txt(x,lg?"ln N":"N",L,T-14,{a:"center",c:col("--mut"),size:12});txt(x,G.N0,L-4,Y(G.N0),{a:"right",c:col("--mut"),size:12});txt(x,"Zeit"+(G.mode=="w"?" (Würfe)":" (s)")+" →",R,B+26,{a:"right",c:col("--mut"),size:12});
+ if($("#gTheo").checked){x.strokeStyle=col("--acc");x.lineWidth=2;x.setLineDash([6,4]);x.beginPath();for(let i=0;i<=200;i++){const t=tmax*i/200;const y=Y(G.N0*Math.pow(.5,t/G.T));i?x.lineTo(X(t),y):x.moveTo(X(t),y)}x.stroke();x.setLineDash([])}
+ x.fillStyle=col("--bp");G.rec.forEach(r=>{x.beginPath();x.arc(X(r.t),Y(r.N),G.mode=="w"?4:2.5,0,7);x.fill()});
+ if(lg){const f=gFit();if(f){x.strokeStyle=col("--ink");x.lineWidth=1.5;x.beginPath();x.moveTo(X(0),Y(Math.exp(f.b)));x.lineTo(X(tmax),Y(Math.exp(f.b+f.k*tmax)));x.stroke()}}
+ txt(x,"Anzahl der unzerfallenen Kerne",L+20,T-14,{w:700,size:13})});
+const ga=canv("gAct",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);if(!G.alive)return;const hist=$("#gAsel").value=="h"&&document.body.dataset.lvl>2;const L=48,B=H-30,T=12,R=W-12;const tmax=Math.max(G.T*5,G.t*1.05);const bw=G.mode=="w"?1:G.T/4;const nb=Math.ceil(tmax/bw);const bins=new Array(nb).fill(0);
+ G.dec.forEach(t=>{const i=Math.floor((G.mode=="w"?t-1:t)/bw);if(i>=0&&i<nb)bins[i]++});const lam=Math.LN2/G.T;const th=i=>G.mode=="w"?G.N0*Math.pow(5/6,i)/6:G.N0*(Math.pow(.5,i*bw/G.T)-Math.pow(.5,(i+1)*bw/G.T));const mx=Math.max(th(0)*1.3,...bins,1);
+ x.strokeStyle=col("--line");x.beginPath();x.moveTo(L,T);x.lineTo(L,B);x.lineTo(R,B);x.stroke();
+ const cur=G.mode=="w"?G.t:Math.floor(G.t/bw);for(let i=0;i<nb;i++){if(!hist&&i>=cur)break;const X0=L+i*bw/tmax*(R-L),w=bw/tmax*(R-L);const h=bins[i]/mx*(B-T);x.fillStyle=alpha(col(hist?"--al":"--bp"),.8);x.fillRect(X0+1,B-h,Math.max(1,w-2),h)}
+ x.strokeStyle=col("--acc");x.lineWidth=2;x.setLineDash([5,4]);x.beginPath();for(let i=0;i<nb;i++){const X0=L+(i+.5)*bw/tmax*(R-L),y=B-th(i)/mx*(B-T);i?x.lineTo(X0,y):x.moveTo(X0,y)}x.stroke();x.setLineDash([]);
+ txt(x,Math.round(mx),L-4,T,{a:"right",c:col("--mut"),size:12});txt(x,"Zeit →",R,B+16,{a:"right",c:col("--mut"),size:12});
+ $("#gAT").textContent=hist?"Wann sind die Kerne zerfallen? (Häufigkeit der Lebensdauern)":`Aktivität: Zerfälle pro ${G.mode=="w"?"Wurf":de(bw,3)+" s"}`;
+ txt(x,hist?"Exponentialverteilung – auch die Lebensdauern folgen dem Zerfallsgesetz":"gestrichelt: erwartet λ·N·Δt",L+8,T+6,{c:col("--mut"),size:12})});
+$("#gAsel").onchange=()=>ga.redraw();
+$$("[data-gm]").forEach(b=>b.onclick=()=>{G.mode=b.dataset.gm;$$("[data-gm]").forEach(q=>q.setAttribute("aria-pressed",q==b));$("#gTbox").style.display=G.mode=="w"?"none":"";if(G.mode=="w"&&+$("#gN0").value>400)$("#gN0").value="36";gReset()});
+$("#gN0").onchange=gReset;$("#gTh").oninput=()=>{$("#gThO").textContent=$("#gTh").value+" s";if(G.t==0)gReset()};$("#gTh").onchange=gReset;$("#gSp").oninput=gUpd;
+$("#gRun").onclick=()=>{if(G.mode=="w"&&!G.run){}G.run=!G.run;$("#gRun").textContent=G.run?"Pause":"Weiter"};
+$("#gStep").onclick=()=>{if(G.mode=="w")gStepW();else{gStepK(G.T/4);G.rec.push({t:G.t,N:gCount()})}gUpd()};$("#gRes").onclick=gReset;
+["gTheo","gHalf","gLog"].forEach(i=>$("#"+i).onchange=()=>gp.redraw());
+const gSet=(m,n,T)=>{$$("[data-gm]").find(b=>b.dataset.gm==m).click();$("#gN0").value=n;if(T)$("#gTh").value=T;gReset()};
+tasks("zerfallsgesetz",[
+ {l:1,h:"Würfeln wie ein Atomkern",p:"Wähle das Würfelmodell mit 36 Würfeln. Würfle Schritt für Schritt. Nach wie vielen Würfen ist etwa die Hälfte übrig? Und nach wie vielen ein Viertel?",set:()=>gSet("w",36)},
+ {l:1,h:"Halbwertszeit messen",p:"Starte mit 400 Kernen und T½ = 10 s. Lies im Diagramm ab, wann noch 200, 100 und 50 Kerne übrig sind. Was fällt dir an den Zeitabständen auf?",set:()=>gSet("k",400,10)},
+ {l:1,h:"Ein einzelner Kern",p:"Klicke einen Kern im Raster an und starte. Wann zerfällt er? Wiederhole mit „Neu“ und einem anderen Kern. Kann man das vorhersagen?",set:()=>gSet("k",36,10)},
+ {l:1,h:"Wenige gegen viele",p:"Vergleiche 36 und 6400 Kerne mit gleicher Halbwertszeit. Bei welcher Anzahl folgen die Punkte der Kurve besser? Warum?",set:()=>gSet("k",6400,10)},
+ {l:2,h:"Aktivität",p:"Beobachte das Aktivitätsdiagramm. Wie viele Zerfälle gibt es am Anfang, wie viele nach einer Halbwertszeit? Begründe, warum die Aktivität genauso abnimmt wie N.",set:()=>gSet("k",1600,10)},
+ {l:2,h:"Tabelle anlegen",p:"Notiere N nach 0, 10, 20, 30, 40 s (T½ = 10 s, 1600 Kerne). Berechne jeweils N/N₀ und vergleiche mit ½, ¼, ⅛, 1/16.",set:()=>gSet("k",1600,10)},
+ {l:3,h:"Zerfallskonstante bestimmen",p:"Schalte die logarithmische Achse ein. Lies die Steigung der Ausgleichsgerade ab und berechne T½ = ln 2 / λ. Vergleiche mit dem eingestellten Wert.",set:()=>{gSet("k",6400,20);$("#gLog").checked=true;gp.redraw()}},
+ {l:3,h:"Lebensdauer-Verteilung",p:"Wechsle auf „Lebensdauern“ und lass alle Kerne zerfallen. Welche Form hat die Verteilung? Bestimme die mittlere Lebensdauer τ und vergleiche mit 1,44 · T½.",set:()=>{gSet("k",6400,10);$("#gAsel").value="h";ga.redraw()}}
+]);
+
+/* ======================= 5 ZERFALLSREIHEN ======================= */
+const CH={
+ u238:{n:"Uran-Radium-Reihe (4n+2)",m:[["U",92,238],["Th",90,234],["Pa",91,234,"m"],["U",92,234],["Th",90,230],["Ra",88,226],["Rn",86,222],["Po",84,218],["Pb",82,214],["Bi",83,214],["Po",84,214],["Pb",82,210],["Bi",83,210],["Po",84,210],["Pb",82,206]],br:{}},
+ th232:{n:"Thorium-Reihe (4n)",m:[["Th",90,232],["Ra",88,228],["Ac",89,228],["Th",90,228],["Ra",88,224],["Rn",86,220],["Po",84,216],["Pb",82,212],["Bi",83,212],["Po",84,212],["Tl",81,208],["Pb",82,208]],br:{8:[[9,.6406],[10,.3594]],9:[[11,1]],10:[[11,1]]}},
+ u235:{n:"Uran-Actinium-Reihe (4n+3)",m:[["U",92,235],["Th",90,231],["Pa",91,231],["Ac",89,227],["Th",90,227],["Fr",87,223],["Ra",88,223],["Rn",86,219],["Po",84,215],["Pb",82,211],["Bi",83,211],["Tl",81,207],["Pb",82,207]],br:{3:[[4,.9862],[5,.0138]],4:[[6,1]],5:[[6,1]]}},
+ np237:{n:"Neptunium-Reihe (4n+1)",m:[["Np",93,237],["Pa",91,233],["U",92,233],["Th",90,229],["Ra",88,225],["Ac",89,225],["Fr",87,221],["At",85,217],["Bi",83,213],["Po",84,213],["Tl",81,209],["Pb",82,209],["Bi",83,209]],br:{8:[[9,.978],[10,.022]],9:[[11,1]],10:[[11,1]]}}};
+const TLO=-6,THI=18,NS=1400;const tAt=i=>10**(TLO+(THI-TLO)*i/NS);
+function chainBuild(k){const c=CH[k];if(c.hist)return c;const n=c.m.length;c.mem=c.m.map((q,i)=>{const Z=q[1],A=q[2];const ce=info(Z,A-Z);const last=i==n-1;const T=last?Infinity:(ce&&ce.T)||Infinity;return{Z,A,meta:q[3],T,lam:isFinite(T)?Math.LN2/T:0,mode:last?"s":(ce?ce.mode:"s"),d:c.br[i]||(last?[]:[[i+1,1]])}});
+ const N=new Float64Array(n);N[0]=1;c.hist=[Float64Array.from(N)];let t=tAt(0);
+ for(let s=1;s<=NS;s++){const t2=tAt(s),dt=t2-t;const In=new Float64Array(n);for(let i=0;i<n;i++){const m=c.mem[i],old=N[i];let nw;if(m.lam>0){const e=Math.exp(-m.lam*dt);nw=old*e+(In[i]/dt)*(-Math.expm1(-m.lam*dt))/m.lam}else nw=old+In[i];const out=old+In[i]-nw;N[i]=nw;m.d.forEach(([j,f])=>In[j]+=out*f)}c.hist.push(Float64Array.from(N));t=t2}return c}
+const R5={ch:"u238",si:600,view:"n",sel:-1,play:false};
+const rm=canv("rMap",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);if(R5.ch=="mt")return;const c=chainBuild(R5.ch);const z0=80,z1=93,n0=123,n1=147;const cs=Math.min((W-40)/(n1-n0+1),(H-34)/(z1-z0+1));const ox=30+((W-40)-(n1-n0+1)*cs)/2,oy=8+((H-34)-(z1-z0+1)*cs)/2;
+ const X=N=>ox+(N-n0)*cs,Y=Z=>oy+(z1-Z)*cs;for(let Z=z0;Z<=z1;Z++){txt(x,sym(Z),ox-6,Y(Z)+cs/2,{a:"right",c:col("--mut"),size:12,w:700});for(let N=n0;N<=n1;N++){x.fillStyle=col("--grid");x.fillRect(X(N)+1,Y(Z)+1,cs-2,cs-2)}}
+ for(let N=n0;N<=n1;N+=4)txt(x,N,X(N)+cs/2,H-10,{a:"center",c:col("--mut"),size:12});txt(x,"N →",W-6,H-10,{a:"right",c:col("--mut"),size:12});
+ const h=c.hist[R5.si];const val=c.mem.map((m,i)=>R5.view=="a"?m.lam*h[i]:h[i]);const vmax=Math.max(...val);
+ c.mem.forEach((m,i)=>m.d.forEach(([j])=>{const q=c.mem[j];const fx=X(m.A-m.Z)+cs/2,fy=Y(m.Z)+cs/2,tx=X(q.A-q.Z)+cs/2,ty=Y(q.Z)+cs/2;x.strokeStyle=alpha(col("--ink"),.55);x.lineWidth=2;x.beginPath();x.moveTo(fx,fy);x.lineTo(tx,ty);x.stroke()}));
+ c.mem.forEach((m,i)=>{const px=X(m.A-m.Z),py=Y(m.Z);x.fillStyle=mcol(m.mode);x.fillRect(px+1,py+1,cs-2,cs-2);const f=vmax>0?Math.max(0,Math.min(1,(Math.log10(val[i]/vmax)+6)/6)):0;if(f>0){x.fillStyle=alpha(col("--acc"),.25+.6*f);x.fillRect(px+1,py+cs*(1-f)+1,cs-2,cs*f-2)}
+  if(i==R5.sel){x.strokeStyle=col("--acc");x.lineWidth=3;x.strokeRect(px-1,py-1,cs+2,cs+2)}if(cs>=22){const tc=m.mode=="s"?col("--stabt"):"#111";txt(x,`${sym(m.Z)}${m.A}${m.meta||""}`,px+cs/2,py+cs*.35,{a:"center",w:700,size:Math.min(12,cs*.3),c:tc});if(cs>=34)txt(x,isFinite(m.T)?fmtT(m.T).replace(" Jahre"," a").replace(" Tage"," d"):"stabil",px+cs/2,py+cs*.7,{a:"center",size:Math.min(11,cs*.22),c:tc})}});
+ txt(x,"Füllhöhe: "+(R5.view=="a"?"Aktivität":"Menge")+" (log.)",ox,oy-2>12?oy-2:H-24,{c:col("--mut"),size:12,b:"bottom"})});
+const tLabel=s=>{const y=s/YR;if(s<1)return de(s*1e3,2)+" ms";if(s<120)return de(s,2)+" s";if(s<7200)return de(s/60,2)+" min";if(s<2*DY)return de(s/HR,2)+" h";if(y<1)return de(s/DY,2)+" Tage";if(y<1e3)return de(y,2)+" Jahre";if(y<1e6)return de(y/1e3,2)+" Tsd. Jahre";if(y<1e9)return de(y/1e6,2)+" Mio. Jahre";return de(y/1e9,2)+" Mrd. Jahre"};
+function rUpd(){const mt=R5.ch=="mt";["rMapF","rBarsC","rChainCtl"].forEach(i=>$("#"+i).style.display=mt?"none":"");$("#rPlotF").style.display=mt?"none":"";$("#rMTF").style.display=mt?"":"none";$("#rMTCtl").style.display=mt?"":"none";
+ if(mt){rMT();return}const c=chainBuild(R5.ch);const h=c.hist[R5.si];const t=tAt(R5.si);$("#rTO").textContent=tLabel(t);
+ const a0=c.mem[0].lam;const vals=c.mem.map((m,i)=>R5.view=="a"?m.lam*h[i]/a0:h[i]);
+ $("#rBarT").textContent=R5.view=="a"?"Aktivität jedes Glieds":"Anteil der Atome";$("#rBarS").textContent=R5.view=="a"?"bezogen auf die Anfangsaktivität der Mutter":"logarithmische Balken";
+ $("#rBars").innerHTML=c.mem.map((m,i)=>{const v=vals[i];const f=v>0?Math.max(0,Math.min(1,(Math.log10(v)+12)/12.3)):0;return`<div class="bar${i==R5.sel?" on":""}" data-i="${i}"><span>${nucH(m.Z,m.A,m.meta)}</span><span class="t">${isFinite(m.T)?fmtT(m.T).replace(" Jahre"," a"):"stabil"}</span><span class="tr"><i style="width:${f*100}%;background:${MODE[m.mode][1]}"></i></span><span class="v">${v<1e-40?"0":R5.view=="a"?sci(v,2):v>=.001?de(v*100,3)+" %":sci(v,2)}</span></div>`}).join("");
+ const m0=c.mem[0];$("#rInfo").innerHTML=`<b>${c.n}</b><br>Start: ${nucS(m0.Z,m0.A)} (T½ = ${fmtT(m0.T)}), Ende: ${nucS(c.mem[c.mem.length-1].Z,c.mem[c.mem.length-1].A)}. ${c.mem.filter(q=>q.mode=="a").length} α-Strahler, ${c.mem.filter(q=>q.mode=="b-").length} β⁻-Strahler.${R5.sel>=0?`<br><br><b>${nucS(c.mem[R5.sel].Z,c.mem[R5.sel].A)}</b>: ${MODE[c.mem[R5.sel].mode][0]}, T½ ${fmtT(c.mem[R5.sel].T)}. ${info(c.mem[R5.sel].Z,c.mem[R5.sel].A-c.mem[R5.sel].Z)?.note||""}`:""}`;
+ rm.redraw();rp.redraw()}
+$("#rBars").onclick=e=>{const b=e.target.closest(".bar");if(b){R5.sel=+b.dataset.i==R5.sel?-1:+b.dataset.i;rUpd()}};
+$("#rCh").onchange=e=>{R5.ch=e.target.value;R5.sel=-1;rUpd()};$("#rT").oninput=e=>{R5.si=Math.round(+e.target.value/1000*NS);rUpd()};
+$("#rPlay").onclick=()=>{R5.play=!R5.play;$("#rPlay").textContent=R5.play?"Pause":"Abspielen";if(R5.play&&R5.si>=NS-2){R5.si=0}};
+$$("[data-rv]").forEach(b=>b.onclick=()=>{R5.view=b.dataset.rv;$$("[data-rv]").forEach(q=>q.setAttribute("aria-pressed",q==b));rUpd()});
+const TT=[[1,"1 s"],[60,"1 min"],[HR,"1 h"],[DY,"1 d"],[YR,"1 a"],[1e3*YR,"1000 a"],[1e6*YR,"1 Mio. a"],[1e9*YR,"1 Mrd. a"]];
+const rp=canv("rPlot",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);if(R5.ch=="mt")return;const c=chainBuild(R5.ch);const L=48,B=H-30,T=12,R=W-12;const yv=R5.view=="a";const y0=yv?-8:-12,y1=yv?1:0;const X=i=>L+i/NS*(R-L),Y=v=>B-(Math.log10(Math.max(v,10**(y0-1)))-y0)/(y1-y0)*(B-T);
+ x.strokeStyle=col("--line");x.beginPath();x.moveTo(L,T);x.lineTo(L,B);x.lineTo(R,B);x.stroke();
+ TT.forEach(([s,l])=>{const i=(Math.log10(s)-TLO)/(THI-TLO)*NS;const px=X(i);x.strokeStyle=col("--grid");x.beginPath();x.moveTo(px,T);x.lineTo(px,B);x.stroke();if(W>480||["1 s","1 a","1 Mio. a","1 Mrd. a"].includes(l))txt(x,l,px,B+14,{a:"center",c:col("--mut"),size:12})});
+ for(let e=y0;e<=y1;e+=yv?3:4)txt(x,"10"+sup(e),L-4,Y(10**e),{a:"right",c:col("--mut"),size:12});
+ x.save();x.beginPath();x.rect(L,T-2,R-L,B-T+2);x.clip();const a0=c.mem[0].lam;c.mem.forEach((m,i)=>{if(yv&&m.lam==0)return;x.strokeStyle=mcol(m.mode);x.lineWidth=i==R5.sel?3.5:1.6;x.globalAlpha=R5.sel<0||i==R5.sel?1:.25;x.beginPath();let st=false;for(let s=0;s<=NS;s+=2){const v=yv?m.lam*c.hist[s][i]/a0:c.hist[s][i];if(v<10**(y0-1)){st=false;continue}st?x.lineTo(X(s),Y(v)):x.moveTo(X(s),Y(v));st=true}x.stroke()});x.globalAlpha=1;x.restore();
+ x.strokeStyle=col("--acc");x.lineWidth=2;x.beginPath();x.moveTo(X(R5.si),T);x.lineTo(X(R5.si),B);x.stroke();txt(x,yv?"Aktivitäten aller Glieder (relativ zur Anfangsaktivität)":"Anteil der Atome jedes Glieds",L+6,T+6,{w:700,size:13})});
+/* Mutter-Tochter */
+const MTP=[[65.9,6.01,"Mo-99","Tc-99m"],[1600*8766,91.76,"Ra-226","Rn-222"],[28.8*8766,64.0,"Sr-90","Y-90"],[2,20,"Mutter","Tochter"]];
+function rMTpreset(i){if(i<4){$("#rT1").value=Math.log10(MTP[i][0]);$("#rT2").value=Math.log10(MTP[i][1])}rMT()}
+$("#rMTp").onchange=e=>rMTpreset(+e.target.value);["rT1","rT2"].forEach(i=>$("#"+i).oninput=()=>{$("#rMTp").value="4";rMT()});$("#rMTa").onchange=()=>rMT();
+const hl=h=>{const y=h/8766;if(h<1)return de(h*60,3)+" min";if(h<48)return de(h,3)+" h";if(y<1)return de(h/24,3)+" Tage";return de(y,3)+" Jahre"};
+function rMT(){const T1=10**$("#rT1").value,T2=10**$("#rT2").value;const p=+$("#rMTp").value;const n1=p<4?MTP[p][2]:"Mutter",n2=p<4?MTP[p][3]:"Tochter";$("#rT1O").textContent=hl(T1);$("#rT2O").textContent=hl(T2);
+ const r=T1/T2;let k;if(r>100)k=["Säkulares Gleichgewicht","Die Mutter lebt viel länger. Nach einigen Halbwertszeiten der Tochter sind beide Aktivitäten gleich groß und bleiben es lange."];else if(r>1.05)k=["Transientes Gleichgewicht","Die Mutter lebt etwas länger. Die Tochteraktivität überholt die der Mutter und nimmt dann mit der Halbwertszeit der Mutter ab. So funktioniert der Tc-99m-Generator im Spital: Man „melkt“ täglich das Tochternuklid."];else if(r<0.95)k=["Kein Gleichgewicht","Die Mutter zerfällt schneller als die Tochter. Bald ist nur noch Tochter da, die mit ihrer eigenen Halbwertszeit zerfällt."];else k=["Gleiche Halbwertszeiten","Grenzfall"];
+ $("#rMTi").innerHTML=`<b>${k[0]}</b><br>${k[1]}`;if(R5.ch=="mt")$("#rInfo").innerHTML=`T½(${n1}) : T½(${n2}) = ${sci(r,3)}`;mtc.redraw()}
+const mtc=canv("rMT",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);if(R5.ch!="mt")return;const T1=10**$("#rT1").value,T2=10**$("#rT2").value;const l1=Math.LN2/T1,l2=Math.LN2/T2;const p=+$("#rMTp").value;const n1=p<4?MTP[p][2]:"Mutter",n2=p<4?MTP[p][3]:"Tochter";const act=$("#rMTa").checked;
+ const tm=Math.max(8*T2,Math.min(3*T1,50*T2));const N1=t=>Math.exp(-l1*t),N2=t=>Math.abs(l2-l1)<1e-12*l1?l1*t*Math.exp(-l1*t):l1/(l2-l1)*(Math.exp(-l1*t)-Math.exp(-l2*t));
+ const f1=t=>act?l1*N1(t)/l1:N1(t),f2=t=>act?l2*N2(t)/l1:N2(t);let mx=1;for(let i=0;i<=300;i++){const t=tm*i/300;mx=Math.max(mx,f2(t))}mx*=1.08;
+ const L=48,B=H-32,T=14,R=W-14;const X=t=>L+t/tm*(R-L),Y=v=>B-v/mx*(B-T);x.strokeStyle=col("--line");x.beginPath();x.moveTo(L,T);x.lineTo(L,B);x.lineTo(R,B);x.stroke();
+ for(let k=0;k<=4;k++){const t=tm*k/4;txt(x,hl(t),X(t),B+14,{a:k==0?"left":k==4?"right":"center",c:col("--mut"),size:12})}txt(x,"1",L-4,Y(1),{a:"right",c:col("--mut"),size:12});
+ [[f1,col("--al"),n1],[f2,col("--bm"),n2]].forEach(([f,c,n],j)=>{x.strokeStyle=c;x.lineWidth=3;x.beginPath();for(let i=0;i<=300;i++){const t=tm*i/300;i?x.lineTo(X(t),Y(f(t))):x.moveTo(X(t),Y(f(t)))}x.stroke();const tt=tm*(j?.62:.82);txt(x,(act?"Aktivität ":"Kerne ")+n,X(tt),Y(f(tt))+(j?-16:16),{a:"center",w:700,size:13,c:c})});
+ if(act){x.strokeStyle=alpha(col("--ink"),.5);x.setLineDash([4,4]);x.lineWidth=1.5;x.beginPath();for(let i=0;i<=300;i++){const t=tm*i/300;const v=f1(t)+f2(t);i?x.lineTo(X(t),Y(v)):x.moveTo(X(t),Y(v))}x.stroke();x.setLineDash([]);txt(x,"Summe",R-4,Y(f1(tm)+f2(tm))-10,{a:"right",c:col("--mut"),size:12})}
+ txt(x,act?"Aktivität (Anfangsaktivität der Mutter = 1)":"Anzahl (Anfangszahl der Mutter = 1)",L+6,T+4,{w:700,size:13})});
+tasks("zerfallsreihen",[
+ {l:1,h:"Von Uran zu Blei",p:"Folge der Uran-Radium-Reihe in der Karte. Wie viele Zwischenschritte gibt es? Welche zwei Zerfallsarten kommen vor?",set:()=>{$("#rCh").value="u238";R5.ch="u238";rUpd()}},
+ {l:1,h:"Radon entsteht",p:"Schiebe die Zeit von 1 s bis 1 Mio. Jahre. Ab wann ist Radon-222 vorhanden? Warum gibt es überall im Boden Radon, obwohl es nur 3,8 Tage Halbwertszeit hat?",set:()=>{$("#rCh").value="u238";R5.ch="u238";R5.sel=6;rUpd()}},
+ {l:1,h:"Vier Reihen",p:"Teile die Massenzahlen jeder Reihe durch 4. Welcher Rest bleibt? Warum kann ein Kern nie von einer Reihe in eine andere wechseln?"},
+ {l:1,h:"Wo ist das Neptunium?",p:"Wähle die Neptunium-Reihe und schiebe die Zeit auf 4,5 Mrd. Jahre (Alter der Erde). Wie viel Np-237 ist noch übrig?",set:()=>{$("#rCh").value="np237";R5.ch="np237";R5.si=Math.round((Math.log10(4.5e9*YR)-TLO)/(THI-TLO)*NS);$("#rT").value=R5.si/NS*1000;rUpd()}},
+ {l:2,h:"Säkulares Gleichgewicht",p:"Wähle „Aktivität“ und schiebe die Zeit auf 1 Mio. Jahre. Was fällt an den Balken der Uran-Reihe auf? Ab welcher Zeit sind alle gleich? Welches Glied bremst am meisten?",set:()=>{$("#rCh").value="u238";R5.ch="u238";R5.view="a";$$("[data-rv]")[1].click()}},
+ {l:2,h:"Tc-99m-Generator",p:"Wähle Mutter–Tochter mit Mo-99 → Tc-99m. Wann ist die Tc-Aktivität am größten? Warum liefert man Spitälern Mo-99 statt Tc-99m?",set:()=>{$("#rCh").value="mt";R5.ch="mt";$("#rMTp").value="0";rUpd();rMTpreset(0)}},
+ {l:2,h:"Drei Arten von Gleichgewicht",p:"Verändere die beiden Halbwertszeiten so, dass du nacheinander säkulares, transientes und kein Gleichgewicht erhältst. Beschreibe die Kurven.",set:()=>{$("#rCh").value="mt";R5.ch="mt";$("#rMTp").value="4";rUpd()}},
+ {l:3,h:"Verzweigung",p:"In der Thorium-Reihe verzweigt sich Bi-212. Klicke Po-212 und Tl-208 an und vergleiche ihre Anteile im Gleichgewicht. Wie hängen sie mit 64 % und 36 % zusammen?",set:()=>{$("#rCh").value="th232";R5.ch="th232";R5.view="a";$$("[data-rv]")[1].click()}},
+ {l:3,h:"Bleianteil als Uhr",p:"Lies in der Uran-Reihe ab, wie viel Pb-206 nach 1, 4,5 und 10 Mrd. Jahren entstanden ist. Wie könnte man daraus das Alter eines uranhaltigen Kristalls bestimmen?",set:()=>{$("#rCh").value="u238";R5.ch="u238";R5.sel=14;R5.view="n";$$("[data-rv]")[0].click()}}
+]);
+
+/* ======================= 6 STRAHLUNG ======================= */
+const S={src:"a",d:3,mat:"none",x:0,bg:true,snd:false,cnt:0,hist:[],parts:[],flash:0,tab:[],ac:null};
+const MAT={none:{n:"kein Absorber",max:0,u:"",rho:0},pap:{n:"Papier",max:10,u:"Blatt",rho:.8,step:.1},al:{n:"Aluminium",max:10,u:"mm",rho:2.7,step:.1},pb:{n:"Blei",max:60,u:"mm",rho:11.35,step:.5}};
+const SRCN={a:"Am-241 (α)",b:"Sr-90 (β)",g:"Co-60 (γ)",m:"Ra-226 (α, β, γ)",0:"keine"};
+function thick(){const m=MAT[S.mat];if(!m.max)return 0;return S.mat=="pap"?Math.round(S.x/100*m.max):Math.round(S.x/100*m.max/m.step)*m.step}
+function trans(type){const m=MAT[S.mat],t=thick();const cm=S.mat=="pap"?t*0.01:t/10;const mass=m.rho*cm;
+ if(type=="a"){const R=S.src=="m"?3.5:4.1;const air=S.d<R-.4?1:S.d>R+.4?0:(R+.4-S.d)/.8;return mass>0.0015?0:air}
+ if(type=="b"){const Rb=1.09;if(mass>=Rb)return 0;return Math.exp(-6.6*mass)*Math.exp(-0.008*S.d)}
+ const mu={pap:.08,al:.055,pb:.0588}[S.mat]||0;return Math.exp(-mu*mass)}
+function geo(){return((2+.6)/(S.d+.6))**2}
+const SR={a:{a:220},b:{b:180},g:{g:50},m:{a:110,b:70,g:30},0:{}};
+function rateOf(){let r=0;const g=geo();const sr=SR[S.src];for(const k in sr)r+=sr[k]*g*trans(k);return r+(S.bg?.4:0)}
+const sc=canv("sC",drawS);
+function sRange(){return S.d<=8?10:S.d<=20?25:50}
+function sGeom(W,H){const x0=60,scale=(W-150)/sRange();const xc=x0+S.d*scale;return{x0,scale,xc,y:H*.5,xa:x0+S.d*scale*.5}}
+function drawS(o){const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const g=sGeom(W,H);
+ x.strokeStyle=col("--line");x.lineWidth=1;x.beginPath();x.moveTo(20,H-34);x.lineTo(W-20,H-34);x.stroke();const rg=sRange(),stp=rg/10;for(let c=0;c<=rg;c+=stp){const px=g.x0+c*g.scale;x.beginPath();x.moveTo(px,H-34);x.lineTo(px,H-28);x.stroke();if(Math.round(c/stp)%2==0||W>600)txt(x,c,px,H-18,{a:"center",c:col("--mut"),size:12})}txt(x,"cm",W-20,H-18,{a:"right",c:col("--mut"),size:12});
+ S.parts.forEach(p=>{x.fillStyle=p.t=="a"?col("--al"):p.t=="b"?col("--bm"):col("--ga");x.globalAlpha=p.life;if(p.t=="g"){x.strokeStyle=x.fillStyle;x.lineWidth=2;x.beginPath();x.moveTo(p.x-8*Math.cos(p.a),p.y-8*Math.sin(p.a));x.lineTo(p.x,p.y);x.stroke()}else{x.beginPath();x.arc(p.x,p.y,p.t=="a"?3.8:2.3,0,7);x.fill()}});x.globalAlpha=1;
+ x.fillStyle=col("--stab");x.fillRect(g.x0-34,g.y-22,34,44);x.fillStyle=S.src=="0"?col("--mut"):col("--al");x.beginPath();x.arc(g.x0-2,g.y,7,0,7);x.fill();txt(x,"Quelle",g.x0-17,g.y-34,{a:"center",w:700,size:13});txt(x,SRCN[S.src],g.x0-17,g.y+36,{a:"center",c:col("--mut"),size:12});
+ const t=thick();if(t>0){const w=Math.max(3,S.mat=="pap"?t*1.2:t*g.scale/10);x.fillStyle=S.mat=="pap"?"#f4f0e6":S.mat=="al"?"#b9c2cc":"#5d6670";x.strokeStyle=col("--ink");x.lineWidth=1;x.fillRect(g.xa-w/2,g.y-60,w,120);x.strokeRect(g.xa-w/2,g.y-60,w,120);txt(x,MAT[S.mat].n+" "+de(t,3)+" "+MAT[S.mat].u,g.xa,g.y-72,{a:"center",w:700,size:13})}
+ const tw=74,th=26;x.fillStyle=S.flash>0?alpha(col("--bp"),.25+S.flash*.5):col("--card");x.strokeStyle=col("--ink");x.lineWidth=1.5;x.beginPath();x.roundRect(g.xc,g.y-th/2,tw,th,6);x.fill();x.stroke();x.fillStyle=col("--ink");x.fillRect(g.xc-3,g.y-th/2+3,3,th-6);txt(x,"Zählrohr",g.xc+tw/2,g.y-th/2-12,{a:"center",w:700,size:13})}
+function sTick(dt){const W=sc.w,H=sc.h;if(!W)return;const g=sGeom(W,H);const sr=SR[S.src];
+ for(const k in sr){const n=pois(dt*{a:30,b:40,g:30}[k]*(sr[k]/(S.src=="m"?110:200)));for(let i=0;i<n;i++){const a=(Math.random()-.5)*1.4;S.parts.push({t:k,x:g.x0,y:g.y,a,v:{a:9,b:22,g:40}[k]*g.scale*sRange()/10,life:1,dead:false,trav:0})}}
+ const t=thick(),w=Math.max(3,S.mat=="pap"?t*1.2:t*g.scale/10);
+ S.parts.forEach(p=>{if(p.dead){p.life-=dt*3;return}const st=p.v*dt;p.x+=Math.cos(p.a)*st;p.y+=Math.sin(p.a)*st;p.trav+=st;
+  if(p.t=="a"){const R=(S.src=="m"?3.5:4.1)*g.scale;if(p.trav>R*(.92+Math.random()*.16))p.dead=true}
+  if(!p.cross&&t>0&&p.x>=g.xa-w/2){p.cross=true;const m=MAT[S.mat];const cm=S.mat=="pap"?t*.01:t/10;const mass=m.rho*cm;let T=1;if(p.t=="a")T=0;else if(p.t=="b")T=mass>=1.09?0:Math.exp(-6.6*mass);else T=Math.exp(-({pap:.08,al:.055,pb:.0588}[S.mat])*mass);if(Math.random()>T){p.dead=true;p.x=g.xa-w/2}}
+  if(!p.dead&&p.x>=g.xc){if(Math.abs(p.y-g.y)<13)p.dead=true}});
+ S.parts=S.parts.filter(p=>p.life>0&&p.x<W+10&&p.y>-10&&p.y<H+10);
+ const r=rateOf();const k=pois(r*dt);if(k>0){S.cnt+=k;S.flash=1;if(S.snd)for(let i=0;i<Math.min(k,6);i++)click(i*0.004)}S.flash=Math.max(0,S.flash-dt*8);S.hist.push([performance.now(),k]);const now=performance.now();while(S.hist.length&&now-S.hist[0][0]>3000)S.hist.shift();
+ if(Math.random()<dt*4){const sum=S.hist.reduce((a,b)=>a+b[1],0);$("#sRate").textContent=de(sum/3,2)+" Impulse/s";}$("#sCnt").textContent=S.cnt.toLocaleString("de-AT");sc.redraw()}
+function click(delay){const a=S.ac;if(!a)return;const t=a.currentTime+delay;const b=a.createBuffer(1,200,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<200;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/25);const s=a.createBufferSource();s.buffer=b;const g=a.createGain();g.gain.value=.5;s.connect(g).connect(a.destination);s.start(t)}
+$("#sSnd").onclick=e=>{S.snd=!S.snd;e.target.setAttribute("aria-pressed",S.snd);if(S.snd&&!S.ac){try{S.ac=new (window.AudioContext||window.webkitAudioContext)()}catch(err){S.snd=false;e.target.setAttribute("aria-pressed",false)}}if(S.ac&&S.ac.state=="suspended")S.ac.resume()};
+function sUpd(){S.src=$("#sSrc").value;S.d=+$("#sD").value;S.mat=$("#sMat").value;S.x=+$("#sXv").value;S.bg=$("#sBg").checked;$("#sDO").textContent=de(S.d,3)+" cm";$("#sXbox").style.display=S.mat=="none"?"none":"";$("#sXO").textContent=de(thick(),3)+" "+MAT[S.mat].u;sc.redraw();sPl.redraw()}
+["sSrc","sD","sMat","sXv","sBg"].forEach(i=>$("#"+i).oninput=sUpd);
+$("#sMeas").onclick=()=>{const tm=+$("#sTm").value;const n=pois(rateOf()*tm);const t=thick();S.tab.push({src:S.src,mat:S.mat,x:t,d:S.d,tm,n,bg:S.bg});sTab()};
+$("#sClr").onclick=()=>{S.tab=[];sTab()};
+function sTab(){$("#sTab tbody").innerHTML=S.tab.map((r,i)=>{const rate=r.n/r.tm;const net=rate-(r.bg?.4:0);return`<tr><td>${i+1}</td><td>${SRCN[r.src]}</td><td>${r.mat=="none"?"–":MAT[r.mat].n+" "+de(r.x,3)+" "+MAT[r.mat].u}</td><td class="n">${de(r.d,3)} cm</td><td class="n">${r.tm} s</td><td class="n">${r.n}</td><td class="n">${de(rate,3)} /s</td><td class="n l3">${de(Math.max(0,net),3)} ± ${de(Math.sqrt(Math.max(r.n,1))/r.tm,2)} /s</td></tr>`}).join("");sPl.redraw()}
+$("#sCopy").onclick=async()=>{const rows=[["Nr","Quelle","Absorber","Dicke","Abstand_cm","Messzeit_s","Impulse","Zaehlrate_pro_s"]].concat(S.tab.map((r,i)=>[i+1,SRCN[r.src],MAT[r.mat].n,String(r.x).replace(".",","),String(r.d).replace(".",","),r.tm,r.n,String((r.n/r.tm).toFixed(3)).replace(".",",")]));const s=rows.map(r=>r.join("\t")).join("\n");try{await navigator.clipboard.writeText(s);$("#sCopyN").textContent="Kopiert – in Excel oder GeoGebra einfügen."}catch(e){$("#sCopyN").textContent="Kopieren hier nicht erlaubt."}};
+const sPl=canv("sPlot",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const mode=$("#sX").value;const P=S.tab.filter(r=>r.src==S.src&&(mode=="d"||r.mat==S.mat));const L=50,B=H-30,T=12,R=W-12;x.strokeStyle=col("--line");x.beginPath();x.moveTo(L,T);x.lineTo(L,B);x.lineTo(R,B);x.stroke();
+ txt(x,mode=="d"?"Abstand in cm →":"Dicke in "+(MAT[S.mat].u||"mm")+" →",(L+R)/2,B+18,{a:"center",c:col("--mut"),size:12});txt(x,"Impulse/s",L+4,T+2,{c:col("--mut"),size:12});
+ if(!P.length){txt(x,"Noch keine passenden Messungen – stelle ein und drücke „Messen“.",W/2,H/2,{a:"center",c:col("--mut"),size:13});return}
+ const xs=P.map(r=>mode=="d"?r.d:r.x),ys=P.map(r=>r.n/r.tm);const xm=Math.max(...xs)*1.1||1,ym=Math.max(...ys)*1.15||1;const X=v=>L+v/xm*(R-L),Y=v=>B-v/ym*(B-T);
+ txt(x,de(ym,2),L-4,T+8,{a:"right",c:col("--mut"),size:12});txt(x,de(xm,2),R,B+4,{a:"right",c:col("--mut"),size:12,b:"top"});
+ if(mode=="d"&&P.length>=2&&document.body.dataset.lvl>1){const ref=P.reduce((a,b)=>a.d<b.d?a:b);const k=(ref.n/ref.tm-(ref.bg?.4:0))*(ref.d+.6)**2;x.strokeStyle=col("--acc");x.setLineDash([5,4]);x.lineWidth=2;x.beginPath();for(let i=0;i<=100;i++){const d=Math.max(.5,xm*i/100);const v=k/(d+.6)**2+(ref.bg?.4:0);const py=Math.max(T,Y(v));i?x.lineTo(X(d),py):x.moveTo(X(d),py)}x.stroke();x.setLineDash([]);txt(x,"∝ 1/r²",R-6,T+14,{a:"right",c:col("--acc"),w:700,size:12})}
+ x.fillStyle=col("--bp");P.forEach((r,i)=>{x.beginPath();x.arc(X(xs[i]),Y(ys[i]),4.5,0,7);x.fill();if(document.body.dataset.lvl>2){const e=Math.sqrt(Math.max(r.n,1))/r.tm;x.strokeStyle=col("--bp");x.beginPath();x.moveTo(X(xs[i]),Y(ys[i]-e));x.lineTo(X(xs[i]),Y(ys[i]+e));x.stroke()}})});
+$("#sX").onchange=()=>sPl.redraw();
+const sB=canv("sB",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const B=+$("#sBv").value;$("#sBO").textContent=de(B,2)+" T";const sx=30,sy=H/2,sc2=(W-50)/0.3;
+ x.fillStyle=alpha(col("--acc"),.12);x.fillRect(sx+10,10,W-sx-20,H-20);x.fillStyle=alpha(col("--mut"),.45);for(let i=sx+30;i<W-20;i+=34)for(let j=26;j<H-14;j+=30){txt(x,"×",i,j,{a:"center",c:alpha(col("--mut"),.6),size:13})}
+ x.fillStyle=col("--stab");x.fillRect(sx-22,sy-10,22,20);
+ const track=(p,q,c,w,dash,lab)=>{x.strokeStyle=c;x.lineWidth=w;x.setLineDash(dash||[]);x.beginPath();x.moveTo(sx,sy);if(B==0||q==0){x.lineTo(W-14,sy)}else{const r=p/(0.2998*Math.abs(q)*B);const s=Math.sign(q);let px=sx,py=sy;for(let i=1;i<=400;i++){const L=i/400*0.6;const th=L/r;if(th>Math.PI){break}const X0=r*Math.sin(th),Y0=r*(1-Math.cos(th));px=sx+X0*sc2;py=sy-s*Y0*sc2;if(px>W-14||py<12||py>H-12)break;x.lineTo(px,py)}if(lab)txt(x,lab,Math.min(px+(Math.abs(py-sy)>H*.35?12:0),W-40),Math.max(16,Math.min(H-16,py+(s>0?-10:12))),{w:700,size:13,c})}x.stroke();x.setLineDash([])};
+ const pa=Math.sqrt(2*3727*5)/1000;track(pa,2,col("--al"),4,null,"α");[0.3,0.7,1.5,2.2].forEach((T,i)=>{const p=Math.sqrt(T*T+2*.511*T)/1000;track(p,-1,col("--bm"),2,null,i==3?"β⁻":null)});
+ if(document.body.dataset.lvl>2)[0.5,1.5].forEach((T,i)=>{const p=Math.sqrt(T*T+2*.511*T)/1000;track(p,1,col("--bp"),2,[5,4],i?"β⁺":null)});track(0,0,col("--ga"),2.5,[2,3]);txt(x,"γ",W-24,sy-10,{w:700,size:13,c:col("--ga")});txt(x,"B ⊗",W-20,22,{a:"right",w:700,size:13})});
+$("#sBv").oninput=()=>sB.redraw();
+const sSet=(src,d,mat,xp)=>{$("#sSrc").value=src;$("#sD").value=d;$("#sMat").value=mat;$("#sXv").value=xp;sUpd()};
+tasks("strahlung",[
+ {l:1,h:"Nullrate",p:"Wähle „keine Quelle“ und miss 60 s lang. Wie viele Impulse zählst du, obwohl kein Präparat da ist? Woher kommen sie?",set:()=>sSet("0",10,"none",0)},
+ {l:1,h:"Was hält α auf?",p:"Am-241 in 3 cm Abstand: Miss ohne Absorber, dann mit einem Blatt Papier. Vergrößere danach ohne Papier den Abstand auf 6 cm. Was beobachtest du?",set:()=>sSet("a",3,"none",0)},
+ {l:1,h:"β und Aluminium",p:"Sr-90 in 5 cm: Miss mit 0, 1, 2, 3 und 5 mm Aluminium. Ab welcher Dicke kommt fast nichts mehr durch?",set:()=>sSet("b",5,"al",10)},
+ {l:1,h:"γ und Blei",p:"Co-60 in 5 cm: Miss mit 0, 10, 20 und 30 mm Blei. Wird die γ-Strahlung jemals ganz gestoppt?",set:()=>sSet("g",5,"pb",0)},
+ {l:1,h:"Welche Strahlung ist das?",p:"Ra-226 sendet alle drei Strahlungsarten aus. Plane eine Messreihe mit Papier, Aluminium und Blei, mit der du nachweist, dass α, β und γ vorkommen.",set:()=>sSet("m",3,"none",0)},
+ {l:2,h:"Abstandsgesetz",p:"Co-60 ohne Absorber: Miss bei 5, 10, 20 und 40 cm. Stelle das Diagramm auf „über Abstand“. Halbiert sich die Zählrate bei doppeltem Abstand – oder wird sie geviertelt?",set:()=>{sSet("g",5,"none",0);$("#sX").value="d";sPl.redraw()}},
+ {l:2,h:"Halbwertsdicke von Blei",p:"Co-60 in 5 cm: Miss mit 0 bis 40 mm Blei in 5-mm-Schritten, 100 s pro Messung. Bestimme aus dem Diagramm die Dicke, die die Zählrate halbiert.",set:()=>{sSet("g",5,"pb",0);$("#sTm").value="100";$("#sX").value="x";sPl.redraw()}},
+ {l:2,h:"Ablenkung im Magnetfeld",p:"Erhöhe das Magnetfeld. Welche Strahlung wird am stärksten abgelenkt, welche gar nicht? Was schließt du über Ladung und Masse?"},
+ {l:3,h:"Statistik und Nullrate",p:"Miss Co-60 in 40 cm Entfernung zehnmal mit 10 s und dann einmal mit 100 s. Wie stark streuen die Werte? Vergleiche mit √N. Ziehe die Nullrate ab.",set:()=>{sSet("g",40,"none",0);$("#sTm").value="10"}},
+ {l:3,h:"Massenschwächung",p:"Rechne die β-Reichweite in Aluminium und Papier in Flächenmasse (g/cm²) um. Ist die Abschirmung bei gleicher Flächenmasse ähnlich? Was bedeutet das für Blei?"}
+]);
+
+/* ======================= NEBELKAMMER ======================= */
+const NK={tr:[],run:true,cnt:{a:0,b:0,mu:0,g:0},pend:[]};
+const NKI={a:["α-Teilchen","Ein Heliumkern (2 Protonen, 2 Neutronen). Er ionisiert sehr stark und kommt nur wenige Zentimeter weit – daher die kurze, dicke Spur."],b:["β-Teilchen (Elektron)","Ein schnelles Elektron aus einem β⁻-Zerfall. Es ist sehr leicht und wird von Luftatomen oft abgelenkt – die Spur ist dünn und verbogen."],mu:["Myon aus der kosmischen Strahlung","Entstanden in 10–15 km Höhe, als Teilchen der kosmischen Strahlung auf die Atmosphäre trafen. Es ist so schnell, dass es fast ungebremst durch die Kammer fliegt."],g:["Elektron, von γ-Strahlung herausgeschlagen","γ-Quanten selbst hinterlassen keine Spur. Trifft ein γ-Quant ein Elektron (Compton-Effekt), sieht man nur die kurze, krumme Spur dieses Elektrons."],th:["Thoron-Gabel: zwei α-Spuren","Rn-220 zerfällt durch α-Zerfall zu Po-216, das nach Sekundenbruchteilen ebenfalls α-strahlt – am selben Ort. So entsteht ein V aus zwei α-Spuren."]};
+function nkPx(){return nkc.w/24}
+function nkAlpha(x0,y0,th,cm,fork){const L=cm*nkPx();const pts=[];for(let i=0;i<=20;i++){const f=i/20;pts.push([x0+Math.cos(th)*L*f+gauss()*.3,y0+Math.sin(th)*L*f+gauss()*.3])}NK.tr.push({k:fork?"th":"a",pts,w:4.5,t:0,life:2.6});}
+function nkBeta(x0,y0,th,E,k){const B=$("#nB").checked&&document.body.dataset.lvl>1;const p=Math.sqrt(E*E+2*.511*E)/1000;const rpx=B?p/(.3*.15)*100*nkPx():1e9;const step=3;const pts=[[x0,y0]];let x=x0,y=y0,a=th;const n=Math.round(Math.min(26,(E*12+3))*nkPx()/step);for(let i=0;i<n;i++){a+=gauss()*(.05+.25*(i/n)**2/Math.max(E,.2))+step/rpx;x+=Math.cos(a)*step;y+=Math.sin(a)*step;pts.push([x,y]);if(x<-10||y<-10||x>nkc.w+10||y>nkc.h+10)break}NK.tr.push({k,pts,w:1.4,t:0,life:2.2})}
+function nkMu(){const W=nkc.w,H=nkc.h;const x0=Math.random()*W,a=Math.PI/2+gauss()*.5;const L=Math.hypot(W,H)*1.2;const xs=x0-Math.cos(a)*L/2,ys=H/2-Math.sin(a)*L/2;const pts=[];for(let i=0;i<=40;i++){pts.push([xs+Math.cos(a)*L*i/40,ys+Math.sin(a)*L*i/40])}NK.tr.push({k:"mu",pts,w:1.1,t:0,life:2})}
+function nkSpawn(dt){if(!nkc.w)return;const W=nkc.w,H=nkc.h,s=$("#nSrc").value;const R=(r)=>pois(r*dt);
+ for(let i=R(.5);i--;)nkMu();
+ for(let i=R(.12);i--;)nkAlpha(Math.random()*W,Math.random()*H,Math.random()*6.283,4.1);
+ for(let i=R(.12);i--;)nkBeta(Math.random()*W,Math.random()*H,Math.random()*6.283,.3+Math.random()*.8,"b");
+ const sx=W*.06,sy=H*.5;
+ if(s=="a")for(let i=R(3);i--;)nkAlpha(sx,sy+gauss()*4,gauss()*.7,5.2+gauss()*.15);
+ if(s=="b")for(let i=R(3);i--;)nkBeta(sx,sy+gauss()*4,gauss()*.8,.2+Math.random()*1.8,"b");
+ if(s=="th"){for(let i=R(1.6);i--;)nkAlpha(sx+Math.random()*W*.04,sy+(Math.random()-.5)*H*.5,gauss()*.9,4+Math.random()*2.5);for(let i=R(.35);i--;){const x=W*.15+Math.random()*W*.6,y=Math.random()*H;nkAlpha(x,y,Math.random()*6.283,5.0,true);NK.pend.push({t:.08+Math.random()*.4,x,y})}}
+ if(s=="g")for(let i=R(3);i--;)nkBeta(Math.random()*W,Math.random()*H,Math.random()*6.283,.05+Math.random()*.35,"g");
+ NK.pend.forEach(p=>{p.t-=dt;if(p.t<=0){nkAlpha(p.x,p.y,Math.random()*6.283,5.6,true);p.done=true}});NK.pend=NK.pend.filter(p=>!p.done)}
+function nkTick(dt){if(!NK.run)return;nkSpawn(dt);NK.tr.forEach(t=>{t.t+=dt;if(t.t>.3)t.pts.forEach(p=>{p[1]+=dt*4})});NK.tr=NK.tr.filter(t=>t.t<t.life);nkc.redraw()}
+const nkc=canv("nC",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const g=x.createLinearGradient(0,0,W,0);g.addColorStop(0,"rgba(120,140,170,.10)");g.addColorStop(1,"rgba(0,0,0,0)");x.fillStyle=g;x.fillRect(0,0,W,H);
+ const s=$("#nSrc").value;if(s=="a"||s=="b"||s=="th"){x.fillStyle=s=="th"?"#d8d2c0":"#9aa3ad";if(s=="th")x.fillRect(W*.06,H*.25,W*.04,H*.5);else{x.beginPath();x.arc(W*.06,H*.5,7,0,7);x.fill()}}
+ if(s=="g")txt(x,"γ-Quelle außerhalb →",8,16,{c:"#9aa3ad",size:12});
+ x.lineCap="round";x.lineJoin="round";NK.tr.forEach(t=>{const grow=Math.min(1,t.t/(t.k=="mu"?.03:.06));const fade=Math.max(0,1-Math.max(0,t.t-t.life*.45)/(t.life*.55));const n=Math.max(2,Math.ceil(t.pts.length*grow));const spread=1+t.t*1.6;
+  x.strokeStyle=`rgba(235,240,248,${.85*fade})`;x.lineWidth=t.w*spread;x.shadowColor="rgba(220,230,255,.8)";x.shadowBlur=6;x.beginPath();for(let i=0;i<n;i++){const p=t.pts[i];i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1])}x.stroke();x.shadowBlur=0;
+  if(t.sel){x.strokeStyle="rgba(255,196,0,.9)";x.lineWidth=1.5;x.setLineDash([4,4]);const p=t.pts[0];x.beginPath();x.arc(p[0],p[1],10,0,7);x.stroke();x.setLineDash([])}});
+ if($("#nB").checked&&document.body.dataset.lvl>1)txt(x,"B ⊗",W-10,18,{a:"right",c:"#9aa3ad",w:700});
+ txt(x,"24 cm",W-10,H-12,{a:"right",c:"#6b7480",size:12})});
+nkc.c.addEventListener("click",e=>{let best=null,bd=14;NK.tr.forEach(t=>{t.sel=false;t.pts.forEach(p=>{const d=Math.hypot(p[0]-e.offsetX,p[1]-e.offsetY);if(d<bd){bd=d;best=t}})});if(best){best.sel=true;best.life=Math.max(best.life,best.t+3);const i=NKI[best.k];NK.cnt[best.k=="th"?"a":best.k]++;$("#nInfo").innerHTML=`<h3>${i[0]}</h3><p style="margin:0">${i[1]}</p>`;nkCnt()}else $("#nInfo").innerHTML="<p class='mut'>Dort ist keine Spur – versuch es noch einmal.</p>"});
+function nkCnt(){const rows=[["α-Spuren",NK.cnt.a,"--al"],["β-Spuren",NK.cnt.b,"--bm"],["Myonen",NK.cnt.mu,"--mut"],["Elektronen durch γ",NK.cnt.g,"--ga"]];const m=Math.max(5,...rows.map(r=>r[1]));$("#nCnt").innerHTML=rows.map(r=>`<div class="r" style="grid-template-columns:minmax(0,140px) minmax(0,1fr) 40px"><span>${r[0]}</span><span class="tr"><i style="width:${r[1]/m*100}%;background:var(${r[2]})"></i></span><span class="v">${r[1]}</span></div>`).join("")+"<p class='note'>Gezählt werden die Spuren, die du angeklickt hast.</p>"}
+$("#nRun").onclick=e=>{NK.run=!NK.run;e.target.textContent=NK.run?"Pause":"Weiter"};$("#nClr").onclick=()=>{NK.tr=[];NK.pend=[];nkc.redraw()};$("#nSrc").onchange=()=>{NK.tr=[];nkc.redraw()};
+nkCnt();
+tasks("nebelkammer",[
+ {l:1,h:"Die leere Kammer",p:"Beobachte die Kammer ohne Präparat eine Minute lang. Welche Spuren siehst du? Woher kommt diese Strahlung, obwohl nichts in der Kammer liegt?",set:()=>{$("#nSrc").value="0";NK.tr=[]}},
+ {l:1,h:"α und β unterscheiden",p:"Lege zuerst Am-241, dann Sr-90 in die Kammer. Beschreibe die Spuren: Länge, Dicke, Form. Erkläre die Unterschiede.",set:()=>{$("#nSrc").value="a";NK.tr=[]}},
+ {l:1,h:"Spuren-Detektiv",p:"Klicke 20 Spuren in der leeren Kammer an. Welche Art kommt am häufigsten vor?",set:()=>{$("#nSrc").value="0";NK.tr=[]}},
+ {l:1,h:"Und γ?",p:"Stelle die γ-Quelle auf. Warum sieht man keine geraden Spuren, die von der Quelle wegführen?",set:()=>{$("#nSrc").value="g";NK.tr=[]}},
+ {l:2,h:"Thoron-Gabeln",p:"Lege den Glühstrumpf hinein und suche nach V-förmigen Spuren. Erkläre mit der Thorium-Zerfallsreihe, wie sie entstehen.",set:()=>{$("#nSrc").value="th";NK.tr=[]}},
+ {l:2,h:"Magnetfeld",p:"Schalte mit Sr-90 das Magnetfeld ein. In welche Richtung krümmen sich die Elektronenspuren? Warum sind manche Spiralen enger als andere?",set:()=>{$("#nSrc").value="b";$("#nB").checked=true;NK.tr=[]}},
+ {l:3,h:"Reichweite und Energie",p:"Miss die Länge der α-Spuren von Am-241 (Kammerbreite 24 cm). Die α-Energie von Am-241 ist 5,5 MeV. Vergleiche mit der Reichweite der Thoron-α (6,3 und 6,8 MeV)."}
+]);
+
+/* ======================= 7 DATIERUNG ======================= */
+const DS=[["Frisches Holz (heute)",0],["Holzbalken aus einem alten Bauernhaus",300],["Römischer Holzbalken aus Carnuntum",1900],["Gewebeprobe von Ötzi",5300],["Holzpfahl einer Pfahlbausiedlung am Mondsee",5600],["Holzkohle aus der Höhle von Lascaux",17000],["Mammutknochen",30000],["Steinkohle (300 Mio. Jahre)",3e8],["Unbekannte Probe",null]];
+const Dd={age:0,meas:[],hid:false};
+$("#dS").innerHTML=DS.map((s,i)=>`<option value="${i}">${s[0]}</option>`).join("");
+const T14=5730,A0=13.6;
+function dUpd(){const m=10**(+$("#dM").value-1),tm=10**(+$("#dT").value);$("#dMO").textContent=de(m,2)+" g";$("#dTO").textContent=tm<60?de(tm,2)+" min":de(tm/60,2)+" h";return{m,tm}}
+["dM","dT"].forEach(i=>$("#"+i).oninput=dUpd);
+$("#dS").onchange=()=>{const s=DS[+$("#dS").value];Dd.hid=s[1]==null;Dd.age=s[1]==null?Math.round(800+Math.random()*38000):s[1];Dd.meas=[];$("#dRes").innerHTML="<p class='mut'>Probe gewählt – jetzt messen.</p>";dc.redraw()};
+$("#dGo").onclick=()=>{const {m,tm}=dUpd();const exp=A0*m*tm*Math.pow(.5,Dd.age/T14);const n=pois(exp);const ratio=n/(A0*m*tm);const s=DS[+$("#dS").value];
+ let h;if(n<4){h=`<p><b>${n} Zerfälle</b> in ${$("#dTO").textContent} – zu wenig für eine Altersbestimmung. Die Probe ist entweder sehr alt oder zu klein. ${Dd.age>1e6?"Bei Millionen Jahren ist kein C-14 mehr übrig.":""}</p>`;Dd.meas.push({r:ratio,a:null})}
+ else{const age=-T14/Math.LN2*Math.log(ratio);const sig=T14/Math.LN2/Math.sqrt(n);Dd.meas.push({r:ratio,a:age,s:sig});
+  h=`<div class="grid2"><div><span class="mut">Gezählte Zerfälle</span><div class="big2">${n.toLocaleString("de-AT")}</div></div><div><span class="mut">Berechnetes Alter</span><div class="big2">${Math.max(0,Math.round(age/10)*10).toLocaleString("de-AT")} a</div><div class="l3 mut">± ${Math.round(sig).toLocaleString("de-AT")} a (1σ)</div></div></div>
+  <p class="small">Erwartet für lebendes Material: ${de(A0*m*tm,4)} Zerfälle → Verhältnis A/A₀ = ${de(ratio*100,3)} %${Dd.hid?"":`. Richtwert für diese Probe: etwa ${s[1].toLocaleString("de-AT")} Jahre.`}</p>`}
+ $("#dRes").innerHTML=h;dc.redraw()};
+const dc=canv("dC",o=>{const x=o.x,W=o.w,H=o.h;x.clearRect(0,0,W,H);const L=56,B=H-34,T=16,R=W-14,am=50000;const X=a=>L+a/am*(R-L),Y=v=>B-v*(B-T);
+ x.strokeStyle=col("--line");x.beginPath();x.moveTo(L,T);x.lineTo(L,B);x.lineTo(R,B);x.stroke();
+ for(let k=0;k<=5;k++){const a=k*10000;txt(x,(a/1000)+" Tsd.",X(a),B+14,{a:k==5?"right":"center",c:col("--mut"),size:12})}txt(x,"Alter in Jahren →",R,B+28,{a:"right",c:col("--mut"),size:12});[0,.25,.5,.75,1].forEach(v=>txt(x,v*100+" %",L-6,Y(v),{a:"right",c:col("--mut"),size:12}));
+ x.setLineDash([3,4]);x.strokeStyle=alpha(col("--mut"),.6);for(let k=1;k<=4;k++){const a=k*T14,v=.5**k;x.beginPath();x.moveTo(L,Y(v));x.lineTo(X(a),Y(v));x.lineTo(X(a),B);x.stroke()}x.setLineDash([]);
+ x.strokeStyle=col("--bm");x.lineWidth=3;x.beginPath();for(let i=0;i<=300;i++){const a=am*i/300;const v=.5**(a/T14);i?x.lineTo(X(a),Y(v)):x.moveTo(X(a),Y(v))}x.stroke();
+ txt(x,"C-14-Aktivität im Vergleich zu lebendem Material",L+8,T+4,{w:700,size:13});
+ Dd.meas.forEach((m,i)=>{const last=i==Dd.meas.length-1;x.globalAlpha=last?1:.35;const y=Y(Math.min(1.05,m.r));x.strokeStyle=col("--bp");x.lineWidth=2;x.beginPath();x.moveTo(L,y);if(m.a!=null){const xa=X(Math.max(0,Math.min(am,m.a)));x.lineTo(xa,y);x.lineTo(xa,B);x.stroke();x.fillStyle=col("--bp");x.beginPath();x.arc(xa,y,5,0,7);x.fill();if(last&&m.s&&document.body.dataset.lvl>2){x.fillStyle=alpha(col("--bp"),.2);x.fillRect(X(Math.max(0,m.a-m.s)),B-6,X(m.a+m.s)-X(Math.max(0,m.a-m.s)),6)}}else{x.lineTo(R,y);x.stroke()}x.globalAlpha=1})});
+tasks("datierung",[
+ {l:1,h:"Ötzi datieren",p:"Wähle die Gewebeprobe von Ötzi und miss. Wie viel Prozent des C-14 sind noch übrig? Wie alt ist der Mann aus dem Eis?",set:()=>{$("#dS").value=3;$("#dS").onchange()}},
+ {l:1,h:"Halbwertszeiten zählen",p:"Ohne Rechnen: Eine Probe hat noch 25 % der C-14-Aktivität. Wie viele Halbwertszeiten sind vergangen, wie alt ist sie? Prüfe mit dem Diagramm."},
+ {l:1,h:"Warum nicht Kohle?",p:"Miss die Steinkohle. Was passiert? Warum eignet sich die C-14-Methode nicht für Dinosaurierknochen?",set:()=>{$("#dS").value=7;$("#dS").onchange()}},
+ {l:2,h:"Mehr messen – genauer messen",p:"Miss den Mammutknochen mit 0,1 g und 10 min, dann mit 10 g und 10 h. Wie stark unterscheiden sich wiederholte Ergebnisse?",set:()=>{$("#dS").value=6;$("#dS").onchange()}},
+ {l:2,h:"Detektivarbeit",p:"Wähle die unbekannte Probe. Bestimme ihr Alter mit der Formel t = T½ · log₂(A₀/A) und kontrolliere mit der Simulation.",set:()=>{$("#dS").value=8;$("#dS").onchange()}},
+ {l:3,h:"Messgrenze",p:"Wie viele Zerfälle pro Stunde liefert 1 g Kohlenstoff, der 50 000 Jahre alt ist? Warum ist das kaum vom Untergrund zu unterscheiden? Wie hilft die AMS-Methode?"},
+ {l:3,h:"Unsicherheit berechnen",p:"Leite her, dass die Altersunsicherheit bei n gezählten Zerfällen etwa (T½/ln 2)/√n beträgt. Wie viele Zerfälle braucht man für ±50 Jahre?"}
+]);
+
+/* ======================= 8 ALLTAG ======================= */
+const AV=[["Radon (eingeatmet)",3.0,"--al"],["Medizin (v. a. Röntgen, CT)",1.7,"--bp"],["Kosmische und terrestrische Strahlung",1.0,"--bm"],["Nahrung und Trinkwasser",0.3,"--sf"],["Tschernobyl, Kernwaffentests, Technik",0.04,"--mut"]];
+function doseRows(el,rows,max){el.innerHTML=rows.map(r=>`<div class="r"><span>${r[0]}</span><span class="tr"><i style="width:${Math.min(100,r[1]/max*100)}%;background:var(${r[2]})"></i></span><span class="v">${de(r[1],2)} mSv</span></div>`).join("")}
+doseRows($("#aAvg"),AV.concat([["Summe (gerundet)",6.0,"--ink"]]),6.5);
+const AA={x:0,c:0};
+function aUpd(){const rn=+$("#aRn").value,h=+$("#aH").value,f=+$("#aF").value;$("#aRnO").textContent=rn+" Bq/m³";$("#aHO").textContent=h.toLocaleString("de-AT")+" h";$("#aFO").textContent=f+" h";$("#aX").textContent=AA.x;$("#aC").textContent=AA.c;
+ const rd=rn*h*9e-6,fd=f*.005,md=AA.x*.02+AA.c*2;const rows=[["Radon",rd,"--al"],["Medizin",md,"--bp"],["Draußen (kosmisch, Boden)",1.0,"--bm"],["Flüge",fd,"--ga"],["Nahrung",0.3,"--sf"]];const sum=rows.reduce((a,b)=>a+b[1],0);
+ doseRows($("#aMine"),rows.concat([["Summe",sum,"--ink"],["Österreich-Mittel",6.0,"--line"]]),Math.max(8,sum*1.05));}
+["aRn","aH","aF"].forEach(i=>$("#"+i).oninput=aUpd);$$("[data-a]").forEach(b=>b.onclick=()=>{const k=b.dataset.a[0],d=b.dataset.a[1]=="+"?1:-1;AA[k]=Math.max(0,Math.min(20,AA[k]+d));aUpd()});aUpd();
+tasks("alltag",[
+ {l:1,h:"Woher kommt die meiste Strahlung?",p:"Ordne die Quellen der mittleren Jahresdosis nach Größe. Welcher Anteil ist natürlich, welcher vom Menschen verursacht?"},
+ {l:1,h:"Radon zu Hause",p:"Stelle 300 Bq/m³ (Referenzwert) ein. Wie groß ist deine Radondosis im Vergleich zum Österreich-Mittel? Was kann man in einem Haus dagegen tun?",set:()=>{$("#aRn").value=300;aUpd()}},
+ {l:1,h:"Fliegen und Röntgen",p:"Wie viele Flugstunden entsprechen einer CT-Untersuchung des Kopfes? Wie viele Röntgenbilder des Brustkorbs der Radondosis eines Jahres?"},
+ {l:2,h:"Radon und die Zerfallsreihe",p:"Suche Rn-222 in der Uran-Radium-Reihe. Welche Folgeprodukte entstehen innerhalb einer Stunde? Warum sind sie in der Lunge gefährlicher als das Gas selbst?",set:()=>{go("zerfallsreihen");$("#rCh").value="u238";R5.ch="u238";R5.sel=6;rUpd()}},
+ {l:2,h:"Die vier A",p:"Ordne jedem der vier A eine Messung aus der Station „Strahlung messen“ zu, die zeigt, warum diese Regel wirkt."},
+ {l:3,h:"Kalium in uns",p:"Ein Mensch mit 70 kg enthält etwa 140 g Kalium, davon 0,0117 % K-40 (T½ = 1,25 · 10⁹ a). Berechne die Aktivität A = λN in Becquerel."}
+]);
+
+/* ======================= Schleife & Start ======================= */
+let last=performance.now();
+function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;
+ if(cur=="kern"){K.t+=dt;if(K.emit){K.emit.t+=dt*.8;if(K.emit.t>1.2)K.emit=null}const c=info(K.Z,K.N);if((c&&c.mode!="s")||K.emit||K.Z>0)kc.redraw()}
+ else if(cur=="zerfallsarten"){Zs.t+=dt*(Zs.slow?.08:.3);if(Zs.t>1.25)Zs.t=0;zc.redraw()}
+ else if(cur=="zerfallsgesetz"){gTick(dt);gg.redraw()}
+ else if(cur=="zerfallsreihen"&&R5.play&&R5.ch!="mt"){R5.si=Math.min(NS,R5.si+Math.max(1,Math.round(dt*90)));$("#rT").value=R5.si/NS*1000;if(R5.si>=NS){R5.play=false;$("#rPlay").textContent="Abspielen"}rUpd()}
+ else if(cur=="strahlung")sTick(dt);
+ else if(cur=="nebelkammer")nkTick(dt);
+ requestAnimationFrame(loop)}
+try{const l=localStorage.getItem("radlvl");if(l)setLvl(l)}catch(e){}
+route();updK();updM();zFill();zUpd();gReset();rMTpreset(0);R5.si=Math.round((Math.log10(1e6*YR)-TLO)/(THI-TLO)*NS);$("#rT").value=R5.si/NS*1000;rUpd();sUpd();sTab();dUpd();$("#dS").value=3;$("#dS").onchange();
+requestAnimationFrame(loop);
+}
+</script>
+<script>{const h=document.getElementById("home");if(!(location.protocol=="file:"||location.hostname.endsWith("github.io"))){h.removeAttribute("href");h.removeAttribute("title")}}</script>
+</body>
+</html>
