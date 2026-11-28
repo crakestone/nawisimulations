@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kalorimeterlabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+
+/* VOICE: sachliches Laborheft, ruhig und genau
+   IDEA: ein Labortisch mit Waage, Kalorimeter, Netzgerät, Thermometer und Stoppuhr – messen wie im echten Versuch
+   COLOUR and TYPE: Weiß bzw. Nacht; kalt blau, warm rot, Akzent Orange; Archivo + Source Sans 3
+   LAYOUT: Stationsleiste, Versuchsaufbau groß links, Bedienfeld rechts, darunter Kurve, Messtabelle, Auswertung */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#111419);--ink:light-dark(#15181d,#e9ecf1);--mut:light-dark(#566170,#9ea8b5);
+--line:light-dark(#d8dde4,#2d343e);--soft:light-dark(#f5f3f1,#1b1917);--card:light-dark(#ffffff,#161b21);
+--acc:light-dark(#c2410c,#fb923c);--accink:light-dark(#ffffff,#1a0d04);
+--hot:#d7301f;--cold:#2f62c9;--sun:#f2b705;--ir:#c0392b;--lei:#8a5a2b;--str:#2b8a8a;--rad:#d0461c;
+--grid:light-dark(#ebe7e3,#2a2725)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Source Sans 3",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Archivo,system-ui,sans-serif;line-height:1.08;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4vw,40px)}h2{font-size:clamp(24px,3vw,32px)}h3{font-size:18px;margin-bottom:6px}
+header{padding:18px max(4vw,14px) 0;border-bottom:1px solid var(--line)}
+.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.top p{margin:4px 0 0;color:var(--mut);max-width:66ch}
+.tr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.lvl{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:10px}
+.lvl button{border:0;background:none;color:var(--ink);padding:8px 12px;border-radius:7px;font:600 15px "Source Sans 3",sans-serif;cursor:pointer;min-height:40px}
+.lvl button[aria-pressed=true]{background:var(--acc);color:var(--accink)}
+nav.scroll{display:flex;gap:2px;margin-top:14px;overflow-x:auto;scrollbar-width:thin}
+nav a{flex:none;padding:10px 14px;color:var(--mut);text-decoration:none;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap}
+nav a.on{color:var(--ink);border-color:var(--acc)}
+nav a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.st{display:none;padding:22px max(4vw,14px) 40px;max-width:1500px;margin:0 auto}
+.st.on{display:block}
+.lead{color:var(--mut);max-width:78ch;margin:6px 0 16px}
+.work{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+@media(max-width:980px){.work{grid-template-columns:minmax(0,1fr)}}
+.stage{display:grid;gap:12px}
+.fig{position:relative;min-height:220px;background:var(--soft);border-radius:12px;overflow:hidden;touch-action:none}
+.fig>canvas{position:absolute;inset:0;width:100%;height:100%}
+.fig.tall{height:min(64vh,540px)}.fig.mid{height:300px}.fig.low{height:230px}
+.ctrl{display:grid;gap:12px;background:var(--soft);padding:14px;border-radius:12px}
+.ctrl .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ctrl label{font-weight:600;font-size:15px}
+.lab{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-size:15px}
+.ctrl .lab output{font-weight:400;color:var(--mut);white-space:nowrap}
+button.b,select{font:600 15px "Source Sans 3",sans-serif;min-height:44px;padding:8px 13px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button.b.pri{background:var(--acc);border-color:var(--acc);color:var(--accink)}
+button.b.sm{min-height:36px;padding:5px 10px;font-size:14px}
+button.b[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button.b:disabled{opacity:.5;cursor:default}
+select{font-weight:400;font-size:16px;width:100%}
+input[type=range]{width:100%;accent-color:var(--acc);min-height:30px}
+.chk{display:flex;gap:8px;align-items:center;font-weight:400!important;cursor:pointer;min-height:32px}
+.chk input{width:20px;height:20px;accent-color:var(--acc);flex:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px}
+.kpi div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.kpi span{display:block;font-size:13px;color:var(--mut)}.kpi b{font:700 21px/1.15 Archivo,sans-serif;font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--mut)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid rgba(0,0,0,.2)}
+.msg{padding:10px 12px;border-radius:10px;font-weight:600;background:var(--soft)}
+.msg.warn{background:rgba(215,48,31,.13)}.msg.ok{background:rgba(58,164,92,.15)}
+.tasks{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:20px}
+.task{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.task p{margin:0;font-size:15.5px}
+.task .lv{font-size:13px;font-weight:700;color:var(--mut)}
+.task button{align-self:flex-start;margin-top:auto}
+.expl{margin-top:20px;border-top:1px solid var(--line);padding-top:6px}
+details summary{cursor:pointer;font-weight:700;padding:10px 0;font-family:Archivo,sans-serif;font-size:18px}
+details .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px 28px}
+details p{margin:0 0 10px;max-width:70ch}
+body[data-lvl="1"] .l2,body[data-lvl="1"] .l3,body[data-lvl="2"] .l3{display:none!important}
+.note{font-size:14px;color:var(--mut);margin:6px 0 0}
+.mut{color:var(--mut)}.small{font-size:14px}
+.eq{font-family:Archivo,sans-serif;font-size:19px}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.seg{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);padding:4px;border-radius:10px;flex-wrap:wrap}
+.seg button{flex:1;border:0;background:none;color:var(--ink);min-height:40px;border-radius:7px;font:600 15px "Source Sans 3",sans-serif;cursor:pointer;padding:4px 8px;white-space:nowrap}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.slots{display:grid;gap:8px}
+.slots .sl{display:grid;grid-template-columns:24px minmax(0,1fr) minmax(0,1fr);gap:6px;align-items:center}
+.slots .sl b{font-family:Archivo,sans-serif;text-align:center}
+.quiz{display:grid;gap:8px}
+.qi{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.qi .qb{display:flex;gap:4px}
+.qi .qb button{min-height:36px;padding:4px 9px;border-radius:8px;border:1px solid var(--line);background:var(--soft);color:var(--ink);font:600 14px "Source Sans 3",sans-serif;cursor:pointer}
+.qi .qb button.y{background:rgba(58,164,92,.25);border-color:#3aa45c}.qi .qb button.n{background:rgba(215,48,31,.18);border-color:var(--hot)}
+.qi .fb{grid-column:1/-1;font-size:14px;color:var(--mut)}
+.qi .fb:empty{display:none}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 7px;border-radius:99px;color:#fff;vertical-align:1px}
+@media(max-width:600px){.qi{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+
+.sw{font:700 34px/1 Archivo,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.5px}
+.grp{display:grid;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.grp h3{font-size:15px;margin:0}
+.tbl{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.tbl table{font-size:14px}.tbl th{position:sticky;top:0;background:var(--card)}
+.chk2{display:grid;gap:8px}
+.chk2 .ln{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chk2 input[type=number]{width:140px;font:16px "Source Sans 3",sans-serif;min-height:40px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.res{font-weight:600;font-size:15px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+body[data-lvl="2"] .l1only,body[data-lvl="3"] .l1only{display:none!important}
+[hidden]{display:none!important}
+.seg button{white-space:normal;min-width:0}
+</style>
+</head>
+<body data-lvl="1">
+<header>
+ <div class="top">
+  <div><h1><a id="home" href="../index.html" style="color:inherit;text-decoration:none" title="Zur Startseite">Kalorimeterlabor</a></h1><p>Messen wie im echten Versuch: Flüssigkeiten abwiegen, mit Strom erwärmen, Zeit stoppen, Temperaturkurven aufnehmen – und daraus Wärmekapazität, Schmelz- und Verdampfungswärme bestimmen. Dazu die Anomalie des Wassers.</p></div>
+  <div class="tr"><div class="lvl" role="group" aria-label="Niveau"><button data-l="1" aria-pressed="true">Einfach</button><button data-l="2" aria-pressed="false">Mittel</button><button data-l="3" aria-pressed="false">Anspruchsvoll</button></div><button class="b sm" id="fs" title="Vollbild">⛶ Vollbild</button></div>
+ </div>
+ <nav class="scroll" id="nav"><a href="#heizen">Elektrisch heizen</a><a href="#mischen">Mischen</a><a href="#latent">Schmelzen &amp; Verdampfen</a><a href="#anomalie">Anomalie des Wassers</a></nav>
+</header>
+
+<!-- ========== HEIZEN ========== -->
+<section class="st" id="st-heizen">
+ <h2>Wärmekapazität bestimmen: elektrisch heizen</h2>
+ <p class="lead">Fülle eine Flüssigkeit ins Kalorimeter, heize sie mit der Heizspirale und stoppe die Zeit. Aus der zugeführten elektrischen Energie, der Masse und der Temperaturerhöhung bestimmst du die <b>spezifische Wärmekapazität c</b> – also wie viel Energie 1 kg des Stoffes für 1 °C mehr braucht.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="hC"></canvas></div>
+   <div class="msg" id="hMsg" hidden></div>
+   <div class="card"><h3>Temperaturkurve (Messwerterfassung)</h3><div class="fig mid"><canvas id="hG"></canvas></div><p class="note" id="hFit"></p></div>
+   <div class="card"><h3>Messtabelle</h3><div class="tbl" id="hT"></div></div>
+  </div>
+  <div class="ctrl">
+   <div class="grp"><h3>1 · Flüssigkeit einfüllen</h3>
+    <select id="hLiq"></select>
+    <div class="row"><button class="b sm" id="hTara">Tara (Waage auf 0)</button><button class="b sm" id="hEmpty">Ausleeren</button></div>
+    <div class="row"><button class="b sm" data-hp="50">+ 50 g</button><button class="b sm" data-hp="10">+ 10 g</button><button class="b sm" data-hp="1">+ 1 g</button></div>
+   </div>
+   <div class="grp"><h3>2 · Aufbau</h3>
+    <label class="chk"><input type="checkbox" id="hLid" checked> Deckel drauf</label>
+    <label class="chk"><input type="checkbox" id="hStir" checked> Rührer läuft</label>
+   </div>
+   <div class="grp"><h3>3 · Netzgerät</h3>
+    <div class="lab"><span>Spannung</span><output id="hUo">8,0 V</output></div>
+    <input type="range" id="hU" min="0" max="12" step="0.1" value="8">
+    <div class="row"><button class="b pri" id="hOn">Strom einschalten</button><button class="b sm l1only" id="hE0">Energiezähler auf 0</button></div>
+   </div>
+   <div id="hCom"></div>
+  </div>
+ </div>
+ <div class="card" style="margin-top:16px"><h3>Auswertung</h3><div id="hChk"></div></div>
+ <div class="tasks" id="tk-heizen"></div>
+ <details class="expl"><summary>Erklärung</summary><div class="cols">
+  <p><b>Energie und Temperatur:</b> Die Heizspirale wandelt elektrische Energie in Wärme um. Je mehr Flüssigkeit im Gefäß ist, desto länger dauert es, bis sie um 1 °C wärmer wird. Wasser braucht dafür besonders viel Energie – mehr als fast alle anderen Stoffe.</p>
+  <p><b>Spezifische Wärmekapazität:</b> c = Q / (m · ΔT). Wasser: 4190 J/(kg·K), Ethanol 2430, Speiseöl etwa 1970 J/(kg·K). 1 kg Wasser braucht also 4190 J für 1 °C.</p>
+  <p class="l2"><b>Elektrische Energie:</b> Q = U · I · t. Beispiel: 8 V, 2,5 A, 300 s ergibt 6000 J. Die Temperatur muss man gut gerührt messen, und nach dem Ausschalten steigt sie noch ein wenig weiter, weil die heiße Spirale nachheizt.</p>
+  <p class="l3"><b>Fehlerquellen:</b> Das Kalorimeter (Gefäß, Spirale, Rührer) nimmt selbst Wärme auf – sein „Wasserwert“ C<sub>K</sub>. Genauer gilt U·I·t = (m·c + C<sub>K</sub>)·ΔT. Außerdem geht Wärme an die Umgebung verloren, ohne Deckel deutlich mehr. Die Steigung der Ausgleichsgeraden im linearen Teil der Kurve ist ΔT/Δt; damit gilt c = (P/(ΔT/Δt) − C<sub>K</sub>)/m.</p>
+ </div></details>
+</section>
+
+<!-- ========== MISCHEN ========== -->
+<section class="st" id="st-mischen">
+ <h2>Mischen: heißes Wasser und Metallkörper</h2>
+ <p class="lead">Gib heißes Wasser oder einen heißen Metallkörper in kaltes Wasser im Kalorimeter. Was der heiße Körper abgibt, nimmt das kalte Wasser auf. Aus der <b>Mischtemperatur</b> bestimmst du die spezifische Wärmekapazität des Metalls.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="mC"></canvas></div>
+   <div class="msg" id="mMsg" hidden></div>
+   <div class="card"><h3>Temperaturkurve (Messwerterfassung)</h3><div class="fig mid"><canvas id="mG"></canvas></div></div>
+   <div class="card"><h3>Messtabelle</h3><div class="tbl" id="mT"></div></div>
+  </div>
+  <div class="ctrl">
+   <div class="grp"><h3>1 · Kaltes Wasser ins Kalorimeter</h3>
+    <div class="row"><button class="b sm" id="mTara">Tara</button><button class="b sm" id="mEmpty">Ausleeren</button></div>
+    <div class="row"><button class="b sm" data-mp="50">+ 50 g</button><button class="b sm" data-mp="10">+ 10 g</button><button class="b sm" data-mp="1">+ 1 g</button></div>
+    <label class="chk"><input type="checkbox" id="mStir" checked> Rührer läuft</label>
+   </div>
+   <div class="grp"><h3>2 · Was kommt dazu?</h3>
+    <div class="seg" id="mMode"><button data-v="wasser" aria-pressed="true">heißes Wasser</button><button data-v="metall" aria-pressed="false">Metallkörper</button></div>
+    <div id="mW" style="display:grid;gap:8px">
+     <label for="mKet">Wasserkocher erhitzt auf</label>
+     <select id="mKet"><option value="60">etwa 60 °C</option><option value="70">etwa 70 °C</option><option value="80" selected>etwa 80 °C</option><option value="90">etwa 90 °C</option></select>
+     <div class="row"><button class="b sm" data-mh="100">Becherglas füllen (≈ 100 g)</button><button class="b sm" data-mh="200">(≈ 200 g)</button></div>
+     <button class="b pri" id="mPour">Heißes Wasser eingießen</button>
+    </div>
+    <div id="mM" style="display:grid;gap:8px" hidden>
+     <select id="mMet"></select>
+     <p class="note" style="margin:0">Der Körper hängt im siedenden Wasserbad und hat dessen Temperatur. Seine Masse ist eingraviert.</p>
+     <button class="b pri" id="mDrop">Metallkörper ins Kalorimeter</button>
+    </div>
+   </div>
+   <div id="mCom"></div>
+  </div>
+ </div>
+ <div class="card" style="margin-top:16px"><h3>Auswertung</h3><div id="mChk"></div></div>
+ <div class="tasks" id="tk-mischen"></div>
+ <details class="expl"><summary>Erklärung</summary><div class="cols">
+  <p><b>Energieerhaltung:</b> Die Wärme, die der heiße Körper abgibt, nimmt das kalte Wasser auf. Am Ende haben beide dieselbe Temperatur, die Mischtemperatur T<sub>M</sub>.</p>
+  <p class="l2"><b>Mischungsregel:</b> m<sub>1</sub>·c<sub>1</sub>·(T<sub>M</sub> − T<sub>1</sub>) = m<sub>2</sub>·c<sub>2</sub>·(T<sub>2</sub> − T<sub>M</sub>). Für den Metallkörper: c<sub>Metall</sub> = m<sub>W</sub>·c<sub>W</sub>·(T<sub>M</sub> − T<sub>W</sub>) / (m<sub>K</sub>·(T<sub>K</sub> − T<sub>M</sub>)).</p>
+  <p class="l2"><b>Genau messen:</b> Lies T<sub>1</sub> unmittelbar vorher ab und die Mischtemperatur, sobald sie nicht mehr steigt. Beim Umgießen kühlt das heiße Wasser schon etwas ab.</p>
+  <p class="l3"><b>Wasserwert bestimmen:</b> Mischt man heißes und kaltes Wasser, nimmt auch das Kalorimeter Wärme auf: m<sub>2</sub>c<sub>W</sub>(T<sub>2</sub> − T<sub>M</sub>) = (m<sub>1</sub>c<sub>W</sub> + C<sub>K</sub>)(T<sub>M</sub> − T<sub>1</sub>). Daraus folgt C<sub>K</sub>. Wärmeverluste korrigiert man, indem man die Abkühlkurve nach der Mischung zurück bis zum Mischzeitpunkt verlängert.</p>
+ </div></details>
+</section>
+
+<!-- ========== LATENT ========== -->
+<section class="st" id="st-latent">
+ <h2>Schmelzen &amp; Verdampfen: latente Wärme</h2>
+ <p class="lead">Beim Schmelzen und Verdampfen nimmt ein Stoff Energie auf, <b>ohne wärmer zu werden</b>. Diese „versteckte“ Wärme heißt <b>latente Wärme</b>. Sie wird gebraucht, um die Teilchen aus ihrem festen Platz bzw. aus der Flüssigkeit zu lösen.</p>
+ <div class="seg" id="lMode" style="max-width:520px;margin-bottom:14px"><button data-v="eis" aria-pressed="true">Eis im Kalorimeter</button><button data-v="kurve" aria-pressed="false">Heizkurve: Eis → Dampf</button></div>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="lC"></canvas></div>
+   <div class="msg" id="lMsg" hidden></div>
+   <div class="card"><h3>Temperaturkurve (Messwerterfassung)</h3><div class="fig mid"><canvas id="lG"></canvas></div></div>
+   <div class="card" id="lGmC"><h3>Masse auf der Waage</h3><div class="fig low"><canvas id="lGm"></canvas></div></div>
+   <div class="card"><h3>Messtabelle</h3><div class="tbl" id="lT"></div></div>
+  </div>
+  <div class="ctrl">
+   <div id="lEis" style="display:grid;gap:12px">
+    <div class="grp"><h3>1 · Warmes Wasser einfüllen</h3>
+     <div class="row"><button class="b sm" id="lTara">Tara</button><button class="b sm" id="lEmpty">Ausleeren</button></div>
+     <div class="row"><button class="b sm" data-lp="50">+ 50 g</button><button class="b sm" data-lp="10">+ 10 g</button><button class="b sm" data-lp="1">+ 1 g</button></div>
+     <label class="chk"><input type="checkbox" id="lStir" checked> Rührer läuft</label>
+    </div>
+    <div class="grp"><h3>2 · Eiswürfel dazugeben</h3>
+     <select id="lIce"><option value="0">aus Eiswasser, abgetrocknet (0 °C)</option><option value="-18">aus dem Gefrierfach (−18 °C)</option></select>
+     <button class="b pri" id="lAdd">Einen Eiswürfel hineingeben</button>
+    </div>
+   </div>
+   <div id="lKur" style="display:grid;gap:12px" hidden>
+    <div class="grp"><h3>Becherglas mit 200 g zerstoßenem Eis</h3>
+     <select id="kIce"><option value="-18">Eis aus dem Gefrierfach (−18 °C)</option><option value="0">Eis aus Eiswasser (0 °C)</option></select>
+     <label class="chk"><input type="checkbox" id="kStir" checked> Umrühren</label>
+     <button class="b pri" id="kOn">Tauchsieder einschalten</button>
+     <button class="b sm" id="kNew">↺ Neues Eis</button>
+     <p class="note" style="margin:0">Der Tauchsieder hat etwa 300 W. Das Messgerät an der Steckdose zeigt die genaue Leistung und die Energie.</p>
+    </div>
+   </div>
+   <div id="lCom"></div>
+  </div>
+ </div>
+ <div class="card" style="margin-top:16px"><h3>Auswertung</h3><div id="lChk"></div></div>
+ <div class="tasks" id="tk-latent"></div>
+ <details class="expl"><summary>Erklärung</summary><div class="cols">
+  <p><b>Haltepunkte:</b> Während Eis schmilzt, bleibt die Temperatur bei 0 °C, obwohl man weiter heizt. Während Wasser siedet, bleibt sie bei 100 °C. Die Energie wird gebraucht, um die Ordnung der Teilchen aufzubrechen.</p>
+  <p><b>Eis kühlt stark:</b> Ein Eiswürfel kühlt ein Getränk viel stärker als gleich viel Wasser von 0 °C – weil das Schmelzen so viel Energie verbraucht.</p>
+  <p class="l2"><b>Schmelzwärme</b> q<sub>s</sub> = Q/m = 334 kJ/kg (Eis). <b>Verdampfungswärme</b> q<sub>v</sub> = Q/m = 2257 kJ/kg (Wasser bei 100 °C). Verdampfen braucht also fast siebenmal so viel Energie wie Schmelzen.</p>
+  <p class="l3"><b>Eis im Kalorimeter:</b> m<sub>W</sub>c<sub>W</sub>(T<sub>1</sub> − T<sub>M</sub>) + C<sub>K</sub>(T<sub>1</sub> − T<sub>M</sub>) = m<sub>E</sub>c<sub>Eis</sub>(0 − T<sub>E</sub>) + m<sub>E</sub>q<sub>s</sub> + m<sub>E</sub>c<sub>W</sub>(T<sub>M</sub> − 0) mit c<sub>Eis</sub> = 2100 J/(kg·K) und C<sub>K</sub> ≈ 80 J/K. <b>Heizkurve:</b> q = P·Δt/Δm für die Dauer des Haltepunkts. Das offene Becherglas tauscht Wärme mit dem Raum aus: beim Schmelzen kommt etwas Wärme dazu, beim Sieden geht etwas verloren.</p>
+ </div></details>
+</section>
+
+<!-- ========== ANOMALIE ========== -->
+<section class="st" id="st-anomalie">
+ <h2>Anomalie des Wassers</h2>
+ <p class="lead">Fast alle Stoffe ziehen sich beim Abkühlen zusammen. Wasser auch – aber nur bis 4 °C. Darunter dehnt es sich wieder aus. Bei 4 °C hat Wasser also das kleinste Volumen und die größte Dichte.</p>
+ <div class="seg" id="aMode" style="max-width:520px;margin-bottom:14px"><button data-v="kolben" aria-pressed="true">Kolben mit Steigrohr</button><button data-v="hope" aria-pressed="false">Hope’scher Versuch</button></div>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="aC"></canvas></div>
+   <div class="msg" id="aMsg" hidden></div>
+   <div class="card"><h3 id="aGh">Steighöhe und Temperatur</h3><div class="fig mid"><canvas id="aG"></canvas></div></div>
+   <div class="card l2" id="aRhoC"><h3>Dichte von Wasser</h3><div class="fig low"><canvas id="aRho"></canvas></div><p class="note">Eis hat nur 917 kg/m³ – es schwimmt und braucht 9 % mehr Platz als das Wasser, aus dem es entsteht.</p></div>
+   <div class="card"><h3>Messtabelle</h3><div class="tbl" id="aT"></div></div>
+  </div>
+  <div class="ctrl">
+   <div id="aK" style="display:grid;gap:12px">
+    <div class="grp"><h3>Der Kolben (250 g Wasser) steht in einem Bad mit …</h3>
+     <select id="aBath"><option value="15">Leitungswasser (15 °C)</option><option value="0" selected>Eiswasser (0 °C)</option><option value="-8">Eis mit Salz (−8 °C)</option><option value="25">warmem Wasser (25 °C)</option></select>
+     <button class="b sm" id="aKNew">↺ Neuer Kolben (15 °C)</button>
+    </div>
+   </div>
+   <div id="aH" style="display:grid;gap:12px" hidden>
+    <div class="grp"><h3>Hohe Glassäule mit Wasser (10 °C)</h3>
+     <p class="note" style="margin:0">Um die Mitte liegt ein Ring mit Eis und Salz (etwa −8 °C). Oben und unten steckt je ein Thermometer.</p>
+     <button class="b pri" id="hpOn">Kältemischung einfüllen</button>
+     <button class="b sm" id="hpNew">↺ Neu</button>
+    </div>
+   </div>
+   <div id="aCom"></div>
+  </div>
+ </div>
+ <div class="card" style="margin-top:16px"><h3>Auswertung</h3><div id="aChk"></div></div>
+ <div class="tasks" id="tk-anomalie"></div>
+ <details class="expl"><summary>Erklärung</summary><div class="cols">
+  <p><b>Kolben mit Steigrohr:</b> Schon eine winzige Volumenänderung des Wassers im Kolben lässt den Wasserstand im dünnen Rohr deutlich steigen oder fallen. Beim Abkühlen sinkt er, bis das Wasser 4 °C hat – danach steigt er wieder, obwohl es noch kälter wird.</p>
+  <p><b>Seen frieren von oben zu:</b> Wasser mit 4 °C ist am schwersten und sinkt zum Grund. Kälteres Wasser bleibt oben und gefriert dort. Das Eis schwimmt und schützt das Wasser darunter. Mehr dazu im <a href="Waermetransportlabor.html#stroemung">Wärmetransportlabor</a> (Station Wärmeströmung, Versuch „See im Winter“).</p>
+  <p class="l2"><b>Hope’scher Versuch (1805):</b> Die Kältemischung kühlt die Mitte der Säule. Ist das Wasser wärmer als 4 °C, sinkt das gekühlte Wasser nach unten – das untere Thermometer fällt bis 4 °C und bleibt dort. Kälteres Wasser steigt nach oben – das obere Thermometer fällt danach bis gegen 0 °C.</p>
+  <p class="l3"><b>Glas dehnt sich auch:</b> Der Kolben wird beim Abkühlen selbst etwas kleiner (Volumenausdehnung von Glas etwa 1·10⁻⁵ 1/K). Zwischen 4 °C und etwa 4,6 °C schrumpft das Glas stärker als das Wasser und drückt es ins Rohr. Darum liegt das Minimum der Steighöhe in dieser Stufe etwas über 4 °C (bei etwa 4,6 °C). Dichte des Wassers in der Simulation nach der Formel von Thiesen; Eisbildung im Hope’schen Versuch ist vereinfacht.</p>
+ </div></details>
+</section>
+
+<script>
+/* ===================== Grundlagen ===================== */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const de=(x,p=3)=>Number(Number(x).toPrecision(p)).toLocaleString("de-AT",{maximumFractionDigits:10});
+const fx=(x,d=1)=>Number(x).toLocaleString("de-AT",{minimumFractionDigits:d,maximumFractionDigits:d});
+const SUPD="⁰¹²³⁴⁵⁶⁷⁸⁹";const sup=n=>String(n).replace(/-/g,"⁻").replace(/\d/g,d=>SUPD[d]);
+function sci(x,p=2){if(x===0)return"0";const e=Math.floor(Math.log10(Math.abs(x)));if(e>=-2&&e<5)return de(x,p);return de(x/10**e,p)+" · 10"+sup(e)}
+const degC=(T,d=0)=>(Math.abs(T)<.5/10**d?0:T).toLocaleString("de-AT",{minimumFractionDigits:d,maximumFractionDigits:d}).replace("-","−")+" °C";
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));const lerp=(a,b,t)=>a+(b-a)*t;
+const SIG=5.670e-8,K0=273.15;
+const probe=document.createElement("i");probe.style.display="none";document.body.appendChild(probe);let CC={};
+function col(v){if(CC[v])return CC[v];probe.style.color=v.startsWith("var")||v.startsWith("#")||v.startsWith("rgb")?v:`var(${v})`;return CC[v]=getComputedStyle(probe).color}
+function alpha(c,a){const m=c.match(/[\d.]+/g);return m?`rgba(${m[0]},${m[1]},${m[2]},${a})`:c}
+const isDark=()=>{const c=col("--bg").match(/\d+/g);return c&&(+c[0]+ +c[1]+ +c[2])<200};
+/* Farbskalen: kalt-warm und Wärmebild (Eisen) */
+const CW=[[0,[40,70,190]],[.25,[110,160,240]],[.5,[226,226,222]],[.75,[245,150,110]],[1,[185,20,30]]];
+const IRON=[[0,[10,6,40]],[.16,[62,14,125]],[.36,[150,30,145]],[.54,[220,62,42]],[.72,[246,150,32]],[.88,[255,224,90]],[1,[255,255,236]]];
+function cA(t,S=CW){t=clamp(isFinite(t)?t:0,0,1);for(let i=1;i<S.length;i++)if(t<=S[i][0]){const a=S[i-1],b=S[i],u=(t-a[0])/(b[0]-a[0]);return[a[1][0]+(b[1][0]-a[1][0])*u,a[1][1]+(b[1][1]-a[1][1])*u,a[1][2]+(b[1][2]-a[1][2])*u]}return S[S.length-1][1]}
+const cS=(t,S=CW,a=1)=>{const c=cA(t,S);return`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${a})`};
+const REG=[];
+function canv(id,draw){const c=document.getElementById(id);const o={c,draw,x:null,w:0,h:0};const fit=()=>{const r=c.getBoundingClientRect();if(!r.width||!r.height)return;const d=devicePixelRatio||1;c.width=Math.round(r.width*d);c.height=Math.round(r.height*d);o.w=r.width;o.h=r.height;o.x=c.getContext("2d");o.x.setTransform(d,0,0,d,0,0);draw(o)};o.fit=fit;o.redraw=()=>{if(o.x&&o.w)draw(o)};new ResizeObserver(fit).observe(c);REG.push(o);return o}
+const redrawAll=()=>{CC={};REG.forEach(o=>o.redraw())};
+new MutationObserver(redrawAll).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme","class","style"]});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",redrawAll);
+function txt(x,s,X,Y,o={}){x.font=`${o.w||400} ${o.size||13}px "Source Sans 3",system-ui,sans-serif`;x.fillStyle=o.c||col("--ink");x.textAlign=o.a||"left";x.textBaseline=o.b||"middle";x.fillText(s,X,Y)}
+function pill(x,s,X,Y,o={}){x.font=`${o.w||700} ${o.size||13}px "Source Sans 3",system-ui,sans-serif`;const tw=x.measureText(s).width,pw=tw+12,ph=(o.size||13)+9;let x0=o.a=="center"?X-pw/2:o.a=="right"?X-pw:X;x.fillStyle=o.bg||alpha(col("--card"),.9);x.beginPath();x.roundRect(x0,Y-ph/2,pw,ph,6);x.fill();if(o.bc){x.strokeStyle=o.bc;x.lineWidth=1.5;x.stroke()}txt(x,s,x0+6,Y+.5,{size:o.size||13,w:o.w||700,c:o.c||col("--ink")})}
+function arrow(x,x1,y1,x2,y2,c,wd=3,head=10){const a=Math.atan2(y2-y1,x2-x1),L=Math.hypot(x2-x1,y2-y1);if(L<2)return;head=Math.min(Math.max(head,wd*2.2),L*.6);x.strokeStyle=c;x.fillStyle=c;x.lineWidth=wd;x.lineCap="round";x.beginPath();x.moveTo(x1,y1);x.lineTo(x2-Math.cos(a)*head*.7,y2-Math.sin(a)*head*.7);x.stroke();x.beginPath();x.moveTo(x2,y2);x.lineTo(x2-Math.cos(a-.45)*head,y2-Math.sin(a-.45)*head);x.lineTo(x2-Math.cos(a+.45)*head,y2-Math.sin(a+.45)*head);x.closePath();x.fill()}
+function wave(x,x1,y1,x2,y2,c,amp=4,wl=12,wd=2,ph=0){const L=Math.hypot(x2-x1,y2-y1);if(L<3)return;const ux=(x2-x1)/L,uy=(y2-y1)/L;x.strokeStyle=c;x.lineWidth=wd;x.beginPath();for(let s=0;s<=L;s+=2){const o=Math.sin(s/wl*2*Math.PI+ph)*amp*Math.min(1,s/6,(L-s)/6+.3);const X=x1+ux*s-uy*o,Y=y1+uy*s+ux*o;s?x.lineTo(X,Y):x.moveTo(X,Y)}x.stroke()}
+function thermo(x,X,Y,H,T,T0,T1,lab){/* kleines Thermometer, Kugel unten bei (X,Y) */const f=clamp((T-T0)/(T1-T0),0,1),r=7;x.fillStyle=col("--card");x.strokeStyle=col("--mut");x.lineWidth=1.5;x.beginPath();x.roundRect(X-4.5,Y-H,9,H,4.5);x.fill();x.stroke();x.beginPath();x.arc(X,Y+r-2,r,0,7);x.fill();x.stroke();const c=cS(f);x.fillStyle=c;x.beginPath();x.arc(X,Y+r-2,r-2.5,0,7);x.fill();const hh=(H-8)*f+4;x.fillRect(X-2,Y-hh,4,hh+2);if(lab!==false)pill(x,lab||degC(T),X+12,Y-H+8,{size:13})}
+function seg(id,cb){const el=document.getElementById(id);el.querySelectorAll("button").forEach(b=>b.onclick=()=>{el.querySelectorAll("button").forEach(q=>q.setAttribute("aria-pressed",q===b));cb(b.dataset.v)});return v=>{el.querySelectorAll("button").forEach(q=>q.setAttribute("aria-pressed",q.dataset.v==v))}}
+function kpi(id,items){document.getElementById(id).innerHTML=items.filter(Boolean).map(([k,v,c])=>`<div${c?` class="${c}"`:""}><span>${k}</span><b>${v}</b></div>`).join("")}
+const TL=["","einfach","mittel","anspruchsvoll"];
+function tasks(id,list){const el=document.getElementById("tk-"+id);el.innerHTML="";list.forEach(t=>{const d=document.createElement("div");d.className="task"+(t.l==2?" l2":t.l==3?" l3":"");d.innerHTML=`<span class="lv">${TL[t.l]}</span><h3>${t.h}</h3><p>${t.p}</p>`;if(t.set){const b=document.createElement("button");b.className="b sm";b.textContent="Einstellen";b.onclick=()=>{t.set();document.getElementById("st-"+id).scrollIntoView({behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"})};d.appendChild(b)}el.appendChild(d)})}
+const lvl=()=>+document.body.dataset.lvl;
+const LVLCB=[];
+function setLvl(l){document.body.dataset.lvl=l;$$(".lvl button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l==l));try{localStorage.setItem("kallvl",l)}catch(e){}LVLCB.forEach(f=>f());setTimeout(()=>{REG.forEach(o=>o.fit())},20)}
+$$(".lvl button").forEach(b=>b.onclick=()=>setLvl(b.dataset.l));
+const VIEWS=["heizen","mischen","latent","anomalie"];let cur="heizen";
+function route(){const h=location.hash.slice(1);cur=VIEWS.includes(h)?h:"heizen";$$(".st").forEach(s=>s.classList.toggle("on",s.id=="st-"+cur));$$("#nav a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")=="#"+cur));setTimeout(()=>REG.forEach(o=>o.fit()),10)}
+addEventListener("hashchange",route);
+$("#fs").onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.()};
+function bindRange(id,out,fmt,cb){const r=$("#"+id),o=$("#"+out);const f=()=>{o.textContent=fmt(+r.value);cb&&cb(+r.value)};r.addEventListener("input",f);f();return v=>{r.value=v;o.textContent=fmt(+r.value)}}
+const hhmm=s=>{s=Math.max(0,s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=Math.floor(s%60);return h?`${h} h ${String(m).padStart(2,"0")} min`:m?`${m} min ${String(sec).padStart(2,"0")} s`:`${sec} s`};
+function ptr(c,cb){/* Zeigerereignisse in CSS-Pixeln */const g=e=>{const r=c.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};c.addEventListener("pointerdown",e=>{const[p,q]=g(e);cb("down",p,q,e)});c.addEventListener("pointermove",e=>{const[p,q]=g(e);cb("move",p,q,e)});c.addEventListener("pointerleave",e=>cb("leave",0,0,e));c.addEventListener("pointerup",e=>{const[p,q]=g(e);cb("up",p,q,e)})}
+
+/* ===================== Diagramm ===================== */
+function nice(r){const e=10**Math.floor(Math.log10(r/5));for(const m of[1,2,2.5,5,10])if(r/(m*e)<=6)return m*e;return 10*e}
+function chart(o,c){const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const L=54,R=14,T=14,B=40;
+ const X=v=>L+(v-c.x0)/(c.x1-c.x0)*(w-L-R),Y=v=>h-B-(v-c.y0)/(c.y1-c.y0)*(h-T-B);
+ x.strokeStyle=col("--grid");x.lineWidth=1;
+ const sx=c.sx||nice(c.x1-c.x0),sy=c.sy||nice(c.y1-c.y0);
+ for(let v=Math.ceil(c.x0/sx-1e-9)*sx;v<=c.x1+1e-9;v+=sx){x.beginPath();x.moveTo(X(v),T);x.lineTo(X(v),h-B);x.stroke();txt(x,c.xf?c.xf(v):de(v,3),X(v),h-B+12,{a:"center",c:col("--mut"),size:12})}
+ for(let v=Math.ceil(c.y0/sy-1e-9)*sy;v<=c.y1+1e-9;v+=sy){x.beginPath();x.moveTo(L,Y(v));x.lineTo(w-R,Y(v));x.stroke();txt(x,(c.yf?c.yf(v):de(v,3)).replace("-","−"),L-6,Y(v),{a:"right",c:col("--mut"),size:12})}
+ x.strokeStyle=col("--mut");x.beginPath();x.moveTo(L,T);x.lineTo(L,h-B);x.lineTo(w-R,h-B);x.stroke();
+ txt(x,c.xl,(L+w-R)/2,h-10,{a:"center",c:col("--mut"),size:13,w:600});
+ x.save();x.translate(13,(T+h-B)/2);x.rotate(-Math.PI/2);txt(x,c.yl,0,0,{a:"center",c:col("--mut"),size:13,w:600});x.restore();
+ x.save();x.beginPath();x.rect(L,T,w-L-R,h-T-B);x.clip();
+ (c.extra||(()=>{}))(x,X,Y);
+ for(const s of c.series||[]){const cc=col(s.c);
+  if(s.fn){x.strokeStyle=cc;x.lineWidth=s.lw||2;x.setLineDash(s.dash||[]);x.beginPath();let st=false;for(let i=0;i<=300;i++){const v=c.x0+(c.x1-c.x0)*i/300,y=s.fn(v);if(!isFinite(y)){st=false;continue}st?x.lineTo(X(v),Y(y)):x.moveTo(X(v),Y(y));st=true}x.stroke();x.setLineDash([])}
+  if(s.line&&s.pts&&s.pts.length>1){x.strokeStyle=s.alpha?alpha(cc,s.alpha):cc;x.lineWidth=s.lw||2.2;x.setLineDash(s.dash||[]);x.beginPath();s.pts.forEach((p,i)=>i?x.lineTo(X(p[0]),Y(p[1])):x.moveTo(X(p[0]),Y(p[1])));x.stroke();x.setLineDash([])}
+  if(s.pts&&!s.line){x.fillStyle=cc;for(const p of s.pts){x.beginPath();x.arc(X(p[0]),Y(p[1]),s.r||4,0,7);x.fill()}}}
+ (c.after||(()=>{}))(x,X,Y);
+ x.restore();
+ if(c.legend&&c.legend.length){let yy=T+10;x.font='12px "Source Sans 3",sans-serif';const lw=Math.max(...c.legend.map(l=>x.measureText(l[0]).width))+30;x.fillStyle=alpha(col("--card"),.85);x.fillRect(w-R-lw-4,T+1,lw+2,c.legend.length*17+4);for(const [t,cc,d] of c.legend){x.strokeStyle=col(cc);x.lineWidth=2.5;x.setLineDash(d||[]);x.beginPath();x.moveTo(w-R-lw,yy);x.lineTo(w-R-lw+16,yy);x.stroke();x.setLineDash([]);txt(x,t,w-R-lw+21,yy,{size:12,c:col("--ink")});yy+=17}}}
+
+
+let uT=0;
+
+/* ===================== Laborgeräte (gemeinsam) ===================== */
+const TROOM=21,CWAT=4190,CICE=2100,LF=334000,LV=2257000;
+class Thermo{constructor(tau=4,res=.1,noise=.03){this.T=null;this.tau=tau;this.res=res;this.noise=noise;this.disp=null;this.acc=1}
+ upd(dt,T){if(this.T===null)this.T=T;this.T+=(T-this.T)*(1-Math.exp(-dt/this.tau));this.acc+=dt;if(this.acc>=.5||this.disp===null){this.acc=0;this.disp=Math.round((this.T+gauss()*this.noise)/this.res)*this.res}return this.disp}
+ reset(T){this.T=T;this.disp=Math.round(T/this.res)*this.res}}
+const fmtSW=t=>{const m=Math.floor(t/60),s=t-60*m;return`${m}:${s<10?"0":""}${s.toFixed(1).replace(".",",")}`};
+const fnum=(v,d)=>Number(v).toLocaleString("de-AT",{minimumFractionDigits:d,maximumFractionDigits:d}).replace("-","−");
+function lcd(x,X,Y,W,H,text,lab,o={}){x.fillStyle="#1d2420";x.beginPath();x.roundRect(X,Y,W,H,6);x.fill();x.fillStyle="#2f3a33";x.beginPath();x.roundRect(X+4,Y+4,W-8,H-8,4);x.fill();
+ x.font=`700 ${o.size||Math.min(H*.55,22)}px Archivo,system-ui,sans-serif`;x.fillStyle=o.c||"#a6f2b8";x.textAlign="right";x.textBaseline="middle";x.fillText(text,X+W-9,Y+H/2+1);
+ if(lab)txt(x,lab,X+W/2,Y-9,{a:"center",size:11,w:700,c:col("--mut")})}
+/* Station mit Stoppuhr, Messtabelle, Zeitraffer */
+function mkCommon(S){const p=S.p;const el=document.getElementById(p+"Com");
+ el.innerHTML=`<div class="grp"><h3>Stoppuhr</h3><div class="sw" id="${p}SW">0:00,0</div><div class="row"><button class="b pri sm" id="${p}SWgo">Start</button><button class="b sm" id="${p}SWre">Zurücksetzen</button></div></div>
+ <div class="grp"><h3>Messwerte</h3><label class="chk"><input type="checkbox" id="${p}Auto"> automatisch, solange die Stoppuhr läuft, alle</label>
+ <select id="${p}Ev">${(S.evs||[5,10,15,30,60]).map(v=>`<option value="${v}"${v==(S.ev||10)?" selected":""}>${v<60?v+" s":v/60+" min"}</option>`).join("")}</select>
+ <div class="row"><button class="b sm" id="${p}Rec">Messwert aufnehmen</button><button class="b sm" id="${p}Cp">Tabelle kopieren</button><button class="b sm" id="${p}Cl">Tabelle löschen</button></div></div>
+ <label>Zeitraffer</label><div class="seg" id="${p}Sp">${S.speeds.map((v,i)=>`<button data-v="${v}" aria-pressed="${i==0}">${v}×</button>`).join("")}</div>
+ <button class="b" id="${p}New">↺ Neuer Versuch</button>`;
+ S.spd=S.speeds[0];S.sw={t:0,run:false};S.log={rows:[],next:0};S.trace=[];S.t=0;
+ seg(p+"Sp",v=>S.spd=+v);
+ $(`#${p}SWgo`).onclick=()=>{S.sw.run=!S.sw.run;if(S.sw.run)S.log.next=Math.ceil(S.sw.t/+$(`#${p}Ev`).value-1e-9)*+$(`#${p}Ev`).value;swUpd(S)};
+ $(`#${p}SWre`).onclick=()=>{S.sw.run=false;S.sw.t=0;S.log.next=0;swUpd(S)};
+ $(`#${p}Rec`).onclick=()=>rec(S);$(`#${p}Cl`).onclick=()=>{S.log.rows=[];tbl(S)};
+ $(`#${p}Cp`).onclick=async()=>{const c=S.cols(),csv=[c.map(k=>k[0]).join(";"),...S.log.rows.map(r=>c.map((k,i)=>fnum(r[k[2]??i],k[1]).replace("−","-").replace(/\s/g,"")).join(";"))].join("\n");try{await navigator.clipboard.writeText(csv);flash(S,"Tabelle kopiert – in Excel oder GeoGebra einfügen.","ok")}catch(e){flash(S,"Kopieren ist hier nicht erlaubt. Markiere die Tabelle und kopiere sie mit Strg+C.","warn")}};
+ $(`#${p}New`).onclick=()=>{S.sw.run=false;S.sw.t=0;S.log.rows=[];S.trace=[];S.t=0;S.lastTr=-1e9;S.reset();swUpd(S);tbl(S)};
+ tbl(S);swUpd(S)}
+function swUpd(S){$(`#${S.p}SW`).textContent=fmtSW(S.sw.t);$(`#${S.p}SWgo`).textContent=S.sw.run?"Stopp":"Start"}
+function rec(S){const r=S.sample();S.log.rows.push([S.sw.t,...r]);S.log.ptsT=(S.log.ptsT||[]);S.log.ptsT.push(S.t);tbl(S)}
+function tbl(S){const c=S.cols(),el=$(`#${S.p}T`);if(!S.log.rows.length){el.innerHTML=`<p class="note" style="padding:8px 10px;margin:0">Noch keine Messwerte. Starte die Stoppuhr und nimm Werte auf – von Hand oder automatisch.</p>`;S.log.ptsT=[];return}
+ el.innerHTML=`<table><tr>${c.map(k=>`<th class="n">${k[0]}</th>`).join("")}</tr>${S.log.rows.map(r=>`<tr>${c.map((k,i)=>`<td class="n">${fnum(r[k[2]??i],k[1])}</td>`).join("")}</tr>`).join("")}</table>`;el.scrollTop=el.scrollHeight}
+function flash(S,t,cls=""){const m=$(`#${S.p}Msg`);m.hidden=false;m.className="msg "+cls;m.textContent=t;clearTimeout(S.ft);S.ft=setTimeout(()=>m.hidden=true,6000)}
+function warn(S,t){const m=$(`#${S.p}Msg`);if(!t){if(S.wt){m.hidden=true;S.wt=""}return}if(S.wt==t)return;S.wt=t;m.hidden=false;m.className="msg warn";m.textContent=t}
+function tick(S,dt){/* dt in Echtzeit-Sekunden */const sim=dt*S.spd;const n=Math.max(1,Math.ceil(sim/(S.hmax||.05))),h=sim/n;for(let i=0;i<n;i++){S.step(h);S.t+=h;if(S.sw.run){S.sw.t+=h;const ev=+$(`#${S.p}Ev`).value;if($(`#${S.p}Auto`).checked&&S.sw.t>=S.log.next-1e-9){rec(S);S.log.next+=ev}}
+  if(!S.lastTr||S.t-S.lastTr>=(S.trEvery||1)){S.lastTr=S.t;S.trace.push(S.tr());if(S.trace.length>4000)S.trace.splice(0,S.trace.length-4000)}}
+ swUpd(S)}
+/* Prüfen */
+function mkCheck(id,items){const el=document.getElementById(id);el.innerHTML=`<div class="chk2">${items.map((it,i)=>`<div class="ln${it.lv==2?" l2":it.lv==3?" l3":""}"><label for="${id}i${i}" style="min-width:220px">${it.label}</label><input type="number" step="any" id="${id}i${i}" inputmode="decimal"><span>${it.unit}</span><button class="b sm" data-i="${i}">Prüfen</button><button class="b sm" data-s="${i}">Lösung</button><span class="res" id="${id}r${i}"></span></div>`).join("")}</div><p class="note">Rechne mit deinen eigenen Messwerten aus der Tabelle. „Prüfen“ vergleicht mit dem richtigen Wert.</p>`;
+ el.querySelectorAll("button[data-i]").forEach(b=>b.onclick=()=>{const i=+b.dataset.i,it=items[i],v=parseFloat(String($(`#${id}i${i}`).value).replace(",",".")),r=$(`#${id}r${i}`);if(!isFinite(v)){r.textContent="Bitte eine Zahl eingeben.";return}
+  const tv=it.truth();if(tv==null){r.textContent=it.none||"Noch keine Messung.";return}const dev=Math.abs(v-tv)/Math.abs(it.abs?1:tv);const tol=it.tol||[.05,.12];
+  r.textContent=(it.abs?Math.abs(v-tv)<=tol[0]:dev<=tol[0])?"✓ Sehr gut!":(it.abs?Math.abs(v-tv)<=tol[1]:dev<=tol[1])?"✓ Recht gut – kleine Abweichung (Messfehler, Wärmeverluste).":(v-tv>0?"✗ Zu groß.":"✗ Zu klein.")+" Prüfe Rechnung und Einheiten."});
+ el.querySelectorAll("button[data-s]").forEach(b=>b.onclick=()=>{const i=+b.dataset.s,it=items[i];$(`#${id}r${i}`).textContent=it.show()})}
+function lsq(pts){const n=pts.length;if(n<3)return null;let sx=0,sy=0,sxx=0,sxy=0;for(const[x,y]of pts){sx+=x;sy+=y;sxx+=x*x;sxy+=x*y}const d=n*sxx-sx*sx;if(!d)return null;const k=(n*sxy-sx*sy)/d;return{k,d:(sy-k*sx)/n}}
+function curve(o,S,o2={}){const tr=S.trace,lp=S.log.ptsT||[],rows=S.log.rows;const div=o2.min?60:1;const t1=Math.max(o2.t0||60,(tr.length?tr[tr.length-1][0]:0))/div;let ys=tr.map(p=>p[1]).filter(isFinite);let lo=Math.min(...ys,o2.ylo??20),hi=Math.max(...ys,o2.yhi??25);if(!ys.length){lo=o2.ylo??15;hi=o2.yhi??30}
+ const pad=Math.max(1,(hi-lo)*.08);chart(o,{x0:0,x1:Math.ceil(t1*1.05),y0:Math.floor(lo-pad),y1:Math.ceil(hi+pad),xl:o2.min?"Versuchszeit in min":"Versuchszeit in s",yl:o2.yl||"Temperatur in °C",
+  series:[...(o2.extra||[]),{pts:tr.map(p=>[p[0]/div,p[1]]),line:true,c:o2.c||"--hot"},{pts:lp.map((t,i)=>[t/div,o2.rowY?o2.rowY(rows[i]):NaN]).filter(p=>isFinite(p[1])),c:"--ink",r:3.5}],after:o2.after})}
+
+/* ===================== Station: Elektrisch heizen ===================== */
+const XCAND=[{n:"Ethylenglykol",c:2400,rho:1.11,bp:197},{n:"Methanol",c:2510,rho:.79,bp:65},{n:"Paraffinöl",c:2130,rho:.85,bp:300},{n:"Salzwasser (20 %)",c:3300,rho:1.15,bp:106}];
+const HX=XCAND[Math.floor(Math.random()*XCAND.length)];
+const HLIQ={wasser:{n:"Wasser",c:4190,rho:1,bp:100,col:[110,165,230],lv:2257e3},oel:{n:"Speiseöl",c:1970,rho:.92,bp:250,col:[232,196,80],lv:9e5},ethanol:{n:"Ethanol (Spiritus)",c:2430,rho:.79,bp:78,col:[215,225,240],lv:846e3},
+ glyc:{n:"Glycerin",c:2390,rho:1.26,bp:290,col:[230,230,215],visc:1,lv:9e5},x:{n:"Flüssigkeit X (unbekannt)",c:HX.c,rho:HX.rho,bp:HX.bp,col:[190,140,210],lv:9e5,secret:HX.n}};
+$("#hLiq").innerHTML=Object.entries(HLIQ).map(([k,l])=>`<option value="${k}">${l.n}</option>`).join("");
+const HCK=80,HCC=10,HCAL=286.4;
+const H={p:"h",speeds:[1,5,20],liq:"wasser",m:0,tara:0,Tt:TROOM,Tb:TROOM,Tc:TROOM,on:false,E:0,P:0,trip:false,Tin:20,th:new Thermo(4,.1,.03),wg:0,
+ reset(){Object.assign(H,{wg:HCAL,m:0,tara:0,Tt:TROOM,Tb:TROOM,Tc:TROOM,on:false,E:0,P:0,trip:false,Tin:18.5+Math.random()*2.5});H.th.reset(TROOM);hBtn();warn(H,"")},
+ R(){return 3.2*(1+.0004*(H.Tc-20))},
+ step(h){const L=HLIQ[H.liq],U=+$("#hU").value,lid=$("#hLid").checked,stir=$("#hStir").checked,vol=H.m/L.rho*1000;
+  H.P=H.on?U*U/H.R():0;const cov=vol>=80,Cl=H.m/2*L.c+HCK/2;
+  const Gcw=cov?10:.15,Gm=stir?(L.visc?12:40):(H.Tb>H.Tt?(L.visc?.8:3):.5),Gl=lid?.12:.4;
+  const qc=Gcw*(H.Tc-H.Tb);H.Tc+=h*(H.P-qc-(cov?0:.05*(H.Tc-TROOM)))/HCC;
+  const qm=Gm*(H.Tb-H.Tt);H.Tb+=h*(qc-qm-Gl/2*(H.Tb-TROOM))/Cl;
+  const ev=!lid&&H.m>0&&H.Tt>25?.003*(H.Tt-20)**2*(L.bp<90?2.5:1):0;H.Tt+=h*(qm-Gl/2*(H.Tt-TROOM)-ev)/Cl;
+  if(ev&&H.m>0)H.m=Math.max(0,H.m-ev*h/L.lv);
+  H.boil=false;for(const k of["Tt","Tb"])if(H.m>0&&H[k]>L.bp){const ex=(H[k]-L.bp)*Cl;H[k]=L.bp;H.m=Math.max(0,H.m-ex/L.lv);H.boil=true}
+  H.E+=H.P*h;if(H.Tc>220&&H.on){H.on=false;H.trip=true;hBtn()}
+  H.th.upd(h,H.m>0?.6*H.Tt+.4*H.Tb:.5*H.Tt+.5*TROOM);
+  H.wg=HCAL+H.m*1000},
+ scale(){return Math.round((H.wg-H.tara+gauss()*.04)*10)/10},
+ meters(){const U=+$("#hU").value;return{U:H.on?Math.round(U*(1+gauss()*.0015)*100)/100:0,I:H.on?Math.round(U/H.R()*(1+gauss()*.002)*100)/100:0}},
+ sample(){const m=H.meters();return[H.th.disp,m.U,m.I,m.U*m.I,H.E/1000]},
+ cols(){return lvl()<2?[["t in s",1,0],["T in °C",1,1],["Energie in kJ",2,5]]:[["t in s",1,0],["T in °C",1,1],["U in V",2,2],["I in A",2,3]]},
+ tr(){return[H.t,H.th.disp]}};
+mkCommon(H);
+function hPour(g){if(H.m==0)H.th.reset(H.Tin);const L=HLIQ[H.liq],dm=(g==50?g*(1+gauss()*.025):g==10?g+gauss()*.25:g+gauss()*.06)/1000;if(H.m/L.rho*1000+dm*1000>420){flash(H,"Das Kalorimeter ist voll.","warn");return}
+ const Ct=H.m/2*L.c+HCK/2;H.Tt=(Ct*H.Tt+dm/2*L.c*H.Tin)/(Ct+dm/2*L.c);H.Tb=(Ct*H.Tb+dm/2*L.c*H.Tin)/(Ct+dm/2*L.c);H.m+=dm;H.wg=HCAL+H.m*1000}
+$$("[data-hp]").forEach(b=>b.onclick=()=>hPour(+b.dataset.hp));
+$("#hTara").onclick=()=>{H.tara=H.wg;flash(H,"Waage zeigt jetzt 0,0 g – alles, was du einfüllst, wird gewogen.")};
+$("#hEmpty").onclick=()=>{H.on=false;H.m=0;H.Tt=H.Tb=TROOM+(H.Tt-TROOM)*.3;H.wg=HCAL;hBtn()};
+$("#hLiq").onchange=e=>{H.liq=e.target.value;if(H.m>0){H.m=0;H.on=false;hBtn();flash(H,"Kalorimeter ausgeleert und ausgespült – jetzt kannst du die neue Flüssigkeit einfüllen.")}H.Tin=18.5+Math.random()*2.5;H.Tt=H.Tb=TROOM;H.Tc=TROOM};
+bindRange("hU","hUo",v=>fnum(v,1)+" V");
+function hBtn(){$("#hOn").textContent=H.on?"Strom ausschalten":"Strom einschalten";$("#hOn").classList.toggle("pri",!H.on)}
+$("#hOn").onclick=()=>{if(!H.on&&H.trip)H.trip=false;H.on=!H.on;hBtn()};$("#hE0").onclick=()=>{H.E=0};
+function hWarn(){const L=HLIQ[H.liq];if(H.trip)return warn(H,"Die Heizspirale ist überhitzt und die Sicherung hat abgeschaltet. Die Spirale muss immer ganz in der Flüssigkeit sein!");
+ if(H.on&&H.m/L.rho*1000<80)return warn(H,"Achtung: Die Heizspirale ragt aus der Flüssigkeit (mindestens 80 ml einfüllen) – sie wird sehr heiß!");if(H.boil)return warn(H,`Die Flüssigkeit siedet (${L.bp} °C) – ab jetzt steigt die Temperatur nicht mehr.`);warn(H,"")}
+const hC=canv("hC",o=>{const x=o.x,w=o.w,h=o.h,L=HLIQ[H.liq],lv=lvl();x.clearRect(0,0,w,h);const by=h*.9;
+ x.fillStyle=isDark()?"#2b2621":"#d9cdb8";x.fillRect(0,by,w,h-by);
+ /* Waage */
+ const wx=w*.06,ww=Math.min(w*.4,300),wy=by-h*.1;x.fillStyle=isDark()?"#3a3f46":"#cfd4da";x.beginPath();x.roundRect(wx,wy,ww,h*.1,8);x.fill();x.fillStyle=isDark()?"#4a5058":"#b9c0c8";x.fillRect(wx+ww*.1,wy-6,ww*.8,6);
+ lcd(x,wx+ww-120,wy+h*.02,110,h*.06,fnum(H.scale(),1)+" g",null,{size:Math.min(20,h*.035)});txt(x,"Waage",wx+10,wy+h*.05,{size:12,w:700,c:"#555"});
+ /* Kalorimeter */
+ const cx=wx+ww*.5,cw=Math.min(ww*.55,150),ch=h*.42,cy=wy-6-ch;
+ x.fillStyle=isDark()?"#5b636d":"#9aa3ad";x.beginPath();x.roundRect(cx-cw/2,cy,cw,ch,10);x.fill();
+ const iw=cw*.78,ih=ch*.9,ix=cx-iw/2,iy=cy+ch*.06;x.fillStyle=isDark()?"#d7dce1":"#eef1f4";x.fillRect(ix,iy,iw,ih);
+ const vol=H.m/L.rho*1000,lvH=ih*clamp(vol/420,0,1),ly=iy+ih-lvH;
+ if(H.m>0){const g=x.createLinearGradient(0,ly,0,iy+ih);const c0=L.col,tt=cA((H.Tt-10)/80),tb=cA((H.Tb-10)/80);const mix=(c,t)=>`rgb(${(c[0]*.65+t[0]*.35)|0},${(c[1]*.65+t[1]*.35)|0},${(c[2]*.65+t[2]*.35)|0})`;g.addColorStop(0,mix(c0,tt));g.addColorStop(1,mix(c0,tb));x.fillStyle=g;x.fillRect(ix,ly,iw,lvH)}
+ /* Heizspirale */
+ x.strokeStyle=H.Tc>350?"#ffd27a":H.Tc>120?"#ff5a2a":H.Tc>60?"#c0392b":"#6b6f75";x.lineWidth=3;x.beginPath();const sy=iy+ih-ih*.12;for(let i=0;i<=10;i++){const X=ix+iw*.18+i*iw*.064,Y=sy+(i%2?-8:8);i?x.lineTo(X,Y):x.moveTo(X,Y)}x.stroke();
+ x.strokeStyle="#6b6f75";x.lineWidth=2;x.beginPath();x.moveTo(ix+iw*.18,sy);x.lineTo(ix+iw*.18,cy-14);x.moveTo(ix+iw*.82,sy);x.lineTo(ix+iw*.82,cy-14);x.stroke();
+ /* Rührer */
+ const st=$("#hStir").checked,rx=cx+iw*.08;x.strokeStyle=col("--ink");x.lineWidth=3;x.beginPath();x.moveTo(rx,cy-30);x.lineTo(rx,iy+ih*.72);x.stroke();const pw=st?Math.abs(Math.sin(uT*8))*iw*.16+3:iw*.16;x.fillStyle=col("--ink");x.fillRect(rx-pw,iy+ih*.7,2*pw,6);
+ /* Thermometer */
+ const tx=cx-iw*.12;x.fillStyle="#e8e8e8";x.strokeStyle="#777";x.lineWidth=1;x.fillRect(tx-3,cy-28,6,ih*.62+28);x.strokeRect(tx-3,cy-28,6,ih*.62+28);
+ if($("#hLid").checked){x.fillStyle=isDark()?"#7b838d":"#7f8892";x.beginPath();x.roundRect(cx-cw/2-4,cy-10,cw+8,14,5);x.fill()}
+ lcd(x,cx-cw/2-10,cy-h*.13,cw*.9+20,h*.065,fnum(H.th.disp,1)+" °C","Thermometer",{c:"#ffd28a",size:Math.min(22,h*.04)});
+ /* Netzgerät */
+ const nx=Math.max(cx+cw/2+30,w*.55),nw=Math.min(w-nx-14,250);let ny=by-h*.3;x.fillStyle=isDark()?"#384049":"#e3e6ea";x.strokeStyle="rgba(0,0,0,.3)";x.lineWidth=1.5;x.beginPath();x.roundRect(nx,ny,nw,h*.3,8);x.fill();x.stroke();
+ txt(x,"Netzgerät",nx+10,ny+14,{size:12,w:700,c:col("--mut")});const m=H.meters();const dW=(nw-30)/2,dH=h*.075;ny+=h*.015;
+ if(lv<2){lcd(x,nx+10,ny+h*.07,dW,dH,fnum(m.U*m.I,1)+" W","Leistung");lcd(x,nx+20+dW,ny+h*.07,dW,dH,fnum(H.E/1000,2)+" kJ","Energie")}
+ else{lcd(x,nx+10,ny+h*.07,dW,dH,fnum(m.U,2)+" V","Spannung");lcd(x,nx+20+dW,ny+h*.07,dW,dH,fnum(m.I,2)+" A","Stromstärke")}
+ x.fillStyle=H.on?"#3ad16b":"#555";x.beginPath();x.arc(nx+nw*.5,ny+h*.245,7,0,7);x.fill();txt(x,H.on?"an":"aus",nx+nw*.5+12,ny+h*.245,{size:12,c:col("--mut")});
+ x.fillStyle="#222";x.beginPath();x.arc(nx+nw-34,ny+h*.22,16,0,7);x.fill();const ang=-2.4+4.8*(+$("#hU").value/12);x.strokeStyle="#fff";x.lineWidth=3;x.beginPath();x.moveTo(nx+nw-34,ny+h*.22);x.lineTo(nx+nw-34+Math.cos(ang-1.57)*12,ny+h*.22+Math.sin(ang-1.57)*12);x.stroke();
+ for(const [k,c] of[[0,"#d33"],[1,"#222"]]){const px=nx+18+k*22,py=ny+h*.25;x.fillStyle=c;x.beginPath();x.arc(px,py,5,0,7);x.fill();x.strokeStyle=c;x.lineWidth=2.2;x.beginPath();x.moveTo(px,py);x.bezierCurveTo(px-60,py+h*.03,ix+iw*(k?.82:.18)+40,cy-h*.2,ix+iw*(k?.82:.18),cy-14);x.stroke()}
+ /* Stoppuhr */
+ lcd(x,w-150,12,138,h*.07,fmtSW(H.sw.t),null,{c:"#9fd6ff",size:Math.min(22,h*.04)});
+ txt(x,L.n,cx,by+16,{a:"center",size:13,w:700})});
+const hG=canv("hG",o=>{const lv=lvl();let after;if(lv>2){const on=H.fit;after=on?(x,X,Y)=>{x.strokeStyle=col("--acc");x.setLineDash([6,4]);x.lineWidth=2;x.beginPath();x.moveTo(X(on.t0),Y(on.k*on.t0+on.d));x.lineTo(X(on.t1),Y(on.k*on.t1+on.d));x.stroke();x.setLineDash([])}:null}
+ curve(o,H,{rowY:r=>r[1],after})});
+function hFit(){/* Ausgleichsgerade über den letzten zusammenhängenden Heizabschnitt (Messkurve) */if(lvl()<3){$("#hFit").textContent="";H.fit=null;return}
+ const pts=H.trace.filter(p=>p[2]);if(pts.length<20){$("#hFit").textContent="Ausgleichsgerade: erscheint, sobald eine Weile geheizt wurde.";H.fit=null;return}
+ let i=pts.length-1;while(i>0&&pts[i][0]-pts[i-1][0]<2.5)i--;const seg=pts.slice(i).filter((p,j,a)=>p[0]>a[0][0]+20);if(seg.length<10){H.fit=null;return}
+ const f=lsq(seg.map(p=>[p[0],p[1]]));if(!f)return;H.fit={...f,t0:seg[0][0],t1:seg[seg.length-1][0]};$("#hFit").textContent=`Ausgleichsgerade im letzten Heizabschnitt: Steigung ${fnum(f.k,4)} K/s = ${fnum(f.k*60,3)} K/min`}
+H.tr=()=>[H.t,H.th.disp,H.on];
+mkCheck("hChk",[{label:"Energie für 1 °C mehr (deine Füllung)",unit:"J/°C",lv:1,truth:()=>H.m>0?H.m*HLIQ[H.liq].c+HCK:null,none:"Erst Flüssigkeit einfüllen.",tol:[.06,.14],show:()=>H.m>0?`Für die Füllung jetzt etwa ${fnum(H.m*HLIQ[H.liq].c+HCK,0)} J pro °C (mit Gefäß).`:"Erst Flüssigkeit einfüllen."},
+ {label:"Spezifische Wärmekapazität c",unit:"J/(kg·K)",lv:1,truth:()=>HLIQ[H.liq].c,tol:[.06,.14],show:()=>{const L=HLIQ[H.liq];return`${L.secret?L.secret+": ":"Tabellenwert: "}${fnum(L.c,0)} J/(kg·K)`}},
+ {label:"Wasserwert des Kalorimeters C_K",unit:"J/K",lv:3,truth:()=>HCK,tol:[.25,.5],show:()=>`Im Modell: C_K = ${HCK} J/K`}]);
+LVLCB.push(()=>{tbl(H);hFit();hG.redraw()});
+H.reset();
+function hSet(liq,g,U,o={}){location.hash="heizen";$("#hNew").click();$("#hLiq").value=liq;H.liq=liq;H.Tin=18.5+Math.random()*2.5;$("#hTara").click();let r=g;for(const s of[50,10,1])while(r>=s){hPour(s);r-=s}$("#hU").value=U;$("#hU").dispatchEvent(new Event("input"));$("#hLid").checked=o.lid!==false;$("#hStir").checked=o.stir!==false;if(o.go){$("#hAuto").checked=true;H.on=true;hBtn();H.sw.run=true;swUpd(H)}}
+tasks("heizen",[
+ {l:1,h:"Wasser erwärmen",p:"Fülle 200 g Wasser ein, starte Stoppuhr und Heizung gleichzeitig. Wie lange dauert es, bis das Wasser 10 °C wärmer ist? Wie viel Energie hat das gebraucht?",set:()=>hSet("wasser",200,8)},
+ {l:1,h:"Doppelt so viel Wasser",p:"Wiederhole den Versuch mit 400 g Wasser bei gleicher Spannung. Wie lange dauert es jetzt für 10 °C?",set:()=>hSet("wasser",400,8)},
+ {l:1,h:"Öl oder Wasser?",p:"Erwärme 200 g Speiseöl gleich lange wie das Wasser. Welche Flüssigkeit wird wärmer? Was bedeutet das für die Energie, die man für 1 °C braucht?",set:()=>hSet("oel",200,8)},
+ {l:2,h:"c von Wasser bestimmen",p:"Miss 300 s lang alle 30 s die Temperatur (U und I notieren). Berechne Q = U·I·t und c = Q/(m·ΔT). Warum kommt etwas mehr als 4190 J/(kg·K) heraus?",set:()=>hSet("wasser",250,10)},
+ {l:2,h:"Ohne Rühren",p:"Schalte den Rührer aus und heize. Warum steigt die Anzeige ungleichmäßig? Was passiert, wenn du dann wieder rührst?",set:()=>hSet("wasser",250,10,{stir:false})},
+ {l:2,h:"Unbekannte Flüssigkeit",p:"Bestimme c der Flüssigkeit X und vergleiche mit einer Tabelle. Um welchen Stoff könnte es sich handeln?",set:()=>hSet("x",200,10)},
+ {l:3,h:"Wasserwert bestimmen",p:"Bestimme mit Wasser (c bekannt) aus Steigung und Leistung den Wasserwert C_K des Kalorimeters. Nutze ihn, um c von Ethanol genauer zu bestimmen.",set:()=>hSet("wasser",200,10,{go:true})},
+ {l:3,h:"Wärmeverluste",p:"Heize ohne Deckel bis etwa 60 °C und schalte dann ab. Miss die Abkühlung 5 Minuten lang. Wie groß ist die Verlustleistung bei 60 °C? Wie korrigierst du damit dein Ergebnis?",set:()=>hSet("wasser",200,12,{lid:false,go:true})}]);
+
+/* ===================== Station: Mischen ===================== */
+const YCAND=[{n:"Zinn",c:228},{n:"Titan",c:523},{n:"Zink",c:388}];const MY=YCAND[Math.floor(Math.random()*3)];
+const MMET={cu:{n:"Kupfer",c:385,g:250,col:"#c27a45"},al:{n:"Aluminium",c:897,g:100,col:"#b8c0c8"},fe:{n:"Eisen",c:452,g:200,col:"#6f747b"},ms:{n:"Messing",c:377,g:220,col:"#c9a43a"},pb:{n:"Blei",c:129,g:300,col:"#5f6778"},y:{n:"Metall Y (unbekannt)",c:MY.c,g:180,col:"#8d9a8f",secret:MY.n}};
+for(const k in MMET)MMET[k].mass=Math.round((MMET[k].g+gauss()*4)*10)/10;
+$("#mMet").innerHTML=Object.entries(MMET).map(([k,m])=>`<option value="${k}">${m.n} – ${fnum(m.mass,1)} g</option>`).join("");
+const MBATH=99.6,MCK=80,MCAL=286.4;
+const M={p:"m",speeds:[1,5,20],mode:"wasser",m:0,tara:0,Tt:TROOM,Tb:TROOM,wg:MCAL,th:new Thermo(4,.1,.03),th2:new Thermo(3,.1,.03),
+ hot:null,met:null,mix:null,pour:0,
+ reset(){Object.assign(M,{m:0,tara:0,Tt:TROOM,Tb:TROOM,wg:MCAL,hot:null,met:null,mix:null,pour:0,Tin:13.5+Math.random()*3});M.th.reset(TROOM);M.th2.reset(TROOM);mBtn();warn(M,"")},
+ step(h){const stir=$("#mStir").checked,Cl=M.m/2*CWAT+MCK/2,Gm=stir?40:(M.Tb>M.Tt?3:.6),Gl=.12;
+  let qmet=0;if(M.met&&M.met.inCal){const Gmw=stir?2.5:.8;qmet=Gmw*(M.met.T-M.Tb);M.met.T-=qmet*h/M.met.C}
+  else if(M.met){M.met.T+=(MBATH-M.met.T)*Math.min(1,h*.05)}
+  const qm=Gm*(M.Tb-M.Tt);M.Tb+=h*(qmet-qm-Gl/2*(M.Tb-TROOM))/Cl;M.Tt+=h*(qm-Gl/2*(M.Tt-TROOM))/Cl;
+  if(M.hot&&M.hot.m>0){const Ch=M.hot.m*CWAT+60;M.hot.T-=h*(.8*(M.hot.T-TROOM)+.002*(M.hot.T-20)**2)/Ch}
+  M.th.upd(h,M.m>0?.5*M.Tt+.5*M.Tb:TROOM);M.th2.upd(h,M.mode=="wasser"?(M.hot&&M.hot.m>0?M.hot.T:TROOM):MBATH);M.wg=MCAL+M.m*1000+(M.met&&M.met.inCal?M.met.mass:0)},
+ scale(){return Math.round((M.wg-M.tara+gauss()*.04)*10)/10},
+ sample(){return[M.th.disp,M.th2.disp,M.scale()]},
+ cols(){return[["t in s",1,0],["T Kalorimeter in °C",1,1],[M.mode=="wasser"?"T Becherglas in °C":"T Wasserbad in °C",1,2],["Waage in g",1,3]]},
+ tr(){return[M.t,M.th.disp]}};
+mkCommon(M);
+function mPour(g){if(M.m==0)M.th.reset(M.Tin);const dm=(g==50?g*(1+gauss()*.025):g==10?g+gauss()*.25:g+gauss()*.06)/1000;if(M.m*1000+dm*1000>400){flash(M,"Das Kalorimeter ist voll.","warn");return}const Ct=M.m/2*CWAT+MCK/2;
+ M.Tt=(Ct*M.Tt+dm/2*CWAT*M.Tin)/(Ct+dm/2*CWAT);M.Tb=(Ct*M.Tb+dm/2*CWAT*M.Tin)/(Ct+dm/2*CWAT);M.m+=dm;M.wg=MCAL+M.m*1000+(M.met&&M.met.inCal?M.met.mass:0)}
+$$("[data-mp]").forEach(b=>b.onclick=()=>{if(M.mix){flash(M,"Für einen neuen Versuch: „Neuer Versuch“ oder „Ausleeren“.","warn");return}mPour(+b.dataset.mp)});
+$("#mTara").onclick=()=>{M.tara=M.wg;flash(M,"Waage zeigt jetzt 0,0 g.")};
+$("#mEmpty").onclick=()=>{const k=M.mode;M.reset();M.mode=k;mBtn()};
+const mModeSet=seg("mMode",v=>{M.mode=v;$("#mW").hidden=v!="wasser";$("#mM").hidden=v=="wasser";if(v=="metall"&&!M.met)mNewMet();tbl(M);mBtn()});
+function mNewMet(){const k=$("#mMet").value,d=MMET[k];M.met={k,mass:d.mass,C:d.mass/1000*d.c,T:MBATH,inCal:false}}
+$("#mMet").onchange=()=>{if(M.met&&M.met.inCal){flash(M,"Der Körper liegt schon im Kalorimeter. Starte einen neuen Versuch.","warn");return}mNewMet()};
+$$("[data-mh]").forEach(b=>b.onclick=()=>{if(M.mix&&M.mix.type=="wasser"){flash(M,"Für einen neuen Versuch: „Neuer Versuch“.","warn");return}const T0=+$("#mKet").value+gauss()*2;M.hot={m:(+b.dataset.mh*(1+gauss()*.04))/1000,T:T0};M.th2.reset(TROOM);mBtn()});
+$("#mPour").onclick=()=>{if(!M.hot||!M.hot.m){flash(M,"Fülle zuerst das Becherglas mit heißem Wasser.","warn");return}if(M.m<.03){flash(M,"Fülle zuerst kaltes Wasser ins Kalorimeter.","warn");return}
+ const rest=(.5+Math.random())/1000,dm=M.hot.m-rest,Te=M.hot.T-(.4+.8*Math.random());M.mix={type:"wasser",m1:M.m,T1:.5*M.Tt+.5*M.Tb,m2:dm,T2:M.hot.T,T2e:Te};
+ const Ct=M.m/2*CWAT+MCK/2,Cn=Ct+dm/2*CWAT,E=dm*CWAT*Te;const fr=.5+.2*Ct/Cn;M.Tt=(Ct*M.Tt+fr*E)/Cn;M.Tb=(Ct*M.Tb+(1-fr)*E)/Cn;if(M.Tt>Te){M.Tb+=M.Tt-Te;M.Tt=Te}M.m+=dm;/* Masse gleich verteilt, Energie mehr nach oben */
+ M.hot={m:rest,T:M.hot.T};M.pour=1;mBtn()};
+$("#mDrop").onclick=()=>{if(!M.met)mNewMet();if(M.met.inCal)return;if(M.m<.05){flash(M,"Fülle zuerst genug kaltes Wasser ins Kalorimeter (der Körper muss ganz untertauchen).","warn");return}
+ M.mix={type:"metall",m1:M.m,T1:.5*M.Tt+.5*M.Tb,C2:M.met.C,T2:M.met.T,k:M.met.k};M.met.T-=.5+.7*Math.random();M.met.inCal=true;M.pour=1;mBtn()};
+function mBtn(){$("#mPour").disabled=!!(M.mix&&M.mix.type=="wasser");$("#mDrop").disabled=!!(M.met&&M.met.inCal)}
+const mC=canv("mC",o=>{const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const by=h*.9;x.fillStyle=isDark()?"#2b2621":"#d9cdb8";x.fillRect(0,by,w,h-by);
+ const wx=w*.06,ww=Math.min(w*.4,300),wy=by-h*.1;x.fillStyle=isDark()?"#3a3f46":"#cfd4da";x.beginPath();x.roundRect(wx,wy,ww,h*.1,8);x.fill();x.fillStyle=isDark()?"#4a5058":"#b9c0c8";x.fillRect(wx+ww*.1,wy-6,ww*.8,6);
+ lcd(x,wx+ww-120,wy+h*.02,110,h*.06,fnum(M.scale(),1)+" g",null,{size:Math.min(20,h*.035)});txt(x,"Waage",wx+10,wy+h*.05,{size:12,w:700,c:"#555"});
+ const cx=wx+ww*.5,cw=Math.min(ww*.55,150),ch=h*.42,cy=wy-6-ch;x.fillStyle=isDark()?"#5b636d":"#9aa3ad";x.beginPath();x.roundRect(cx-cw/2,cy,cw,ch,10);x.fill();
+ const iw=cw*.78,ih=ch*.9,ix=cx-iw/2,iy=cy+ch*.06;x.fillStyle=isDark()?"#d7dce1":"#eef1f4";x.fillRect(ix,iy,iw,ih);
+ const lvH=ih*clamp(M.m*1000/420,0,1),ly=iy+ih-lvH;if(M.m>0){const g=x.createLinearGradient(0,ly,0,iy+ih);g.addColorStop(0,cS((M.Tt-5)/80,CW,.75));g.addColorStop(1,cS((M.Tb-5)/80,CW,.75));x.fillStyle=g;x.fillRect(ix,ly,iw,lvH)}
+ if(M.met&&M.met.inCal){const d=MMET[M.met.k];x.fillStyle=d.col;x.fillRect(cx-iw*.2,iy+ih-ih*.22,iw*.4,ih*.18)}
+ const st=$("#mStir").checked,rx=cx+iw*.18;x.strokeStyle=col("--ink");x.lineWidth=3;x.beginPath();x.moveTo(rx,cy-30);x.lineTo(rx,iy+ih*.6);x.stroke();const pw=st?Math.abs(Math.sin(uT*8))*iw*.12+3:iw*.12;x.fillStyle=col("--ink");x.fillRect(rx-pw,iy+ih*.58,2*pw,6);
+ x.fillStyle="#e8e8e8";x.strokeStyle="#777";x.lineWidth=1;x.fillRect(cx-iw*.15-3,cy-28,6,ih*.62+28);x.strokeRect(cx-iw*.15-3,cy-28,6,ih*.62+28);
+ x.fillStyle=isDark()?"#7b838d":"#7f8892";x.beginPath();x.roundRect(cx-cw/2-4,cy-10,cw+8,14,5);x.fill();
+ lcd(x,cx-cw/2-10,cy-h*.13,cw*.9+20,h*.065,fnum(M.th.disp,1)+" °C","Thermometer Kalorimeter",{c:"#ffd28a",size:Math.min(22,h*.04)});
+ /* rechts: Becherglas oder Wasserbad */
+ const bx=Math.max(cx+cw/2+40,w*.58),bw=Math.min(w*.22,140),bh=h*.3,byy=by-bh;
+ if(M.mode=="wasser"){x.fillStyle=isDark()?"#333":"#555";x.fillRect(bx-10,by-8,bw+20,8);
+  x.strokeStyle=col("--ink");x.lineWidth=2;x.beginPath();x.moveTo(bx,byy-8);x.lineTo(bx,by-8);x.lineTo(bx+bw,by-8);x.lineTo(bx+bw,byy-8);x.stroke();
+  if(M.hot&&M.hot.m>0){const hh=(bh-12)*clamp(M.hot.m/.25,0,1);x.fillStyle=cS((M.hot.T-5)/80,CW,.75);x.fillRect(bx+2,by-8-hh,bw-4,hh);if(M.hot.T>60)for(let i=0;i<3;i++){const ph=(uT*.5+i*.33)%1;x.strokeStyle=`rgba(160,170,180,${.6*(1-ph)})`;x.lineWidth=2;x.beginPath();x.moveTo(bx+bw*(.3+i*.2),by-8-hh-4-ph*30);x.quadraticCurveTo(bx+bw*(.3+i*.2)+6,by-8-hh-12-ph*30,bx+bw*(.3+i*.2),by-8-hh-20-ph*30);x.stroke()}}
+  txt(x,"Becherglas",bx+bw/2,by+16,{a:"center",size:13,w:700});lcd(x,bx-10,byy-h*.15,bw+20,h*.065,fnum(M.th2.disp,1)+" °C","Thermometer Becherglas",{c:"#ffd28a",size:Math.min(20,h*.038)})}
+ else{x.fillStyle="#3a3a3c";x.fillRect(bx-14,by-14,bw+28,14);x.fillStyle="#d6452a";x.fillRect(bx,by-16,bw,3);
+  x.strokeStyle=col("--ink");x.lineWidth=2;x.beginPath();x.moveTo(bx,byy-8);x.lineTo(bx,by-16);x.lineTo(bx+bw,by-16);x.lineTo(bx+bw,byy-8);x.stroke();x.fillStyle=cS(.97,CW,.7);x.fillRect(bx+2,byy+bh*.2,bw-4,bh*.8-17);
+  for(let i=0;i<8;i++){const ph=(uT*.9+i*.13)%1;x.strokeStyle="rgba(255,255,255,.8)";x.lineWidth=1.5;x.beginPath();x.arc(bx+8+((i*29)%(bw-16)),by-20-ph*bh*.7,2+ph*2,0,7);x.stroke()}
+  if(M.met&&!M.met.inCal){const d=MMET[M.met.k];x.strokeStyle=col("--mut");x.lineWidth=1;x.beginPath();x.moveTo(bx+bw/2,byy-30);x.lineTo(bx+bw/2,byy+bh*.45);x.stroke();x.fillStyle=d.col;x.fillRect(bx+bw*.3,byy+bh*.45,bw*.4,bh*.22);pill(x,fnum(d.mass,1)+" g",bx+bw/2,byy+bh*.56,{a:"center",size:11})}
+  txt(x,"siedendes Wasserbad",bx+bw/2,by+16,{a:"center",size:13,w:700});lcd(x,bx-10,byy-h*.15,bw+20,h*.065,fnum(M.th2.disp,1)+" °C","Thermometer Wasserbad",{c:"#ffd28a",size:Math.min(20,h*.038)})}
+ lcd(x,w-150,12,138,h*.07,fmtSW(M.sw.t),null,{c:"#9fd6ff",size:Math.min(22,h*.04)})});
+const mG=canv("mG",o=>curve(o,M,{rowY:r=>r[1],ylo:10,yhi:30}));
+function mTheo(){const x=M.mix;if(!x)return null;return x.type=="wasser"?(x.m1*x.T1+x.m2*x.T2)/(x.m1+x.m2):(x.m1*CWAT*x.T1+x.C2*x.T2)/(x.m1*CWAT+x.C2)}
+mkCheck("mChk",[{label:"Mischtemperatur (berechnet oder vermutet)",unit:"°C",lv:1,abs:1,tol:[1,2.5],truth:()=>mTheo(),none:"Erst mischen.",show:()=>M.mix?`Ohne Wärmeverluste und ohne Gefäß: ${fnum(mTheo(),1)} °C (mit deinen Ausgangswerten). Gemessen wird etwas weniger – warum?`:"Erst mischen."},
+ {label:"c des Metalls",unit:"J/(kg·K)",lv:2,tol:[.08,.16],truth:()=>M.mix&&M.mix.type=="metall"?MMET[M.mix.k].c:null,none:"Erst einen Metallkörper hineingeben.",show:()=>M.mix&&M.mix.type=="metall"?`${MMET[M.mix.k].secret||MMET[M.mix.k].n}: ${MMET[M.mix.k].c} J/(kg·K)`:"Erst einen Metallkörper hineingeben."},
+ {label:"Wasserwert C_K (aus Mischen heiß/kalt)",unit:"J/K",lv:3,tol:[.3,.6],truth:()=>MCK,show:()=>`Im Modell: C_K = ${MCK} J/K`}]);
+M.reset();
+function mSet(mode,cold,o={}){location.hash="mischen";$("#mNew").click();mModeSet(mode);M.mode=mode;$("#mW").hidden=mode!="wasser";$("#mM").hidden=mode=="wasser";$("#mTara").click();let r=cold;for(const s of[50,10,1])while(r>=s){mPour(s);r-=s}
+ if(mode=="wasser"){$("#mKet").value=o.T||80;$$("[data-mh]")[o.big?1:0].click()}else{$("#mMet").value=o.k||"cu";mNewMet()}$("#mAuto").checked=true;M.sw.run=true;swUpd(M)}
+tasks("mischen",[
+ {l:1,h:"Heiß und kalt",p:"Gieße etwa 100 g heißes Wasser in 100 g kaltes Wasser. Vermute vorher die Mischtemperatur und trage sie ein. Liegt sie genau in der Mitte?",set:()=>mSet("wasser",100,{T:80})},
+ {l:1,h:"Viel kalt, wenig heiß",p:"Gieße etwa 100 g heißes Wasser in 300 g kaltes. Liegt die Mischtemperatur näher bei der kalten oder bei der heißen Temperatur? Warum?",set:()=>mSet("wasser",300,{T:80})},
+ {l:1,h:"Kupfer in Wasser",p:"Ein heißer Kupferkörper (100 °C) kommt in 200 g kaltes Wasser. Um wie viel Grad wird das Wasser wärmer? Vergleiche mit gleich viel heißem Wasser.",set:()=>mSet("metall",200,{k:"cu"})},
+ {l:2,h:"c von Aluminium",p:"Bestimme die spezifische Wärmekapazität von Aluminium mit der Mischungsregel. Lies T_Wasser direkt vorher und die höchste Mischtemperatur ab.",set:()=>mSet("metall",150,{k:"al"})},
+ {l:2,h:"Metall Y",p:"Welches Metall ist Metall Y? Bestimme c und vergleiche mit einer Tabelle (Zinn 228, Zink 388, Titan 523 J/(kg·K)).",set:()=>mSet("metall",150,{k:"y"})},
+ {l:2,h:"Blei gegen Aluminium",p:"Blei ist schwer, Aluminium leicht – trotzdem erwärmt der Aluminiumkörper das Wasser stärker. Erkläre mit c und Masse.",set:()=>mSet("metall",150,{k:"pb"})},
+ {l:3,h:"Wasserwert bestimmen",p:"Mische etwa 200 g heißes in 150 g kaltes Wasser und bestimme daraus den Wasserwert C_K des Kalorimeters. Korrigiere damit deine Messung für Aluminium.",set:()=>mSet("wasser",150,{T:70,big:true})},
+ {l:3,h:"Verluste herausrechnen",p:"Nach dem Mischen fällt die Temperatur langsam. Verlängere diesen Abfall mit einem Lineal bis zum Zeitpunkt des Eingießens. Welche Mischtemperatur ergibt sich ohne Verluste?",set:()=>mSet("wasser",150,{T:90})}]);
+
+/* ===================== Station: Schmelzen & Verdampfen ===================== */
+const LCK=80,LCAL=286.4,LBEAK=112.3;
+const LS={p:"l",speeds:[1,5,20],mode:"eis",th:new Thermo(4,.1,.03),
+ /* Eis im Kalorimeter */ m:0,tara:0,Tt:TROOM,Tb:TROOM,cubes:[],wg:LCAL,
+ /* Heizkurve */ km:.2,H:0,on:false,P:300,E:0,dry:false,
+ reset(){if(LS.mode=="eis"){Object.assign(LS,{m:0,tara:0,Tt:TROOM,Tb:TROOM,cubes:[],wg:LCAL,Tin:41+Math.random()*6});LS.th.reset(TROOM);LS.trEvery=1}
+  else{const T0=+$("#kIce").value+(+$("#kIce").value<0?gauss()*.6:0);Object.assign(LS,{km:.2+gauss()*.002,on:false,P:300*(1+gauss()*.012),E:0,dry:false,wg:0});LS.H=LS.km*CICE*Math.min(0,T0);LS.th.reset(T0);LS.trEvery=2}
+  lBtn();warn(LS,"")},
+ kT(){const m=LS.km,H=LS.H;if(H<0)return H/(m*CICE);if(H<m*LF)return 0;return Math.min(100,(H-m*LF)/(m*CWAT))},
+ step(h){if(LS.mode=="eis"){const stir=$("#lStir").checked,Cl=LS.m/2*CWAT+LCK/2,Gm=stir?40:(LS.Tb>LS.Tt?3:.6),Gl=.12;
+   let qi=0;for(const c of LS.cubes){if(c.m<=0)continue;const G=(stir?1.1:.35)*Math.pow(c.m/.012,2/3),Ti=c.H<0?c.H/(c.m*CICE):0,q=G*(LS.Tt-Ti)*h;qi+=q;
+    if(c.H<0){c.H+=q;if(c.H>0){const dm=Math.min(c.m,c.H/LF);c.m-=dm;c.H=0;lMelt(dm)}}else{const dm=Math.min(c.m,q/LF);c.m-=dm;lMelt(dm)}}
+   LS.cubes=LS.cubes.filter(c=>c.m>1e-5);
+   const C2=LS.m/2*CWAT+LCK/2,qm=Gm*(LS.Tb-LS.Tt);LS.Tt+=(qm*h-qi-Gl/2*(LS.Tt-TROOM)*h)/C2;LS.Tb+=(-qm-Gl/2*(LS.Tb-TROOM))*h/C2;
+   LS.th.upd(h,LS.m>0?.5*LS.Tt+.5*LS.Tb:TROOM);LS.wg=LCAL+LS.m*1000+LS.cubes.reduce((s,c)=>s+c.m*1000,0)}
+  else{const stir=$("#kStir").checked,T=LS.kT(),Q=(LS.on?LS.P:0)-.6*(T-TROOM);LS.H+=Q*h;if(LS.on)LS.E+=LS.P*h;
+   const Hb=LS.km*LF+LS.km*CWAT*100;if(LS.H>Hb){const dm=(LS.H-Hb)/LV;LS.km-=dm;LS.H=LS.km*LF+LS.km*CWAT*100}
+   if(LS.km<.04&&LS.on){LS.on=false;LS.dry=true;lBtn()}
+   const melt=LS.H>0&&LS.H<LS.km*LF;LS.th.tau=stir?3:10;LS.th.upd(h,LS.kT()+(melt&&!stir?4*LS.H/(LS.km*LF):0));LS.wg=LS.km*1000}},
+ scale(){return Math.round(((LS.mode=="eis"?LS.wg-LS.tara:LS.wg)+gauss()*.04)*10)/10},
+ meterP(){return LS.on?Math.round(LS.P*(1+gauss()*.002)*10)/10:0},
+ sample(){return LS.mode=="eis"?[LS.th.disp,LS.scale()]:[LS.th.disp,LS.scale(),LS.E/1000]},
+ cols(){return LS.mode=="eis"?[["t in s",1,0],["T in °C",1,1],["Waage in g",1,2]]:[["t in s",1,0],["T in °C",1,1],["Masse in g",1,2],["Energie in kJ",2,3]]},
+ tr(){return[LS.t,LS.th.disp,LS.scale()]}};
+function lMelt(dm){if(dm<=0)return;const Ct=LS.m/2*CWAT+LCK/2,Cn=Ct+dm/2*CWAT;LS.Tt=Ct*LS.Tt/Cn;LS.Tb=Ct*LS.Tb/Cn;LS.m+=dm}
+mkCommon(LS);
+function lPour(g){if(LS.m==0)LS.th.reset(LS.Tin);if(LS.cubes.length){flash(LS,"Es schwimmt schon Eis im Wasser. Für einen neuen Versuch: „Neuer Versuch“.","warn");return}const dm=(g==50?g*(1+gauss()*.025):g==10?g+gauss()*.25:g+gauss()*.06)/1000;if(LS.m*1000+dm*1000>380){flash(LS,"Das Kalorimeter ist voll.","warn");return}
+ const Ct=LS.m/2*CWAT+LCK/2;LS.Tt=(Ct*LS.Tt+dm/2*CWAT*LS.Tin)/(Ct+dm/2*CWAT);LS.Tb=(Ct*LS.Tb+dm/2*CWAT*LS.Tin)/(Ct+dm/2*CWAT);LS.m+=dm;LS.wg=LCAL+LS.m*1000}
+$$("[data-lp]").forEach(b=>b.onclick=()=>lPour(+b.dataset.lp));
+$("#lTara").onclick=()=>{LS.tara=LS.wg;flash(LS,"Waage zeigt jetzt 0,0 g.")};$("#lEmpty").onclick=()=>LS.reset();
+$("#lAdd").onclick=()=>{if(LS.m<.05){flash(LS,"Fülle zuerst warmes Wasser ein.","warn");return}const T=+$("#lIce").value,m=(9+Math.random()*5)/1000;LS.cubes.push({m,H:T<0?m*CICE*(T+gauss()*.5):0,x:Math.random(),ph:Math.random()*6})};
+function lBtn(){$("#kOn").textContent=LS.on?"Tauchsieder ausschalten":"Tauchsieder einschalten";$("#kOn").classList.toggle("pri",!LS.on)}
+$("#kOn").onclick=()=>{if(LS.dry){flash(LS,"Fast kein Wasser mehr im Becherglas – starte mit neuem Eis.","warn");return}LS.on=!LS.on;lBtn()};$("#kNew").onclick=()=>$("#lNew").click();$("#kIce").onchange=()=>$("#lNew").click();
+function lShow(v){LS.mode=v;$("#lEv").value=v=="eis"?"10":"30";$("#lEis").hidden=v!="eis";$("#lKur").hidden=v=="eis";$("#lGmC").hidden=v=="eis";lModeSet(v);$("#lNew").click();setTimeout(()=>REG.forEach(o=>o.fit()),10)}
+const lModeSet=seg("lMode",v=>lShow(v));
+function lWarn(){if(LS.mode=="kurve"){if(LS.dry)return warn(LS,"Der Tauchsieder wurde ausgeschaltet – es ist fast kein Wasser mehr im Becherglas.");if(LS.kT()>=99.95&&LS.on)return warn(LS,"Das Wasser siedet: Die Temperatur bleibt bei 100 °C, aber die Masse nimmt ab.");}warn(LS,"")}
+const lC=canv("lC",o=>{const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const by=h*.9;x.fillStyle=isDark()?"#2b2621":"#d9cdb8";x.fillRect(0,by,w,h-by);
+ const wx=w*.06,ww=Math.min(w*.4,300),wy=by-h*.1;x.fillStyle=isDark()?"#3a3f46":"#cfd4da";x.beginPath();x.roundRect(wx,wy,ww,h*.1,8);x.fill();x.fillStyle=isDark()?"#4a5058":"#b9c0c8";x.fillRect(wx+ww*.1,wy-6,ww*.8,6);
+ lcd(x,wx+ww-120,wy+h*.02,110,h*.06,fnum(LS.scale(),1)+" g",null,{size:Math.min(20,h*.035)});txt(x,"Waage",wx+10,wy+h*.05,{size:12,w:700,c:"#555"});
+ const cx=wx+ww*.5;
+ if(LS.mode=="eis"){const cw=Math.min(ww*.55,150),ch=h*.42,cy=wy-6-ch;x.fillStyle=isDark()?"#5b636d":"#9aa3ad";x.beginPath();x.roundRect(cx-cw/2,cy,cw,ch,10);x.fill();
+  const iw=cw*.78,ih=ch*.9,ix=cx-iw/2,iy=cy+ch*.06;x.fillStyle=isDark()?"#d7dce1":"#eef1f4";x.fillRect(ix,iy,iw,ih);
+  const lvH=ih*clamp(LS.m*1000/400,0,1),ly=iy+ih-lvH;if(LS.m>0){const g=x.createLinearGradient(0,ly,0,iy+ih);g.addColorStop(0,cS((LS.Tt+5)/60,CW,.7));g.addColorStop(1,cS((LS.Tb+5)/60,CW,.7));x.fillStyle=g;x.fillRect(ix,ly,iw,lvH)}
+  LS.cubes.forEach((c,i)=>{const s=Math.cbrt(c.m/.012)*Math.min(26,iw*.2),X=ix+6+((c.x*(iw-s-12)+i*17)%(iw-s-12)),Y=ly-s*.15+Math.sin(uT*2+c.ph)*1.5;x.fillStyle="rgba(240,248,255,.95)";x.strokeStyle="rgba(120,160,200,.9)";x.lineWidth=1.2;x.beginPath();x.roundRect(X,Y,s,s*.85,3);x.fill();x.stroke()});
+  const st=$("#lStir").checked,rx=cx+iw*.2;x.strokeStyle=col("--ink");x.lineWidth=3;x.beginPath();x.moveTo(rx,cy-30);x.lineTo(rx,iy+ih*.7);x.stroke();const pw=st?Math.abs(Math.sin(uT*8))*iw*.12+3:iw*.12;x.fillStyle=col("--ink");x.fillRect(rx-pw,iy+ih*.68,2*pw,6);
+  x.fillStyle="#e8e8e8";x.strokeStyle="#777";x.lineWidth=1;x.fillRect(cx-iw*.15-3,cy-28,6,ih*.62+28);x.strokeRect(cx-iw*.15-3,cy-28,6,ih*.62+28);
+  lcd(x,cx-cw/2-10,cy-h*.13,cw*.9+20,h*.065,fnum(LS.th.disp,1)+" °C","Thermometer",{c:"#ffd28a",size:Math.min(22,h*.04)});
+  const ex=Math.max(cx+cw/2+40,w*.6);x.fillStyle=isDark()?"#2f4a66":"#cfe4f6";x.strokeStyle=col("--mut");x.lineWidth=1.5;x.beginPath();x.roundRect(ex,by-h*.22,Math.min(160,w*.28),h*.22,8);x.fill();x.stroke();
+  for(let i=0;i<6;i++){x.fillStyle="rgba(240,248,255,.95)";x.strokeStyle="rgba(120,160,200,.9)";x.beginPath();x.roundRect(ex+12+(i%3)*34,by-h*.17+Math.floor(i/3)*30,24,20,3);x.fill();x.stroke()}
+  txt(x,+$("#lIce").value<0?"Gefrierfach (−18 °C)":"Eiswasser (0 °C)",ex+Math.min(80,w*.14),by+16,{a:"center",size:13,w:700})}
+ else{const bw=Math.min(ww*.5,140),bh=h*.42,byy=wy-6-bh;x.strokeStyle=col("--ink");x.lineWidth=2.5;x.beginPath();x.moveTo(cx-bw/2,byy);x.lineTo(cx-bw/2,wy-6);x.lineTo(cx+bw/2,wy-6);x.lineTo(cx+bw/2,byy);x.stroke();
+  const T=LS.kT(),fr=LS.H<=0?0:LS.H>=LS.km*LF?1:LS.H/(LS.km*LF),hh=(bh-10)*clamp(LS.km/.25,0,1),ty=wy-8-hh;
+  x.fillStyle=cS((T+5)/110,CW,.7);x.fillRect(cx-bw/2+2,ty,bw-4,hh);
+  if(fr<1){const n=Math.ceil((1-fr)*30);for(let i=0;i<n;i++){const X=cx-bw/2+6+((i*37)%(bw-24)),Y=ty+4+((i*53)%Math.max(8,hh-16));x.fillStyle="rgba(240,248,255,.95)";x.strokeStyle="rgba(120,160,200,.8)";x.lineWidth=1;x.beginPath();x.roundRect(X,Y,13,10,2);x.fill();x.stroke()}}
+  if(T>=99.9){for(let i=0;i<12;i++){const ph=(uT*1.3+i*.08)%1;x.strokeStyle="rgba(255,255,255,.85)";x.lineWidth=1.4;x.beginPath();x.arc(cx-bw/2+10+((i*31)%(bw-20)),wy-10-ph*hh,2+ph*3,0,7);x.stroke()}
+   for(let i=0;i<4;i++){const ph=(uT*.5+i*.25)%1;x.strokeStyle=`rgba(170,180,190,${.7*(1-ph)})`;x.lineWidth=3;x.beginPath();x.moveTo(cx-bw*.3+i*bw*.2,ty-6-ph*60);x.quadraticCurveTo(cx-bw*.3+i*bw*.2+10,ty-20-ph*60,cx-bw*.3+i*bw*.2,ty-34-ph*60);x.stroke()}}
+  /* Tauchsieder */
+  const sx=cx+bw*.15;x.strokeStyle=LS.on?"#e0522f":"#777";x.lineWidth=4;x.beginPath();x.moveTo(sx,byy-40);x.lineTo(sx,wy-26);x.arc(sx-10,wy-26,10,0,Math.PI);x.lineTo(sx-20,wy-60);x.stroke();
+  x.fillStyle="#444";x.fillRect(sx-8,byy-56,16,18);x.strokeStyle="#333";x.lineWidth=2;x.beginPath();x.moveTo(sx,byy-56);x.bezierCurveTo(sx,byy-h*.2,w*.65,by-h*.4,w*.7,by-h*.25);x.stroke();
+  x.fillStyle="#e8e8e8";x.strokeStyle="#777";x.lineWidth=1;x.fillRect(cx-bw*.2-3,byy-30,6,bh*.7);x.strokeRect(cx-bw*.2-3,byy-30,6,bh*.7);
+  lcd(x,cx-bw/2-20,byy-h*.15,bw+40,h*.065,fnum(LS.th.disp,1)+" °C","Thermometer",{c:"#ffd28a",size:Math.min(22,h*.04)});
+  const mx=Math.max(cx+bw/2+50,w*.6),mw=Math.min(w-mx-14,230);x.fillStyle=isDark()?"#384049":"#e3e6ea";x.strokeStyle="rgba(0,0,0,.3)";x.lineWidth=1.5;x.beginPath();x.roundRect(mx,by-h*.32,mw,h*.22,8);x.fill();x.stroke();
+  txt(x,"Energiemessgerät",mx+10,by-h*.32+14,{size:12,w:700,c:col("--mut")});const dW=(mw-30)/2;lcd(x,mx+10,by-h*.2,dW,h*.07,fnum(LS.meterP(),1)+" W","Leistung");lcd(x,mx+20+dW,by-h*.2,dW,h*.07,fnum(LS.E/1000,1)+" kJ","Energie");
+  txt(x,"Becherglas (Waage tariert)",cx,by+16,{a:"center",size:13,w:700})}
+ lcd(x,w-150,12,138,h*.07,fmtSW(LS.sw.t),null,{c:"#9fd6ff",size:Math.min(22,h*.04)})});
+const lG=canv("lG",o=>curve(o,LS,LS.mode=="eis"?{rowY:r=>r[1],ylo:0,yhi:30}:{rowY:r=>r[1],min:true,t0:600,ylo:-20,yhi:100}));
+const lGm=canv("lGm",o=>{const tr=LS.trace;const t1=Math.max(600,tr.length?tr[tr.length-1][0]:0)/60;const ys=tr.map(p=>p[2]);const lo=Math.min(150,...ys),hi=Math.max(210,...ys);
+ chart(o,{x0:0,x1:Math.ceil(t1*1.05),y0:Math.floor(lo/10)*10,y1:Math.ceil(hi/10)*10,xl:"Versuchszeit in min",yl:"Masse in g",series:[{pts:tr.map(p=>[p[0]/60,p[2]]),line:true,c:"--cold"}]})});
+mkCheck("lChk",[{label:"Schmelzwärme von Eis q_s",unit:"kJ/kg",lv:2,tol:[.08,.16],truth:()=>LF/1000,show:()=>"Tabellenwert: 334 kJ/kg"},
+ {label:"Verdampfungswärme von Wasser q_v",unit:"kJ/kg",lv:2,tol:[.08,.16],truth:()=>LV/1000,show:()=>"Tabellenwert: 2257 kJ/kg (bei 100 °C)"}]);
+$("#lChk").insertAdjacentHTML("beforeend",`<p class="note l1only">In der Stufe „Mittel“ berechnest du hier Schmelz- und Verdampfungswärme. Beobachte zuerst: Wo bleibt die Temperatur stehen, obwohl geheizt wird?</p>`);
+LS.reset();
+function lSet(mode,o={}){location.hash="latent";if(LS.mode!=mode)lShow(mode);else $("#lNew").click();
+ if(mode=="eis"){$("#lTara").click();let r=o.g||200;for(const s of[50,10,1])while(r>=s){lPour(s);r-=s}$("#lIce").value=o.ice??0}else{$("#kIce").value=o.ice??-18;$("#lNew").click();LS.on=true;lBtn()}
+ $("#lAuto").checked=true;LS.sw.run=true;swUpd(LS)}
+tasks("latent",[
+ {l:1,h:"Eiswürfel kühlen",p:"Gib in 200 g warmes Wasser nacheinander drei Eiswürfel. Wie stark kühlt jeder Würfel das Wasser ab?",set:()=>lSet("eis",{g:200})},
+ {l:1,h:"Die Heizkurve",p:"Erhitze das Eis mit dem Tauchsieder (20×). Zeichne die Kurve ab. Wo bleibt die Temperatur stehen, obwohl die ganze Zeit geheizt wird?",set:()=>lSet("kurve")},
+ {l:1,h:"Wohin verschwindet das Wasser?",p:"Lass das Wasser sieden und beobachte die Waage. Was passiert mit der Masse? Wo ist das Wasser hin?",set:()=>lSet("kurve")},
+ {l:2,h:"Schmelzwärme im Kalorimeter",p:"Bestimme die Schmelzwärme: Masse und Temperatur des warmen Wassers, Masse des Eises (Waage!), Mischtemperatur. Nimm abgetrocknete Eiswürfel von 0 °C.",set:()=>lSet("eis",{g:250,ice:0})},
+ {l:2,h:"Schmelzwärme aus der Heizkurve",p:"Stoppe die Dauer des Haltepunkts bei 0 °C. Berechne q_s = P·t/m. Warum ist das Ergebnis etwas zu klein?",set:()=>lSet("kurve",{ice:0})},
+ {l:2,h:"Verdampfungswärme",p:"Miss beim Sieden, wie viel Masse in 5 Minuten verdampft, und lies die Energie ab. Berechne q_v = Q/Δm. Vergleiche mit der Schmelzwärme.",set:()=>lSet("kurve")},
+ {l:3,h:"Eis aus dem Gefrierfach",p:"Nimm Eiswürfel mit −18 °C. Stelle die vollständige Energiebilanz mit c_Eis = 2100 J/(kg·K) und dem Wasserwert C_K ≈ 80 J/K auf. Wie groß ist der Fehler, wenn man die Erwärmung des Eises vergisst?",set:()=>lSet("eis",{g:250,ice:-18})},
+ {l:3,h:"Verluste abschätzen",p:"Das offene Becherglas verliert etwa 0,6 W pro Kelvin Unterschied zur Raumtemperatur. Korrigiere damit deine Verdampfungswärme. Warum bekommt das Glas beim Schmelzen sogar Energie aus dem Raum?",set:()=>lSet("kurve")}]);
+
+/* ===================== Station: Anomalie des Wassers ===================== */
+const rhoW=T=>1000*(1-(T+288.9414)/(508929.2*(T+68.12963))*(T-3.9863)**2);
+const AA=Math.PI*1.25*1.25,AV=T=>.25/rhoW(T)*1e9,AVG=250e3*9.9e-6,AH0=70,ATUBE=200,HN=60,HJ0=24,HJ1=35;
+const AS={p:"a",speeds:[1,10,60,300],mode:"kolben",th:new Thermo(3,.1,.03),th2:new Thermo(5,.1,.03),
+ Tw:15,fr:0,broke:false,col:new Float64Array(HN),on:false,adj:0,
+ reset(){if(AS.mode=="kolben"){AS.Tw=15+gauss()*.2;AS.fr=0;AS.broke=false;AS.th.reset(AS.Tw);AS.trEvery=2}else{AS.col.fill(10);for(let i=0;i<HN;i++)AS.col[i]+=gauss()*.02;AS.on=false;AS.th.reset(10);AS.th2.reset(10);AS.trEvery=5}aBtn();warn(AS,"")},
+ hK(){if(AS.broke)return NaN;const ice=AS.fr*.25e9*(1/917-1/999.84);return AH0+(AV(AS.Tw)-AV(15)-(lvl()>2?AVG*(AS.Tw-15):0)+ice)/AA},
+ step(h){if(AS.mode=="kolben"){const Tb=+$("#aBath").value;if(AS.broke){AS.th.upd(h,Tb);return}
+   if(AS.Tw<=0&&Tb<0){AS.Tw=0;AS.fr+=h*(-Tb)*.00006;if(AS.fr>.04){AS.broke=true}}else if(AS.fr>0&&Tb>0){AS.fr=Math.max(0,AS.fr-h*Tb*.00006);AS.Tw=0}else AS.Tw+=(Tb-AS.Tw)*Math.min(1,h/150);
+   AS.th.upd(h,AS.Tw)}
+  else{const C=AS.col,N=HN;if(AS.on)for(let i=HJ0;i<=HJ1;i++){C[i]+=(-8-C[i])*.006*h;if(C[i]<0)C[i]=0}
+   for(let i=0;i<N;i++)C[i]+=(TROOM-C[i])*.00004*h;
+   const D=.004*h,Cn=C.slice();for(let i=0;i<N;i++){const a=i>0?Cn[i-1]:Cn[i],b=i<N-1?Cn[i+1]:Cn[i];C[i]+=D*(a-2*Cn[i]+b)}
+   let ad=0;for(let pass=0;pass<N;pass++){let ch=false;for(let i=0;i<N-1;i++){if(rhoW(C[i])>rhoW(C[i+1])+1e-7){const m=(C[i]+C[i+1])/2;ad+=(C[i]-C[i+1])*(i<HJ0?-1:1);C[i]=C[i+1]=m;ch=true}}if(!ch)break}
+   AS.adj=AS.adj*.9+ad*.1;
+   AS.th.upd(h,(C[2]+C[3])/2);AS.th2.upd(h,(C[N-3]+C[N-4])/2)}},
+ sample(){return AS.mode=="kolben"?[AS.th.disp,isFinite(AS.hK())?Math.round(AS.hK()*2)/2:NaN]:[AS.th.disp,AS.th2.disp]},
+ cols(){return AS.mode=="kolben"?[["t in s",1,0],["T in °C",1,1],["Steighöhe in mm",1,2]]:[["t in s",0,0],["T oben in °C",1,1],["T unten in °C",1,2]]},
+ tr(){return AS.mode=="kolben"?[AS.t,AS.th.disp,AS.hK()]:[AS.t,AS.th.disp,AS.th2.disp]}};
+mkCommon(AS);AS.spd=60;seg("aSp",x=>AS.spd=+x)("60");
+function aBtn(){$("#hpOn").textContent=AS.on?"Kältemischung entfernen":"Kältemischung einfüllen";$("#hpOn").classList.toggle("pri",!AS.on)}
+$("#hpOn").onclick=()=>{AS.on=!AS.on;aBtn()};$("#hpNew").onclick=()=>$("#aNew").click();$("#aKNew").onclick=()=>$("#aNew").click();
+function aShow(v){AS.mode=v;$("#aK").hidden=v!="kolben";$("#aH").hidden=v=="kolben";$("#aGh").textContent=v=="kolben"?"Steighöhe und Temperatur":"Temperatur oben und unten";$("#aRhoC").style.display=v=="kolben"?"":"none";aModeSet(v);
+ AS.speeds=v=="kolben"?[1,10,60,300]:[10,60,300,1000];$("#aSp").innerHTML=AS.speeds.map((s,i)=>`<button data-v="${s}" aria-pressed="${i==(v=="kolben"?2:1)}">${s}×</button>`).join("");seg("aSp",x=>AS.spd=+x);AS.spd=AS.speeds[v=="kolben"?2:1];
+ $("#aEv").value=v=="kolben"?"10":"60";document.getElementById("aNew").click();setTimeout(()=>REG.forEach(o=>o.fit()),10)}
+const aModeSet=seg("aMode",v=>aShow(v));
+function aWarn(){if(AS.mode!="kolben")return warn(AS,"");if(AS.broke)return warn(AS,"Das Wasser im Kolben ist gefroren – Eis braucht 9 % mehr Platz. Der Kolben ist geplatzt! (Darum platzen auch volle Flaschen im Gefrierfach.)");
+ if(AS.fr>0)return warn(AS,"Das Wasser beginnt zu gefrieren – der Wasserstand schießt nach oben!");if(AS.hK()>ATUBE)return warn(AS,"Das Wasser läuft oben aus dem Steigrohr.");warn(AS,"")}
+const aC=canv("aC",o=>{const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const by=h*.92;x.fillStyle=isDark()?"#2b2621":"#d9cdb8";x.fillRect(0,by,w,h-by);
+ if(AS.mode=="kolben"){const Tb=+$("#aBath").value,cx=w*.32,bw=Math.min(w*.4,260),bh=h*.34,bty=by-bh;
+  x.fillStyle=Tb<0?"rgba(190,215,240,.75)":Tb<5?"rgba(170,205,240,.6)":Tb>20?"rgba(240,170,140,.45)":"rgba(150,190,230,.45)";x.fillRect(cx-bw/2,bty+bh*.12,bw,bh*.88);x.strokeStyle=col("--ink");x.lineWidth=2.5;x.beginPath();x.moveTo(cx-bw/2,bty);x.lineTo(cx-bw/2,by);x.lineTo(cx+bw/2,by);x.lineTo(cx+bw/2,bty);x.stroke();
+  if(Tb<=0)for(let i=0;i<10;i++){x.fillStyle="rgba(245,250,255,.95)";x.strokeStyle="rgba(120,160,200,.8)";x.lineWidth=1;x.beginPath();x.roundRect(cx-bw/2+8+((i*47)%(bw-30)),bty+bh*.15+((i*31)%(bh*.25)),18,14,3);x.fill();x.stroke()}
+  txt(x,$("#aBath").selectedOptions[0].textContent,cx,by+16,{a:"center",size:13,w:700});
+  /* Kolben */
+  const fr=Math.min(bh*.42,bw*.3),fy=by-fr-8;x.fillStyle=cS((AS.Tw+2)/20,CW,.85);x.beginPath();x.arc(cx,fy,fr,0,7);x.fill();x.strokeStyle=col("--ink");x.lineWidth=2;x.stroke();
+  if(AS.fr>0){x.fillStyle=`rgba(240,248,255,${Math.min(.9,AS.fr*25)})`;x.beginPath();x.arc(cx,fy,fr*.9,0,7);x.fill()}
+  if(AS.broke){x.strokeStyle=col("--ink");x.lineWidth=2;x.beginPath();x.moveTo(cx-fr*.2,fy-fr);x.lineTo(cx,fy-fr*.3);x.lineTo(cx-fr*.4,fy+fr*.2);x.lineTo(cx+fr*.1,fy+fr*.8);x.moveTo(cx,fy-fr*.3);x.lineTo(cx+fr*.6,fy-fr*.1);x.stroke()}
+  /* Steigrohr mit Skala */
+  const tTop=h*.06,tBot=fy-fr+4,tx=cx,sc=(tBot-tTop-20)/ATUBE;x.fillStyle=isDark()?"#1e2329":"#f5f7fa";x.fillRect(tx-5,tTop,10,tBot-tTop);x.strokeStyle=col("--ink");x.lineWidth=1.5;x.strokeRect(tx-5,tTop,10,tBot-tTop);
+  const hv=AS.hK(),hy=tBot-20-clamp(isFinite(hv)?hv:0,0,ATUBE+5)*sc;if(!AS.broke){x.fillStyle=cS((AS.Tw+2)/20,CW,.95);x.fillRect(tx-4,hy,8,tBot-hy)}
+  for(let mm=0;mm<=ATUBE;mm+=10){const Y=tBot-20-mm*sc;x.strokeStyle=col("--mut");x.lineWidth=1;x.beginPath();x.moveTo(tx+8,Y);x.lineTo(tx+(mm%50?14:20),Y);x.stroke();if(mm%50==0)txt(x,mm+" mm",tx+24,Y,{size:11,c:col("--mut")})}
+  if(isFinite(hv)&&!AS.broke)pill(x,fnum(Math.round(hv*2)/2,1)+" mm",tx-12,hy,{a:"right",size:13,bc:col("--ink")});
+  if(isFinite(hv)&&hv>ATUBE){x.fillStyle=cS((AS.Tw+2)/20,CW,.9);x.beginPath();x.arc(tx+3,tTop+((uT*60)%40),3,0,7);x.fill()}
+  lcd(x,Math.min(w-170,cx+bw/2+30),h*.3,150,h*.08,fnum(AS.th.disp,1)+" °C","Thermometer im Kolben",{c:"#ffd28a",size:Math.min(24,h*.045)});
+  if(lvl()>2)txt(x,"Glas dehnt sich mit aus (Stufe Anspruchsvoll)",12,h-8,{size:11,c:col("--mut")})}
+ else{const cx=w*.35,cw=Math.min(w*.14,90),top=h*.06,bot=by-6,ch=bot-top,dh=ch/HN;
+  for(let i=0;i<HN;i++){x.fillStyle=cS((AS.col[i]+1)/13,CW,.9);x.fillRect(cx-cw/2,top+i*dh,cw,dh+.6)}
+  x.strokeStyle=col("--ink");x.lineWidth=2.5;x.strokeRect(cx-cw/2,top,cw,ch);
+  const jy0=top+HJ0*dh,jy1=top+(HJ1+1)*dh;x.fillStyle=AS.on?"rgba(225,236,248,.95)":"rgba(160,170,180,.35)";x.strokeStyle=col("--mut");x.lineWidth=1.5;for(const s of[-1,1]){x.beginPath();x.roundRect(s<0?cx-cw/2-cw*.55:cx+cw/2,jy0,cw*.55,jy1-jy0,6);x.fill();x.stroke();
+   if(AS.on)for(let i=0;i<6;i++){x.fillStyle="rgba(255,255,255,.95)";x.strokeStyle="rgba(120,160,200,.8)";x.lineWidth=1;const X=(s<0?cx-cw/2-cw*.5:cx+cw/2+cw*.06)+((i*13)%(cw*.35)),Y=jy0+6+((i*29)%(jy1-jy0-20));x.beginPath();x.roundRect(X,Y,12,10,2);x.fill();x.stroke()}}
+  txt(x,AS.on?"Eis + Salz (−8 °C)":"Ring leer",cx+cw/2+cw*.6,jy0-10,{size:12,w:700,c:col("--mut")});
+  const ty=[top+2.5*dh,top+(HN-3.5)*dh];ty.forEach((Y,k)=>{x.fillStyle="#777";x.fillRect(cx-cw/2-46,Y-2,46+cw*.3,4);lcd(x,Math.max(4,cx-cw/2-46-130),Y-h*.035,124,h*.07,fnum((k?AS.th2:AS.th).disp,1)+" °C",k?"unten":"oben",{c:"#ffd28a",size:Math.min(22,h*.04)})});
+  if(AS.on&&Math.abs(AS.adj)>.002){const jm=(AS.col[HJ0]+AS.col[HJ1])/2,down=jm>4;const ax=cx+cw/2+cw*1.4;const y0=(jy0+jy1)/2;
+   if(down)arrow(x,ax,jy1+10,ax,jy1+h*.18,alpha(col("--cold"),.9),4,12);else arrow(x,ax,jy0-24,ax,jy0-h*.18,alpha(col("--cold"),.9),4,12);
+   pill(x,down?"gekühltes Wasser (> 4 °C) sinkt ab":"Wasser unter 4 °C steigt auf",ax+12,down?jy1+h*.1:jy0-h*.1,{size:12})}
+  const sw=Math.min(150,w*.3),sx0=w-sw-14;for(let i=0;i<sw;i++){x.fillStyle=cS(i/sw);x.fillRect(sx0+i,h-22,1.2,9)}txt(x,"−1 °C",sx0,h-30,{size:11,c:col("--mut")});txt(x,"12 °C",sx0+sw,h-30,{size:11,a:"right",c:col("--mut")})}
+ lcd(x,w-150,12,138,h*.07,fmtSW(AS.sw.t),null,{c:"#9fd6ff",size:Math.min(22,h*.04)})});
+const aG=canv("aG",o=>{const tr=AS.trace,rows=AS.log.rows;if(AS.mode=="kolben"){const pts=tr.filter(p=>isFinite(p[2])).map(p=>[p[1],p[2]]);const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);
+  const x0=Math.floor(Math.min(0,...xs)-1),x1=Math.ceil(Math.max(16,...xs)+1),y0=Math.floor(Math.min(20,...ys)/10)*10,y1=Math.ceil(Math.max(80,...ys.filter(v=>v<400))/10)*10;
+  chart(o,{x0,x1,y0,y1:Math.min(y1,260),xl:"Temperatur im Kolben in °C",yl:"Steighöhe in mm",series:[{pts,line:true,c:"--mut",lw:1.4},{pts:rows.filter(r=>isFinite(r[2])).map(r=>[r[1],r[2]]),c:"--hot",r:4}],extra:(x,X,Y)=>{x.strokeStyle=alpha(col("--acc"),.6);x.setLineDash([4,4]);x.beginPath();x.moveTo(X(4),Y(y0));x.lineTo(X(4),Y(Math.min(y1,260)));x.stroke();x.setLineDash([]);txt(x,"4 °C",X(4)+4,Y(Math.min(y1,260))+10,{size:11,c:col("--acc")})}})}
+ else{const t1=Math.max(10,(tr.length?tr[tr.length-1][0]:0)/60);chart(o,{x0:0,x1:Math.ceil(t1*1.05),y0:-1,y1:12,sy:2,xl:"Versuchszeit in min",yl:"Temperatur in °C",series:[{pts:tr.map(p=>[p[0]/60,p[1]]),line:true,c:"--hot"},{pts:tr.map(p=>[p[0]/60,p[2]]),line:true,c:"--cold"}],legend:[["oben","--hot"],["unten","--cold"]],extra:(x,X,Y)=>{x.strokeStyle=alpha(col("--acc"),.6);x.setLineDash([4,4]);x.beginPath();x.moveTo(X(0),Y(4));x.lineTo(X(t1*1.05),Y(4));x.stroke();x.setLineDash([])}})}});
+const aRho=canv("aRho",o=>chart(o,{x0:0,x1:20,y0:998,y1:1000.2,sy:.5,xl:"Temperatur in °C",yl:"Dichte in kg/m³",yf:v=>fnum(v,1),series:[{fn:rhoW,c:"--cold"}],after:(x,X,Y)=>{x.fillStyle=col("--hot");x.beginPath();x.arc(X(3.98),Y(rhoW(3.98)),5,0,7);x.fill();txt(x,"größte Dichte bei 4 °C",X(3.98)+8,Y(rhoW(3.98))+14,{size:12,c:col("--ink")})}}));
+$("#aBath").onchange=()=>{};
+mkCheck("aChk",[{label:"Bei welcher Temperatur ist die Steighöhe am kleinsten?",unit:"°C",lv:1,abs:1,tol:[.6,1.2],truth:()=>lvl()>2?4.6:4,show:()=>lvl()>2?"Bei etwa 4,6 °C (Wasser allein: 4 °C – der Glaskolben schrumpft beim Abkühlen mit und drückt Wasser ins Rohr).":"Bei 4 °C hat Wasser das kleinste Volumen."},
+ {label:"Hope: Welche Temperatur stellt sich unten ein?",unit:"°C",lv:1,abs:1,tol:[.5,1],truth:()=>4,show:()=>"Etwa 4 °C – dort sammelt sich das schwerste Wasser."},
+ {label:"Um wie viel Prozent ist Wasser bei 4 °C dichter als bei 15 °C?",unit:"%",lv:3,abs:1,tol:[.01,.03],truth:()=>(rhoW(4)/rhoW(15)-1)*100,show:()=>`${fnum((rhoW(4)/rhoW(15)-1)*100,3)} % – winzig, aber im Steigrohr gut sichtbar.`}]);
+AS.reset();
+function aSet(mode,o={}){location.hash="anomalie";if(AS.mode!=mode)aShow(mode);else $("#aNew").click();AS.spd=60;seg("aSp",x=>AS.spd=+x)("60");if(mode=="kolben"){$("#aBath").value=o.bath??0}else{AS.on=true;aBtn()}$("#aAuto").checked=true;AS.sw.run=true;swUpd(AS)}
+tasks("anomalie",[
+ {l:1,h:"Wasser im Eisbad",p:"Stelle den Kolben (15 °C) in Eiswasser. Beobachte Thermometer und Wasserstand im Steigrohr. Was passiert unter 4 °C?",set:()=>aSet("kolben",{bath:0})},
+ {l:1,h:"Und wieder warm",p:"Stelle den kalten Kolben anschließend in Leitungswasser (15 °C). Wie verhält sich der Wasserstand jetzt?",set:()=>aSet("kolben",{bath:0})},
+ {l:1,h:"Gefrorene Flasche",p:"Stelle den Kolben in Eis mit Salz (−8 °C). Was passiert, wenn das Wasser gefriert? Warum soll man keine vollen Glasflaschen ins Gefrierfach legen?",set:()=>aSet("kolben",{bath:-8})},
+ {l:2,h:"Kurve aufnehmen",p:"Nimm beim Abkühlen alle 10 s Temperatur und Steighöhe auf. Zeichne die Steighöhe über der Temperatur. Wo liegt der tiefste Punkt?",set:()=>aSet("kolben",{bath:0})},
+ {l:2,h:"Hope’scher Versuch",p:"Fülle die Kältemischung ein (60×). Beschreibe den Verlauf des oberen und des unteren Thermometers. Erkläre mit der Dichte.",set:()=>aSet("hope")},
+ {l:2,h:"Fische im Winter",p:"Verbinde den Hope’schen Versuch mit einem See im Winter: Wo ist das Wasser am kältesten, wo am wärmsten? Warum friert ein tiefer See nicht bis zum Grund?",set:()=>aSet("hope")},
+ {l:3,h:"Glas dehnt sich mit",p:"In dieser Stufe schrumpft auch der Glaskolben beim Abkühlen. Bestimme das Minimum der Steighöhe genau. Warum liegt es nicht genau bei 4 °C?",set:()=>aSet("kolben",{bath:0})},
+ {l:3,h:"Volumenänderung rechnen",p:"Berechne aus der Steighöhenänderung zwischen 15 °C und 4 °C (Rohr-Ø 2,5 mm) die Volumenänderung und vergleiche mit ΔV = m·(1/ρ₁₅ − 1/ρ₄).",set:()=>aSet("kolben",{bath:0})}]);
+/* ===================== Schleife ===================== */
+const ST={heizen:{S:H,c:[hC],g:[hG],w:hWarn,x:hFit},mischen:{S:M,c:[mC],g:[mG],w:()=>{}},latent:{S:LS,c:[lC],g:[lG,lGm],w:lWarn},anomalie:{S:AS,c:[aC],g:[aG],w:aWarn}};
+let last=performance.now(),slow=0;
+function loop(now){const dt=clamp((now-last)/1000,0,.05);last=now;uT+=dt;const s=ST[cur];if(s){tick(s.S,dt);s.c.forEach(c=>c.redraw());if((slow+=dt)>.3){slow=0;s.w();s.x&&s.x();s.g.forEach(g=>g.redraw())}}requestAnimationFrame(loop)}
+try{const l=localStorage.getItem("kallvl");if(l)setLvl(l)}catch(e){}
+route();requestAnimationFrame(loop);
+</script>
+</body>
+</html>

@@ -31,6 +31,7 @@ Schlagwörter. Ist nicht klar, in welches Fach eine neue Simulation gehört: nac
 | `Schall/` | `Schalllabor.html` | Schallwelle im Rohr (Teilchen, Druck, λ), 2D-Raum mit Reflexion, Absorption, Echo, Echolot, Beugung, Interferenz, Doppler; Nachhall nach Sabine mit Hörbeispielen |
 | `Klang/` | `Klanglabor.html` | Saite (Monochord, Flageolett), Pfeife (offen/gedackt, Panflöte), Klangfarbe aus Teiltönen, Schwebung & Intervalle, Resonanz (Weinglas), Spektrum und Stimmgerät |
 | `Wärme/` | `Waermetransportlabor.html` | Drei Wege der Wärme (Lagerfeuer, Quiz), Teilchen & Temperatur (Mischtemperatur), Wärmeleitung (Wachskugeln, Metall oder Holz anfassen), Wärmeströmung (2D-Strömung: Kochtopf, Zimmer, Kerze, Land-Seewind, Kühlschrank, See im Winter), Wärmestrahlung (Wärmebild, Planck-Spektrum), Absorption/Reflexion/Transmission (Dosen unter der Lampe, Glashaube), Treibhauseffekt, Thermoskanne und Hauswand |
+| `Wärme/` | `Kalorimeterlabor.html` | Elektrisch heizen (c bestimmen, Wasserwert), Mischen (heißes Wasser, Metallkörper, Metall Y), Schmelzen & Verdampfen (Eis im Kalorimeter, Heizkurve Eis → Dampf), Anomalie des Wassers (Kolben mit Steigrohr, Hope’scher Versuch) – mit Waage, Stoppuhr, Messtabelle und Temperaturkurve |
 | `Relativitätstheorie/` | `Relativitaetslabor.html` | Lichtuhr und Myonen, Gleichzeitigkeit, Längenkontraktion (Leiter-Garage), Geschwindigkeitsaddition, Zwillingsparadoxon, Raumzeit-Diagramm, Lichtmauer & E = mc², GPS, Doppler-Effekt; Wechsel des Bezugssystems |
 | `Radioaktivität/` | `Radioaktivitaetslabor.html` | Atomkern & Isotope mit Periodensystem, Nuklidkarte (Z 0–118), Zerfallsarten, Zerfallsgesetz (Würfelmodell), Zerfallsreihen & Gleichgewicht, Strahlung messen & abschirmen, Nebelkammer, C-14-Datierung, Strahlung im Alltag (Österreich) |
 | `Kernenergie/` | `Kernenergielabor.html` | Kernspaltung, Kettenreaktion, Kernreaktor (Fukushima/Tschernobyl-Szenario), Kernfusion (Tokamak, Lawson), Sonne, Energie aus Masse, Tschernobyl & Fukushima, Cäsium in Österreich; Reaktor und Fusion anschaulich oder mit Zahlen |
@@ -286,9 +287,33 @@ Strömung: inkompressibles Fluid mit Boussinesq-Auftrieb (semi-Lagrange, Druckpr
 ε(CO₂) logarithmisch, 3 °C pro CO₂-Verdopplung, −18,6 °C ohne Treibhausgase. Dosen und Thermoskanne: Wärmeleitwerte (Strömung h = 6 W/(m²·K),
 Strahlung nach σT⁴); Eis mit Schmelzwärme. Hauswand: U = 1/(R<sub>si</sub> + Σ d/λ + R<sub>se</sub>), 3400 Heizgradtage.
 
+## Wärme – Kalorimeterlabor.html
+
+Virtueller Labortisch zum Messen wie im echten Versuch: Waage mit Tara, Kalorimeter mit Deckel und Rührer, Netzgerät mit
+Spannungs- und Strommessung (Stufe *Einfach*: Leistung und Energiezähler), Thermometer mit Ansprechzeit und Ablesegenauigkeit 0,1 °C,
+Stoppuhr, Messtabelle (von Hand oder automatisch, zum Kopieren nach Excel/GeoGebra) und laufende Temperaturkurve. Zeitraffer.
+Die Schüler:innen rechnen selbst; unter „Auswertung“ können sie ihr Ergebnis prüfen oder die Lösung anzeigen.
+Stationen auch direkt über `#heizen`, `#mischen`, `#latent`, `#anomalie`.
+
+- **Elektrisch heizen:** Wasser, Speiseöl, Ethanol, Glycerin oder „Flüssigkeit X“ (zufällig: Ethylenglykol, Methanol, Paraffinöl
+  oder Salzwasser) abwiegen und mit der Heizspirale erwärmen; c = U·I·t/(m·ΔT). Realistische Effekte: Wasserwert des Kalorimeters
+  (80 J/K), Wärmeverluste (ohne Deckel mehr, Verdunstung), Schichtung ohne Rühren, Nachheizen der Spirale, Spirale muss eintauchen
+  (sonst Überhitzung und Sicherung), Sieden. *Anspruchsvoll*: Ausgleichsgerade im Heizabschnitt.
+- **Mischen:** kaltes Leitungswasser im Kalorimeter; heißes Wasser aus dem Becherglas (kühlt beim Warten und Umgießen ab) oder
+  Metallkörper aus dem siedenden Wasserbad (Kupfer, Aluminium, Eisen, Messing, Blei, „Metall Y“ = Zinn, Zink oder Titan).
+- **Schmelzen & Verdampfen:** Eiswürfel (0 °C abgetrocknet oder −18 °C) in warmes Wasser → Schmelzwärme. Heizkurve mit Tauchsieder
+  (≈ 300 W, Energiemessgerät) von −18 °C bis zum Sieden mit Haltepunkten und Waage → Schmelz- und Verdampfungswärme.
+- **Anomalie des Wassers:** Kolben (250 g) mit Steigrohr (Ø 2,5 mm) im Eiswasser, Eis-Salz-Bad (Wasser gefriert, Kolben platzt) oder
+  Warmwasser; Steighöhe über Temperatur mit Minimum bei 4 °C (*Anspruchsvoll*: mit Glasausdehnung, Minimum bei etwa 4,6 °C);
+  Dichtekurve. Hope’scher Versuch: Säule mit Kältemischung in der Mitte, Thermometer oben und unten (unten 4 °C, oben gegen 0 °C).
+
+Modell: Kalorimeterinhalt als zwei Schichten (oben/unten) mit Durchmischung durch Rührer bzw. Konvektion, Heizspirale als eigener
+Körper, Wärmeverluste über Wärmeleitwerte; Eiswürfel einzeln mit Schmelzwärme 334 kJ/kg; Heizkurve über die Enthalpie
+(Verdampfungswärme 2257 kJ/kg, Verlust 0,6 W/K); Dichte nach Thiesen; Hope-Säule als 1D-Modell mit konvektivem Ausgleich.
+
 ## Navigation
 
-In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“, „Stromkreislabor“, „Quantenlabor“, „Halbleiterlabor“, „Bandstrukturlabor“, „Relativitätslabor“, „Schalllabor“, „Klanglabor“ oder „Wärmetransportlabor“) zurück zur Startseite `index.html`.
+In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“, „Stromkreislabor“, „Quantenlabor“, „Halbleiterlabor“, „Bandstrukturlabor“, „Relativitätslabor“, „Schalllabor“, „Klanglabor“, „Wärmetransportlabor“ oder „Kalorimeterlabor“) zurück zur Startseite `index.html`.
 
 ## Radioaktivität – Radioaktivitaetslabor.html
 
