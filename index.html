@@ -153,7 +153,8 @@ const TOPICS = [
   { id:'kern',       subject:'physik', name:'Kerne & Strahlung',       color:'#ca8a04' },
   { id:'akustik',    subject:'physik', name:'Schwingungen & Akustik',  color:'#df4329' },
   { id:'waerme',     subject:'physik', name:'Wärmelehre',              color:'#c2410c' },
-  { id:'stoffwechsel', subject:'biologie', name:'Stoffwechsel & Enzyme', color:'#16a34a' }
+  { id:'stoffwechsel', subject:'biologie', name:'Stoffwechsel & Enzyme', color:'#16a34a' },
+  { id:'zelle', subject:'biologie', name:'Zelle & Vererbung', color:'#db2777' }
 ];
 /* Liste der Simulationen – neue Simulationen hier eintragen.
    subject = Fach (Pflicht), topic = Themengebiet innerhalb des Fachs (optional). */
@@ -293,11 +294,29 @@ const SIMS = [
     text:'Photosynthese im Chloroplasten, Wasserpest und Engelmann-Versuch, Zellatmung als Wasserkraftwerk mit Gärung und Gift, Hefe-Ballon-Versuch und Pflanze und Maus unter der Glasglocke.',
     tags:['Lichtreaktion & Calvin-Zyklus','begrenzende Faktoren','Atmungskette','Gärung','Priestley','3 Niveaustufen'],
     thumb:'stoff'
+  },
+  {
+    subject:'biologie', topic:'zelle',
+    title:'Zellteilungslabor',
+    file:'Zellteilung/Zellteilungslabor.html',
+    text:'Mitose und Meiose Schritt für Schritt – auch selbst gemacht: Chromosomen ordnen und trennen. Dazu die Vielfalt der Keimzellen, Trisomie 21 und Karyogramme sowie Zwiebelwurzelzellen unter dem Mikroskop.',
+    tags:['Mitose & Meiose','Crossing-over','2ⁿ Kombinationen','Karyogramm','Mitoseindex','3 Niveaustufen'],
+    thumb:'zelle'
   }
 ];
 
 /* --- Vorschaubilder als SVG --- */
 const THUMBS = {
+  zelle: `<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice">
+      <rect width="400" height="170" fill="#fdf0f4"/>
+      <circle cx="120" cy="85" r="70" fill="#e6f4ea" stroke="#5d9b72" stroke-width="3"/>
+      <circle cx="262" cy="85" r="70" fill="#e6f4ea" stroke="#5d9b72" stroke-width="3"/>
+      <g stroke-linecap="round" stroke-width="7">
+        <path d="M88 60 L104 60" stroke="#e2475b"/><path d="M88 80 L104 80" stroke="#3d7ddb"/><path d="M92 100 L102 100" stroke="#e2475b"/><path d="M92 116 L102 116" stroke="#3d7ddb"/>
+        <path d="M230 60 L246 60" stroke="#e2475b"/><path d="M230 80 L246 80" stroke="#3d7ddb"/><path d="M234 100 L244 100" stroke="#e2475b"/><path d="M234 116 L244 116" stroke="#3d7ddb"/>
+      </g>
+      <g stroke-linecap="round" stroke-width="6"><path d="M350 40 L362 70" stroke="#e2475b"/><path d="M362 40 L350 70" stroke="#e2475b"/><path d="M350 96 L362 126" stroke="#3d7ddb"/><path d="M362 96 L350 126" stroke="#3d7ddb"/></g>
+    </svg>`,
   stoff: `<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice">
       <rect width="400" height="170" fill="#fff8e6"/>
       <circle cx="58" cy="34" r="18" fill="#ffcf3a"/>

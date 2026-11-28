@@ -39,6 +39,7 @@ Schlagwörter. Ist nicht klar, in welches Fach eine neue Simulation gehört: nac
 | `Kernenergie/` | `Kernenergielabor.html` | Kernspaltung, Kettenreaktion, Kernreaktor (Fukushima/Tschernobyl-Szenario), Kernfusion (Tokamak, Lawson), Sonne, Energie aus Masse, Tschernobyl & Fukushima, Cäsium in Österreich; Reaktor und Fusion anschaulich oder mit Zahlen |
 | `Enzyme/` | `Enzymlabor.html` | **Biologie:** Enzym und Substrat als Teilchen (Schlüssel-Schloss, Induced Fit), Aktivierungsenergie, Temperatur und pH mit Messreihen, Sättigungskurve (Michaelis-Menten), Hemmstoffe, Katalase-Versuch |
 | `Stoffwechsel/` | `Stoffwechsellabor.html` | **Biologie:** Photosynthese im Chloroplasten (Lichtreaktion, Calvin-Zyklus, ¹⁸O-Markierung), Wasserpest-Versuch (begrenzende Faktoren), Engelmann-Versuch mit Absorptions- und Wirkungsspektrum, Zellatmung als Wasserkraftwerk (Gärung, Cyanid, Entkoppler), Hefe-Ballon-Versuch, Glasglocke nach Priestley |
+| `Zellteilung/` | `Zellteilungslabor.html` | **Biologie:** Mitose und Meiose Schritt für Schritt (auch selbst ordnen und trennen), Vergleich, Vielfalt der Keimzellen und Geschwister, Nondisjunktion und Karyogramm-Rätsel, Zwiebelwurzelspitze mit Mitoseindex |
 
 ## Stoßprozesse – Stoss-Simulation.html
 
@@ -396,4 +397,14 @@ Modell: Moleküle bewegen sich mit Zufallsrichtung, die Geschwindigkeit wächst 
 - **Glasglocke:** Pflanze, Maus und Kerze unter einer Glocke (60 L), Tag-Nacht-Wechsel; O₂- und CO₂-Verlauf über mehrere Tage; Versuch bricht ab und befreit die Maus bei Atemnot.
 
 Modelle: Photosynthese mit Pools für ATP und NADPH (Lichtreaktion 3 ATP + 2 NADPH je O₂, Calvin-Zyklus 3 ATP + 2 NADPH je CO₂). Wasserpest: weiches Minimum aus Licht-, CO₂- und Temperaturterm minus Atmung, Poisson-Streuung. Zellatmung: Glykolyse (ATP-gehemmt), Citratzyklus, Gärung (bei NADH-Stau), Atmungskette mit Gegendruck, ATP-Synthase mit Atmungskontrolle. Gärung: V(t) = 600 ml · (1 − e^(−r·t/40 min)). Glocke: Maus 90 ml O₂/h, Pflanze bis 300 ml/h (CO₂-abhängig), Kerze 3 L/h bis 16 % O₂.
+
+## Zellteilung – Zellteilungslabor.html (Biologie)
+
+- Sechs Stationen, direkt aufrufbar: `#mitose`, `#meiose`, `#vergleich`, `#vielfalt`, `#fehler`, `#mikroskop`; jeweils mit Aufträgen, Erklärungen und drei Niveaustufen.
+- **Mitose:** Interphase (G1, S) bis zwei Tochterzellen; Chromosomen rot (mütterlich) und blau (väterlich); Zähler für Chromosomen, Chromatiden und Chromosomensatz; Modus „ich selbst“: Chromosomen in die Äquatorebene ziehen und per Klick trennen; ab *Mittel*: DNA-Menge in c, 1–4 Chromosomenpaare.
+- **Meiose:** Paarung der Homologen, Crossing-over (wählbar), Metaphase I mit zufälliger Orientierung (im Selbst-Modus per Klick drehbar), Meiose II bis vier Keimzellen.
+- **Vergleich:** Mitose und Meiose nebeneinander aus derselben Startzelle; Vergleichstabelle; DNA-Kurven.
+- **Vielfalt:** Keimzellen bei 1–23 Paaren bilden, verschiedene Kombinationen zählen (2ⁿ); Crossing-over; zwei Geschwister mit nach Großeltern gefärbten Chromosomen und Übereinstimmung in %.
+- **Fehler & Karyogramm:** Nondisjunktion von Chromosom 21 in Meiose I oder II mit Tabelle der Keimzellen und Befruchtungsergebnis; schematische Karyogramme (46,XX, 46,XY, Trisomie 21/18/13, Turner, Klinefelter) mit Rätselmodus; ab *Mittel*: Häufigkeit von Trisomie 21 nach Alter der Mutter (gerundete Literaturwerte).
+- **Mikroskop:** gefärbte Zwiebelwurzelspitze mit zufällig verteilten Phasen; Zellen nach Phase markieren, sofortige Rückmeldung abschaltbar; Auszählung, Mitoseindex, geschätzte Phasendauer (Anteil · 20 h).
 
