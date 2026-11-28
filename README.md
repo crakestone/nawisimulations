@@ -31,7 +31,8 @@ Schlagwörter. Ist nicht klar, in welches Fach eine neue Simulation gehört: nac
 | `Schall/` | `Schalllabor.html` | Schallwelle im Rohr (Teilchen, Druck, λ), 2D-Raum mit Reflexion, Absorption, Echo, Echolot, Beugung, Interferenz, Doppler; Nachhall nach Sabine mit Hörbeispielen |
 | `Klang/` | `Klanglabor.html` | Saite (Monochord, Flageolett), Pfeife (offen/gedackt, Panflöte), Klangfarbe aus Teiltönen, Schwebung & Intervalle, Resonanz (Weinglas), Spektrum und Stimmgerät |
 | `Wärme/` | `Waermetransportlabor.html` | Drei Wege der Wärme (Lagerfeuer, Quiz), Teilchen & Temperatur (Mischtemperatur), Wärmeleitung (Wachskugeln, Metall oder Holz anfassen), Wärmeströmung (2D-Strömung: Kochtopf, Zimmer, Kerze, Land-Seewind, Kühlschrank, See im Winter), Wärmestrahlung (Wärmebild, Planck-Spektrum), Absorption/Reflexion/Transmission (Dosen unter der Lampe, Glashaube), Treibhauseffekt, Thermoskanne und Hauswand |
-| `Wärme/` | `Kalorimeterlabor.html` | Elektrisch heizen (c bestimmen, Wasserwert), Mischen (heißes Wasser, Metallkörper, Metall Y), Schmelzen & Verdampfen (Eis im Kalorimeter, Heizkurve Eis → Dampf), Anomalie des Wassers (Kolben mit Steigrohr, Hope’scher Versuch) – mit Waage, Stoppuhr, Messtabelle und Temperaturkurve |
+| `Wärme/` | `Kalorimeterlabor.html` | Elektrisch heizen (c bestimmen, Wasserwert), Mischen (heißes Wasser, Metallkörper, Metall Y), Schmelzen & Verdampfen (Eis im Kalorimeter, Heizkurve Eis → Dampf), Anomalie des Wassers (Kolben mit Steigrohr, Hope’scher Versuch), Brennwert von Lebensmitteln – mit Waage, Stoppuhr, Messtabelle und Temperaturkurve |
+| `Wärme/` | `Gaslabor.html` | Teilchenmodell (2D-Teilchensimulation mit Kolben, Heizplatte, Manometer, Geschwindigkeitsverteilung), Zusammendrücken (Boyle-Mariotte mit Spritze), Erwärmen & absoluter Nullpunkt (Gay-Lussac, Amontons), Zustandsänderungen im p-V-Diagramm (isotherm, isobar, isochor, adiabatisch, Kreisprozesse) |
 | `Relativitätstheorie/` | `Relativitaetslabor.html` | Lichtuhr und Myonen, Gleichzeitigkeit, Längenkontraktion (Leiter-Garage), Geschwindigkeitsaddition, Zwillingsparadoxon, Raumzeit-Diagramm, Lichtmauer & E = mc², GPS, Doppler-Effekt; Wechsel des Bezugssystems |
 | `Radioaktivität/` | `Radioaktivitaetslabor.html` | Atomkern & Isotope mit Periodensystem, Nuklidkarte (Z 0–118), Zerfallsarten, Zerfallsgesetz (Würfelmodell), Zerfallsreihen & Gleichgewicht, Strahlung messen & abschirmen, Nebelkammer, C-14-Datierung, Strahlung im Alltag (Österreich) |
 | `Kernenergie/` | `Kernenergielabor.html` | Kernspaltung, Kettenreaktion, Kernreaktor (Fukushima/Tschernobyl-Szenario), Kernfusion (Tokamak, Lawson), Sonne, Energie aus Masse, Tschernobyl & Fukushima, Cäsium in Österreich; Reaktor und Fusion anschaulich oder mit Zahlen |
@@ -293,7 +294,7 @@ Virtueller Labortisch zum Messen wie im echten Versuch: Waage mit Tara, Kalorime
 Spannungs- und Strommessung (Stufe *Einfach*: Leistung und Energiezähler), Thermometer mit Ansprechzeit und Ablesegenauigkeit 0,1 °C,
 Stoppuhr, Messtabelle (von Hand oder automatisch, zum Kopieren nach Excel/GeoGebra) und laufende Temperaturkurve. Zeitraffer.
 Die Schüler:innen rechnen selbst; unter „Auswertung“ können sie ihr Ergebnis prüfen oder die Lösung anzeigen.
-Stationen auch direkt über `#heizen`, `#mischen`, `#latent`, `#anomalie`.
+Stationen auch direkt über `#heizen`, `#mischen`, `#latent`, `#anomalie`, `#brennwert`.
 
 - **Elektrisch heizen:** Wasser, Speiseöl, Ethanol, Glycerin oder „Flüssigkeit X“ (zufällig: Ethylenglykol, Methanol, Paraffinöl
   oder Salzwasser) abwiegen und mit der Heizspirale erwärmen; c = U·I·t/(m·ΔT). Realistische Effekte: Wasserwert des Kalorimeters
@@ -306,14 +307,35 @@ Stationen auch direkt über `#heizen`, `#mischen`, `#latent`, `#anomalie`.
 - **Anomalie des Wassers:** Kolben (250 g) mit Steigrohr (Ø 2,5 mm) im Eiswasser, Eis-Salz-Bad (Wasser gefriert, Kolben platzt) oder
   Warmwasser; Steighöhe über Temperatur mit Minimum bei 4 °C (*Anspruchsvoll*: mit Glasausdehnung, Minimum bei etwa 4,6 °C);
   Dichtekurve. Hope’scher Versuch: Säule mit Kältemischung in der Mitte, Thermometer oben und unten (unten 4 °C, oben gegen 0 °C).
+- **Brennwert:** Erdnuss, Walnuss, Chip, Erdnussflip, Marshmallow oder Kerzenwachs auf der Feinwaage wiegen, anzünden und unter einer
+  Aludose mit Wasser verbrennen; Abstand (2/5/10 cm) und Windschutz wählbar, Flamme kann ausgehen, Rest wiegen. Vergleich mit der
+  Packungsangabe, Wirkungsgrad meist 20–40 %.
 
 Modell: Kalorimeterinhalt als zwei Schichten (oben/unten) mit Durchmischung durch Rührer bzw. Konvektion, Heizspirale als eigener
 Körper, Wärmeverluste über Wärmeleitwerte; Eiswürfel einzeln mit Schmelzwärme 334 kJ/kg; Heizkurve über die Enthalpie
 (Verdampfungswärme 2257 kJ/kg, Verlust 0,6 W/K); Dichte nach Thiesen; Hope-Säule als 1D-Modell mit konvektivem Ausgleich.
 
+## Wärme – Gaslabor.html
+
+Vier Stationen (auch über `#modell`, `#boyle`, `#temperatur`, `#prozesse`), drei Niveaustufen, Messtabellen wie im Kalorimeterlabor.
+
+- **Teilchenmodell:** 2D-Teilchensimulation (elastische Stöße) in einem Zylinder; Kolben festhalten (Volumen 0,3–1,6 L) oder frei mit
+  Gewicht (Außendruck); Boden als Heizplatte mit fester Temperatur (Teilchen nehmen beim Aufprall deren Temperatur an) oder isolierend;
+  Gas hineinpumpen und ablassen; Manometer aus den Wandstößen, Thermometer aus der mittleren Bewegungsenergie; Zeitlupe und ein
+  Teilchen verfolgen. Schnelles Zusammendrücken erwärmt das Gas. *Mittel*: Geschwindigkeitsverteilung mit Maxwell-Kurve;
+  *Anspruchsvoll*: p·V/(N·T).
+- **Zusammendrücken:** Spritze (15–100 ml) mit Manometer; schnelles Verstellen erwärmt die Luft kurz (adiabatisch), danach kühlt sie
+  ab; Totvolumen 3 ml im Schlauch; bei hohem Druck leicht undicht. Diagramm p über V bzw. p über 1/V.
+- **Erwärmen & absoluter Nullpunkt:** Glaskolben (250 ml) im Wasserbad (Eiswasser bis siedend, heiße Bäder kühlen langsam ab);
+  wahlweise Volumen bei gleichem Druck (Tropfen im Rohr) oder Druck bei gleichem Volumen (Manometer). Ausgleichsgerade mit
+  Verlängerung bis zur Temperaturachse.
+- **Zustandsänderungen:** isotherm, isobar, isochor, adiabatisch (ab *Mittel*) vom Startzustand 1 bar, 1 L, 27 °C; Schritte
+  hintereinander zu Kreisprozessen; Kolben-Animation mit Wärmezufuhr/-abgabe; p-V-Diagramm mit Isothermen, Arbeit als Fläche;
+  fertige Kreisprozesse Rechteck, Stirling, Otto, Carnot (*Anspruchsvoll*: Q, ΔU, W, Wirkungsgrad; Carnot 300 K/600 K → 50 %).
+
 ## Navigation
 
-In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“, „Stromkreislabor“, „Quantenlabor“, „Halbleiterlabor“, „Bandstrukturlabor“, „Relativitätslabor“, „Schalllabor“, „Klanglabor“, „Wärmetransportlabor“ oder „Kalorimeterlabor“) zurück zur Startseite `index.html`.
+In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“, „Stromkreislabor“, „Quantenlabor“, „Halbleiterlabor“, „Bandstrukturlabor“, „Relativitätslabor“, „Schalllabor“, „Klanglabor“, „Wärmetransportlabor“, „Kalorimeterlabor“ oder „Gaslabor“) zurück zur Startseite `index.html`.
 
 ## Radioaktivität – Radioaktivitaetslabor.html
 

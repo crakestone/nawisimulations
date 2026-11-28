@@ -119,7 +119,7 @@ body[data-lvl="2"] .l1only,body[data-lvl="3"] .l1only{display:none!important}
   <div><h1><a id="home" href="../index.html" style="color:inherit;text-decoration:none" title="Zur Startseite">Kalorimeterlabor</a></h1><p>Messen wie im echten Versuch: Flüssigkeiten abwiegen, mit Strom erwärmen, Zeit stoppen, Temperaturkurven aufnehmen – und daraus Wärmekapazität, Schmelz- und Verdampfungswärme bestimmen. Dazu die Anomalie des Wassers.</p></div>
   <div class="tr"><div class="lvl" role="group" aria-label="Niveau"><button data-l="1" aria-pressed="true">Einfach</button><button data-l="2" aria-pressed="false">Mittel</button><button data-l="3" aria-pressed="false">Anspruchsvoll</button></div><button class="b sm" id="fs" title="Vollbild">⛶ Vollbild</button></div>
  </div>
- <nav class="scroll" id="nav"><a href="#heizen">Elektrisch heizen</a><a href="#mischen">Mischen</a><a href="#latent">Schmelzen &amp; Verdampfen</a><a href="#anomalie">Anomalie des Wassers</a></nav>
+ <nav class="scroll" id="nav"><a href="#heizen">Elektrisch heizen</a><a href="#mischen">Mischen</a><a href="#latent">Schmelzen &amp; Verdampfen</a><a href="#anomalie">Anomalie des Wassers</a><a href="#brennwert">Brennwert</a></nav>
 </header>
 
 <!-- ========== HEIZEN ========== -->
@@ -292,6 +292,46 @@ body[data-lvl="2"] .l1only,body[data-lvl="3"] .l1only{display:none!important}
  </div></details>
 </section>
 
+<!-- ========== BRENNWERT ========== -->
+<section class="st" id="st-brennwert">
+ <h2>Brennwert von Lebensmitteln</h2>
+ <p class="lead">Wie viel Energie steckt in einer Erdnuss? Zünde eine Probe an und lass sie unter einer Dose mit Wasser verbrennen. Aus der Erwärmung des Wassers und der verbrannten Masse bestimmst du den <b>Brennwert</b> – und vergleichst ihn mit der Angabe auf der Packung.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="bC"></canvas></div>
+   <div class="msg" id="bMsg" hidden></div>
+   <div class="card"><h3>Temperaturkurve (Messwerterfassung)</h3><div class="fig mid"><canvas id="bG"></canvas></div></div>
+   <div class="card"><h3>Messtabelle</h3><div class="tbl" id="bT"></div></div>
+  </div>
+  <div class="ctrl">
+   <div class="grp"><h3>1 · Probe</h3>
+    <select id="bProbe"></select>
+    <div class="card small" id="bPack" style="padding:8px 10px"></div>
+    <p class="note" style="margin:0">Die Feinwaage zeigt die Masse der Probe auf 0,01 g – vor und nach dem Verbrennen.</p>
+   </div>
+   <div class="grp"><h3>2 · Wasser in die Dose (Messzylinder)</h3>
+    <div class="row"><button class="b sm" data-bw="50">+ 50 ml</button><button class="b sm" data-bw="10">+ 10 ml</button><button class="b sm" id="bWe">Ausleeren</button></div>
+   </div>
+   <div class="grp"><h3>3 · Aufbau</h3>
+    <label for="bDist">Abstand Flamme – Dose</label>
+    <select id="bDist"><option value="2">2 cm</option><option value="5" selected>5 cm</option><option value="10">10 cm</option></select>
+    <label class="chk"><input type="checkbox" id="bWind"> Windschutz (Kamin aus Alublech)</label>
+    <label class="chk"><input type="checkbox" id="bStir" checked> mit dem Thermometer umrühren</label>
+   </div>
+   <button class="b pri" id="bFire">Anzünden und unter die Dose stellen</button>
+   <div id="bCom"></div>
+  </div>
+ </div>
+ <div class="card" style="margin-top:16px"><h3>Auswertung</h3><div id="bChk"></div></div>
+ <div class="tasks" id="tk-brennwert"></div>
+ <details class="expl"><summary>Erklärung</summary><div class="cols">
+  <p><b>Brennwert:</b> So viel Energie wird frei, wenn 1 g eines Stoffes vollständig verbrennt. Auf Packungen steht er in kJ (oder kcal) pro 100 g. Fett hat etwa 37 kJ/g, Zucker und Stärke etwa 17 kJ/g. 1 kcal = 4,19 kJ.</p>
+  <p><b>Messung:</b> Q = m<sub>Wasser</sub>·c<sub>Wasser</sub>·ΔT, Brennwert = Q / Δm<sub>Probe</sub>. Die Probe verbrennt nie ganz, darum wiegt man vorher und nachher.</p>
+  <p class="l2"><b>Warum so wenig?</b> Der größte Teil der Wärme geht mit den heißen Abgasen seitlich an der Dose vorbei. Ein Teil heizt die Dose und die Luft. Der Wirkungsgrad η = gemessener Brennwert / Packungsangabe liegt bei offenen Aufbauten meist nur bei 15–40 %.</p>
+  <p class="l3"><b>Verbesserungen:</b> Windschutz (Kamin), passender Abstand (zu nah: die Flamme rußt und wird gebremst; zu weit: viel Wärme geht vorbei), Rühren, Wasserwert der Dose berücksichtigen (Aludose etwa 15 J/K). Echte Brennwerte misst man im Bombenkalorimeter mit reinem Sauerstoff unter Druck.</p>
+ </div></details>
+</section>
+
 <script>
 /* ===================== Grundlagen ===================== */
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -330,7 +370,7 @@ const lvl=()=>+document.body.dataset.lvl;
 const LVLCB=[];
 function setLvl(l){document.body.dataset.lvl=l;$$(".lvl button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l==l));try{localStorage.setItem("kallvl",l)}catch(e){}LVLCB.forEach(f=>f());setTimeout(()=>{REG.forEach(o=>o.fit())},20)}
 $$(".lvl button").forEach(b=>b.onclick=()=>setLvl(b.dataset.l));
-const VIEWS=["heizen","mischen","latent","anomalie"];let cur="heizen";
+const VIEWS=["heizen","mischen","latent","anomalie","brennwert"];let cur="heizen";
 function route(){const h=location.hash.slice(1);cur=VIEWS.includes(h)?h:"heizen";$$(".st").forEach(s=>s.classList.toggle("on",s.id=="st-"+cur));$$("#nav a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")=="#"+cur));setTimeout(()=>REG.forEach(o=>o.fit()),10)}
 addEventListener("hashchange",route);
 $("#fs").onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.()};
@@ -368,7 +408,7 @@ class Thermo{constructor(tau=4,res=.1,noise=.03){this.T=null;this.tau=tau;this.r
  upd(dt,T){if(this.T===null)this.T=T;this.T+=(T-this.T)*(1-Math.exp(-dt/this.tau));this.acc+=dt;if(this.acc>=.5||this.disp===null){this.acc=0;this.disp=Math.round((this.T+gauss()*this.noise)/this.res)*this.res}return this.disp}
  reset(T){this.T=T;this.disp=Math.round(T/this.res)*this.res}}
 const fmtSW=t=>{const m=Math.floor(t/60),s=t-60*m;return`${m}:${s<10?"0":""}${s.toFixed(1).replace(".",",")}`};
-const fnum=(v,d)=>Number(v).toLocaleString("de-AT",{minimumFractionDigits:d,maximumFractionDigits:d}).replace("-","−");
+const fnum=(v,d)=>(Math.abs(v)<1e-9?0:Number(v)).toLocaleString("de-AT",{minimumFractionDigits:d,maximumFractionDigits:d}).replace("-","−");
 function lcd(x,X,Y,W,H,text,lab,o={}){x.fillStyle="#1d2420";x.beginPath();x.roundRect(X,Y,W,H,6);x.fill();x.fillStyle="#2f3a33";x.beginPath();x.roundRect(X+4,Y+4,W-8,H-8,4);x.fill();
  x.font=`700 ${o.size||Math.min(H*.55,22)}px Archivo,system-ui,sans-serif`;x.fillStyle=o.c||"#a6f2b8";x.textAlign="right";x.textBaseline="middle";x.fillText(text,X+W-9,Y+H/2+1);
  if(lab)txt(x,lab,X+W/2,Y-9,{a:"center",size:11,w:700,c:col("--mut")})}
@@ -739,8 +779,77 @@ tasks("anomalie",[
  {l:2,h:"Fische im Winter",p:"Verbinde den Hope’schen Versuch mit einem See im Winter: Wo ist das Wasser am kältesten, wo am wärmsten? Warum friert ein tiefer See nicht bis zum Grund?",set:()=>aSet("hope")},
  {l:3,h:"Glas dehnt sich mit",p:"In dieser Stufe schrumpft auch der Glaskolben beim Abkühlen. Bestimme das Minimum der Steighöhe genau. Warum liegt es nicht genau bei 4 °C?",set:()=>aSet("kolben",{bath:0})},
  {l:3,h:"Volumenänderung rechnen",p:"Berechne aus der Steighöhenänderung zwischen 15 °C und 4 °C (Rohr-Ø 2,5 mm) die Volumenänderung und vergleiche mit ΔV = m·(1/ρ₁₅ − 1/ρ₄).",set:()=>aSet("kolben",{bath:0})}]);
+
+/* ===================== Station: Brennwert ===================== */
+const BPRO={erdnuss:{n:"Erdnuss",H:25.0,m:[.5,.75],r:.0045,res:.08,ext:.006,col:"#d6a86a"},walnuss:{n:"Walnuss (Stück)",H:27.5,m:[.6,.9],r:.005,res:.06,ext:.005,col:"#b78a55"},
+ chips:{n:"Kartoffelchip",H:22.5,m:[1,1.4],r:.008,res:.12,ext:.004,col:"#f0c75a"},flips:{n:"Erdnussflip",H:22.0,m:[.3,.45],r:.0055,res:.05,ext:.004,col:"#e9b04a"},
+ marsh:{n:"Marshmallow",H:14.0,m:[2.2,2.8],r:.011,res:.25,ext:.01,col:"#f7f1ea"},wachs:{n:"Kerzenwachs (mit Docht)",H:42.0,m:[.5,.8],r:.003,res:.03,ext:0,col:"#f3efe2"}};
+$("#bProbe").innerHTML=Object.entries(BPRO).map(([k,p])=>`<option value="${k}">${p.n}</option>`).join("");
+const BCAN=15;
+const B={p:"b",speeds:[1,5,20],th:new Thermo(3,.1,.03),probe:"erdnuss",m0:0,mb:0,state:"ready",mw:0,mwN:0,Tw:TROOM,T0:null,Tmax:null,burned:0,
+ reset(){Object.assign(B,{mw:0,mwN:0,Tw:TROOM,T0:null,Tmax:null,burned:0});bNew();B.th.reset(TROOM);warn(B,"")},
+ step(h){const P=BPRO[B.probe],d=+$("#bDist").value,wind=$("#bWind").checked,eta=.3*(d==2?.8:d==5?1:.6)*(wind?1.35:1),rate=P.r*(d==2?.75:1)*(wind?1.1:1);
+  const C=B.mw*CWAT+BCAN;let Q=0;
+  if(B.state=="burn"){const left=B.mb-B.m0*P.res,dm=Math.min(left,rate*h*(.85+.3*Math.random()));B.mb-=dm;B.burned+=dm;Q=eta*dm*P.H*1000;
+   if(B.mb<=B.m0*P.res+1e-6){B.state="done";bBtn()}else if(Math.random()<P.ext*(wind?.3:1)*h){B.state="out";bBtn()}}
+  B.Tw+=(Q-.12*(B.Tw-TROOM)*h)/C;if(B.T0!==null)B.Tmax=Math.max(B.Tmax,B.Tw);
+  B.th.tau=$("#bStir").checked?3:12;B.th.upd(h,B.mw>0?B.Tw:TROOM)},
+ fine(){return B.state=="burn"||B.state=="out"?0:Math.round((B.mb+gauss()*.003)*100)/100},
+ sample(){return[B.th.disp]},cols(){return[["t in s",1,0],["T Wasser in °C",1,1]]},tr(){return[B.t,B.th.disp]}};
+function bNew(){const P=BPRO[$("#bProbe").value];B.probe=$("#bProbe").value;B.m0=P.m[0]+Math.random()*(P.m[1]-P.m[0]);B.mb=B.m0;B.state="ready";B.burned=0;B.T0=null;B.Tmax=null;
+ $("#bPack").innerHTML=`<b>Packung:</b> Brennwert ${fnum(P.H*100,0)} kJ / ${fnum(P.H*100/4.187,0)} kcal pro 100 g`;bBtn()}
+mkCommon(B);
+$("#bProbe").onchange=()=>{if(B.state=="burn"){$("#bProbe").value=B.probe;return}bNew()};
+$$("[data-bw]").forEach(b=>b.onclick=()=>{if(B.state=="burn"){flash(B,"Nicht während die Probe brennt!","warn");return}const v=+b.dataset.bw;if(B.mwN+v>300){flash(B,"Die Dose ist voll (höchstens 300 ml).","warn");return}const dm=(v+gauss()*.6)/1000,C=B.mw*CWAT+BCAN;if(B.mw==0)B.th.reset(18+Math.random()*2);const Tin=17.5+Math.random()*2;B.Tw=(C*B.Tw+dm*CWAT*Tin)/(C+dm*CWAT);B.mw+=dm;B.mwN+=v});
+$("#bWe").onclick=()=>{if(B.state=="burn")return;B.mw=0;B.mwN=0;B.Tw=TROOM};
+function bBtn(){const b=$("#bFire");b.textContent=B.state=="ready"?"Anzünden und unter die Dose stellen":B.state=="burn"?"Flamme auspusten":B.state=="out"?"Erloschen – neu anzünden":"Ausgebrannt – neue Probe nehmen";b.classList.toggle("pri",B.state!="burn")}
+$("#bFire").onclick=()=>{if(B.state=="ready"){if(B.mw<.03){flash(B,"Fülle zuerst Wasser in die Dose.","warn");return}B.state="burn";if(B.T0===null){B.T0=B.Tw;B.Tmax=B.Tw}}else if(B.state=="burn")B.state="out";else if(B.state=="out")B.state="burn";else bNew();bBtn()};
+function bWarn(){if(B.state=="out")return warn(B,"Die Flamme ist ausgegangen. Zünde die Probe noch einmal an – oder wiege den Rest, wenn sie fertig ist.");if(B.state=="done")return warn(B,"Die Probe ist ausgebrannt. Lies die höchste Temperatur ab und wiege den Rest auf der Feinwaage.");warn(B,"")}
+const bC=canv("bC",o=>{const x=o.x,w=o.w,h=o.h,P=BPRO[B.probe],d=+$("#bDist").value,wind=$("#bWind").checked,lv=lvl();x.clearRect(0,0,w,h);const by=h*.9;x.fillStyle=isDark()?"#2b2621":"#d9cdb8";x.fillRect(0,by,w,h-by);
+ const cx=w*.34,sc=h*.025,tip=by-h*.09,canB=tip-d*sc-h*.02,cw=Math.min(80,w*.13),chh=h*.3,canT=canB-chh;
+ /* Stativ */
+ x.fillStyle="#555";x.fillRect(w*.08,by-8,w*.14,8);x.fillRect(w*.12,h*.08,6,by-h*.08);x.fillRect(w*.12,canT+chh*.3,cx-w*.12,5);
+ /* Probenhalter */
+ x.fillStyle="#b88a5a";x.fillRect(cx-12,by-h*.04,24,h*.04);x.strokeStyle="#888";x.lineWidth=1.5;x.beginPath();x.moveTo(cx,by-h*.04);x.lineTo(cx,tip);x.stroke();
+ const onNeedle=B.state=="burn"||B.state=="out";const ps=8*Math.cbrt(B.mb/.6+.05);
+ if(onNeedle){x.fillStyle=B.state=="burn"?"#3b2a1d":P.col;x.beginPath();x.ellipse(cx,tip-ps*.6,ps,ps*.7,0,0,7);x.fill()}
+ /* Flamme */
+ if(B.state=="burn"){const fh=h*.09*(d==2?.75:1);for(let k=0;k<3;k++){const s=1-k*.28,fl=Math.sin(uT*12+k)*.1;x.fillStyle=["#ea580c","#f59e0b","#fde68a"][k];x.beginPath();x.ellipse(cx,tip-ps-fh*.45*s,cw*.17*s,fh*.55*s*(1+fl),0,0,7);x.fill()}
+  if(d==2){for(let i=0;i<5;i++){const ph=(uT*.8+i*.2)%1;x.fillStyle=`rgba(40,40,40,${.45*(1-ph)})`;x.beginPath();x.arc(cx+(i%2?1:-1)*(cw*.55+ph*20),canB-ph*chh,4+ph*6,0,7);x.fill()}}
+  if(lv>1){for(const s of[-1,1]){arrow(x,cx+s*cw*.25,canB+4,cx+s*(cw*.62),canB-chh*.7,alpha(col("--hot"),.55),3,9)}txt(x,"heiße Abgase strömen vorbei",cx+cw*.7,canB-chh*.8,{size:11,c:col("--mut")})}}
+ /* Windschutz */
+ if(wind){x.fillStyle="rgba(190,198,206,.55)";x.strokeStyle="#8a939c";x.lineWidth=1.5;for(const s of[-1,1]){x.beginPath();x.rect(s<0?cx-cw*.85:cx+cw*.75,canT+chh*.4,cw*.1,by-(canT+chh*.4)-2);x.fill();x.stroke()}}
+ /* Dose */
+ const g=x.createLinearGradient(cx-cw/2,0,cx+cw/2,0);g.addColorStop(0,"#9aa3ab");g.addColorStop(.35,"#f2f4f6");g.addColorStop(1,"#8d969e");x.fillStyle=g;x.beginPath();x.roundRect(cx-cw/2,canT,cw,chh,6);x.fill();
+ const lvH=(chh-8)*clamp(B.mwN/330,0,1);if(B.mwN>0){x.fillStyle=cS((B.Tw-5)/60,CW,.75);x.fillRect(cx-cw/2+5,canB-4-lvH,cw-10,lvH)}
+ x.strokeStyle="rgba(0,0,0,.35)";x.lineWidth=1.2;x.beginPath();x.roundRect(cx-cw/2,canT,cw,chh,6);x.stroke();
+ if(B.state=="burn"&&d==2){x.fillStyle="rgba(30,30,30,.5)";x.fillRect(cx-cw/2,canB-6,cw,6)}
+ x.fillStyle="#e8e8e8";x.strokeStyle="#777";x.lineWidth=1;x.fillRect(cx+cw*.1-3,canT-30,6,chh*.85);x.strokeRect(cx+cw*.1-3,canT-30,6,chh*.85);
+ lcd(x,cx-cw/2-20,canT-30-h*.1,cw+40,h*.065,fnum(B.th.disp,1)+" °C","Thermometer",{c:"#ffd28a",size:Math.min(22,h*.04)});
+ pill(x,`Wasser: ${B.mwN} ml`,cx+cw/2+10,canB-lvH/2-4,{size:12});
+ if(lv>1)pill(x,`Abstand ${d} cm`,cx+18,tip-d*sc/2-8,{size:11});
+ /* Feinwaage */
+ const fx=Math.max(cx+cw+60,w*.62),fw=Math.min(w-fx-14,200),fy=by-h*.09;x.fillStyle=isDark()?"#3a3f46":"#cfd4da";x.beginPath();x.roundRect(fx,fy,fw,h*.09,8);x.fill();x.fillStyle=isDark()?"#4a5058":"#b9c0c8";x.fillRect(fx+fw*.25,fy-5,fw*.5,5);
+ lcd(x,fx+fw-110,fy+h*.015,100,h*.06,onNeedle?"0,00 g":fnum(B.fine(),2)+" g",null,{size:Math.min(20,h*.035)});txt(x,"Feinwaage",fx+8,fy+h*.045,{size:12,w:700,c:"#555"});
+ if(!onNeedle){x.fillStyle=B.state=="done"?"#2c2620":P.col;x.strokeStyle="rgba(0,0,0,.3)";x.beginPath();x.ellipse(fx+fw*.5,fy-5-ps*.6,ps,ps*.7,0,0,7);x.fill();x.stroke();txt(x,B.state=="done"?"Rest":P.n,fx+fw*.5,fy-ps*1.6-14,{a:"center",size:12,w:700})}
+ lcd(x,w-150,12,138,h*.07,fmtSW(B.sw.t),null,{c:"#9fd6ff",size:Math.min(22,h*.04)})});
+const bG=canv("bG",o=>curve(o,B,{rowY:r=>r[1],ylo:15,yhi:30}));
+const bMeas=()=>B.T0===null||B.burned<.01?null:B.mw*CWAT*(B.Tmax-B.T0)/B.burned/1000;
+mkCheck("bChk",[{label:"Dein gemessener Brennwert",unit:"kJ/g",lv:1,tol:[.1,.2],truth:bMeas,none:"Erst eine Probe verbrennen.",show:()=>bMeas()==null?"Erst eine Probe verbrennen.":`Mit diesem Aufbau etwa ${fnum(bMeas(),1)} kJ/g (Packung: ${fnum(BPRO[B.probe].H,1)} kJ/g).`},
+ {label:"Wirkungsgrad η deines Aufbaus",unit:"%",lv:2,abs:1,tol:[4,8],truth:()=>bMeas()==null?null:bMeas()/BPRO[B.probe].H*100,none:"Erst eine Probe verbrennen.",show:()=>bMeas()==null?"Erst eine Probe verbrennen.":`η ≈ ${fnum(bMeas()/BPRO[B.probe].H*100,0)} %`},
+ {label:"Energie, die die Probe wirklich abgegeben hat",unit:"kJ",lv:3,tol:[.08,.16],truth:()=>B.burned<.01?null:B.burned*BPRO[B.probe].H,none:"Erst eine Probe verbrennen.",show:()=>B.burned<.01?"Erst eine Probe verbrennen.":`Packungswert × verbrannte Masse ≈ ${fnum(B.burned*BPRO[B.probe].H,2)} kJ`}]);
+B.reset();
+function bSet(pr,ml,o={}){location.hash="brennwert";if(B.state=="burn")B.state="ready";$("#bNew").click();$("#bProbe").value=pr;bNew();let r=ml;while(r>=50){$$("[data-bw]")[0].click();r-=50}while(r>=10){$$("[data-bw]")[1].click();r-=10}$("#bDist").value=o.d||5;$("#bWind").checked=!!o.wind;$("#bAuto").checked=true}
+tasks("brennwert",[
+ {l:1,h:"Energie in der Erdnuss",p:"Wiege eine Erdnuss, fülle 100 ml Wasser in die Dose, starte die Stoppuhr und zünde an. Um wie viel Grad wird das Wasser wärmer? Wiege danach den Rest.",set:()=>bSet("erdnuss",100)},
+ {l:1,h:"Chips oder Marshmallow?",p:"Verbrenne einen Chip und einen Marshmallow. Welcher erwärmt das Wasser pro Gramm stärker? Vergleiche mit der Packung: Was macht Chips so energiereich?",set:()=>bSet("chips",100)},
+ {l:1,h:"Kerzenwachs",p:"Kerzenwachs ist fast reines Fett-ähnliches Paraffin. Bestimme seinen Brennwert und vergleiche mit der Erdnuss.",set:()=>bSet("wachs",100)},
+ {l:2,h:"Wohin geht die Wärme?",p:"Bestimme den Wirkungsgrad für die Erdnuss. Wohin geht der Rest der Energie? Schau dir die Pfeile der Abgase an.",set:()=>bSet("erdnuss",100)},
+ {l:2,h:"Den Aufbau verbessern",p:"Probiere Abstand 2, 5 und 10 cm und den Windschutz aus. Mit welchem Aufbau kommst du der Packungsangabe am nächsten?",set:()=>bSet("erdnuss",100,{wind:true})},
+ {l:3,h:"Fett gegen Zucker",p:"Erdnüsse bestehen zu etwa 50 % aus Fett, Marshmallows fast nur aus Zucker. Zeige mit deinen (korrigierten) Messwerten, dass Fett etwa doppelt so viel Energie pro Gramm hat.",set:()=>bSet("marsh",100,{wind:true})},
+ {l:3,h:"Genauer rechnen",p:"Berücksichtige den Wasserwert der Aludose (15 J/K) und die Wärmeverluste der Dose nach dem Ausbrennen. Um wie viel ändert sich dein Ergebnis? Warum bleibt der Wirkungsgrad trotzdem klein?",set:()=>bSet("walnuss",150,{wind:true})}]);
 /* ===================== Schleife ===================== */
-const ST={heizen:{S:H,c:[hC],g:[hG],w:hWarn,x:hFit},mischen:{S:M,c:[mC],g:[mG],w:()=>{}},latent:{S:LS,c:[lC],g:[lG,lGm],w:lWarn},anomalie:{S:AS,c:[aC],g:[aG],w:aWarn}};
+const ST={heizen:{S:H,c:[hC],g:[hG],w:hWarn,x:hFit},mischen:{S:M,c:[mC],g:[mG],w:()=>{}},latent:{S:LS,c:[lC],g:[lG,lGm],w:lWarn},anomalie:{S:AS,c:[aC],g:[aG],w:aWarn},brennwert:{S:B,c:[bC],g:[bG],w:bWarn}};
 let last=performance.now(),slow=0;
 function loop(now){const dt=clamp((now-last)/1000,0,.05);last=now;uT+=dt;const s=ST[cur];if(s){tick(s.S,dt);s.c.forEach(c=>c.redraw());if((slow+=dt)>.3){slow=0;s.w();s.x&&s.x();s.g.forEach(g=>g.redraw())}}requestAnimationFrame(loop)}
 try{const l=localStorage.getItem("kallvl");if(l)setLvl(l)}catch(e){}

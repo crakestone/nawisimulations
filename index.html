@@ -258,9 +258,17 @@ const SIMS = [
     subject:'physik', topic:'waerme',
     title:'Kalorimeterlabor',
     file:'Wärme/Kalorimeterlabor.html',
-    text:'Messen wie im echten Versuch: Flüssigkeiten abwiegen, mit Strom heizen, Zeit stoppen und Temperaturkurven aufnehmen. Wärmekapazität, Mischtemperatur, Schmelz- und Verdampfungswärme, Anomalie des Wassers.',
+    text:'Messen wie im echten Versuch: Flüssigkeiten abwiegen, mit Strom heizen, Zeit stoppen und Temperaturkurven aufnehmen. Wärmekapazität, Mischtemperatur, Schmelz- und Verdampfungswärme, Anomalie des Wassers und der Brennwert einer Erdnuss.',
     tags:['Spezifische Wärmekapazität','Latente Wärme','Anomalie des Wassers','Messtabelle','3 Niveaustufen'],
     thumb:'kalori'
+  },
+  {
+    subject:'physik', topic:'waerme',
+    title:'Gaslabor',
+    file:'Wärme/Gaslabor.html',
+    text:'Gase im Teilchenmodell mit Kolben und Heizplatte, Boyle-Mariotte mit Spritze und Manometer, Erwärmen im Wasserbad bis zum absoluten Nullpunkt und Zustandsänderungen im p-V-Diagramm bis zu Carnot- und Otto-Prozess.',
+    tags:['Teilchenmodell','Gasgesetze','Absoluter Nullpunkt','p-V-Diagramm','3 Niveaustufen'],
+    thumb:'gas'
   },
   {
     subject:'biologie', topic:'stoffwechsel',
@@ -408,6 +416,15 @@ const THUMBS = {
       <rect x="70" y="73" width="14" height="24" rx="2" fill="#14212b"/><path d="M84 77 L100 64 V106 L84 93 z" fill="#14212b"/>
       <rect x="250" y="60" width="14" height="22" rx="7" fill="#7b3cc4"/><rect x="255.5" y="82" width="3" height="16" fill="#7b3cc4"/>
     </svg>`;
+  })(),
+  gas: (() => {
+    let d='';const r=(i)=>{const x=Math.sin(i*12.9898)*43758.5453;return x-Math.floor(x)};for(let i=0;i<34;i++){const c=['#2f62c9','#e8a090','#d7301f','#9ab8ee'][i%4];d+=`<circle cx="${48+r(i)*100}" cy="${78+r(i+50)*70}" r="4" fill="${c}"/>`;}
+    let h='';for(let i=0;i<=40;i++){const V=.35+i*.04,X=200+V*100,Y=150-48/V;h+=(i?' L':'M')+X.toFixed(1)+' '+Math.max(14,Y).toFixed(1);}
+    return `<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice"><rect width="400" height="170" fill="#f4f6fb"/>
+      <path d="M40 20 V156 H156 V20" fill="none" stroke="#223" stroke-width="3"/><rect x="42" y="62" width="112" height="10" fill="#8a939c"/><rect x="94" y="14" width="8" height="48" fill="#8a939c"/>${d}
+      <rect x="40" y="154" width="116" height="5" fill="#d6452a"/>
+      <path d="M200 156 H385 M200 156 V18" stroke="#556" stroke-width="1.5"/><path d="${h}" fill="none" stroke="#2f62c9" stroke-width="3.5"/>
+      <path d="M250 60 H330 V120 H250 Z" fill="rgba(194,65,12,.15)" stroke="#c2410c" stroke-width="2.5"/></svg>`;
   })(),
   kalori: `<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice"><rect width="400" height="170" fill="#f3f6fa"/>
       <rect x="40" y="30" width="80" height="110" rx="8" fill="#9aa3ad"/><rect x="50" y="38" width="60" height="96" fill="#eef1f4"/><rect x="50" y="78" width="60" height="56" fill="#7fb0e6"/>
