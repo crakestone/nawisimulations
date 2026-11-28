@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wärmekraftmaschinenlabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+
+/* VOICE: sachliches Laborheft, ruhig und genau
+   IDEA: Maschinen, die laufen – Stirlingmotor mit Schwungrad, Viertakter mit Ventilen, Wärmepumpe mit Kältemittelkreislauf, dazu Energieflussbilder
+   COLOUR and TYPE: Weiß bzw. Nacht; kalt blau, warm rot, Akzent Orange; Archivo + Source Sans 3
+   LAYOUT: Stationsleiste, Versuchsaufbau groß links, Bedienfeld rechts, darunter Kurve, Messtabelle, Auswertung */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#111419);--ink:light-dark(#15181d,#e9ecf1);--mut:light-dark(#566170,#9ea8b5);
+--line:light-dark(#d8dde4,#2d343e);--soft:light-dark(#f5f3f1,#1b1917);--card:light-dark(#ffffff,#161b21);
+--acc:light-dark(#c2410c,#fb923c);--accink:light-dark(#ffffff,#1a0d04);
+--hot:#d7301f;--cold:#2f62c9;--sun:#f2b705;--ir:#c0392b;--lei:#8a5a2b;--str:#2b8a8a;--rad:#d0461c;
+--grid:light-dark(#ebe7e3,#2a2725)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Source Sans 3",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Archivo,system-ui,sans-serif;line-height:1.08;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4vw,40px)}h2{font-size:clamp(24px,3vw,32px)}h3{font-size:18px;margin-bottom:6px}
+header{padding:18px max(4vw,14px) 0;border-bottom:1px solid var(--line)}
+.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.top p{margin:4px 0 0;color:var(--mut);max-width:66ch}
+.tr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.lvl{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:10px}
+.lvl button{border:0;background:none;color:var(--ink);padding:8px 12px;border-radius:7px;font:600 15px "Source Sans 3",sans-serif;cursor:pointer;min-height:40px}
+.lvl button[aria-pressed=true]{background:var(--acc);color:var(--accink)}
+nav.scroll{display:flex;gap:2px;margin-top:14px;overflow-x:auto;scrollbar-width:thin}
+nav a{flex:none;padding:10px 14px;color:var(--mut);text-decoration:none;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap}
+nav a.on{color:var(--ink);border-color:var(--acc)}
+nav a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.st{display:none;padding:22px max(4vw,14px) 40px;max-width:1500px;margin:0 auto}
+.st.on{display:block}
+.lead{color:var(--mut);max-width:78ch;margin:6px 0 16px}
+.work{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+@media(max-width:980px){.work{grid-template-columns:minmax(0,1fr)}}
+.stage{display:grid;gap:12px}
+.fig{position:relative;min-height:220px;background:var(--soft);border-radius:12px;overflow:hidden;touch-action:none}
+.fig>canvas{position:absolute;inset:0;width:100%;height:100%}
+.fig.tall{height:min(64vh,540px)}.fig.mid{height:300px}.fig.low{height:230px}
+.ctrl{display:grid;gap:12px;background:var(--soft);padding:14px;border-radius:12px}
+.ctrl .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ctrl label{font-weight:600;font-size:15px}
+.lab{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-size:15px}
+.ctrl .lab output{font-weight:400;color:var(--mut);white-space:nowrap}
+button.b,select{font:600 15px "Source Sans 3",sans-serif;min-height:44px;padding:8px 13px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button.b.pri{background:var(--acc);border-color:var(--acc);color:var(--accink)}
+button.b.sm{min-height:36px;padding:5px 10px;font-size:14px}
+button.b[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button.b:disabled{opacity:.5;cursor:default}
+select{font-weight:400;font-size:16px;width:100%}
+input[type=range]{width:100%;accent-color:var(--acc);min-height:30px}
+.chk{display:flex;gap:8px;align-items:center;font-weight:400!important;cursor:pointer;min-height:32px}
+.chk input{width:20px;height:20px;accent-color:var(--acc);flex:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px}
+.kpi div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.kpi span{display:block;font-size:13px;color:var(--mut)}.kpi b{font:700 21px/1.15 Archivo,sans-serif;font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--mut)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid rgba(0,0,0,.2)}
+.msg{padding:10px 12px;border-radius:10px;font-weight:600;background:var(--soft)}
+.msg.warn{background:rgba(215,48,31,.13)}.msg.ok{background:rgba(58,164,92,.15)}
+.tasks{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:20px}
+.task{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.task p{margin:0;font-size:15.5px}
+.task .lv{font-size:13px;font-weight:700;color:var(--mut)}
+.task button{align-self:flex-start;margin-top:auto}
+.expl{margin-top:20px;border-top:1px solid var(--line);padding-top:6px}
+details summary{cursor:pointer;font-weight:700;padding:10px 0;font-family:Archivo,sans-serif;font-size:18px}
+details .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px 28px}
+details p{margin:0 0 10px;max-width:70ch}
+body[data-lvl="1"] .l2,body[data-lvl="1"] .l3,body[data-lvl="2"] .l3{display:none!important}
+.note{font-size:14px;color:var(--mut);margin:6px 0 0}
+.mut{color:var(--mut)}.small{font-size:14px}
+.eq{font-family:Archivo,sans-serif;font-size:19px}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.seg{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);padding:4px;border-radius:10px;flex-wrap:wrap}
+.seg button{flex:1;border:0;background:none;color:var(--ink);min-height:40px;border-radius:7px;font:600 15px "Source Sans 3",sans-serif;cursor:pointer;padding:4px 8px;white-space:nowrap}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.slots{display:grid;gap:8px}
+.slots .sl{display:grid;grid-template-columns:24px minmax(0,1fr) minmax(0,1fr);gap:6px;align-items:center}
+.slots .sl b{font-family:Archivo,sans-serif;text-align:center}
+.quiz{display:grid;gap:8px}
+.qi{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.qi .qb{display:flex;gap:4px}
+.qi .qb button{min-height:36px;padding:4px 9px;border-radius:8px;border:1px solid var(--line);background:var(--soft);color:var(--ink);font:600 14px "Source Sans 3",sans-serif;cursor:pointer}
+.qi .qb button.y{background:rgba(58,164,92,.25);border-color:#3aa45c}.qi .qb button.n{background:rgba(215,48,31,.18);border-color:var(--hot)}
+.qi .fb{grid-column:1/-1;font-size:14px;color:var(--mut)}
+.qi .fb:empty{display:none}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 7px;border-radius:99px;color:#fff;vertical-align:1px}
+@media(max-width:600px){.qi{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+
+.sw{font:700 34px/1 Archivo,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.5px}
+.grp{display:grid;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.grp h3{font-size:15px;margin:0}
+.tbl{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.tbl table{font-size:14px}.tbl th{position:sticky;top:0;background:var(--card)}
+.chk2{display:grid;gap:8px}
+.chk2 .ln{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chk2 input[type=number]{width:140px;font:16px "Source Sans 3",sans-serif;min-height:40px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.res{font-weight:600;font-size:15px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+body[data-lvl="2"] .l1only,body[data-lvl="3"] .l1only{display:none!important}
+[hidden]{display:none!important}
+.seg button{white-space:normal;min-width:0}
+h1{hyphens:auto;overflow-wrap:break-word}
+</style>
+</head>
+<body data-lvl="1">
+<header>
+ <div class="top">
+  <div><h1><a id="home" href="../index.html" style="color:inherit;text-decoration:none" title="Zur Startseite">Wärmekraftmaschinenlabor</a></h1><p>Wie aus Wärme Bewegung wird – und umgekehrt: ein Stirlingmotor zum Anstoßen, Energieflussbilder echter Maschinen, ein Viertaktmotor mit p-V-Diagramm sowie Wärmepumpe und Kühlschrank.</p></div>
+  <div class="tr"><div class="lvl" role="group" aria-label="Niveau"><button data-l="1" aria-pressed="true">Einfach</button><button data-l="2" aria-pressed="false">Mittel</button><button data-l="3" aria-pressed="false">Anspruchsvoll</button></div><button class="b sm" id="fs" title="Vollbild">⛶ Vollbild</button></div>
+ </div>
+ <nav class="scroll" id="nav"><a href="#stirling">Stirlingmotor</a><a href="#wirkungsgrad">Wirkungsgrad</a><a href="#motor">Viertaktmotor</a><a href="#waermepumpe">Wärmepumpe &amp; Kühlschrank</a></nav>
+</header>
+
+<!-- ========== STIRLING ========== -->
+<section class="st" id="st-stirling">
+ <h2>Stirlingmotor</h2>
+ <p class="lead">Ein Stirlingmotor läuft mit jeder Wärmequelle – Kerze, heißes Wasser, sogar der Hand –, solange eine Seite wärmer ist als die andere. Die Luft im Inneren wird abwechselnd auf der heißen Seite erwärmt (sie dehnt sich aus und drückt) und auf der kalten Seite abgekühlt (sie zieht sich zusammen). Das treibt das Schwungrad an.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="two">
+    <div class="fig tall"><canvas id="sC"></canvas></div>
+    <div class="fig tall l2"><canvas id="sD"></canvas></div>
+   </div>
+   <div class="kpi" id="sK"></div>
+  </div>
+  <div class="ctrl">
+   <label for="sSrc">Wärmequelle</label>
+   <select id="sSrc"><option value="kerze">Teelicht unter dem heißen Zylinder</option><option value="wasser">Tasse mit heißem Wasser (80 °C)</option><option value="hand">Hand (etwa 33 °C)</option><option value="eis">Eiswürfel unter dem „heißen“ Zylinder</option><option value="eigen">eigene Temperaturen</option></select>
+   <div id="sOwn" hidden style="display:grid;gap:8px">
+    <div class="lab"><span>Heiße Seite</span><output id="sTho"></output></div><input type="range" id="sTh" min="-20" max="400" step="1" value="150">
+    <div class="lab"><span>Kalte Seite</span><output id="sTco"></output></div><input type="range" id="sTc" min="-20" max="100" step="1" value="21">
+   </div>
+   <button class="b pri" id="sPush">Schwungrad anstoßen</button>
+   <div class="row"><button class="b sm" id="sPushR">rückwärts anstoßen</button><button class="b sm" id="sStop">anhalten</button></div>
+   <label class="chk"><input type="checkbox" id="sGen"> Generator mit Lämpchen anschließen</label>
+   <label class="chk"><input type="checkbox" id="sSlow" checked> Zeitlupe (10 ×)</label>
+   <p class="note">Die heiße Seite braucht eine Weile, bis sie warm ist.</p>
+  </div>
+ </div>
+ <div class="tasks" id="tk-stirling"></div>
+ <details class="expl"><summary>Erklärung</summary><div class="cols">
+  <p><b>Prinzip:</b> Die eingeschlossene Luft wird hin- und hergeschoben. Ist sie gerade überwiegend auf der heißen Seite, ist der Druck hoch und schiebt den Kolben – der Motor bekommt Schwung. Ist sie auf der kalten Seite, ist der Druck niedrig und das Zurückdrücken kostet wenig Kraft. Der Überschuss treibt das Schwungrad.</p>
+  <p><b>Ohne Temperaturunterschied keine Arbeit.</b> Je größer der Unterschied, desto schneller läuft der Motor. Ist die „heiße“ Seite kälter als die kalte, läuft er rückwärts.</p>
+  <p class="l2"><b>p-V-Diagramm:</b> Die Fläche der Schleife ist die Arbeit pro Umdrehung. Ein Teil davon geht durch Reibung verloren, den Rest kann der Generator nutzen.</p>
+  <p class="l3"><b>Modell:</b> Alpha-Stirling mit zwei Zylindern (je 20 cm³, 90° versetzt), isotherme Räume (Schmidt-Analyse): p = nR / (V<sub>h</sub>/T<sub>h</sub> + V<sub>k</sub>/T<sub>k</sub> + V<sub>tot</sub>/T<sub>m</sub>). Bei hoher Drehzahl wird der Wärmeübergang schlechter. Mit idealem Regenerator ist der Wirkungsgrad des Kreisprozesses gleich dem Carnot-Wirkungsgrad 1 − T<sub>k</sub>/T<sub>h</sub>; echte Modellmotoren erreichen nur einen kleinen Teil davon.</p>
+ </div></details>
+</section>
+
+<!-- ========== WIRKUNGSGRAD ========== -->
+<section class="st" id="st-wirkungsgrad">
+ <h2>Wirkungsgrad: Wohin geht die Wärme?</h2>
+ <p class="lead">Jede Wärmekraftmaschine nimmt Wärme bei hoher Temperatur auf, wandelt einen Teil in Arbeit um und gibt den Rest als Abwärme bei niedriger Temperatur ab. Wie groß dieser Teil höchstens sein kann, hängt nur von den beiden Temperaturen ab.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="wC"></canvas></div>
+   <div class="kpi" id="wK"></div>
+   <div class="card l2"><h3>Maschinen im Vergleich</h3><div class="fig mid"><canvas id="wG"></canvas></div><p class="note">Heller Balken: Carnot-Grenze bei den Temperaturen der Maschine · dunkler Balken: tatsächlich erreicht.</p></div>
+  </div>
+  <div class="ctrl">
+   <label for="wM">Maschine</label>
+   <select id="wM"></select>
+   <div id="wOwn" style="display:grid;gap:8px">
+    <div class="lab"><span>Heiße Temperatur</span><output id="wTho"></output></div><input type="range" id="wTh" min="30" max="1500" step="5" value="600">
+    <div class="lab"><span>Kalte Temperatur</span><output id="wTco"></output></div><input type="range" id="wTc" min="-50" max="200" step="1" value="30">
+    <div class="lab"><span>Erreichter Anteil der Carnot-Grenze</span><output id="wGo"></output></div><input type="range" id="wGg" min="0" max="110" step="1" value="60">
+   </div>
+  </div>
+ </div>
+ <div class="tasks" id="tk-wirkungsgrad"></div>
+ <details class="expl"><summary>Erklärung</summary><div class="cols">
+  <p><b>Energieerhaltung:</b> Zugeführte Wärme = Arbeit + Abwärme. Energie geht nie verloren – aber die Abwärme ist meist nicht mehr nutzbar, weil sie zu kalt ist.</p>
+  <p><b>Kein Motor schafft 100 %</b> (2. Hauptsatz der Wärmelehre). Wärme fließt nur von selbst von warm nach kalt; ein Teil muss immer an die kalte Umgebung abgegeben werden.</p>
+  <p class="l2"><b>Carnot-Wirkungsgrad:</b> η<sub>max</sub> = 1 − T<sub>kalt</sub>/T<sub>heiß</sub> (Temperaturen in Kelvin). Darum laufen Kraftwerke mit möglichst heißem Dampf und möglichst kaltem Kühlwasser.</p>
+  <p class="l3"><b>Entropie:</b> Mit der Wärme Q bei der Temperatur T fließt die Entropie S = Q/T. Eine Maschine kann Entropie nicht vernichten: Q<sub>ab</sub>/T<sub>kalt</sub> ≥ Q<sub>zu</sub>/T<sub>heiß</sub>. Daraus folgt die Carnot-Grenze. Werte für echte Maschinen sind gerundete typische Angaben.</p>
+ </div></details>
+</section>
+
+<!-- ========== MOTOR ========== -->
+<section class="st" id="st-motor">
+ <h2>Viertaktmotor</h2>
+ <p class="lead">Im Automotor verbrennt Kraftstoff im Zylinder. Das heiße Gas drückt den Kolben nach unten und dreht die Kurbelwelle. Ein Arbeitsspiel hat vier Takte: <b>Ansaugen, Verdichten, Arbeiten, Ausstoßen</b> – dafür dreht sich die Kurbelwelle zweimal.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="two">
+    <div class="fig tall"><canvas id="mC"></canvas></div>
+    <div class="fig tall l2"><canvas id="mD"></canvas></div>
+   </div>
+   <div class="kpi" id="mK"></div>
+   <div class="card l3"><h3>Wirkungsgrad und Verdichtung</h3><div class="fig low"><canvas id="mE"></canvas></div></div>
+  </div>
+  <div class="ctrl">
+   <label>Motor</label>
+   <div class="seg" id="mType"><button data-v="otto" aria-pressed="true">Ottomotor (Benzin)</button><button data-v="diesel" aria-pressed="false">Dieselmotor</button></div>
+   <div class="lab"><span>Gaspedal (Last)</span><output id="mLo">100 %</output></div><input type="range" id="mL" min="20" max="100" step="1" value="100">
+   <div class="lab l2"><span>Verdichtung ε</span><output id="mEo">10</output></div><input class="l2" type="range" id="mEps" min="6" max="22" step="0.5" value="10">
+   <div class="lab"><span>Drehzahl</span><output id="mRo">2000 U/min</output></div><input type="range" id="mR" min="800" max="6000" step="100" value="2000">
+   <div class="lab"><span>Zeitlupe</span><output id="mSo"></output></div><input type="range" id="mS" min="0" max="100" step="1" value="12">
+   <div class="row"><button class="b" id="mGo">Pause</button><button class="b sm" id="mStep">Schritt (10°)</button></div>
+  </div>
+ </div>
+ <div class="tasks" id="tk-motor"></div>
+ <details class="expl"><summary>Erklärung</summary><div class="cols">
+  <p><b>1. Ansaugen:</b> Kolben geht nach unten, Einlassventil offen – Luft (beim Benziner mit Kraftstoff) strömt ein. <b>2. Verdichten:</b> Ventile zu, Kolben geht hinauf, das Gas wird zusammengedrückt und heiß. <b>3. Arbeiten:</b> Zündung – das Gas verbrennt, Druck und Temperatur steigen stark und drücken den Kolben hinunter. <b>4. Ausstoßen:</b> Auslassventil offen, Kolben schiebt das Abgas hinaus.</p>
+  <p class="l2"><b>Otto und Diesel:</b> Beim Ottomotor zündet eine Zündkerze das Gemisch. Beim Dieselmotor wird nur Luft so stark verdichtet (ε ≈ 16–22), dass sie über 500 °C heiß wird; der eingespritzte Diesel entzündet sich von selbst. Der Benziner regelt die Leistung mit der Drosselklappe (weniger Luft), der Diesel mit der Kraftstoffmenge.</p>
+  <p class="l3"><b>Wirkungsgrad:</b> Idealer Otto-Prozess η = 1 − 1/ε<sup>κ−1</sup> mit κ ≈ 1,35 für das Gasgemisch. Höhere Verdichtung → besserer Wirkungsgrad; beim Benziner begrenzt das Klopfen ε auf etwa 10–13. Das Modell rechnet den Druck aus dem 1. Hauptsatz mit einer Brennfunktion (Vibe), ohne Wärmeverluste an die Wand; Drosselverluste beim Ansaugen sind enthalten. Hubraum 0,5 L (ein Zylinder).</p>
+ </div></details>
+</section>
+
+<!-- ========== WÄRMEPUMPE ========== -->
+<section class="st" id="st-waermepumpe">
+ <h2>Wärmepumpe &amp; Kühlschrank</h2>
+ <p class="lead">Eine Wärmepumpe ist eine Wärmekraftmaschine, die rückwärts läuft: Mit elektrischer Arbeit pumpt sie Wärme von kalt nach warm. Der Kühlschrank holt die Wärme aus seinem Inneren und gibt sie hinten an die Küche ab. Die Wärmepumpe holt sie aus der kalten Außenluft oder der Erde und heizt damit das Haus.</p>
+ <div class="seg" id="pMode" style="max-width:420px;margin-bottom:14px"><button data-v="wp" aria-pressed="true">Wärmepumpe (Heizung)</button><button data-v="ks" aria-pressed="false">Kühlschrank</button></div>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="pC"></canvas></div>
+   <div class="kpi" id="pK"></div>
+   <div class="card l2"><h3 id="pGh">Leistungszahl und Temperaturen</h3><div class="fig mid"><canvas id="pG"></canvas></div></div>
+  </div>
+  <div class="ctrl">
+   <div id="pWp" style="display:grid;gap:8px">
+    <label for="pSrc">Wärmequelle</label>
+    <select id="pSrc"><option value="luft">Außenluft</option><option value="erde">Erdreich (Tiefenbohrung, etwa 10 °C)</option><option value="wasser">Grundwasser (etwa 10 °C)</option></select>
+    <div id="pAir"><div class="lab"><span>Außentemperatur</span><output id="pTao"></output></div><input type="range" id="pTa" min="-20" max="20" step="1" value="0"></div>
+    <label for="pHeat">Heizung im Haus</label>
+    <select id="pHeat"><option value="35">Fußbodenheizung (35 °C)</option><option value="50">moderne Heizkörper (50 °C)</option><option value="65">alte Heizkörper (65 °C)</option></select>
+   </div>
+   <div id="pKs" hidden style="display:grid;gap:8px">
+    <label for="pIn">Innen</label>
+    <select id="pIn"><option value="5">Kühlschrank (5 °C)</option><option value="-18">Gefrierschrank (−18 °C)</option></select>
+    <div class="lab"><span>Küche</span><output id="pRo"></output></div><input type="range" id="pR" min="15" max="35" step="1" value="22">
+    <label class="chk"><input type="checkbox" id="pOpen"> Tür offen lassen (um die Küche zu kühlen?)</label>
+   </div>
+   <div class="l3"><div class="lab"><span>Gütegrad (Anteil vom Carnot-Wert)</span><output id="pGo"></output></div><input type="range" id="pGg" min="30" max="70" step="1" value="50"></div>
+   <div class="row"><button class="b" id="pGo2">Pause</button><button class="b sm" id="pRe">Zähler auf 0</button></div>
+  </div>
+ </div>
+ <div class="tasks" id="tk-waermepumpe"></div>
+ <details class="expl"><summary>Erklärung</summary><div class="cols">
+  <p><b>Kreislauf:</b> Im <b>Verdampfer</b> verdampft das Kältemittel bei tiefer Temperatur und nimmt dabei Wärme auf (wie Schweiß auf der Haut). Der <b>Verdichter</b> drückt den Dampf zusammen, er wird heiß. Im <b>Verflüssiger</b> gibt er die Wärme ab und wird wieder flüssig. Das <b>Expansionsventil</b> senkt den Druck, das Kältemittel wird sehr kalt – und alles beginnt von vorn.</p>
+  <p><b>Mehr Wärme als Strom:</b> Die abgegebene Wärme ist die aufgenommene Umweltwärme plus die elektrische Energie. Eine gute Wärmepumpe liefert aus 1 kWh Strom 3–5 kWh Wärme. Ein Elektroheizer liefert nur 1 kWh.</p>
+  <p class="l2"><b>Leistungszahl</b> COP = Q<sub>warm</sub>/W. Sie ist umso besser, je kleiner der Temperaturunterschied zwischen Quelle und Heizung ist: darum Fußbodenheizung und Erdwärme. Ein offener Kühlschrank kühlt die Küche nicht – er heizt sie sogar um die elektrische Leistung.</p>
+  <p class="l3"><b>Carnot-Grenze:</b> COP<sub>Heizen</sub> ≤ T<sub>warm</sub>/(T<sub>warm</sub> − T<sub>kalt</sub>), COP<sub>Kühlen</sub> ≤ T<sub>kalt</sub>/(T<sub>warm</sub> − T<sub>kalt</sub>). Gerechnet wird bei der Wärmepumpe mit Verdampfung 7 K unter der Quelle und Verflüssigung 5 K über dem Heizwasser, beim Kühlschrank mit 10 K unter dem Innenraum und 12 K über der Küche; echte Geräte erreichen etwa 40–60 % des Carnot-Werts (Gütegrad).</p>
+ </div></details>
+</section>
+
+<script>
+/* ===================== Grundlagen ===================== */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const de=(x,p=3)=>Number(Number(x).toPrecision(p)).toLocaleString("de-AT",{maximumFractionDigits:10});
+const fx=(x,d=1)=>Number(x).toLocaleString("de-AT",{minimumFractionDigits:d,maximumFractionDigits:d});
+const SUPD="⁰¹²³⁴⁵⁶⁷⁸⁹";const sup=n=>String(n).replace(/-/g,"⁻").replace(/\d/g,d=>SUPD[d]);
+function sci(x,p=2){if(x===0)return"0";const e=Math.floor(Math.log10(Math.abs(x)));if(e>=-2&&e<5)return de(x,p);return de(x/10**e,p)+" · 10"+sup(e)}
+const degC=(T,d=0)=>(Math.abs(T)<.5/10**d?0:T).toLocaleString("de-AT",{minimumFractionDigits:d,maximumFractionDigits:d}).replace("-","−")+" °C";
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));const lerp=(a,b,t)=>a+(b-a)*t;
+const SIG=5.670e-8,K0=273.15;
+const probe=document.createElement("i");probe.style.display="none";document.body.appendChild(probe);let CC={};
+function col(v){if(CC[v])return CC[v];probe.style.color=v.startsWith("var")||v.startsWith("#")||v.startsWith("rgb")?v:`var(${v})`;return CC[v]=getComputedStyle(probe).color}
+function alpha(c,a){const m=c.match(/[\d.]+/g);return m?`rgba(${m[0]},${m[1]},${m[2]},${a})`:c}
+const isDark=()=>{const c=col("--bg").match(/\d+/g);return c&&(+c[0]+ +c[1]+ +c[2])<200};
+/* Farbskalen: kalt-warm und Wärmebild (Eisen) */
+const CW=[[0,[40,70,190]],[.25,[110,160,240]],[.5,[226,226,222]],[.75,[245,150,110]],[1,[185,20,30]]];
+const IRON=[[0,[10,6,40]],[.16,[62,14,125]],[.36,[150,30,145]],[.54,[220,62,42]],[.72,[246,150,32]],[.88,[255,224,90]],[1,[255,255,236]]];
+function cA(t,S=CW){t=clamp(isFinite(t)?t:0,0,1);for(let i=1;i<S.length;i++)if(t<=S[i][0]){const a=S[i-1],b=S[i],u=(t-a[0])/(b[0]-a[0]);return[a[1][0]+(b[1][0]-a[1][0])*u,a[1][1]+(b[1][1]-a[1][1])*u,a[1][2]+(b[1][2]-a[1][2])*u]}return S[S.length-1][1]}
+const cS=(t,S=CW,a=1)=>{const c=cA(t,S);return`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${a})`};
+const REG=[];
+function canv(id,draw){const c=document.getElementById(id);const o={c,draw,x:null,w:0,h:0};const fit=()=>{const r=c.getBoundingClientRect();if(!r.width||!r.height)return;const d=devicePixelRatio||1;c.width=Math.round(r.width*d);c.height=Math.round(r.height*d);o.w=r.width;o.h=r.height;o.x=c.getContext("2d");o.x.setTransform(d,0,0,d,0,0);draw(o)};o.fit=fit;o.redraw=()=>{if(o.x&&o.w)draw(o)};new ResizeObserver(fit).observe(c);REG.push(o);return o}
+const redrawAll=()=>{CC={};REG.forEach(o=>o.redraw())};
+new MutationObserver(redrawAll).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme","class","style"]});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",redrawAll);
+function txt(x,s,X,Y,o={}){x.font=`${o.w||400} ${o.size||13}px "Source Sans 3",system-ui,sans-serif`;x.fillStyle=o.c||col("--ink");x.textAlign=o.a||"left";x.textBaseline=o.b||"middle";x.fillText(s,X,Y)}
+function pill(x,s,X,Y,o={}){x.font=`${o.w||700} ${o.size||13}px "Source Sans 3",system-ui,sans-serif`;const tw=x.measureText(s).width,pw=tw+12,ph=(o.size||13)+9;let x0=o.a=="center"?X-pw/2:o.a=="right"?X-pw:X;x.fillStyle=o.bg||alpha(col("--card"),.9);x.beginPath();x.roundRect(x0,Y-ph/2,pw,ph,6);x.fill();if(o.bc){x.strokeStyle=o.bc;x.lineWidth=1.5;x.stroke()}txt(x,s,x0+6,Y+.5,{size:o.size||13,w:o.w||700,c:o.c||col("--ink")})}
+function arrow(x,x1,y1,x2,y2,c,wd=3,head=10){const a=Math.atan2(y2-y1,x2-x1),L=Math.hypot(x2-x1,y2-y1);if(L<2)return;head=Math.min(Math.max(head,wd*2.2),L*.6);x.strokeStyle=c;x.fillStyle=c;x.lineWidth=wd;x.lineCap="round";x.beginPath();x.moveTo(x1,y1);x.lineTo(x2-Math.cos(a)*head*.7,y2-Math.sin(a)*head*.7);x.stroke();x.beginPath();x.moveTo(x2,y2);x.lineTo(x2-Math.cos(a-.45)*head,y2-Math.sin(a-.45)*head);x.lineTo(x2-Math.cos(a+.45)*head,y2-Math.sin(a+.45)*head);x.closePath();x.fill()}
+function wave(x,x1,y1,x2,y2,c,amp=4,wl=12,wd=2,ph=0){const L=Math.hypot(x2-x1,y2-y1);if(L<3)return;const ux=(x2-x1)/L,uy=(y2-y1)/L;x.strokeStyle=c;x.lineWidth=wd;x.beginPath();for(let s=0;s<=L;s+=2){const o=Math.sin(s/wl*2*Math.PI+ph)*amp*Math.min(1,s/6,(L-s)/6+.3);const X=x1+ux*s-uy*o,Y=y1+uy*s+ux*o;s?x.lineTo(X,Y):x.moveTo(X,Y)}x.stroke()}
+function thermo(x,X,Y,H,T,T0,T1,lab){/* kleines Thermometer, Kugel unten bei (X,Y) */const f=clamp((T-T0)/(T1-T0),0,1),r=7;x.fillStyle=col("--card");x.strokeStyle=col("--mut");x.lineWidth=1.5;x.beginPath();x.roundRect(X-4.5,Y-H,9,H,4.5);x.fill();x.stroke();x.beginPath();x.arc(X,Y+r-2,r,0,7);x.fill();x.stroke();const c=cS(f);x.fillStyle=c;x.beginPath();x.arc(X,Y+r-2,r-2.5,0,7);x.fill();const hh=(H-8)*f+4;x.fillRect(X-2,Y-hh,4,hh+2);if(lab!==false)pill(x,lab||degC(T),X+12,Y-H+8,{size:13})}
+function seg(id,cb){const el=document.getElementById(id);el.querySelectorAll("button").forEach(b=>b.onclick=()=>{el.querySelectorAll("button").forEach(q=>q.setAttribute("aria-pressed",q===b));cb(b.dataset.v)});return v=>{el.querySelectorAll("button").forEach(q=>q.setAttribute("aria-pressed",q.dataset.v==v))}}
+function kpi(id,items){document.getElementById(id).innerHTML=items.filter(Boolean).map(([k,v,c])=>`<div${c?` class="${c}"`:""}><span>${k}</span><b>${v}</b></div>`).join("")}
+const TL=["","einfach","mittel","anspruchsvoll"];
+function tasks(id,list){const el=document.getElementById("tk-"+id);el.innerHTML="";list.forEach(t=>{const d=document.createElement("div");d.className="task"+(t.l==2?" l2":t.l==3?" l3":"");d.innerHTML=`<span class="lv">${TL[t.l]}</span><h3>${t.h}</h3><p>${t.p}</p>`;if(t.set){const b=document.createElement("button");b.className="b sm";b.textContent="Einstellen";b.onclick=()=>{t.set();document.getElementById("st-"+id).scrollIntoView({behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"})};d.appendChild(b)}el.appendChild(d)})}
+const lvl=()=>+document.body.dataset.lvl;
+const LVLCB=[];
+function setLvl(l){document.body.dataset.lvl=l;$$(".lvl button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l==l));try{localStorage.setItem("wkmlvl",l)}catch(e){}LVLCB.forEach(f=>f());setTimeout(()=>{REG.forEach(o=>o.fit())},20)}
+$$(".lvl button").forEach(b=>b.onclick=()=>setLvl(b.dataset.l));
+const VIEWS=["stirling","wirkungsgrad","motor","waermepumpe"];let cur="stirling";
+function route(){const h=location.hash.slice(1);cur=VIEWS.includes(h)?h:"stirling";$$(".st").forEach(s=>s.classList.toggle("on",s.id=="st-"+cur));$$("#nav a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")=="#"+cur));setTimeout(()=>REG.forEach(o=>o.fit()),10)}
+addEventListener("hashchange",route);
+$("#fs").onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.()};
+function bindRange(id,out,fmt,cb){const r=$("#"+id),o=$("#"+out);const f=()=>{o.textContent=fmt(+r.value);cb&&cb(+r.value)};r.addEventListener("input",f);f();return v=>{r.value=v;o.textContent=fmt(+r.value)}}
+const hhmm=s=>{s=Math.max(0,s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=Math.floor(s%60);return h?`${h} h ${String(m).padStart(2,"0")} min`:m?`${m} min ${String(sec).padStart(2,"0")} s`:`${sec} s`};
+function ptr(c,cb){/* Zeigerereignisse in CSS-Pixeln */const g=e=>{const r=c.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};c.addEventListener("pointerdown",e=>{const[p,q]=g(e);cb("down",p,q,e)});c.addEventListener("pointermove",e=>{const[p,q]=g(e);cb("move",p,q,e)});c.addEventListener("pointerleave",e=>cb("leave",0,0,e));c.addEventListener("pointerup",e=>{const[p,q]=g(e);cb("up",p,q,e)})}
+
+/* ===================== Diagramm ===================== */
+function nice(r){const e=10**Math.floor(Math.log10(r/5));for(const m of[1,2,2.5,5,10])if(r/(m*e)<=6)return m*e;return 10*e}
+function chart(o,c){const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const L=54,R=14,T=14,B=40;
+ const X=v=>L+(v-c.x0)/(c.x1-c.x0)*(w-L-R),Y=v=>h-B-(v-c.y0)/(c.y1-c.y0)*(h-T-B);
+ x.strokeStyle=col("--grid");x.lineWidth=1;
+ const sx=c.sx||nice(c.x1-c.x0),sy=c.sy||nice(c.y1-c.y0);
+ for(let v=Math.ceil(c.x0/sx-1e-9)*sx;v<=c.x1+1e-9;v+=sx){x.beginPath();x.moveTo(X(v),T);x.lineTo(X(v),h-B);x.stroke();txt(x,c.xf?c.xf(v):de(v,3),X(v),h-B+12,{a:"center",c:col("--mut"),size:12})}
+ for(let v=Math.ceil(c.y0/sy-1e-9)*sy;v<=c.y1+1e-9;v+=sy){x.beginPath();x.moveTo(L,Y(v));x.lineTo(w-R,Y(v));x.stroke();txt(x,(c.yf?c.yf(v):de(v,3)).replace("-","−"),L-6,Y(v),{a:"right",c:col("--mut"),size:12})}
+ x.strokeStyle=col("--mut");x.beginPath();x.moveTo(L,T);x.lineTo(L,h-B);x.lineTo(w-R,h-B);x.stroke();
+ txt(x,c.xl,(L+w-R)/2,h-10,{a:"center",c:col("--mut"),size:13,w:600});
+ x.save();x.translate(13,(T+h-B)/2);x.rotate(-Math.PI/2);txt(x,c.yl,0,0,{a:"center",c:col("--mut"),size:13,w:600});x.restore();
+ x.save();x.beginPath();x.rect(L,T,w-L-R,h-T-B);x.clip();
+ (c.extra||(()=>{}))(x,X,Y);
+ for(const s of c.series||[]){const cc=col(s.c);
+  if(s.fn){x.strokeStyle=cc;x.lineWidth=s.lw||2;x.setLineDash(s.dash||[]);x.beginPath();let st=false;for(let i=0;i<=300;i++){const v=c.x0+(c.x1-c.x0)*i/300,y=s.fn(v);if(!isFinite(y)){st=false;continue}st?x.lineTo(X(v),Y(y)):x.moveTo(X(v),Y(y));st=true}x.stroke();x.setLineDash([])}
+  if(s.line&&s.pts&&s.pts.length>1){x.strokeStyle=s.alpha?alpha(cc,s.alpha):cc;x.lineWidth=s.lw||2.2;x.setLineDash(s.dash||[]);x.beginPath();s.pts.forEach((p,i)=>i?x.lineTo(X(p[0]),Y(p[1])):x.moveTo(X(p[0]),Y(p[1])));x.stroke();x.setLineDash([])}
+  if(s.pts&&!s.line){x.fillStyle=cc;for(const p of s.pts){x.beginPath();x.arc(X(p[0]),Y(p[1]),s.r||4,0,7);x.fill()}}}
+ (c.after||(()=>{}))(x,X,Y);
+ x.restore();
+ if(c.legend&&c.legend.length){let yy=T+10;x.font='12px "Source Sans 3",sans-serif';const lw=Math.max(...c.legend.map(l=>x.measureText(l[0]).width))+30;x.fillStyle=alpha(col("--card"),.85);x.fillRect(w-R-lw-4,T+1,lw+2,c.legend.length*17+4);for(const [t,cc,d] of c.legend){x.strokeStyle=col(cc);x.lineWidth=2.5;x.setLineDash(d||[]);x.beginPath();x.moveTo(w-R-lw,yy);x.lineTo(w-R-lw+16,yy);x.stroke();x.setLineDash([]);txt(x,t,w-R-lw+21,yy,{size:12,c:col("--ink")});yy+=17}}}
+
+
+let uT=0;
+
+/* ===================== Laborgeräte (gemeinsam) ===================== */
+const TROOM=21,CWAT=4190,CICE=2100,LF=334000,LV=2257000;
+class Thermo{constructor(tau=4,res=.1,noise=.03){this.T=null;this.tau=tau;this.res=res;this.noise=noise;this.disp=null;this.acc=1}
+ upd(dt,T){if(this.T===null)this.T=T;this.T+=(T-this.T)*(1-Math.exp(-dt/this.tau));this.acc+=dt;if(this.acc>=.5||this.disp===null){this.acc=0;this.disp=Math.round((this.T+gauss()*this.noise)/this.res)*this.res}return this.disp}
+ reset(T){this.T=T;this.disp=Math.round(T/this.res)*this.res}}
+const fmtSW=t=>{const m=Math.floor(t/60),s=t-60*m;return`${m}:${s<10?"0":""}${s.toFixed(1).replace(".",",")}`};
+const fnum=(v,d)=>(Math.abs(v)<1e-9?0:Number(v)).toLocaleString("de-AT",{minimumFractionDigits:d,maximumFractionDigits:d}).replace("-","−");
+function lcd(x,X,Y,W,H,text,lab,o={}){x.fillStyle="#1d2420";x.beginPath();x.roundRect(X,Y,W,H,6);x.fill();x.fillStyle="#2f3a33";x.beginPath();x.roundRect(X+4,Y+4,W-8,H-8,4);x.fill();
+ x.font=`700 ${o.size||Math.min(H*.55,22)}px Archivo,system-ui,sans-serif`;x.fillStyle=o.c||"#a6f2b8";x.textAlign="right";x.textBaseline="middle";x.fillText(text,X+W-9,Y+H/2+1);
+ if(lab)txt(x,lab,X+W/2,Y-9,{a:"center",size:11,w:700,c:col("--mut")})}
+/* Station mit Stoppuhr, Messtabelle, Zeitraffer */
+function mkCommon(S){const p=S.p;const el=document.getElementById(p+"Com");
+ el.innerHTML=`<div class="grp"><h3>Stoppuhr</h3><div class="sw" id="${p}SW">0:00,0</div><div class="row"><button class="b pri sm" id="${p}SWgo">Start</button><button class="b sm" id="${p}SWre">Zurücksetzen</button></div></div>
+ <div class="grp"><h3>Messwerte</h3><label class="chk"><input type="checkbox" id="${p}Auto"> automatisch, solange die Stoppuhr läuft, alle</label>
+ <select id="${p}Ev">${(S.evs||[5,10,15,30,60]).map(v=>`<option value="${v}"${v==(S.ev||10)?" selected":""}>${v<60?v+" s":v/60+" min"}</option>`).join("")}</select>
+ <div class="row"><button class="b sm" id="${p}Rec">Messwert aufnehmen</button><button class="b sm" id="${p}Cp">Tabelle kopieren</button><button class="b sm" id="${p}Cl">Tabelle löschen</button></div></div>
+ <label>Zeitraffer</label><div class="seg" id="${p}Sp">${S.speeds.map((v,i)=>`<button data-v="${v}" aria-pressed="${i==0}">${v}×</button>`).join("")}</div>
+ <button class="b" id="${p}New">↺ Neuer Versuch</button>`;
+ S.spd=S.speeds[0];S.sw={t:0,run:false};S.log={rows:[],next:0};S.trace=[];S.t=0;
+ seg(p+"Sp",v=>S.spd=+v);
+ $(`#${p}SWgo`).onclick=()=>{S.sw.run=!S.sw.run;if(S.sw.run)S.log.next=Math.ceil(S.sw.t/+$(`#${p}Ev`).value-1e-9)*+$(`#${p}Ev`).value;swUpd(S)};
+ $(`#${p}SWre`).onclick=()=>{S.sw.run=false;S.sw.t=0;S.log.next=0;swUpd(S)};
+ $(`#${p}Rec`).onclick=()=>rec(S);$(`#${p}Cl`).onclick=()=>{S.log.rows=[];tbl(S)};
+ $(`#${p}Cp`).onclick=async()=>{const c=S.cols(),csv=[c.map(k=>k[0]).join(";"),...S.log.rows.map(r=>c.map((k,i)=>fnum(r[k[2]??i],k[1]).replace("−","-").replace(/\s/g,"")).join(";"))].join("\n");try{await navigator.clipboard.writeText(csv);flash(S,"Tabelle kopiert – in Excel oder GeoGebra einfügen.","ok")}catch(e){flash(S,"Kopieren ist hier nicht erlaubt. Markiere die Tabelle und kopiere sie mit Strg+C.","warn")}};
+ $(`#${p}New`).onclick=()=>{S.sw.run=false;S.sw.t=0;S.log.rows=[];S.trace=[];S.t=0;S.lastTr=-1e9;S.reset();swUpd(S);tbl(S)};
+ tbl(S);swUpd(S)}
+function swUpd(S){$(`#${S.p}SW`).textContent=fmtSW(S.sw.t);$(`#${S.p}SWgo`).textContent=S.sw.run?"Stopp":"Start"}
+function rec(S){const r=S.sample();S.log.rows.push([S.sw.t,...r]);S.log.ptsT=(S.log.ptsT||[]);S.log.ptsT.push(S.t);tbl(S)}
+function tbl(S){const c=S.cols(),el=$(`#${S.p}T`);if(!S.log.rows.length){el.innerHTML=`<p class="note" style="padding:8px 10px;margin:0">Noch keine Messwerte. Starte die Stoppuhr und nimm Werte auf – von Hand oder automatisch.</p>`;S.log.ptsT=[];return}
+ el.innerHTML=`<table><tr>${c.map(k=>`<th class="n">${k[0]}</th>`).join("")}</tr>${S.log.rows.map(r=>`<tr>${c.map((k,i)=>`<td class="n">${fnum(r[k[2]??i],k[1])}</td>`).join("")}</tr>`).join("")}</table>`;el.scrollTop=el.scrollHeight}
+function flash(S,t,cls=""){const m=$(`#${S.p}Msg`);m.hidden=false;m.className="msg "+cls;m.textContent=t;clearTimeout(S.ft);S.ft=setTimeout(()=>m.hidden=true,6000)}
+function warn(S,t){const m=$(`#${S.p}Msg`);if(!t){if(S.wt){m.hidden=true;S.wt=""}return}if(S.wt==t)return;S.wt=t;m.hidden=false;m.className="msg warn";m.textContent=t}
+function tick(S,dt){/* dt in Echtzeit-Sekunden */const sim=dt*S.spd;const n=Math.max(1,Math.ceil(sim/(S.hmax||.05))),h=sim/n;for(let i=0;i<n;i++){S.step(h);S.t+=h;if(S.sw.run){S.sw.t+=h;const ev=+$(`#${S.p}Ev`).value;if($(`#${S.p}Auto`).checked&&S.sw.t>=S.log.next-1e-9){rec(S);S.log.next+=ev}}
+  if(!S.lastTr||S.t-S.lastTr>=(S.trEvery||1)){S.lastTr=S.t;S.trace.push(S.tr());if(S.trace.length>4000)S.trace.splice(0,S.trace.length-4000)}}
+ swUpd(S)}
+/* Prüfen */
+function mkCheck(id,items){const el=document.getElementById(id);el.innerHTML=`<div class="chk2">${items.map((it,i)=>`<div class="ln${it.lv==2?" l2":it.lv==3?" l3":""}"><label for="${id}i${i}" style="min-width:220px">${it.label}</label><input type="number" step="any" id="${id}i${i}" inputmode="decimal"><span>${it.unit}</span><button class="b sm" data-i="${i}">Prüfen</button><button class="b sm" data-s="${i}">Lösung</button><span class="res" id="${id}r${i}"></span></div>`).join("")}</div><p class="note">Rechne mit deinen eigenen Messwerten aus der Tabelle. „Prüfen“ vergleicht mit dem richtigen Wert.</p>`;
+ el.querySelectorAll("button[data-i]").forEach(b=>b.onclick=()=>{const i=+b.dataset.i,it=items[i],v=parseFloat(String($(`#${id}i${i}`).value).replace(",",".")),r=$(`#${id}r${i}`);if(!isFinite(v)){r.textContent="Bitte eine Zahl eingeben.";return}
+  const tv=it.truth();if(tv==null){r.textContent=it.none||"Noch keine Messung.";return}const dev=Math.abs(v-tv)/Math.abs(it.abs?1:tv);const tol=it.tol||[.05,.12];
+  r.textContent=(it.abs?Math.abs(v-tv)<=tol[0]:dev<=tol[0])?"✓ Sehr gut!":(it.abs?Math.abs(v-tv)<=tol[1]:dev<=tol[1])?"✓ Recht gut – kleine Abweichung (Messfehler, Wärmeverluste).":(v-tv>0?"✗ Zu groß.":"✗ Zu klein.")+" Prüfe Rechnung und Einheiten."});
+ el.querySelectorAll("button[data-s]").forEach(b=>b.onclick=()=>{const i=+b.dataset.s,it=items[i];$(`#${id}r${i}`).textContent=it.show()})}
+function lsq(pts){const n=pts.length;if(n<3)return null;let sx=0,sy=0,sxx=0,sxy=0;for(const[x,y]of pts){sx+=x;sy+=y;sxx+=x*x;sxy+=x*y}const d=n*sxx-sx*sx;if(!d)return null;const k=(n*sxy-sx*sy)/d;return{k,d:(sy-k*sx)/n}}
+function curve(o,S,o2={}){const tr=S.trace,lp=S.log.ptsT||[],rows=S.log.rows;const div=o2.min?60:1;const t1=Math.max(o2.t0||60,(tr.length?tr[tr.length-1][0]:0))/div;let ys=tr.map(p=>p[1]).filter(isFinite);let lo=Math.min(...ys,o2.ylo??20),hi=Math.max(...ys,o2.yhi??25);if(!ys.length){lo=o2.ylo??15;hi=o2.yhi??30}
+ const pad=Math.max(1,(hi-lo)*.08);chart(o,{x0:0,x1:Math.ceil(t1*1.05),y0:Math.floor(lo-pad),y1:Math.ceil(hi+pad),xl:o2.min?"Versuchszeit in min":"Versuchszeit in s",yl:o2.yl||"Temperatur in °C",
+  series:[...(o2.extra||[]),{pts:tr.map(p=>[p[0]/div,p[1]]),line:true,c:o2.c||"--hot"},{pts:lp.map((t,i)=>[t/div,o2.rowY?o2.rowY(rows[i]):NaN]).filter(p=>isFinite(p[1])),c:"--ink",r:3.5}],after:o2.after})}
+
+/* ===================== Station: Stirlingmotor ===================== */
+const SVS=20e-6,SVD=20e-6,SNR=1e5*40e-6/294,SPB=1e5,SI=1e-2,SC0=.002,SC1=1e-3,SW0=30,SKG=6e-4;
+const SSRC={kerze:[160,21],wasser:[75,21],hand:[33,21],eis:[0,21]};
+const S={th:0,om:0,Th:294,Tc:294,trace:[],Wrev:0,Qh:0,acc:{W:0,Qh:0,th:0},Pel:0,Pm:0};
+function sTargets(){const k=$("#sSrc").value;if(k=="eigen")return[+$("#sTh").value,+$("#sTc").value];return SSRC[k]}
+function sState(th,om){const Tm=(S.Th+S.Tc)/2,f=1/(1+Math.abs(om)/SW0),The=Tm+(S.Th-Tm)*f,Tce=Tm+(S.Tc-Tm)*f,Vh=SVS/2*(1-Math.cos(th)),Vc=SVS/2*(1-Math.cos(th-Math.PI/2)),p=SNR/(Vh/The+Vc/Tce+SVD/Tm);return{The,Tce,Vh,Vc,p}}
+function sStep(dtReal){const [th0,tc0]=sTargets();S.Th+=(th0+273.15-S.Th)*Math.min(1,dtReal/8);S.Tc+=(tc0+273.15-S.Tc)*Math.min(1,dtReal/8);
+ const sim=dtReal*($("#sSlow").checked?.1:1),n=Math.max(1,Math.ceil(sim/5e-4)),h=sim/n,gen=$("#sGen").checked;let Pm=0,Pe=0;
+ for(let i=0;i<n;i++){const st=sState(S.th,S.om),dVh=SVS/2*Math.sin(S.th),dVc=SVS/2*Math.sin(S.th-Math.PI/2),tg=(st.p-SPB)*(dVh+dVc);
+  if(S.om==0){continue}const tf=S.om?Math.sign(S.om)*(SC0+SC1*Math.abs(S.om))+(Math.abs(S.om)<3?.03*S.om:0):0,tl=gen?SKG*S.om:0;const o0=S.om;S.om+=(tg-tf-tl)/SI*h;if(o0*S.om<0||(Math.abs(S.om)<.05&&Math.abs(tg)<.08))S.om=0;
+  const dth=S.om*h;S.acc.W+=st.p*(dVh+dVc)*dth;S.acc.Qh+=st.p*dVh*dth;S.acc.th+=dth;Pm+=tg*S.om*h;Pe+=tl*S.om*h;S.th+=dth;
+  if(Math.abs(S.acc.th)>=2*Math.PI){S.Wrev=S.acc.W*Math.sign(S.acc.th);S.Qh=S.acc.Qh*Math.sign(S.acc.th);S.acc={W:0,Qh:0,th:0}}}
+ S.Pm=Pm/sim;S.Pel=gen?Pe/sim*.6:0;if(S.om==0){S.Wrev=0}
+ const st=sState(S.th,S.om);S.trace.push([(st.Vh+st.Vc+SVD)*1e6,st.p/1e5]);if(S.trace.length>400)S.trace.shift()}
+$("#sPush").onclick=()=>{S.om=Math.max(S.om,12)};$("#sPushR").onclick=()=>{S.om=Math.min(S.om,-12)};$("#sStop").onclick=()=>{S.om=0};
+$("#sSrc").onchange=()=>{$("#sOwn").hidden=$("#sSrc").value!="eigen"};
+bindRange("sTh","sTho",v=>degC(v));bindRange("sTc","sTco",v=>degC(v));
+const sC=canv("sC",o=>{const x=o.x,w=o.w,h=o.h,src=$("#sSrc").value;x.clearRect(0,0,w,h);const st=sState(S.th,S.om);const by=h*.92;x.fillStyle=isDark()?"#2b2621":"#d9cdb8";x.fillRect(0,by,w,h-by);
+ const cx=w*.62,cy=h*.62,r=Math.min(w,h)*.07,R=Math.min(w,h)*.2,cl=Math.min(w*.3,h*.3),cwid=Math.min(46,h*.09);
+ /* Schwungrad */
+ x.strokeStyle=col("--mut");x.lineWidth=6;x.beginPath();x.arc(cx,cy,R,0,7);x.stroke();x.lineWidth=2;for(let k=0;k<5;k++){const a=S.th+k*2*Math.PI/5;x.beginPath();x.moveTo(cx,cy);x.lineTo(cx-Math.cos(a)*R,cy-Math.sin(a)*R);x.stroke()}
+ x.fillStyle=col("--mut");x.fillRect(cx-6,cy,12,by-cy);
+ const px=cx-r*Math.cos(S.th),py=cy-r*Math.sin(S.th);
+ /* heißer Zylinder (waagrecht, links) */
+ const hx0=cx-R-cl-20,hy=cy,stroke=cl*.45;const hp=hx0+12+st.Vh/SVS*stroke;
+ x.fillStyle=cS((st.The-260)/200,CW,.75);x.fillRect(hx0,hy-cwid/2,hp-hx0,cwid);x.strokeStyle=col("--ink");x.lineWidth=2.5;x.strokeRect(hx0,hy-cwid/2,cl,cwid);
+ x.fillStyle=isDark()?"#9aa3ad":"#6f7780";x.fillRect(hp,hy-cwid/2+2,14,cwid-4);x.strokeStyle=col("--ink");x.lineWidth=3;x.beginPath();x.moveTo(hp+14,hy);x.lineTo(px,py);x.stroke();
+ txt(x,"heiß",hx0+6,hy-cwid/2-10,{size:12,w:700,c:col("--hot")});
+ /* kalter Zylinder (senkrecht, oben) */
+ const ky0=cy-R-cl-10,kx=cx;const kp=ky0+12+st.Vc/SVS*stroke;
+ x.fillStyle=cS((st.Tce-260)/200,CW,.75);x.fillRect(kx-cwid/2,ky0,cwid,kp-ky0);x.strokeStyle=col("--ink");x.lineWidth=2.5;x.strokeRect(kx-cwid/2,ky0,cwid,cl);
+ for(let k=0;k<6;k++){x.fillStyle=col("--mut");x.fillRect(kx-cwid/2-16,ky0+6+k*cl*.07,cwid+32,3)}
+ x.fillStyle=isDark()?"#9aa3ad":"#6f7780";x.fillRect(kx-cwid/2+2,kp,cwid-4,14);x.strokeStyle=col("--ink");x.lineWidth=3;x.beginPath();x.moveTo(kx,kp+14);x.lineTo(px,py);x.stroke();
+ txt(x,"kalt (Kühlrippen)",kx+cwid/2+22,ky0+10,{size:12,w:700,c:col("--cold")});
+ /* Verbindungsrohr */
+ x.strokeStyle=col("--ink");x.lineWidth=5;x.beginPath();x.moveTo(hx0+4,hy-cwid/2);x.lineTo(hx0+4,ky0+4);x.lineTo(kx-cwid/2,ky0+4);x.stroke();
+ x.fillStyle=col("--ink");x.beginPath();x.arc(px,py,5,0,7);x.fill();x.beginPath();x.arc(cx,cy,7,0,7);x.fill();
+ /* Wärmequelle */
+ const sx=hx0+cl*.25,sy=hy+cwid/2;const Thc=S.Th-273.15;
+ if(src=="kerze"||(src=="eigen"&&+$("#sTh").value>100)){const cb=sy+46;x.fillStyle=col("--mut");x.fillRect(sx-24,cb,48,by-cb);x.fillStyle="#f3efe2";x.fillRect(sx-16,cb-12,32,12);for(let k=0;k<3;k++){x.fillStyle=["#f59e0b","#fbbf24","#fff7d6"][k];x.beginPath();x.ellipse(sx,cb-12-13+k*2,7-k*2,13-k*3+Math.sin(uT*12)*1.5,0,0,7);x.fill()}}
+ else if(src=="wasser"){x.fillStyle="rgba(220,90,60,.35)";x.strokeStyle=col("--ink");x.lineWidth=2;x.beginPath();x.rect(sx-30,sy+6,60,by-sy-6);x.fill();x.stroke();txt(x,"80 °C",sx,by-12,{a:"center",size:11,c:col("--ink")})}
+ else if(src=="hand"){x.fillStyle=isDark()?"#d9a77f":"#e8b48c";x.beginPath();x.roundRect(sx-40,sy+2,80,18,9);x.fill();txt(x,"Hand",sx,sy+34,{a:"center",size:12,c:col("--mut")})}
+ else if(src=="eis"){x.fillStyle="rgba(240,248,255,.95)";x.strokeStyle="rgba(120,160,200,.9)";x.lineWidth=1.5;x.beginPath();x.roundRect(sx-22,sy+2,44,32,4);x.fill();x.stroke()}
+ pill(x,"heiße Seite: "+degC(Thc,0),hx0,hy+cwid/2+(src=="hand"?50:24)+(src=="kerze"?0:0),{size:12});
+ /* Generator */
+ if($("#sGen").checked){const gx=cx+R+30,gy=cy;x.fillStyle=col("--mut");x.fillRect(gx,gy-18,40,36);x.strokeStyle=col("--mut");x.lineWidth=2;x.beginPath();x.moveTo(cx+R,cy);x.lineTo(gx,gy);x.stroke();
+  const b=clamp(S.Pel/.3,0,1);const lx=gx+20,ly=gy-60;x.fillStyle=`rgba(255,220,90,${.15+.85*b})`;x.beginPath();x.arc(lx,ly,14,0,7);x.fill();x.strokeStyle=col("--ink");x.lineWidth=1.5;x.stroke();if(b>.1){const g=x.createRadialGradient(lx,ly,5,lx,ly,50*b);g.addColorStop(0,`rgba(255,230,120,${.5*b})`);g.addColorStop(1,"rgba(255,230,120,0)");x.fillStyle=g;x.beginPath();x.arc(lx,ly,50*b,0,7);x.fill()}}
+ lcd(x,w-150,12,138,h*.07,fnum(Math.abs(S.om)/2/Math.PI*60,0)+" U/min",null,{c:"#9fd6ff",size:Math.min(20,h*.038)});
+ if(S.om<-.5)txt(x,"läuft rückwärts",w-14,h*.07+26,{a:"right",size:12,w:700,c:col("--hot")})});
+const sD=canv("sD",o=>{const tr=S.trace;chart(o,{x0:20,x1:62,y0:.6,y1:1.6,xl:"Volumen in cm³",yl:"Druck in bar",yf:v=>fnum(v,1),series:[{pts:tr,line:true,c:"--acc"}],after:(x,X,Y)=>{if(tr.length){const p=tr[tr.length-1];x.fillStyle=col("--ink");x.beginPath();x.arc(X(p[0]),Y(p[1]),5,0,7);x.fill()}}})});
+function sKpi(){const lv=lvl(),rpm=Math.abs(S.om)/2/Math.PI*60,car=1-S.Tc/S.Th;kpi("sK",[["Drehzahl",fnum(rpm,0)+" U/min"],["heiß / kalt",`${fnum(S.Th-273.15,0)} °C / ${fnum(S.Tc-273.15,0)} °C`],lv>1&&["Arbeit pro Umdrehung",fnum(Math.abs(S.Wrev),3)+" J"],lv>1&&["Leistung des Gases",fnum(Math.abs(S.Pm),2)+" W"],$("#sGen").checked&&["Lämpchen",fnum(S.Pel,2)+" W"],lv>2&&["Wirkungsgrad Kreisprozess W/Q_heiß",S.Qh>1e-4&&S.om?fnum(S.Wrev/S.Qh*100,1)+" %":"–"],lv>2&&["Carnot-Grenze",car>0?fnum(car*100,1)+" %":"–"]])}
+LVLCB.push(sKpi);
+tasks("stirling",[
+ {l:1,h:"Anlaufen",p:"Zünde das Teelicht an (Wärmequelle Teelicht) und warte, bis die heiße Seite warm ist. Stoße dann das Schwungrad an. Was passiert, wenn du es zu früh anstößt?",set:()=>{location.hash="stirling";$("#sSrc").value="kerze";$("#sOwn").hidden=true;S.Th=294;S.om=0}},
+ {l:1,h:"Mit der Hand",p:"Stelle den Motor auf die Hand. Läuft er an? Vergleiche die Drehzahl mit Teelicht und heißem Wasser.",set:()=>{location.hash="stirling";$("#sSrc").value="hand";$("#sOwn").hidden=true}},
+ {l:1,h:"Auf dem Eiswürfel",p:"Stelle den Motor auf einen Eiswürfel und stoße ihn an. In welche Richtung läuft er? Warum?",set:()=>{location.hash="stirling";$("#sSrc").value="eis";$("#sOwn").hidden=true}},
+ {l:1,h:"Lämpchen",p:"Schließe den Generator an. Was passiert mit der Drehzahl? Woher kommt die Energie für das Lämpchen?",set:()=>{location.hash="stirling";$("#sSrc").value="kerze";$("#sOwn").hidden=true;$("#sGen").checked=true;S.om=Math.max(S.om,12)}},
+ {l:2,h:"Die Schleife im p-V-Diagramm",p:"Beobachte die Schleife bei Teelicht und bei heißem Wasser. Wann ist die Fläche größer? Was bedeutet die Fläche?",set:()=>{location.hash="stirling";$("#sSrc").value="wasser";$("#sOwn").hidden=true;S.om=Math.max(S.om,12)}},
+ {l:2,h:"Wie heiß muss es sein?",p:"Stelle eigene Temperaturen ein (kalt 21 °C) und suche die kleinste Temperatur der heißen Seite, bei der der Motor gerade noch läuft. Was bremst ihn?",set:()=>{location.hash="stirling";$("#sSrc").value="eigen";$("#sOwn").hidden=false;$("#sTh").value=60;$("#sTh").dispatchEvent(new Event("input"))}},
+ {l:3,h:"Wirkungsgrad",p:"Vergleiche den Wirkungsgrad des Kreisprozesses mit der Carnot-Grenze. Warum ist er bei hoher Drehzahl kleiner? Wie groß ist der Anteil, der nach Reibung als Lämpchen-Leistung übrig bleibt?",set:()=>{location.hash="stirling";$("#sSrc").value="kerze";$("#sOwn").hidden=true;$("#sGen").checked=true;S.om=Math.max(S.om,12)}}]);
+
+/* ===================== Station: Wirkungsgrad ===================== */
+let wReady=false;
+const WM=[["dampf","Dampfmaschine (um 1800)",120,40,.03],["lok","Dampflokomotive",350,100,.08],["otto","Ottomotor (Auto)",2000,20,.30],["diesel","Dieselmotor (Lkw)",2000,20,.42],["kohle","Kohlekraftwerk",600,25,.43],["gud","Gas-und-Dampf-Kraftwerk",1450,25,.60],["kern","Kernkraftwerk",290,25,.34],["geo","Geothermie-Kraftwerk",150,25,.12],["stirl","Stirling-Modellmotor (Teelicht)",160,21,.01],["eigen","eigene Maschine",600,30,null]];
+$("#wM").innerHTML=WM.map(m=>`<option value="${m[0]}">${m[1]}</option>`).join("");$("#wM").value="kohle";
+const wCur=()=>{const m=WM.find(q=>q[0]==$("#wM").value);if(m[0]!="eigen")return{n:m[1],Th:m[2],Tc:m[3],eta:m[4]};const Th=+$("#wTh").value,Tc=+$("#wTc").value,car=Math.max(0,1-(Tc+273.15)/(Th+273.15));return{n:m[1],Th,Tc,eta:car*+$("#wGg").value/100}};
+function wSync(){const own=$("#wM").value=="eigen";$("#wOwn").hidden=!own;wUpd()}
+$("#wM").onchange=wSync;bindRange("wTh","wTho",v=>degC(v),wUpd);bindRange("wTc","wTco",v=>degC(v),wUpd);bindRange("wGg","wGo",v=>v+" %",wUpd);
+function wUpd(){if(!wReady)return;const m=wCur(),lv=lvl(),car=Math.max(0,1-(m.Tc+273.15)/(m.Th+273.15));
+ kpi("wK",[["Arbeit (von 100 J Wärme)",fnum(m.eta*100,0)+" J"],["Abwärme",fnum(100-m.eta*100,0)+" J"],lv>1&&["Carnot-Grenze",fnum(car*100,0)+" %"],lv>1&&["erreicht von der Grenze",car>0?fnum(m.eta/car*100,0)+" %":"–"],lv>2&&["Entropie zu / ab",`${fnum(100/(m.Th+273.15),3)} / ${fnum((100-m.eta*100)/(m.Tc+273.15),3)} J/K`]]);wC.redraw();wG.redraw()}
+const wC=canv("wC",o=>{const x=o.x,w=o.w,h=o.h,m=wCur(),lv=lvl(),car=Math.max(0,1-(m.Tc+273.15)/(m.Th+273.15)),bad=m.eta>car+1e-9;x.clearRect(0,0,w,h);
+ const cx=w*.4,top=h*.16,bot=h*.84,my=h*.5,mr=Math.min(w,h)*.09,sc=Math.min(w*.2,(bot-top)*.42)/100;
+ x.fillStyle="rgba(215,48,31,.16)";x.fillRect(0,0,w,top);x.fillStyle="rgba(47,98,201,.16)";x.fillRect(0,bot,w,h-bot);
+ txt(x,`heiß: ${degC(m.Th)}`,14,top/2,{w:700,size:15,c:col("--hot")});txt(x,`kalt (Umgebung): ${degC(m.Tc)}`,14,bot+(h-bot)/2,{w:700,size:15,c:col("--cold")});
+ const W0=100*sc,Ww=Math.min(1,m.eta)*100*sc,Wa=Math.max(0,1-m.eta)*100*sc;
+ x.fillStyle=alpha(col("--hot"),.85);x.fillRect(cx-W0/2,top,W0,my-top);
+ x.fillStyle=alpha(col("--cold"),.8);x.fillRect(cx-W0/2,my,Math.max(0,Wa),bot-my);x.beginPath();x.moveTo(cx-W0/2,bot);x.lineTo(cx-W0/2+Math.max(0,Wa),bot);x.lineTo(cx-W0/2+Math.max(0,Wa)/2,bot+14);x.fill();
+ if(Ww>0){x.fillStyle=alpha(col("--acc"),.95);const y0=my-Ww/2;x.fillRect(cx,y0,w*.38,Ww);x.beginPath();x.moveTo(cx+w*.38,y0-8);x.lineTo(cx+w*.38+Math.max(16,Ww*.5),my);x.lineTo(cx+w*.38,y0+Ww+8);x.fill()}
+ if(lv>1){const Wc=car*100*sc;x.strokeStyle=col("--ink");x.setLineDash([6,4]);x.lineWidth=1.5;x.strokeRect(cx,my-Wc/2,w*.38,Wc);x.setLineDash([]);txt(x,`höchstens ${fnum(car*100,0)} J (Carnot)`,cx+w*.38-4,my-Wc/2-10,{a:"right",size:12,c:col("--mut")})}
+ x.fillStyle=bad?col("--hot"):isDark()?"#555c66":"#59626d";x.beginPath();x.arc(cx,my,mr,0,7);x.fill();txt(x,"Maschine",cx,my,{a:"center",w:700,size:14,c:"#fff"});
+ pill(x,"Wärme 100 J",cx+W0/2+10,(top+my)/2-20,{size:13});pill(x,`Arbeit ${fnum(m.eta*100,0)} J`,cx+mr+20,my+Math.max(Ww/2,8)+18,{size:13,bg:col("--acc"),c:"#fff"});pill(x,`Abwärme ${fnum(100-m.eta*100,0)} J`,cx+Math.max(0,Wa)/2-W0/2+10,(my+bot)/2+20,{size:13});
+ txt(x,m.n,w-14,top/2,{a:"right",w:700,size:15});
+ if(bad)pill(x,m.eta>=1?"100 %: Perpetuum mobile – das ist unmöglich!":"Mehr als die Carnot-Grenze – das verbietet der 2. Hauptsatz!",w/2,h*.93-(h-bot)/2+10,{a:"center",bg:col("--hot"),c:"#fff",size:14})});
+const wG=canv("wG",o=>{const L=WM.filter(m=>m[4]!==null);const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const left=Math.min(230,w*.42),bh=(h-20)/L.length;
+ L.forEach((m,i)=>{const y=10+i*bh,car=1-(m[3]+273.15)/(m[2]+273.15),W=w-left-60;txt(x,m[1],left-8,y+bh/2,{a:"right",size:12,c:col("--ink")});x.fillStyle=alpha(col("--acc"),.22);x.fillRect(left,y+3,W*car,bh-6);x.fillStyle=col("--acc");x.fillRect(left,y+3,W*m[4],bh-6);txt(x,fnum(m[4]*100,0)+" %",left+W*m[4]+4,y+bh/2,{size:11,c:col("--mut")})})});
+wReady=true;LVLCB.push(wUpd);wSync();
+const wSet=(k,o={})=>{location.hash="wirkungsgrad";$("#wM").value=k;if(o.Th!=null){$("#wTh").value=o.Th;$("#wTc").value=o.Tc;$("#wGg").value=o.g;["wTh","wTc","wGg"].forEach(i=>$("#"+i).dispatchEvent(new Event("input")))}wSync()};
+tasks("wirkungsgrad",[
+ {l:1,h:"Wohin geht die Energie?",p:"Wähle das Auto (Ottomotor). Von 100 J Wärme aus dem Benzin – wie viel bewegt das Auto, wie viel wird Abwärme? Wo spürst du diese Abwärme?",set:()=>wSet("otto")},
+ {l:1,h:"Dampfmaschine und Kraftwerk",p:"Vergleiche die Dampfmaschine von 1800 mit einem modernen Gas-und-Dampf-Kraftwerk. Wie viel besser ist das Kraftwerk geworden?",set:()=>wSet("dampf")},
+ {l:1,h:"Perpetuum mobile",p:"Baue eine eigene Maschine und stelle sie auf 100 %. Was sagt das Labor? Warum gibt es keine Maschine, die alle Wärme in Arbeit umwandelt?",set:()=>wSet("eigen",{Th:600,Tc:30,g:100})},
+ {l:2,h:"Heißer ist besser",p:"Eigene Maschine: Kalt bleibt 30 °C. Wie groß ist die Carnot-Grenze bei 100 °C, 300 °C, 600 °C und 1200 °C? Warum bauen Ingenieure Turbinen für immer heißeres Gas?",set:()=>wSet("eigen",{Th:100,Tc:30,g:60})},
+ {l:2,h:"Kühlwasser im Sommer",p:"Ein Kraftwerk an der Donau: Wie ändert sich die Carnot-Grenze, wenn das Flusswasser im Sommer statt 10 °C 25 °C hat?",set:()=>wSet("eigen",{Th:550,Tc:10,g:65})},
+ {l:3,h:"Entropie",p:"Berechne für das Kohlekraftwerk die Entropie, die mit der Wärme hineinfließt (Q/T_heiß), und die, die mit der Abwärme hinausfließt. Zeige: Mehr als die Carnot-Grenze würde Entropie vernichten.",set:()=>wSet("kohle")},
+ {l:3,h:"Geothermie",p:"Warum hat ein Geothermie-Kraftwerk (150 °C) einen so kleinen Wirkungsgrad? Wäre es besser, die Wärme direkt zum Heizen zu nutzen?",set:()=>wSet("geo")}]);
+
+/* ===================== Station: Viertaktmotor ===================== */
+const MVH=5e-4,MKAP=1.35,MT1=330;
+const M={type:"otto",th:0,run:true,cyc:null};
+function mCalc(){const otto=M.type=="otto",eps=+$("#mEps").value,load=+$("#mL").value/100,Vc=MVH/(eps-1),r=1,l=3.5;
+ const V=th=>{const a=th*Math.PI/180,s=r*(1-Math.cos(a))+l-Math.sqrt(l*l-r*r*Math.sin(a)**2);return Vc+MVH*s/(2*r)};
+ const pin=otto?(.25+.72*load)*1e5:.98e5,V1=V(180),Q=otto?14*pin*V1:(eps>=14?16*load*pin*V1:0),ths=otto?350:352,dth=otto?50:45;
+ const P=new Float64Array(721),Vs=new Float64Array(721),X=new Float64Array(721);let p=pin;
+ for(let i=0;i<=720;i++){Vs[i]=V(i)}
+ for(let i=0;i<=180;i++)P[i]=pin;
+ let xb=0;for(let i=181;i<=720;i++){if(i<=500){const n=10;for(let k=0;k<n;k++){const t0=i-1+k/n,t1=t0+1/n,V0=V(t0),V1b=V(t1),x0=t0<ths?0:1-Math.exp(-5*((t0-ths)/dth)**3),x1=t1<ths?0:1-Math.exp(-5*((t1-ths)/dth)**3),dQ=Q*(x1-x0);p+=(MKAP-1)/V0*dQ-MKAP*p*(V1b-V0)/V0}xb=i<ths?0:1-Math.exp(-5*((i-ths)/dth)**3);X[i]=xb;P[i]=p}
+  else if(i<=560){P[i]=1.1e5+(P[500]-1.1e5)*Math.exp(-(i-500)/12);X[i]=1}else if(i<700){P[i]=1.1e5;X[i]=1}else{P[i]=1.1e5+(pin-1.1e5)*(i-700)/20;X[i]=1}}
+ let W=0;for(let i=1;i<=720;i++)W+=(P[i]+P[i-1])/2*(Vs[i]-Vs[i-1]);
+ let pmax=0,imax=0;for(let i=0;i<=720;i++)if(P[i]>pmax){pmax=P[i];imax=i}
+ M.cyc={P,V:Vs,X,W,Q,pmax,imax,eps,Vc,pin,ths,otto,load,ok:Q>0}}
+const mTypeSet=seg("mType",v=>{M.type=v;$("#mEps").value=v=="otto"?10:18;$("#mEps").dispatchEvent(new Event("input"))});
+bindRange("mL","mLo",v=>v+" %",()=>mCalc());bindRange("mEps","mEo",v=>fnum(v,1),()=>mCalc());bindRange("mR","mRo",v=>v+" U/min");
+const mFac=()=>Math.pow(10,-3.3+2.3*(+$("#mS").value)/100);bindRange("mS","mSo",v=>`1 Umdrehung in ${fnum(60/(+$("#mR").value)/mFac(),1)} s`);
+$("#mR").addEventListener("input",()=>$("#mS").dispatchEvent(new Event("input")));
+$("#mGo").onclick=()=>{M.run=!M.run;$("#mGo").textContent=M.run?"Pause":"Weiter"};$("#mStep").onclick=()=>{M.run=false;$("#mGo").textContent="Weiter";M.th=(M.th+10)%720};
+function mStep(dt){if(!M.run)return;M.th=(M.th+dt*(+$("#mR").value)/60*360*mFac())%720}
+const TAKT=["1. Takt: Ansaugen","2. Takt: Verdichten","3. Takt: Arbeiten","4. Takt: Ausstoßen"],TCOL=["#2f62c9","#7a3fb0","#d0461c","#6b6f75"];
+const mIdx=()=>Math.round(M.th)%721,mTakt=()=>Math.min(3,Math.floor(M.th/180));
+function mGasT(i){const c=M.cyc;return MT1*(c.P[i]*c.V[i])/(c.pin*c.V[180])}
+const mC=canv("mC",o=>{const x=o.x,w=o.w,h=o.h,c=M.cyc,i=mIdx(),a=M.th*Math.PI/180;x.clearRect(0,0,w,h);
+ const cx=w/2,cw=Math.min(w*.42,150),top=h*.14,r=Math.min(h*.1,cw*.42),l=3.5*r,crankY=h*.8,s=r*(1-Math.cos(a))+l-Math.sqrt(l*l-r*r*Math.sin(a)**2);
+ const pyTDC=crankY-r-l,py=pyTDC+s,clear=(2*r)/(c.eps-1),head=pyTDC-clear-14;
+ /* Gas */
+ let gc;const tk=mTakt(),T=mGasT(i);if(tk==0)gc=c.otto?"rgba(120,170,230,.55)":"rgba(170,200,235,.45)";else if(tk==3||(tk==2&&M.th>500))gc="rgba(120,120,125,.55)";else if(c.X[i]>.02&&c.X[i]<1.01&&M.th>=c.ths)gc=cS(clamp((T-300)/2200,0,1),IRON,.85);else gc=cS(clamp((T-250)/900,0,1),CW,.55);
+ x.fillStyle=gc;x.fillRect(cx-cw/2,head,cw,py-head);
+ x.strokeStyle=col("--ink");x.lineWidth=3;x.beginPath();x.moveTo(cx-cw/2,head-6);x.lineTo(cx-cw/2,crankY-r*.3);x.moveTo(cx+cw/2,head-6);x.lineTo(cx+cw/2,crankY-r*.3);x.stroke();
+ x.fillStyle=isDark()?"#59626d":"#7f8892";x.fillRect(cx-cw/2-14,head-34,cw+28,30);
+ /* Ventile */
+ const iv=M.th<200?Math.sin(clamp(M.th/200,0,1)*Math.PI):0,ev=M.th>500?Math.sin(clamp((M.th-500)/220,0,1)*Math.PI):0;
+ for(const [k,lift,cc] of[[-1,iv,"#2f62c9"],[1,ev,"#6b6f75"]]){const vx=cx+k*cw*.27,vy=head-4+lift*14;x.strokeStyle=col("--ink");x.lineWidth=3;x.beginPath();x.moveTo(vx,head-50);x.lineTo(vx,vy);x.stroke();x.fillStyle=cc;x.fillRect(vx-cw*.1,vy-3,cw*.2,6);
+  if(lift>.2){for(let q=0;q<3;q++){const ph=(uT*1.5+q*.33)%1;x.fillStyle=alpha(cc,.7*(1-ph));x.beginPath();x.arc(vx+k*(-4),k<0?head-50+ph*50:head-ph*50,4,0,7);x.fill()}}}
+ txt(x,"Einlass",cx-cw*.27,head-60,{a:"center",size:11,c:col("--mut")});txt(x,"Auslass",cx+cw*.27,head-60,{a:"center",size:11,c:col("--mut")});
+ if(c.otto){x.fillStyle="#c9a43a";x.fillRect(cx-4,head-46,8,42);if(c.ok&&M.th>c.ths-4&&M.th<c.ths+12){x.fillStyle="#fff8b0";x.beginPath();x.arc(cx,head+2,10+Math.random()*6,0,7);x.fill();pill(x,"Zündfunke!",cx,head+34,{a:"center",size:12,bg:"#f59e0b",c:"#fff"})}}
+ else{x.fillStyle="#555";x.fillRect(cx-5,head-46,10,44);if(c.ok&&M.th>c.ths-6&&M.th<c.ths+40){for(let q=0;q<10;q++){x.fillStyle="rgba(230,210,120,.85)";x.beginPath();x.arc(cx+(Math.random()-.5)*cw*.5,head+4+Math.random()*20,2,0,7);x.fill()}if(M.th<c.ths+10)pill(x,"Einspritzung – Selbstzündung",cx,head+40,{a:"center",size:12,bg:"#f59e0b",c:"#fff"})}}
+ /* Kolben, Pleuel, Kurbel */
+ x.fillStyle=isDark()?"#9aa3ad":"#6f7780";x.fillRect(cx-cw/2+3,py,cw-6,26);const pin={x:cx+r*Math.sin(a),y:crankY-r*Math.cos(a)};
+ x.strokeStyle=col("--ink");x.lineWidth=6;x.beginPath();x.moveTo(cx,py+16);x.lineTo(pin.x,pin.y);x.stroke();
+ x.strokeStyle=col("--mut");x.lineWidth=3;x.beginPath();x.arc(cx,crankY,r*1.25,0,7);x.stroke();x.lineWidth=8;x.strokeStyle=col("--ink");x.beginPath();x.moveTo(cx,crankY);x.lineTo(pin.x,pin.y);x.stroke();x.fillStyle=col("--ink");x.beginPath();x.arc(cx,crankY,7,0,7);x.fill();
+ pill(x,TAKT[tk],14,22,{size:15,bg:TCOL[tk],c:"#fff"});txt(x,`Kurbelwinkel ${Math.round(M.th)}°`,14,48,{size:12,c:col("--mut")});
+ if(c.otto&&c.eps>13)pill(x,"Verdichtung zu hoch: Der Benziner klopft!",w/2,h-14,{a:"center",bg:col("--hot"),c:"#fff",size:12});
+ if(!c.otto&&!c.ok)pill(x,"Verdichtung zu klein: Die Luft wird nicht heiß genug – keine Zündung!",w/2,h-14,{a:"center",bg:col("--hot"),c:"#fff",size:12})});
+const mD=canv("mD",o=>{const c=M.cyc,i=mIdx(),pm=Math.max(10,c.pmax/1e5*1.08);
+ chart(o,{x0:0,x1:Math.ceil((MVH+c.Vc)*1e6/100)*100/1000*1.05,y0:0,y1:pm,xl:"Volumen in L",yl:"Druck in bar",xf:v=>fnum(v,2),
+  extra:(x,X,Y)=>{x.fillStyle=alpha(col("--acc"),.12);x.beginPath();for(let k=180;k<=540;k++){const P=X(c.V[k]*1e3),Q=Y(c.P[k]/1e5);k==180?x.moveTo(P,Q):x.lineTo(P,Q)}x.closePath();x.fill()},
+  after:(x,X,Y)=>{for(let t=0;t<4;t++){x.strokeStyle=TCOL[t];x.lineWidth=t==mTakt()?3.2:1.6;x.beginPath();for(let k=t*180;k<=t*180+180;k++){const P=X(c.V[k]*1e3),Q=Y(c.P[k]/1e5);k==t*180?x.moveTo(P,Q):x.lineTo(P,Q)}x.stroke()}
+   x.fillStyle=col("--ink");x.beginPath();x.arc(X(c.V[i]*1e3),Y(c.P[i]/1e5),6,0,7);x.fill()},
+  legend:TAKT.map((t,k)=>[t.replace(/^\d\. Takt: /,""),TCOL[k]])})});
+const mE=canv("mE",o=>{const c=M.cyc;chart(o,{x0:5,x1:23,y0:0,y1:.8,xl:"Verdichtung ε",yl:"Wirkungsgrad",yf:v=>fnum(v*100,0)+" %",series:[{fn:e=>1-Math.pow(e,1-MKAP),c:"--acc"}],after:(x,X,Y)=>{if(c.ok){x.fillStyle=col("--hot");x.beginPath();x.arc(X(c.eps),Y(c.W/c.Q),6,0,7);x.fill();txt(x,"Modell",X(c.eps)+8,Y(c.W/c.Q)+12,{size:11,c:col("--hot")})}txt(x,"idealer Otto-Prozess",X(14),Y(1-Math.pow(14,1-MKAP))-12,{size:11,c:col("--acc")})}})});
+function mKpi(){const c=M.cyc,lv=lvl(),rpm=+$("#mR").value;kpi("mK",[["Takt",TAKT[mTakt()].replace(/^\d\. Takt: /,"")],["Druck jetzt",fnum(c.P[mIdx()]/1e5,1)+" bar"],lv>1&&["Höchster Druck",fnum(c.pmax/1e5,0)+" bar"],lv>1&&["Arbeit pro Arbeitsspiel",fnum(c.W,0)+" J"],lv>1&&["Leistung bei "+rpm+" U/min",fnum(c.W*rpm/120/1000,1)+" kW"],lv>2&&["Wirkungsgrad (Modell)",c.ok?fnum(c.W/c.Q*100,1)+" %":"–"],lv>2&&["ideal: 1 − 1/ε^(κ−1)",fnum((1-Math.pow(c.eps,1-MKAP))*100,1)+" %"]])}
+LVLCB.push(()=>{mKpi();mD.redraw();mE.redraw()});
+mCalc();
+const mSet=(t,o={})=>{location.hash="motor";mTypeSet(t);M.type=t;$("#mEps").value=o.eps||(t=="otto"?10:18);$("#mL").value=o.load||100;["mEps","mL"].forEach(i=>$("#"+i).dispatchEvent(new Event("input")));M.th=0;M.run=true;$("#mGo").textContent="Pause"};
+tasks("motor",[
+ {l:1,h:"Die vier Takte",p:"Verfolge ein Arbeitsspiel in Zeitlupe. Was passiert in jedem Takt mit den Ventilen und dem Kolben? In welchem Takt wird der Motor angetrieben?",set:()=>mSet("otto")},
+ {l:1,h:"Zwei Umdrehungen",p:"Wie oft dreht sich die Kurbelwelle während der vier Takte? Warum brauchen Autos mehrere Zylinder oder ein Schwungrad?",set:()=>mSet("otto")},
+ {l:1,h:"Otto oder Diesel",p:"Vergleiche die beiden Motoren. Wodurch wird das Gemisch jeweils entzündet? Was wird beim Diesel angesaugt?",set:()=>mSet("diesel")},
+ {l:2,h:"Das p-V-Diagramm",p:"Welche Linie gehört zu welchem Takt? Wo ist der Druck am höchsten? Die gefärbte Fläche ist die Arbeit – zeige, dass Verdichten Arbeit kostet und Arbeiten mehr Arbeit liefert.",set:()=>mSet("otto")},
+ {l:2,h:"Halbgas",p:"Nimm das Gas auf 30 % zurück. Was passiert beim Ansaugen mit dem Druck? Warum verbraucht ein Benziner im Teillastbereich vergleichsweise viel?",set:()=>mSet("otto",{load:30})},
+ {l:3,h:"Verdichtung und Wirkungsgrad",p:"Erhöhe beim Benziner die Verdichtung von 8 auf 12. Wie ändert sich der Wirkungsgrad? Warum geht man nicht weiter (Klopfen)? Wie macht es der Diesel?",set:()=>mSet("otto",{eps:8})},
+ {l:3,h:"Diesel zündet nicht",p:"Stelle beim Diesel ε = 12 ein. Warum springt der Motor nicht an? Schätze die Temperatur am Ende der Verdichtung mit T₂ = T₁·ε^(κ−1).",set:()=>mSet("diesel",{eps:12})}]);
+
+/* ===================== Station: Wärmepumpe & Kühlschrank ===================== */
+const P={mode:"wp",u:[...Array(56)].map((_,i)=>i/56),run:true,t:0,El:0,Qh:0};
+const pG_=()=>lvl()>2?+$("#pGg").value/100:.5;
+function pSrcT(){const s=$("#pSrc").value;return s=="luft"?+$("#pTa").value:10}
+function pCalc(){const g=pG_();if(P.mode=="wp"){const Ts=pSrcT(),Th=+$("#pHeat").value,Te=Ts-7,Tk=Th+5,cc=(Tk+273.15)/(Tk-Te),cop=Math.max(1,g*cc),Q=8,W=Q/cop;return{Ts,Th,Te,Tk,cc,cop,Q,W,Qe:Q-W}}
+ const Ti=+$("#pIn").value,Tr=+$("#pR").value,Te=Ti-10,Tk=Tr+12,cc=(Te+273.15)/(Tk-Te),cop=g*cc,open=$("#pOpen").checked,Qc=open?120:(Ti<0?.5:.45)*(Tr-Ti),W=Qc/cop;return{Ti,Tr,Te,Tk,cc,cop,Qc,W,Qout:Qc+W,open}}
+function pStep(dt){if(!P.run)return;const c=pCalc(),sp=P.mode=="wp"?.06:.04;for(let i=0;i<P.u.length;i++)P.u[i]=(P.u[i]+dt*sp)%1;
+ P.t+=dt;if(P.mode=="wp"){P.El+=c.W*dt;P.Qh+=c.Q*dt}else{P.El+=c.W*dt/1000*24;P.Qh+=c.Qout*dt/1000*24}}
+const pModeSet=seg("pMode",v=>{P.mode=v;$("#pWp").hidden=v!="wp";$("#pKs").hidden=v=="wp";P.t=0;P.El=0;P.Qh=0;$("#pGh").textContent=v=="wp"?"Leistungszahl und Außentemperatur":"Leistungszahl und Küchentemperatur";pUpd()});
+$("#pSrc").onchange=()=>{$("#pAir").hidden=$("#pSrc").value!="luft";pUpd()};["pHeat","pIn","pOpen"].forEach(i=>$("#"+i).addEventListener("change",pUpd));
+bindRange("pTa","pTao",v=>degC(v),()=>pUpd&&pUpd());bindRange("pR","pRo",v=>degC(v),()=>pUpd&&pUpd());bindRange("pGg","pGo",v=>v+" %",()=>pUpd&&pUpd());
+$("#pGo2").onclick=()=>{P.run=!P.run;$("#pGo2").textContent=P.run?"Pause":"Weiter"};$("#pRe").onclick=()=>{P.t=0;P.El=0;P.Qh=0};
+function pLoop(u,R){/* u in [0,1): unten (Verdampfer) → rechts (Verdichter) → oben (Verflüssiger) → links (Ventil) */const {x0,x1,y0,y1}=R,W=x1-x0,H=y1-y0,L=2*W+2*H;let s=u*L;if(s<W)return[x0+s,y1,0,s/W];s-=W;if(s<H)return[x1,y1-s,1,s/H];s-=H;if(s<W)return[x1-s,y0,2,s/W];s-=W;return[x0,y0+s,3,s/H]}
+const pC=canv("pC",o=>{const x=o.x,w=o.w,h=o.h,c=pCalc(),wp=P.mode=="wp",lv=lvl();x.clearRect(0,0,w,h);
+ const R={x0:w*.2,x1:w*.74,y0:h*.36,y1:h*.66};
+ x.fillStyle="rgba(215,48,31,.1)";x.fillRect(0,0,w,h*.14);x.fillStyle="rgba(47,98,201,.12)";x.fillRect(0,h*.86,w,h*.14);
+ txt(x,wp?`Haus: Heizwasser ${degC(c.Th)}`:`Küche: ${degC(c.Tr)}`,14,h*.07,{w:700,size:15,c:col("--hot")});
+ txt(x,wp?($("#pSrc").value=="luft"?`Außenluft: ${degC(c.Ts)}`:`${$("#pSrc").selectedOptions[0].textContent.split(" (")[0]}: ${degC(c.Ts)}`):`Innenraum: ${degC(c.Ti)}${c.open?" – Tür offen!":""}`,14,h*.93,{w:700,size:15,c:col("--cold")});
+ /* Leitungen */
+ x.lineWidth=10;const segc=[col("--cold"),"#a04da0",col("--hot"),"#e08a3c"];[[R.x0,R.y1,R.x1,R.y1],[R.x1,R.y1,R.x1,R.y0],[R.x1,R.y0,R.x0,R.y0],[R.x0,R.y0,R.x0,R.y1]].forEach((s,i)=>{x.strokeStyle=alpha(segc[i],.35);x.beginPath();x.moveTo(s[0],s[1]);x.lineTo(s[2],s[3]);x.stroke()});
+ /* Bauteile */
+ const box=(X,Y,Wd,Hd,lab,cc)=>{x.fillStyle=col("--card");x.strokeStyle=cc;x.lineWidth=2.5;x.beginPath();x.roundRect(X-Wd/2,Y-Hd/2,Wd,Hd,8);x.fill();x.stroke();txt(x,lab,X,Y,{a:"center",size:12,w:700,c:cc})};
+ const ew=(R.x1-R.x0)*.5;x.strokeStyle=col("--cold");x.lineWidth=3;x.beginPath();for(let k=0;k<=12;k++){const X=(R.x0+R.x1)/2-ew/2+k*ew/12;x.lineTo(X,R.y1+(k%2?10:-10))}x.stroke();
+ x.strokeStyle=col("--hot");x.beginPath();for(let k=0;k<=12;k++){const X=(R.x0+R.x1)/2-ew/2+k*ew/12;x.lineTo(X,R.y0+(k%2?10:-10))}x.stroke();
+ box((R.x0+R.x1)/2,R.y1+30,120,24,"Verdampfer",col("--cold"));box((R.x0+R.x1)/2,R.y0-30,120,24,"Verflüssiger",col("--hot"));box(R.x1,(R.y0+R.y1)/2,92,46,"Verdichter","#a04da0");box(R.x0,(R.y0+R.y1)/2,96,40,"Expansions-​ventil","#e08a3c");
+ /* Kältemittel */
+ for(const u of P.u){const[X,Y,sg,f]=pLoop(u,R);let t,big;if(sg==0){t=lerp(c.Te,c.Te+2,f);big=f<.7}else if(sg==1){t=lerp(c.Te+2,c.Tk+25,f);big=false}else if(sg==2){t=f<.2?lerp(c.Tk+25,c.Tk,f/.2):c.Tk;big=f>.6}else{t=lerp(c.Tk,c.Te,f);big=true}
+  x.fillStyle=cS(clamp((t+30)/110,0,1));x.beginPath();x.arc(X,Y,big?5.5:3.2,0,7);x.fill();if(!big){x.strokeStyle="rgba(0,0,0,.25)";x.lineWidth=1;x.stroke()}}
+ /* Energiepfeile */
+ const sc=(wp?3:.08)*Math.min(1,w/700),qin=wp?c.Qe:c.Qc,qout=wp?c.Q:c.Qout,ax=(R.x0+R.x1)/2;
+ arrow(x,ax,h*.99,ax,R.y1+46,alpha(col("--cold"),.85),Math.max(3,qin*sc),Math.max(12,qin*sc*1.2));
+ arrow(x,ax,R.y0-46,ax,h*.01,alpha(col("--hot"),.85),Math.max(3,qout*sc),Math.max(12,qout*sc*1.2));
+ arrow(x,w*.99,(R.y0+R.y1)/2,R.x1+50,(R.y0+R.y1)/2,"#e2b100",Math.max(3,c.W*sc),Math.max(12,c.W*sc*1.2));
+ const u=wp?" kW":" W",d=wp?1:0;pill(x,(wp?"Umweltwärme ":"aus dem Innenraum ")+fnum(qin,d)+u,ax+14+qin*sc/2,h*.8,{size:12});
+ pill(x,(wp?"Heizwärme ":"an die Küche ")+fnum(qout,d)+u,ax+14+qout*sc/2,h*.22,{size:12});pill(x,"Strom "+fnum(c.W,d)+u,w*.99,(R.y0+R.y1)/2-22-c.W*sc/2,{a:"right",size:12,bg:"#e2b100",c:"#222"});
+ if(lv>1){txt(x,`verdampft bei ${degC(c.Te)}`,R.x0+8,R.y1-16,{size:11,c:col("--cold")});txt(x,`verflüssigt bei ${degC(c.Tk)}`,R.x0+8,R.y0+18,{size:11,c:col("--hot")})}
+ if(!wp&&c.open)pill(x,`Netto für die Küche: +${fnum(c.W,0)} W – sie wird wärmer!`,w/2,h*.97-6,{a:"center",bg:col("--hot"),c:"#fff",size:12})});
+const pG=canv("pG",o=>{const g=pG_();if(P.mode=="wp"){const f=(Ts,Th)=>{const Te=Ts-7,Tk=Th+5;return Math.max(1,g*(Tk+273.15)/(Tk-Te))};const c=pCalc();
+  chart(o,{x0:-20,x1:20,y0:0,y1:8,xl:"Temperatur der Wärmequelle in °C",yl:"Leistungszahl COP",series:[{fn:t=>f(t,35),c:"--cold"},{fn:t=>f(t,50),c:"--acc"},{fn:t=>f(t,65),c:"--hot"},{fn:()=>1,c:"--mut",dash:[5,4],lw:1.5}],legend:[["Fußbodenheizung 35 °C","--cold"],["Heizkörper 50 °C","--acc"],["alte Heizkörper 65 °C","--hot"],["Elektroheizer","--mut",[5,4]]],after:(x,X,Y)=>{x.fillStyle=col("--ink");x.beginPath();x.arc(X(c.Ts),Y(c.cop),6,0,7);x.fill()}})}
+ else{const f=(Tr,Ti)=>{const Te=Ti-10,Tk=Tr+12;return g*(Te+273.15)/(Tk-Te)};const c=pCalc();chart(o,{x0:15,x1:35,y0:0,y1:5,xl:"Küchentemperatur in °C",yl:"Leistungszahl (Kühlen)",series:[{fn:t=>f(t,5),c:"--cold"},{fn:t=>f(t,-18),c:"--acc"}],legend:[["Kühlschrank 5 °C","--cold"],["Gefrierschrank −18 °C","--acc"]],after:(x,X,Y)=>{x.fillStyle=col("--ink");x.beginPath();x.arc(X(c.Tr),Y(c.cop),6,0,7);x.fill()}})}});
+function pUpd(){if(typeof pKpi=="function")pKpi();if(window.pReady){pG.redraw()}}
+function pKpi(){const c=pCalc(),lv=lvl(),wp=P.mode=="wp";kpi("pK",wp?[["Leistungszahl COP",fnum(c.cop,1)],["Aus 1 kWh Strom werden",fnum(c.cop,1)+" kWh Wärme"],["Heiztag (Zeitraffer)",`${fnum(P.t,0)} h: ${fnum(P.El,0)} kWh Strom → ${fnum(P.Qh,0)} kWh Wärme`],lv>2&&["Carnot-Grenze",fnum(c.cc,1)]]
+ :[["Leistungszahl (Kühlen)",fnum(c.cop,1)],["Stromaufnahme",fnum(c.W,0)+" W"],["Wärme hinten an die Küche",fnum(c.Qout,0)+" W"],["Strom pro Tag",fnum(c.W*24/1000,2)+" kWh"],lv>2&&["Carnot-Grenze",fnum(c.cc,1)]])}
+window.pReady=true;LVLCB.push(()=>{pKpi();pG.redraw()});
+const pSet=(m,o={})=>{location.hash="waermepumpe";pModeSet(m);P.mode=m;$("#pWp").hidden=m!="wp";$("#pKs").hidden=m=="wp";if(o.src){$("#pSrc").value=o.src;$("#pAir").hidden=o.src!="luft"}if(o.Ta!=null){$("#pTa").value=o.Ta;$("#pTa").dispatchEvent(new Event("input"))}if(o.heat)$("#pHeat").value=o.heat;if(o.inn!=null)$("#pIn").value=o.inn;$("#pOpen").checked=!!o.open;P.t=0;P.El=0;P.Qh=0;pUpd()};
+tasks("waermepumpe",[
+ {l:1,h:"Wärme aus kalter Luft?",p:"Draußen hat es 0 °C, trotzdem heizt die Wärmepumpe das Haus. Woher kommt die Wärme? Verfolge das Kältemittel einmal im Kreis.",set:()=>pSet("wp",{src:"luft",Ta:0,heat:"35"})},
+ {l:1,h:"Mehr Wärme als Strom",p:"Wie viel kWh Wärme liefert die Wärmepumpe aus 1 kWh Strom? Vergleiche mit einem Elektroheizer, der aus 1 kWh Strom genau 1 kWh Wärme macht.",set:()=>pSet("wp",{src:"luft",Ta:5,heat:"35"})},
+ {l:1,h:"Der Kühlschrank heizt",p:"Fühle in Gedanken die Rückseite eines Kühlschranks. Warum ist sie warm? Woher kommt diese Wärme?",set:()=>pSet("ks",{inn:"5"})},
+ {l:1,h:"Tür auf an heißen Tagen?",p:"Kann man die Küche kühlen, indem man den Kühlschrank offen lässt? Schalte „Tür offen“ ein und lies die Netto-Wärme für die Küche ab.",set:()=>pSet("ks",{inn:"5",open:true})},
+ {l:2,h:"Fußbodenheizung oder Heizkörper?",p:"Vergleiche bei −10 °C die Leistungszahl für Fußbodenheizung und alte Heizkörper. Warum lohnt sich eine Wärmepumpe im Altbau oft erst nach einer Sanierung?",set:()=>pSet("wp",{src:"luft",Ta:-10,heat:"65"})},
+ {l:2,h:"Luft oder Erdwärme?",p:"Wie ändert sich die Leistungszahl im Winter (−10 °C), wenn statt der Außenluft das Erdreich (10 °C) genutzt wird?",set:()=>pSet("wp",{src:"erde",heat:"35"})},
+ {l:3,h:"Carnot-Grenze",p:"Berechne die Carnot-Leistungszahl T_warm/(T_warm − T_kalt) mit Verdampfungs- und Verflüssigungstemperatur. Welcher Gütegrad ist realistisch? Warum ist der Gefrierschrank schlechter als der Kühlschrank?",set:()=>pSet("ks",{inn:"-18"})}]);
+/* ===================== Schleife ===================== */
+let last=performance.now(),slow=0;
+function loop(now){const dt=clamp((now-last)/1000,0,.05);last=now;uT+=dt;
+ if(cur=="stirling"){sStep(dt);sC.redraw();if(lvl()>1)sD.redraw();if((slow+=dt)>.3){slow=0;sKpi()}}
+ else if(cur=="motor"){mStep(dt);mC.redraw();if(lvl()>1)mD.redraw();if((slow+=dt)>.2){slow=0;mKpi()}}
+ else if(cur=="waermepumpe"){pStep(dt);pC.redraw();if((slow+=dt)>.3){slow=0;pKpi()}}
+ requestAnimationFrame(loop)}
+try{const l=localStorage.getItem("wkmlvl");if(l)setLvl(l)}catch(e){}
+route();requestAnimationFrame(loop);
+</script>
+</body>
+</html>

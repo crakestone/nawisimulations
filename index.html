@@ -271,6 +271,14 @@ const SIMS = [
     thumb:'gas'
   },
   {
+    subject:'physik', topic:'waerme',
+    title:'Wärmekraftmaschinenlabor',
+    file:'Wärme/Waermekraftmaschinenlabor.html',
+    text:'Ein Stirlingmotor zum Anstoßen (läuft sogar auf dem Eiswürfel – rückwärts), Energieflussbilder und Carnot-Grenze echter Maschinen, ein Viertaktmotor (Otto und Diesel) mit p-V-Diagramm sowie Wärmepumpe und Kühlschrank.',
+    tags:['Stirlingmotor','Wirkungsgrad','Viertakter','Wärmepumpe','3 Niveaustufen'],
+    thumb:'wkm'
+  },
+  {
     subject:'biologie', topic:'stoffwechsel',
     title:'Enzymlabor',
     file:'Enzyme/Enzymlabor.html',
@@ -439,6 +447,11 @@ const THUMBS = {
       <rect x="250" y="60" width="14" height="22" rx="7" fill="#7b3cc4"/><rect x="255.5" y="82" width="3" height="16" fill="#7b3cc4"/>
     </svg>`;
   })(),
+  wkm: `<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice"><rect width="400" height="170" fill="#fbf6f1"/>
+      <circle cx="120" cy="96" r="52" fill="none" stroke="#6b7480" stroke-width="7"/><path d="M120 96 L160 60 M120 96 L80 132 M120 96 L172 104 M120 96 L70 88" stroke="#6b7480" stroke-width="3"/><circle cx="120" cy="96" r="7" fill="#223"/>
+      <rect x="20" y="30" width="60" height="24" fill="#f3b4a4" stroke="#223" stroke-width="2.5"/><rect x="30" y="58" width="20" height="10" fill="#f3efe2"/><path d="M40 58 c-6 -8 4 -12 0 -20 c8 6 6 14 0 20z" fill="#f59e0b"/>
+      <path d="M230 40 H370 V130 H230 Z" fill="none" stroke="#c9ced4" stroke-width="9"/><path d="M230 40 H370" stroke="#d7301f" stroke-width="9" opacity=".6"/><path d="M230 130 H370" stroke="#2f62c9" stroke-width="9" opacity=".6"/>
+      <path d="M300 30 V6" stroke="#d7301f" stroke-width="12"/><path d="M290 12 L300 0 L310 12z" fill="#d7301f"/><path d="M300 164 V142" stroke="#2f62c9" stroke-width="9"/><path d="M392 85 H378" stroke="#e2b100" stroke-width="8"/></svg>`,
   gas: (() => {
     let d='';const r=(i)=>{const x=Math.sin(i*12.9898)*43758.5453;return x-Math.floor(x)};for(let i=0;i<34;i++){const c=['#2f62c9','#e8a090','#d7301f','#9ab8ee'][i%4];d+=`<circle cx="${48+r(i)*100}" cy="${78+r(i+50)*70}" r="4" fill="${c}"/>`;}
     let h='';for(let i=0;i<=40;i++){const V=.35+i*.04,X=200+V*100,Y=150-48/V;h+=(i?' L':'M')+X.toFixed(1)+' '+Math.max(14,Y).toFixed(1);}

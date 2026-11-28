@@ -33,6 +33,7 @@ Schlagwörter. Ist nicht klar, in welches Fach eine neue Simulation gehört: nac
 | `Wärme/` | `Waermetransportlabor.html` | Drei Wege der Wärme (Lagerfeuer, Quiz), Teilchen & Temperatur (Mischtemperatur), Wärmeleitung (Wachskugeln, Metall oder Holz anfassen), Wärmeströmung (2D-Strömung: Kochtopf, Zimmer, Kerze, Land-Seewind, Kühlschrank, See im Winter), Wärmestrahlung (Wärmebild, Planck-Spektrum), Absorption/Reflexion/Transmission (Dosen unter der Lampe, Glashaube), Treibhauseffekt, Thermoskanne und Hauswand |
 | `Wärme/` | `Kalorimeterlabor.html` | Elektrisch heizen (c bestimmen, Wasserwert), Mischen (heißes Wasser, Metallkörper, Metall Y), Schmelzen & Verdampfen (Eis im Kalorimeter, Heizkurve Eis → Dampf), Anomalie des Wassers (Kolben mit Steigrohr, Hope’scher Versuch), Brennwert von Lebensmitteln – mit Waage, Stoppuhr, Messtabelle und Temperaturkurve |
 | `Wärme/` | `Gaslabor.html` | Teilchenmodell (2D-Teilchensimulation mit Kolben, Heizplatte, Manometer, Geschwindigkeitsverteilung), Zusammendrücken (Boyle-Mariotte mit Spritze), Erwärmen & absoluter Nullpunkt (Gay-Lussac, Amontons), Zustandsänderungen im p-V-Diagramm (isotherm, isobar, isochor, adiabatisch, Kreisprozesse) |
+| `Wärme/` | `Waermekraftmaschinenlabor.html` | Stirlingmotor (Schwungrad, Wärmequellen von Teelicht bis Eiswürfel, Generator, p-V-Schleife), Wirkungsgrad (Energieflussbild, Carnot-Grenze, echte Maschinen), Viertaktmotor (Otto/Diesel, Ventile, p-V-Diagramm, Verdichtung), Wärmepumpe & Kühlschrank (Kältemittelkreislauf, Leistungszahl) |
 | `Relativitätstheorie/` | `Relativitaetslabor.html` | Lichtuhr und Myonen, Gleichzeitigkeit, Längenkontraktion (Leiter-Garage), Geschwindigkeitsaddition, Zwillingsparadoxon, Raumzeit-Diagramm, Lichtmauer & E = mc², GPS, Doppler-Effekt; Wechsel des Bezugssystems |
 | `Radioaktivität/` | `Radioaktivitaetslabor.html` | Atomkern & Isotope mit Periodensystem, Nuklidkarte (Z 0–118), Zerfallsarten, Zerfallsgesetz (Würfelmodell), Zerfallsreihen & Gleichgewicht, Strahlung messen & abschirmen, Nebelkammer, C-14-Datierung, Strahlung im Alltag (Österreich) |
 | `Kernenergie/` | `Kernenergielabor.html` | Kernspaltung, Kettenreaktion, Kernreaktor (Fukushima/Tschernobyl-Szenario), Kernfusion (Tokamak, Lawson), Sonne, Energie aus Masse, Tschernobyl & Fukushima, Cäsium in Österreich; Reaktor und Fusion anschaulich oder mit Zahlen |
@@ -334,9 +335,29 @@ Vier Stationen (auch über `#modell`, `#boyle`, `#temperatur`, `#prozesse`), dre
   hintereinander zu Kreisprozessen; Kolben-Animation mit Wärmezufuhr/-abgabe; p-V-Diagramm mit Isothermen, Arbeit als Fläche;
   fertige Kreisprozesse Rechteck, Stirling, Otto, Carnot (*Anspruchsvoll*: Q, ΔU, W, Wirkungsgrad; Carnot 300 K/600 K → 50 %).
 
+## Wärme – Waermekraftmaschinenlabor.html
+
+Vier Stationen (auch über `#stirling`, `#wirkungsgrad`, `#motor`, `#waermepumpe`), drei Niveaustufen.
+
+- **Stirlingmotor:** Alpha-Stirling (zwei Zylinder, 90° versetzt) mit Schwungrad; Wärmequelle Teelicht, heißes Wasser, Hand,
+  Eiswürfel (läuft rückwärts) oder eigene Temperaturen; heiße Seite erwärmt sich langsam; Schwungrad anstoßen (vorwärts/rückwärts),
+  Generator mit Lämpchen, Zeitlupe. *Mittel*: p-V-Schleife, Arbeit pro Umdrehung, Leistung; *Anspruchsvoll*: Wirkungsgrad des
+  Kreisprozesses und Carnot-Grenze. Modell: Schmidt-Analyse mit isothermen Räumen, drehzahlabhängiger Wärmeübergang, Reibung.
+- **Wirkungsgrad:** Energieflussbild (Wärme → Arbeit + Abwärme) für Dampfmaschine, Dampflok, Otto- und Dieselmotor, Kohle-,
+  GuD-, Kern- und Geothermiekraftwerk, Stirling-Modell oder eine eigene Maschine (Warnung bei Perpetuum mobile bzw. über der
+  Carnot-Grenze); Vergleichsdiagramm; *Anspruchsvoll*: Entropiebilanz.
+- **Viertaktmotor:** animierter Zylinder mit Ventilen, Zündkerze bzw. Einspritzdüse, Kolben, Pleuel und Kurbel; Ottomotor mit
+  Drosselklappe (Gaspedal) oder Diesel (Last über Kraftstoffmenge, zündet erst ab ε ≈ 14); Verdichtung, Drehzahl, Zeitlupe.
+  *Mittel*: p-V-Diagramm nach Takten gefärbt, Spitzendruck, Arbeit, Leistung; *Anspruchsvoll*: Wirkungsgrad im Vergleich zum
+  idealen Otto-Prozess. Modell: 1. Hauptsatz mit Vibe-Brennfunktion, κ = 1,35, ohne Wandwärmeverluste.
+- **Wärmepumpe & Kühlschrank:** Kältemittelkreislauf (Verdampfer, Verdichter, Verflüssiger, Expansionsventil) mit fließendem
+  Kältemittel und Energiepfeilen; Wärmepumpe mit Außenluft (−20 bis 20 °C), Erdreich oder Grundwasser und Fußbodenheizung bzw.
+  Heizkörpern; Kühlschrank/Gefrierschrank mit „Tür offen“ (die Küche wird wärmer). Leistungszahl aus Carnot-Wert × Gütegrad
+  (50 %, *Anspruchsvoll* einstellbar).
+
 ## Navigation
 
-In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“, „Stromkreislabor“, „Quantenlabor“, „Halbleiterlabor“, „Bandstrukturlabor“, „Relativitätslabor“, „Schalllabor“, „Klanglabor“, „Wärmetransportlabor“, „Kalorimeterlabor“ oder „Gaslabor“) zurück zur Startseite `index.html`.
+In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabor“, „Stromkreislabor“, „Quantenlabor“, „Halbleiterlabor“, „Bandstrukturlabor“, „Relativitätslabor“, „Schalllabor“, „Klanglabor“, „Wärmetransportlabor“, „Kalorimeterlabor“, „Gaslabor“ oder „Wärmekraftmaschinenlabor“) zurück zur Startseite `index.html`.
 
 ## Radioaktivität – Radioaktivitaetslabor.html
 
