@@ -37,6 +37,7 @@ Schlagwörter. Ist nicht klar, in welches Fach eine neue Simulation gehört: nac
 | `Radioaktivität/` | `Radioaktivitaetslabor.html` | Atomkern & Isotope mit Periodensystem, Nuklidkarte (Z 0–118), Zerfallsarten, Zerfallsgesetz (Würfelmodell), Zerfallsreihen & Gleichgewicht, Strahlung messen & abschirmen, Nebelkammer, C-14-Datierung, Strahlung im Alltag (Österreich) |
 | `Kernenergie/` | `Kernenergielabor.html` | Kernspaltung, Kettenreaktion, Kernreaktor (Fukushima/Tschernobyl-Szenario), Kernfusion (Tokamak, Lawson), Sonne, Energie aus Masse, Tschernobyl & Fukushima, Cäsium in Österreich; Reaktor und Fusion anschaulich oder mit Zahlen |
 | `Enzyme/` | `Enzymlabor.html` | **Biologie:** Enzym und Substrat als Teilchen (Schlüssel-Schloss, Induced Fit), Aktivierungsenergie, Temperatur und pH mit Messreihen, Sättigungskurve (Michaelis-Menten), Hemmstoffe, Katalase-Versuch |
+| `Stoffwechsel/` | `Stoffwechsellabor.html` | **Biologie:** Photosynthese im Chloroplasten (Lichtreaktion, Calvin-Zyklus, ¹⁸O-Markierung), Wasserpest-Versuch (begrenzende Faktoren), Engelmann-Versuch mit Absorptions- und Wirkungsspektrum, Zellatmung als Wasserkraftwerk (Gärung, Cyanid, Entkoppler), Hefe-Ballon-Versuch, Glasglocke nach Priestley |
 
 ## Stoßprozesse – Stoss-Simulation.html
 
@@ -362,4 +363,16 @@ In jeder Simulation führt ein Klick auf den Titel oben links (z. B. „Feldlabo
 - **Versuch: Katalase:** fünf Röhrchen mit Leber, Kartoffel (roh/gekocht), Hefe, Braunstein, Wasser, Sand; Wasserbad, Essig, Natronlauge, Kupfersulfat; Glimmspanprobe; Messprotokoll mit CSV-Export.
 
 Modell: Moleküle bewegen sich mit Zufallsrichtung, die Geschwindigkeit wächst mit √T. Substrat bindet nur, wenn es auf das aktive Zentrum trifft (Wahrscheinlichkeit nach pH-Glockenkurve). Umbauzeit nach Arrhenius (E_A = 50 kJ/mol); Denaturierung zufällig mit stark steigender Rate oberhalb einer Grenztemperatur. Kompetitiver Hemmstoff besetzt das Zentrum für 1,6–4 s, allosterischer verformt das Enzym für 2,5–5,5 s, Schwermetall bindet dauerhaft.
+
+## Stoffwechsel – Stoffwechsellabor.html (Biologie)
+
+- Sechs Stationen, direkt aufrufbar: `#photosynthese`, `#wasserpest`, `#spektrum`, `#zellatmung`, `#gaerung`, `#glocke`; jeweils mit Aufträgen, Erklärungen und drei Niveaustufen.
+- **Photosynthese:** Chloroplast mit Thylakoiden und Calvin-Zyklus; ATP und NADPH als „Akkus“; Licht, Lichtstärke, Lichtfarbe und CO₂ schaltbar (Licht aus → Calvin-Zyklus läuft kurz weiter; ohne CO₂ stoppt auch die Lichtreaktion); Balken zur Herkunft der Zuckermasse (van Helmont); ab *Mittel*: ¹⁸O-Markierung von Wasser oder CO₂ (Ruben/Kamen), Verlaufsdiagramm.
+- **Versuch: Wasserpest:** Bläschen zählen bei Lampenabstand (Lux nach 1/r²), Farbfilter, Natron (CO₂) und Temperatur; Messreihen und Protokoll mit CSV-Export; ab *Mittel* Anzeige des begrenzenden Faktors.
+- **Licht & Farbe:** Engelmann-Versuch mit sauerstoffsuchenden Bakterien am Algenfaden (Spektrum, weiß, nur grün); ab *Mittel* Absorptionsspektren von Chlorophyll a, b, Carotinoiden und Wirkungsspektrum.
+- **Zellatmung:** Glykolyse, Citratzyklus und Atmungskette; H⁺-„Stausee“ mit ATP-Synthase als Turbine; Muskel- oder Hefezelle, ATP-Bedarf (Ruhe, Gehen, Sprint), Sauerstoff, Cyanid, Entkoppler; Anzeige ATP pro Glukose (≈ 32 mit O₂, 2 bei Gärung).
+- **Versuch: Gärung:** vier Kolben mit Ballon (Traubenzucker, Haushaltszucker, Stärke, Süßstoff, ohne Zucker, ohne Hefe), Wasserbad, wenig oder viel Luft; Kalkwasser-Probe; Protokoll mit Gasvolumen und Alkohol.
+- **Glasglocke:** Pflanze, Maus und Kerze unter einer Glocke (60 L), Tag-Nacht-Wechsel; O₂- und CO₂-Verlauf über mehrere Tage; Versuch bricht ab und befreit die Maus bei Atemnot.
+
+Modelle: Photosynthese mit Pools für ATP und NADPH (Lichtreaktion 3 ATP + 2 NADPH je O₂, Calvin-Zyklus 3 ATP + 2 NADPH je CO₂). Wasserpest: weiches Minimum aus Licht-, CO₂- und Temperaturterm minus Atmung, Poisson-Streuung. Zellatmung: Glykolyse (ATP-gehemmt), Citratzyklus, Gärung (bei NADH-Stau), Atmungskette mit Gegendruck, ATP-Synthase mit Atmungskontrolle. Gärung: V(t) = 600 ml · (1 − e^(−r·t/40 min)). Glocke: Maus 90 ml O₂/h, Pflanze bis 300 ml/h (CO₂-abhängig), Kerze 3 L/h bis 16 % O₂.
 

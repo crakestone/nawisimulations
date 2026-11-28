@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stoffwechsellabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: sachliches Laborheft, ruhig und genau
+   IDEA: Stoffe als Spielsteine, die wandern – Licht, Akkus (ATP/NADPH), Stausee mit Turbine
+   COLOUR and TYPE: Weiß bzw. Nacht; Chlorophyll grün, O₂ blau, CO₂ grau, ATP gelb, NADPH violett, Zucker orange, ¹⁸O rot; Archivo + Source Sans 3
+   LAYOUT: Stationsleiste, Experiment groß links, Regler rechts, darunter Aufträge und Erklärung */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#111419);--ink:light-dark(#15181d,#e9ecf1);--mut:light-dark(#566170,#9ea8b5);
+--line:light-dark(#d8dde4,#2d343e);--soft:light-dark(#f2f5f3,#171d1b);--card:light-dark(#ffffff,#161b21);
+--acc:light-dark(#15803d,#5fd38d);--accink:light-dark(#ffffff,#0c1a12);
+--enz:light-dark(#2f9e5a,#46b874);--enzd:light-dark(#9aa79e,#5d6862);--sub:#3d7ddb;--prod:#f08a24;--inh:#e2475b;--allo:#8a5cc7;--metal:light-dark(#4b5563,#9ca3af);--wrong:light-dark(#7c8796,#8f9aa8);
+--grid:light-dark(#e6ebe8,#242b29)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Source Sans 3",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Archivo,system-ui,sans-serif;line-height:1.08;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4vw,40px)}h2{font-size:clamp(24px,3vw,32px)}h3{font-size:18px;margin-bottom:6px}
+header{padding:18px max(4vw,14px) 0;border-bottom:1px solid var(--line)}
+.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.top p{margin:4px 0 0;color:var(--mut);max-width:62ch}
+.lvl{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:10px}
+.lvl button{border:0;background:none;color:var(--ink);padding:8px 12px;border-radius:7px;font:600 15px "Source Sans 3",sans-serif;cursor:pointer;min-height:40px}
+.lvl button[aria-pressed=true]{background:var(--acc);color:var(--accink)}
+nav.scroll{display:flex;gap:2px;margin-top:14px;overflow-x:auto;scrollbar-width:thin}
+nav a{flex:none;padding:10px 14px;color:var(--mut);text-decoration:none;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap}
+nav a.on{color:var(--ink);border-color:var(--acc)}
+nav a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.st{display:none;padding:22px max(4vw,14px) 40px;max-width:1500px;margin:0 auto}
+.st.on{display:block}
+.lead{color:var(--mut);max-width:75ch;margin:6px 0 16px}
+.work{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+@media(max-width:980px){.work{grid-template-columns:minmax(0,1fr)}}
+.stage{display:grid;gap:12px}
+.fig{position:relative;min-height:220px;background:var(--soft);border-radius:12px;overflow:hidden;touch-action:none}
+.fig>canvas{position:absolute;inset:0;width:100%;height:100%}
+.fig.tall{height:min(62vh,520px)}.fig.mid{height:340px}.fig.low{height:250px}
+.ctrl{display:grid;gap:12px;background:var(--soft);padding:14px;border-radius:12px}
+.ctrl .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ctrl label{font-weight:600;font-size:15px}
+.lab{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-size:15px}
+.ctrl .lab output{font-weight:400;color:var(--mut);white-space:nowrap}
+button.b,select{font:600 15px "Source Sans 3",sans-serif;min-height:44px;padding:8px 13px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button.b.pri{background:var(--acc);border-color:var(--acc);color:var(--accink)}
+button.b.sm{min-height:36px;padding:5px 10px;font-size:14px}
+button.b[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button.b:disabled{opacity:.5;cursor:default}
+select{font-weight:400;font-size:16px;width:100%}
+input[type=range]{width:100%;accent-color:var(--acc);min-height:30px}
+.chk{display:flex;gap:8px;align-items:center;font-weight:400!important;cursor:pointer;min-height:32px}
+.chk input{width:20px;height:20px;accent-color:var(--acc)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px}
+.kpi div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.kpi span{display:block;font-size:13px;color:var(--mut)}.kpi b{font:700 22px/1.15 Archivo,sans-serif;font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--mut)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid rgba(0,0,0,.2)}
+.msg{padding:10px 12px;border-radius:10px;font-weight:600;background:var(--soft)}
+.msg.warn{background:rgba(226,71,91,.14)}.msg.ok{background:rgba(58,164,92,.15)}
+.tasks{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:20px}
+.task{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.task p{margin:0;font-size:15.5px}
+.task .lv{font-size:13px;font-weight:700;color:var(--mut)}
+.task button{align-self:flex-start;margin-top:auto}
+.expl{margin-top:20px;border-top:1px solid var(--line);padding-top:6px}
+details summary{cursor:pointer;font-weight:700;padding:10px 0;font-family:Archivo,sans-serif;font-size:18px}
+details .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px 28px}
+details p{margin:0 0 10px;max-width:70ch}
+body[data-lvl="1"] .l2,body[data-lvl="1"] .l3,body[data-lvl="2"] .l3{display:none!important}
+.note{font-size:14px;color:var(--mut);margin:6px 0 0}
+.mut{color:var(--mut)}.small{font-size:14px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px}
+.eq{font-family:Archivo,sans-serif;font-size:19px}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.seg{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);padding:4px;border-radius:10px}
+.seg button{flex:1;border:0;background:none;color:var(--ink);min-height:40px;border-radius:7px;font:600 15px "Source Sans 3",sans-serif;cursor:pointer;padding:4px 6px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.tubes{display:grid;gap:6px}
+.tubes .tr{display:grid;grid-template-columns:28px minmax(0,1fr);gap:6px;align-items:center}
+.tubes .tr b{font-family:Archivo,sans-serif;text-align:center}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+:root{--chl:light-dark(#2f9e5a,#46b874);--o2:#3d7ddb;--co2:light-dark(#6b7280,#9ca3af);--atp:#e0a800;--nad:#8a5cc7;--glc:#f08a24;--iso:#e2475b;--h:#e2475b}
+</style>
+</head>
+<body data-lvl="1">
+<header>
+ <div class="top">
+  <div><h1><a id="home" href="../index.html" style="color:inherit;text-decoration:none" title="Zur Startseite">Stoffwechsellabor</a></h1><p>Woher Pflanzen ihre Masse haben und wie Zellen Energie gewinnen: Photosynthese im Chloroplasten, Wasserpest und Engelmann-Versuch, Zellatmung als Wasserkraftwerk, Gärung mit Hefe – und Pflanze und Maus unter der Glasglocke.</p></div>
+  <div class="lvl" role="group" aria-label="Niveau"><button data-l="1" aria-pressed="true">Einfach</button><button data-l="2" aria-pressed="false">Mittel</button><button data-l="3" aria-pressed="false">Anspruchsvoll</button></div>
+ </div>
+ <nav class="scroll" id="nav"><a href="#photosynthese">Photosynthese</a><a href="#wasserpest">Versuch: Wasserpest</a><a href="#spektrum">Licht &amp; Farbe</a><a href="#zellatmung">Zellatmung</a><a href="#gaerung">Versuch: Gärung</a><a href="#glocke">Glasglocke</a></nav>
+</header>
+
+<!-- ========== PHOTOSYNTHESE ========== -->
+<section class="st" id="st-photosynthese">
+ <h2>Photosynthese im Chloroplasten</h2>
+ <p class="lead">Im Chloroplasten laufen zwei Teile Hand in Hand. An den <b>Thylakoiden</b> fängt Chlorophyll Licht ein, spaltet Wasser und lädt die „Akkus“ ATP und NADPH. Im <b>Stroma</b> baut der <b>Calvin-Zyklus</b> mit dieser Energie aus Kohlenstoffdioxid Zucker.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="pC"></canvas></div>
+   <div class="legend"><span><i style="background:var(--o2)"></i>Sauerstoff O₂</span><span><i style="background:var(--co2)"></i>Kohlenstoffdioxid CO₂</span><span><i style="background:var(--atp)"></i>ATP (geladen)</span><span><i style="background:var(--nad)"></i>NADPH (geladen)</span><span><i style="background:var(--glc)"></i>Zucker</span></div>
+   <div class="kpi" id="pK"></div>
+   <div class="card"><h3>Woher kommt die Masse des Zuckers?</h3><div class="fig low" style="height:96px;min-height:90px"><canvas id="pM"></canvas></div><p class="note" id="pMn"></p></div>
+   <div class="card l2"><h3>Verlauf</h3><div class="fig low" style="height:210px"><canvas id="pT"></canvas></div><p class="note">Gelb: ATP, violett: NADPH (Füllstand der „Akkus“), orange: Zuckerbildung pro Minute, blau: O₂ pro Minute.</p></div>
+  </div>
+  <aside class="ctrl">
+   <div class="row"><button class="b pri" id="pGo">Pause</button><button class="b" id="pRe">Neu starten</button></div>
+   <div><label>Licht</label><div class="seg" id="pL"><button data-v="1" aria-pressed="true">an</button><button data-v="0" aria-pressed="false">aus</button></div></div>
+   <div><div class="lab"><span>Lichtstärke</span><output id="pIo">70 %</output></div><input type="range" id="pI" min="0" max="100" value="70"></div>
+   <div><div class="lab"><span>Lichtfarbe</span><output id="pWo">weiß</output></div><input type="range" id="pW" min="390" max="710" step="5" value="390"><p class="note">Ganz links: weißes Licht, sonst eine Farbe (Wellenlänge).</p></div>
+   <div><label>CO₂ in der Luft</label><div class="seg" id="pCO"><button data-v="1" aria-pressed="true">vorhanden</button><button data-v="0" aria-pressed="false">entfernt</button></div></div>
+   <div class="l2"><label>Markierung mit ¹⁸O</label><div class="seg" id="pIso"><button data-v="0" aria-pressed="true">keine</button><button data-v="w">im Wasser</button><button data-v="c">im CO₂</button></div></div>
+   <div class="card small" id="pInfo"></div>
+   <div class="card small"><span class="eq" id="pEq"></span></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-photosynthese"></div>
+ <div class="expl"><details><summary>Erklärung: Lichtreaktion, Calvin-Zyklus, Herkunft der Stoffe</summary><div class="cols">
+  <p><b>Lichtabhängige Reaktion.</b> Chlorophyll in der Thylakoidmembran nimmt Licht auf. Mit dieser Energie wird Wasser gespalten: Es entstehen Sauerstoff, der die Pflanze verlässt, und energiereiche Elektronen. Sie laden ADP zu ATP und NADP⁺ zu NADPH auf.</p>
+  <p><b>Calvin-Zyklus.</b> Im Stroma wird CO₂ an ein Zuckermolekül gebunden (Enzym Rubisco) und mit ATP und NADPH zu Zucker umgebaut. Die entladenen ADP und NADP⁺ wandern zurück zu den Thylakoiden. Ohne Licht laufen die Akkus leer – dann steht auch der Calvin-Zyklus still.</p>
+  <p><b>„Dunkelreaktion“?</b> Der Calvin-Zyklus heißt manchmal Dunkelreaktion, weil er kein Licht direkt braucht. Er läuft aber nicht in der Nacht, sondern nur, solange die Lichtreaktion ATP und NADPH liefert. Besser: lichtunabhängige Reaktion.</p>
+  <p><b>Woher die Masse kommt.</b> Fast die ganze Trockenmasse einer Pflanze stammt aus dem CO₂ der Luft, nicht aus dem Boden. Das zeigte schon Jan Baptist van Helmont: Seine Weide nahm in fünf Jahren 74 kg zu, die Erde im Topf verlor nur 57 g.</p>
+  <p class="l2"><b>Der Sauerstoff kommt aus dem Wasser.</b> Samuel Ruben und Martin Kamen markierten 1941 Wasser mit dem schweren Sauerstoff-Isotop ¹⁸O. Der freigesetzte Sauerstoff war markiert. Markierten sie das CO₂, landete ¹⁸O im Zucker und im neu gebildeten Wasser, nicht im O₂.</p>
+  <p class="l3"><b>Bilanz.</b> 6 CO₂ + 12 H₂O → C₆H₁₂O₆ + 6 O₂ + 6 H₂O. Pro CO₂ braucht der Calvin-Zyklus 3 ATP und 2 NADPH. Im Modell liefert jede gespaltene Wasser-Einheit (2 H₂O → O₂) 2 NADPH und 3 ATP – genau genug für ein CO₂.</p>
+ </div></details></div>
+</section>
+
+<!-- ========== WASSERPEST ========== -->
+<section class="st" id="st-wasserpest">
+ <h2>Versuch: Wasserpest</h2>
+ <p class="lead">Ein Zweig Wasserpest (Elodea) unter Wasser gibt im Licht Sauerstoffbläschen ab. Zähle die Bläschen pro Minute und verändere jeweils <b>eine</b> Größe: Lampenabstand, Lichtfarbe, CO₂ (Natron im Wasser) oder Temperatur.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="wC"></canvas></div>
+   <div class="kpi" id="wK"></div>
+   <div class="card"><h3>Messreihe</h3><div class="fig low" style="height:250px"><canvas id="wG"></canvas></div>
+    <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center"><select id="wVar" style="width:auto"><option value="d">Lampenabstand</option><option value="c">Natron (CO₂)</option><option value="T">Temperatur</option></select><button class="b sm pri" id="wSer">Messreihe aufnehmen</button><button class="b sm" id="wClr">Löschen</button></div>
+    <p class="note">Die anderen Größen bleiben so, wie sie rechts eingestellt sind. Jede neue Messreihe kommt als eigene Kurve dazu.</p></div>
+   <div class="card"><h3>Messprotokoll</h3><div style="overflow-x:auto"><table><thead><tr><th>#</th><th class="n">Abstand</th><th>Licht</th><th class="n">Natron</th><th class="n">Temp.</th><th class="n">Bläschen/min</th></tr></thead><tbody id="wTab"></tbody></table></div>
+    <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><button class="b sm" id="wCsv">Als Tabelle kopieren (CSV)</button><button class="b sm" id="wTClr">Protokoll löschen</button></div><p class="note" id="wMsg"></p></div>
+  </div>
+  <aside class="ctrl">
+   <div><div class="lab"><span>Lampenabstand</span><output id="wDo">20 cm</output></div><input type="range" id="wD" min="10" max="100" value="20"></div>
+   <div><label for="wF">Farbfilter vor der Lampe</label><select id="wF"><option value="w">kein Filter (weiß)</option><option value="r">rot</option><option value="b">blau</option><option value="g">grün</option><option value="y">gelb</option></select></div>
+   <div><div class="lab"><span>Natron im Wasser (CO₂-Quelle)</span><output id="wCo">1 g/L</output></div><input type="range" id="wCO" min="0" max="4" step=".25" value="1"></div>
+   <div><div class="lab"><span>Wassertemperatur</span><output id="wTo">20 °C</output></div><input type="range" id="wT" min="0" max="50" value="20"></div>
+   <div class="row"><button class="b pri" id="wCount">1 Minute zählen</button><button class="b" id="wFast" aria-pressed="false">Zeitraffer</button></div>
+   <div class="card small" id="wInfo"></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-wasserpest"></div>
+ <div class="expl"><details><summary>Erklärung: Begrenzende Faktoren</summary><div class="cols">
+  <p><b>Was die Bläschen zeigen.</b> Die Bläschen bestehen großteils aus Sauerstoff aus der Photosynthese. Je mehr Bläschen pro Minute, desto schneller arbeitet die Photosynthese.</p>
+  <p><b>Begrenzender Faktor.</b> Die Photosynthese braucht Licht, CO₂ und eine passende Temperatur. Der Faktor, von dem am wenigsten da ist, bestimmt das Tempo – wie das kürzeste Brett eines Fasses, das bestimmt, wie hoch das Wasser steigen kann (Liebigs Minimumgesetz). Mehr von einem anderen Faktor hilft dann nicht.</p>
+  <p><b>Abstand und Lichtstärke.</b> Doppelter Abstand zur Lampe bedeutet nur noch ein Viertel der Lichtstärke. Darum ändert sich die Bläschenzahl bei kleinen Abständen stark.</p>
+  <p><b>Temperatur.</b> Die Enzyme des Calvin-Zyklus arbeiten bei Wärme schneller, über etwa 35–40 °C werden sie geschädigt. Bei sehr starkem Licht und viel CO₂ wird die Temperatur zum begrenzenden Faktor.</p>
+  <p class="l2"><b>Farbe.</b> Grünes Licht wird von Chlorophyll kaum aufgenommen, sondern zurückgeworfen – darum sehen Blätter grün aus und die Wasserpest bildet unter grünem Licht wenig Sauerstoff. Mehr dazu in der Station „Licht &amp; Farbe“.</p>
+  <p class="l3"><b>Kompensationspunkt.</b> Die Pflanze atmet auch und verbraucht dabei Sauerstoff. Bei schwachem Licht reicht die Photosynthese gerade, um die Atmung auszugleichen – dann steigen keine Bläschen auf. Modell: Rate = P<sub>max</sub> · f(T) · weiches Minimum aus Lichtterm E/(E + 8000 lx) und CO₂-Term c/(c + 0,4 g/L), minus Atmung; Zählwerte mit Poisson-Streuung.</p>
+ </div></details></div>
+</section>
+
+<!-- ========== SPEKTRUM ========== -->
+<section class="st" id="st-spektrum">
+ <h2>Licht &amp; Farbe: der Engelmann-Versuch</h2>
+ <p class="lead">Theodor Wilhelm Engelmann warf 1882 ein Spektrum auf einen Algenfaden und gab Bakterien dazu, die Sauerstoff suchen. Wo die Alge viel Sauerstoff bildet, sammeln sich die Bakterien. Welche Farben nutzt die Pflanze?</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="sC"></canvas></div>
+   <div class="card l2"><h3>Absorptions- und Wirkungsspektrum</h3><div class="fig low" style="height:250px"><canvas id="sG"></canvas></div><p class="note">Absorption: wie viel Licht ein Farbstoff aufnimmt. Wirkung: wie stark die Photosynthese bei dieser Farbe läuft. Grau: Verteilung der Bakterien im Versuch.</p></div>
+  </div>
+  <aside class="ctrl">
+   <div><label>Beleuchtung</label><div class="seg" id="sMode" style="flex-wrap:wrap"><button data-v="spec" aria-pressed="true">Spektrum</button><button data-v="white">weiß</button><button data-v="green">nur grün</button></div></div>
+   <div class="row"><button class="b pri" id="sGo">Pause</button><button class="b" id="sRe">Bakterien neu verteilen</button></div>
+   <label class="chk"><input type="checkbox" id="sHist" checked> Verteilung der Bakterien zeigen</label>
+   <div class="l2"><label>Farbstoffe im Diagramm</label>
+    <label class="chk"><input type="checkbox" class="sPig" value="a" checked> Chlorophyll a</label>
+    <label class="chk"><input type="checkbox" class="sPig" value="b" checked> Chlorophyll b</label>
+    <label class="chk"><input type="checkbox" class="sPig" value="k" checked> Carotinoide</label>
+    <label class="chk"><input type="checkbox" class="sPig" value="w" checked> Wirkungsspektrum</label></div>
+   <div class="card small" id="sInfo"></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-spektrum"></div>
+ <div class="expl"><details><summary>Erklärung: Warum Blätter grün sind</summary><div class="cols">
+  <p><b>Rot und Blau.</b> Chlorophyll nimmt vor allem blaues und rotes Licht auf. Nur dort bildet die Alge viel Sauerstoff, und dort sammeln sich die Bakterien.</p>
+  <p><b>Grün bleibt übrig.</b> Grünes Licht wird kaum aufgenommen, sondern zurückgeworfen oder durchgelassen. Darum sehen wir Blätter grün. Das ist das Licht, das die Pflanze am wenigsten nutzt.</p>
+  <p class="l2"><b>Mehrere Farbstoffe.</b> Neben Chlorophyll a gibt es Chlorophyll b und Carotinoide (gelb-orange). Sie fangen zusätzliche Farben ein und geben die Energie an Chlorophyll a weiter. Darum ist das Wirkungsspektrum breiter als die Absorption von Chlorophyll a allein. Im Herbst wird Chlorophyll abgebaut – dann werden die Carotinoide sichtbar.</p>
+  <p class="l3"><b>Photonenenergie.</b> Blaues Licht (450 nm) hat pro Photon mehr Energie als rotes (680 nm): E = h·c/λ ≈ 2,8 eV gegenüber 1,8 eV. Für die Photosynthese zählt aber die Zahl der aufgenommenen Photonen – die überschüssige Energie blauer Photonen wird als Wärme abgegeben. Siehe auch das Quantenlabor (Spektrallinien).</p>
+ </div></details></div>
+</section>
+
+<!-- ========== ZELLATMUNG ========== -->
+<section class="st" id="st-zellatmung">
+ <h2>Zellatmung: das Wasserkraftwerk im Mitochondrium</h2>
+ <p class="lead">Zellen gewinnen Energie aus Zucker. Er wird schrittweise zerlegt: <b>Glykolyse</b> im Zellplasma, <b>Citratzyklus</b> und <b>Atmungskette</b> im Mitochondrium. Die Atmungskette pumpt Protonen (H⁺) wie Wasser in einen Stausee. Fließen sie durch die Turbine <b>ATP-Synthase</b> zurück, entsteht ATP.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall" style="height:min(66vh,560px)"><canvas id="zC"></canvas></div>
+   <div class="kpi" id="zK"></div>
+   <div class="card l2"><h3>Verlauf</h3><div class="fig low" style="height:210px"><canvas id="zT"></canvas></div><p class="note">Gelb: ATP-Bildung pro s, blau: Pegel im Stausee (H⁺), rot: Milchsäure bzw. Alkohol.</p></div>
+  </div>
+  <aside class="ctrl">
+   <div class="row"><button class="b pri" id="zGo">Pause</button><button class="b" id="zRe">Neu starten</button></div>
+   <div><label>Zelle</label><div class="seg" id="zOrg"><button data-v="m" aria-pressed="true">Muskelzelle</button><button data-v="h" aria-pressed="false">Hefezelle</button></div></div>
+   <div><label>ATP-Bedarf</label><div class="seg" id="zDem"><button data-v="2" aria-pressed="true">Ruhe</button><button data-v="6">Gehen</button><button data-v="13">Sprint</button></div></div>
+   <div><div class="lab"><span>Sauerstoff</span><output id="zOo">100 %</output></div><input type="range" id="zO" min="0" max="100" value="100"></div>
+   <label class="chk"><input type="checkbox" id="zG" checked> Glukose-Nachschub</label>
+   <label class="chk"><input type="checkbox" id="zCy"> Gift: Cyanid (blockiert die Atmungskette)</label>
+   <label class="chk l2"><input type="checkbox" id="zUn"> Entkoppler (Leck in der Staumauer)</label>
+   <div class="card small" id="zInfo"></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-zellatmung"></div>
+ <div class="expl"><details><summary>Erklärung: Glykolyse, Citratzyklus, Atmungskette, Gärung</summary><div class="cols">
+  <p><b>Glykolyse.</b> Im Zellplasma wird Glukose (6 C) in zwei Brenztraubensäure-Moleküle (Pyruvat, je 3 C) gespalten. Das bringt nur 2 ATP und 2 NADH.</p>
+  <p><b>Citratzyklus.</b> Im Mitochondrium wird Pyruvat vollständig zu CO₂ abgebaut. Das CO₂, das du ausatmest, stammt von hier. Die Energie steckt danach vor allem in NADH.</p>
+  <p><b>Atmungskette.</b> NADH gibt Elektronen an Proteinpumpen in der inneren Membran ab. Die Pumpen befördern damit H⁺ in den Raum zwischen den Membranen – wie Wasser in einen Stausee. Am Ende nimmt Sauerstoff die Elektronen auf, es entsteht Wasser. Darum brauchen wir Sauerstoff.</p>
+  <p><b>Turbine.</b> Die H⁺ strömen durch die ATP-Synthase zurück, die sich dabei wirklich dreht und ATP bildet. Insgesamt ergibt eine Glukose rund 30–32 ATP.</p>
+  <p><b>Gärung.</b> Fehlt Sauerstoff, staut sich NADH, und der Citratzyklus stoppt. Um weiterzumachen, gibt die Zelle die Elektronen an Pyruvat ab: Muskeln bilden Milchsäure (Laktat), Hefe bildet Alkohol und CO₂. So läuft wenigstens die Glykolyse weiter – mit nur 2 ATP pro Glukose.</p>
+  <p class="l2"><b>Energie wird nicht erzeugt.</b> Die Energie steckt schon im Zucker. Die Zelle wandelt sie in eine nutzbare Form (ATP) um, ein großer Teil wird dabei zu Wärme. Entkoppler machen ein Leck in die Staumauer: H⁺ fließen ohne Turbine zurück, es entsteht nur Wärme. Das braune Fettgewebe von Babys und Tieren im Winterschlaf heizt genau so.</p>
+  <p class="l3"><b>Modell.</b> Glykolyse: +2 ATP, +2 NADH je Glukose; Citratzyklus: +1 ATP, +4,6 NADH (inkl. FADH₂) je Pyruvat; Atmungskette: 10 H⁺ je NADH, ATP-Synthase: 4 H⁺ je ATP. Gegendruck: Je voller der Stausee, desto langsamer pumpen die Pumpen; je voller der ATP-Speicher, desto langsamer dreht die Turbine (Atmungskontrolle).</p>
+ </div></details></div>
+</section>
+
+<!-- ========== GÄRUNG ========== -->
+<section class="st" id="st-gaerung">
+ <h2>Versuch: Gärung mit Hefe</h2>
+ <p class="lead">Vier Kolben mit Hefe in warmem Wasser, jeweils mit einem Luftballon verschlossen. Entsteht ein Gas, bläst es den Ballon auf. Welche Zucker kann Hefe nutzen, und welche Temperatur mag sie?</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="gC"></canvas></div>
+   <div class="card"><h3>Messprotokoll</h3><div style="overflow-x:auto"><table><thead><tr><th>#</th><th>Inhalt</th><th class="n">Temp.</th><th>Luft</th><th class="n">Gas nach 60 min</th><th class="n">Alkohol</th></tr></thead><tbody id="gTab"></tbody></table></div>
+    <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><button class="b sm" id="gCsv">Als Tabelle kopieren (CSV)</button><button class="b sm" id="gClr">Protokoll löschen</button></div><p class="note" id="gMsg"></p></div>
+  </div>
+  <aside class="ctrl">
+   <div><label>Inhalt der Kolben</label><div class="tubes" id="gSel"></div></div>
+   <div><div class="lab"><span>Wasserbad</span><output id="gTo">35 °C</output></div><input type="range" id="gT" min="0" max="70" step="5" value="35"></div>
+   <div><label>Luft im Kolben</label><div class="seg" id="gAir"><button data-v="0" aria-pressed="true">wenig (verschlossen)</button><button data-v="1">viel (geschüttelt)</button></div></div>
+   <div class="row"><button class="b pri" id="gGo">Versuch starten</button><button class="b" id="gFast" aria-pressed="true">Zeitraffer</button></div>
+   <div><label for="gTest">Gas prüfen in Kolben</label><div class="row"><select id="gTest" style="width:auto;flex:1"></select><button class="b" id="gTestB">Kalkwasser-Probe</button></div></div>
+   <div class="card small" id="gInfo"></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-gaerung"></div>
+ <div class="expl"><details><summary>Erklärung: alkoholische Gärung</summary><div class="cols">
+  <p><b>Was passiert?</b> Hefe ist ein einzelliger Pilz. Ohne Sauerstoff baut sie Zucker zu Alkohol (Ethanol) und Kohlenstoffdioxid ab: C₆H₁₂O₆ → 2 C₂H₅OH + 2 CO₂. Das CO₂ bläst den Ballon auf – und lässt Brotteig aufgehen.</p>
+  <p><b>Nachweis.</b> CO₂ trübt Kalkwasser milchig weiß. Den Alkohol riecht man; im Modell wird er gemessen.</p>
+  <p><b>Welcher Zucker?</b> Traubenzucker (Glukose) kann Hefe sofort nutzen, Haushaltszucker spaltet sie erst mit einem Enzym. Stärke kann Bäckerhefe kaum abbauen, Süßstoff gar nicht – er ist kein Zucker.</p>
+  <p><b>Temperatur.</b> Wie bei allen Enzymen gibt es ein Optimum (um 30–35 °C). Ab etwa 55 °C stirbt die Hefe – darum sollte die Milch für den Germteig nur lauwarm sein.</p>
+  <p class="l2"><b>Mit Luft.</b> Hat die Hefe Sauerstoff, atmet sie: Der Zucker wird vollständig zu CO₂ und Wasser abgebaut, es entsteht kein Alkohol. Erst wenn der Sauerstoff im Kolben verbraucht ist, beginnt sie zu gären.</p>
+  <p class="l3"><b>Modell.</b> Gasmenge V(t) = 600 ml · (1 − e^(−r·t/40 min)); r = Zuckerfaktor · Temperaturfaktor (Optimum 34 °C, Absterben über 50 °C). Mit viel Luft wird zuerst ein Teil des Zuckers veratmet. Messwerte streuen um etwa 5 %.</p>
+ </div></details></div>
+</section>
+
+<!-- ========== GLOCKE ========== -->
+<section class="st" id="st-glocke">
+ <h2>Pflanze und Maus unter der Glasglocke</h2>
+ <p class="lead">Joseph Priestley stellte 1771 eine Kerze unter eine Glasglocke: Sie ging bald aus. Mit einer Minzpflanze daneben brannte sie nach einigen Tagen wieder. Hier kannst du Pflanze, Maus und Kerze einzeln oder zusammen unter die Glocke stellen und Tag und Nacht wechseln lassen.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="lC"></canvas></div>
+   <div class="kpi" id="lK"></div>
+   <div class="card"><h3>Luft unter der Glocke</h3><div class="fig low" style="height:250px"><canvas id="lG"></canvas></div><p class="note">Blau: Sauerstoff in %, grau: Kohlenstoffdioxid in % (rechte Skala). Gelbe Streifen: Tag.</p></div>
+  </div>
+  <aside class="ctrl">
+   <div><label>Unter der Glocke</label>
+    <label class="chk"><input type="checkbox" id="lP" checked> Pflanze</label>
+    <label class="chk"><input type="checkbox" id="lM" checked> Maus</label>
+    <label class="chk"><input type="checkbox" id="lK2"> Kerze</label></div>
+   <div><label>Licht</label><div class="seg" id="lL"><button data-v="d">immer Tag</button><button data-v="n">immer Nacht</button><button data-v="c" aria-pressed="true">Wechsel</button></div></div>
+   <div><label>Tempo</label><div class="seg" id="lSp"><button data-v="10">langsam</button><button data-v="30" aria-pressed="true">mittel</button><button data-v="120">schnell</button></div></div>
+   <div class="row"><button class="b pri" id="lGo">Pause</button><button class="b" id="lRe">Frische Luft</button></div>
+   <div class="card small" id="lInfo"></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-glocke"></div>
+ <div class="expl"><details><summary>Erklärung: Kreislauf von Sauerstoff und Kohlenstoffdioxid</summary><div class="cols">
+  <p><b>Zwei Vorgänge, die zusammenpassen.</b> Photosynthese: CO₂ + Wasser → Zucker + O₂ (nur im Licht). Zellatmung: Zucker + O₂ → CO₂ + Wasser (immer, bei Tier und Pflanze). Was der eine Vorgang verbraucht, liefert der andere.</p>
+  <p><b>Pflanzen atmen auch.</b> In der Nacht gibt auch die Pflanze CO₂ ab und verbraucht Sauerstoff. Am Tag überwiegt aber die Photosynthese bei Weitem.</p>
+  <p><b>Die Kerze</b> verbraucht Sauerstoff viel schneller als die Maus und geht schon bei etwa 16 % Sauerstoff aus – lange bevor er aufgebraucht ist.</p>
+  <p class="l2"><b>Gleichgewicht.</b> Mit Pflanze und Maus pendelt sich die Luft im Tag-Nacht-Wechsel ein: Am Tag sinkt der CO₂-Gehalt, in der Nacht steigt er. In der Erdatmosphäre sieht man dasselbe als Jahresgang der CO₂-Kurve (Sommer der Nordhalbkugel: weniger CO₂).</p>
+  <p class="l3"><b>Modell.</b> Glocke mit 60 L Luft. Maus: 90 ml O₂ pro Stunde. Pflanze: Atmung 15 ml/h, Photosynthese bis 300 ml/h, abhängig vom CO₂-Gehalt (halbe Rate bei 0,04 %). Kerze: 3 L O₂ pro Stunde, erlischt unter 16 % O₂. Tag: 6–20 Uhr. Atemnot der Maus ab 3 % CO₂ oder unter 15 % O₂ – dann wird der Versuch abgebrochen und die Maus befreit.</p>
+ </div></details></div>
+</section>
+
+<script>
+/* ===================== Grundlagen ===================== */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const de=(x,p=3)=>Number(Number(x).toPrecision(p)).toLocaleString("de-AT",{maximumFractionDigits:10});
+const SUPD="⁰¹²³⁴⁵⁶⁷⁸⁹";const sup=n=>String(n).replace(/-/g,"⁻").replace(/\d/g,d=>SUPD[d]);
+function sci(x,p=2){if(x===0)return"0";const e=Math.floor(Math.log10(Math.abs(x)));if(e>=-2&&e<5)return de(x,p);return de(x/10**e,p)+" · 10"+sup(e)}
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const angD=(a,b)=>{let d=a-b;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;return d};
+const probe=document.createElement("i");probe.style.display="none";document.body.appendChild(probe);let CC={};
+function col(v){if(CC[v])return CC[v];probe.style.color=v.startsWith("var")||v.startsWith("#")?v:`var(${v})`;return CC[v]=getComputedStyle(probe).color}
+function alpha(c,a){const m=c.match(/[\d.]+/g);return m?`rgba(${m[0]},${m[1]},${m[2]},${a})`:c}
+const REG=[];
+function canv(id,draw){const c=document.getElementById(id);const o={c,draw,x:null,w:0,h:0};const fit=()=>{const r=c.getBoundingClientRect();if(!r.width||!r.height)return;const d=devicePixelRatio||1;c.width=Math.round(r.width*d);c.height=Math.round(r.height*d);o.w=r.width;o.h=r.height;o.x=c.getContext("2d");o.x.setTransform(d,0,0,d,0,0);draw(o)};o.fit=fit;o.redraw=()=>{if(o.x&&o.w)draw(o)};new ResizeObserver(fit).observe(c);REG.push(o);return o}
+const redrawAll=()=>{CC={};REG.forEach(o=>o.redraw())};
+new MutationObserver(redrawAll).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme","class","style"]});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",redrawAll);
+function txt(x,s,X,Y,o={}){x.font=`${o.w||400} ${o.size||13}px "Source Sans 3",system-ui,sans-serif`;x.fillStyle=o.c||col("--ink");x.textAlign=o.a||"left";x.textBaseline=o.b||"middle";x.fillText(s,X,Y)}
+function seg(id,cb){const el=document.getElementById(id);el.querySelectorAll("button").forEach(b=>b.onclick=()=>{el.querySelectorAll("button").forEach(q=>q.setAttribute("aria-pressed",q===b));cb(b.dataset.v)});return v=>{el.querySelectorAll("button").forEach(q=>q.setAttribute("aria-pressed",q.dataset.v==v))}}
+function kpi(id,items){document.getElementById(id).innerHTML=items.map(([k,v])=>`<div><span>${k}</span><b>${v}</b></div>`).join("")}
+const TL=["","einfach","mittel","anspruchsvoll"];
+function tasks(id,list){const el=document.getElementById("tk-"+id);el.innerHTML="";list.forEach(t=>{const d=document.createElement("div");d.className="task"+(t.l==2?" l2":t.l==3?" l3":"");d.innerHTML=`<span class="lv">${TL[t.l]}</span><h3>${t.h}</h3><p>${t.p}</p>`;if(t.set){const b=document.createElement("button");b.className="b sm";b.textContent="Einstellen";b.onclick=()=>{t.set();document.getElementById("st-"+id).scrollIntoView({behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"})};d.appendChild(b)}el.appendChild(d)})}
+function setLvl(l){document.body.dataset.lvl=l;$$(".lvl button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l==l));try{localStorage.setItem("stofflvl",l)}catch(e){}setTimeout(()=>{REG.forEach(o=>o.fit())},20)}
+$$(".lvl button").forEach(b=>b.onclick=()=>setLvl(b.dataset.l));
+const VIEWS=["photosynthese","wasserpest","spektrum","zellatmung","gaerung","glocke"];let cur="photosynthese";
+function route(){const h=location.hash.slice(1);cur=VIEWS.includes(h)?h:"photosynthese";$$(".st").forEach(s=>s.classList.toggle("on",s.id=="st-"+cur));$$("#nav a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")=="#"+cur));setTimeout(()=>REG.forEach(o=>o.fit()),10)}
+addEventListener("hashchange",route);
+const sleep=()=>new Promise(r=>setTimeout(r,0));
+
+/* ===================== Diagramm ===================== */
+function nice(r){const e=10**Math.floor(Math.log10(r/5));for(const m of[1,2,2.5,5,10])if(r/(m*e)<=6)return m*e;return 10*e}
+function chart(o,c){const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const L=54,R=14,T=14,B=40;
+ const X=v=>L+(v-c.x0)/(c.x1-c.x0)*(w-L-R),Y=v=>h-B-(v-c.y0)/(c.y1-c.y0)*(h-T-B);
+ x.strokeStyle=col("--grid");x.lineWidth=1;x.font='12px "Source Sans 3",sans-serif';
+ const sx=nice(c.x1-c.x0),sy=nice(c.y1-c.y0);
+ for(let v=Math.ceil(c.x0/sx)*sx;v<=c.x1+1e-9;v+=sx){x.beginPath();x.moveTo(X(v),T);x.lineTo(X(v),h-B);x.stroke();txt(x,de(v,3),X(v),h-B+12,{a:"center",c:col("--mut"),size:12})}
+ for(let v=Math.ceil(c.y0/sy)*sy;v<=c.y1+1e-9;v+=sy){x.beginPath();x.moveTo(L,Y(v));x.lineTo(w-R,Y(v));x.stroke();txt(x,de(v,3),L-6,Y(v),{a:"right",c:col("--mut"),size:12})}
+ x.strokeStyle=col("--mut");x.beginPath();x.moveTo(L,T);x.lineTo(L,h-B);x.lineTo(w-R,h-B);x.stroke();
+ txt(x,c.xl,(L+w-R)/2,h-10,{a:"center",c:col("--mut"),size:13,w:600});
+ x.save();x.translate(13,(T+h-B)/2);x.rotate(-Math.PI/2);txt(x,c.yl,0,0,{a:"center",c:col("--mut"),size:13,w:600});x.restore();
+ x.save();x.beginPath();x.rect(L,T,w-L-R,h-T-B);x.clip();
+ (c.extra||(()=>{}))(x,X,Y);
+ for(const s of c.series||[]){const cc=col(s.c);
+  if(s.fn){x.strokeStyle=cc;x.lineWidth=2;x.setLineDash(s.dash||[]);x.beginPath();for(let i=0;i<=200;i++){const v=c.x0+(c.x1-c.x0)*i/200,y=s.fn(v);if(!isFinite(y))continue;i?x.lineTo(X(v),Y(y)):x.moveTo(X(v),Y(y))}x.stroke();x.setLineDash([])}
+  if(s.line&&s.pts.length>1){x.strokeStyle=alpha(cc,.55);x.lineWidth=1.6;x.beginPath();s.pts.forEach((p,i)=>i?x.lineTo(X(p[0]),Y(p[1])):x.moveTo(X(p[0]),Y(p[1])));x.stroke()}
+  if(s.pts){x.fillStyle=cc;for(const p of s.pts){x.beginPath();x.arc(X(p[0]),Y(p[1]),s.r||4,0,7);x.fill()}}}
+ x.restore();
+ if(c.legend){let yy=T+10;for(const [t,cc] of c.legend){x.fillStyle=col(cc);x.fillRect(w-R-150,yy-5,12,10);txt(x,t,w-R-133,yy,{size:12,c:col("--ink")});yy+=17}}}
+
+/* ===================== Licht & Farbstoffe ===================== */
+const Gs=(l,m,s)=>Math.exp(-(((l-m)/s)**2)/2);
+const absA=l=>.95*Gs(l,430,14)+.25*Gs(l,410,25)+.78*Gs(l,662,11)+.2*Gs(l,615,20);
+const absB=l=>.9*Gs(l,455,13)+.5*Gs(l,642,10)+.15*Gs(l,595,18);
+const absK=l=>.7*Gs(l,452,15)+.78*Gs(l,480,14)+.3*Gs(l,425,12);
+const wirkR=l=>.62*absA(l)+.35*absB(l)+.22*absK(l)+.05;let WMAX=0;for(let l=380;l<=720;l++)WMAX=Math.max(WMAX,wirkR(l));
+const wirk=l=>wirkR(l)/WMAX;
+function wlRGB(l,a=1){let r=0,g=0,b=0;if(l<440){r=-(l-440)/60;b=1}else if(l<490){g=(l-440)/50;b=1}else if(l<510){g=1;b=-(l-510)/20}else if(l<580){r=(l-510)/70;g=1}else if(l<645){r=1;g=-(l-645)/65}else r=1;
+ const f=l<420?.35+.65*(l-380)/40:l>680?.35+.65*(750-l)/70:1;return`rgba(${Math.round(255*clamp(r,0,1)*f)},${Math.round(255*clamp(g,0,1)*f)},${Math.round(255*clamp(b,0,1)*f)},${a})`}
+function wlName(l){return l<450?"violett-blau":l<490?"blau":l<510?"blaugrün":l<565?"grün":l<590?"gelb":l<625?"orange":"rot"}
+function poisson(m){if(m>30)return Math.max(0,Math.round(m+Math.sqrt(m)*gauss()));let L=Math.exp(-m),k=0,p=1;do{k++;p*=Math.random()}while(p>L);return k-1}
+function copyCSV(t,msgEl){const ok=()=>{msgEl.textContent="Kopiert – in Excel oder GeoGebra einfügen."};const fb=()=>{const a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy");ok()}catch(e){}a.remove()};
+ if(navigator.clipboard&&isSecureContext)navigator.clipboard.writeText(t).then(ok,fb);else fb()}
+const lv=()=>+document.body.dataset.lvl;
+function hexP(x,cx,cy,r,fill,stroke){x.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3+Math.PI/6;x.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r)}x.closePath();x.fillStyle=fill;x.fill();if(stroke){x.strokeStyle=stroke;x.lineWidth=1;x.stroke()}}
+function rr(x,X,Y,W,H,r){x.beginPath();x.roundRect?x.roundRect(X,Y,W,H,r):x.rect(X,Y,W,H)}
+function lineSeries(x,X,Y,H,k,c,sc=1){x.strokeStyle=col(c);x.lineWidth=2.2;x.beginPath();H.forEach((r,i)=>i?x.lineTo(X(r[0]),Y(r[k]*sc)):x.moveTo(X(r[0]),Y(r[k]*sc)));x.stroke()}
+
+/* ===================== Station: Photosynthese ===================== */
+const PS={ATP:15,NAD:10,O2:0,C:0,run:true,light:1,I:.7,wl:390,co2:1,iso:"0",t:0,hist:[],tok:[],ev:[],lr:0,cr:0};
+const psEff=()=>PS.wl<=395?1:wirk(PS.wl);
+function psReset(){Object.assign(PS,{ATP:15,NAD:10,O2:0,C:0,t:0,hist:[],tok:[],ev:[],lr:0,cr:0,_acc:{l:0,c:0,ph:0}})}
+psReset();
+function psGeo(w,h){const s=Math.min(w,h*1.6);return{gx:w*.3,gy:h*.58,cx:w*.72,cy:h*.56,R:Math.min(w*.13,h*.2),s}}
+function psTok(kind,x0,y0,x1,y1,dur,mark){if(PS.tok.length>260)return;PS.tok.push({kind,x0,y0,x1,y1,t:0,dur,mark,bend:(Math.random()-.5)*60})}
+function psStep(dt,w,h){const g=psGeo(w,h),light=PS.light*PS.I;PS.t+=dt;
+ const lr=3*light*psEff()*clamp((30-PS.ATP)/6,0,1)*clamp((30-PS.NAD)/4,0,1);
+ const cr=2.5*PS.co2*clamp(PS.ATP/6,0,1)*clamp(PS.NAD/4,0,1);
+ PS.ATP+=(3*lr-3*cr)*dt;PS.NAD+=(2*lr-2*cr)*dt;PS.ATP=clamp(PS.ATP,0,30);PS.NAD=clamp(PS.NAD,0,30);PS.O2+=lr*dt;PS.C+=cr*dt;PS.lr=lr;PS.cr=cr;
+ const A=PS._acc;A.l+=lr*dt;A.c+=cr*dt;A.ph+=light*(PS.wl<=395?1:.8)*7*dt;
+ const gl=()=>[g.gx+(Math.random()-.5)*g.R*1.6,g.gy+(Math.random()-.5)*g.R*.9];
+ while(A.ph>=1){A.ph--;const[px,py]=gl();psTok("ph",px+(Math.random()-.5)*80,-10,px,py,.55,0)}
+ while(A.l>=1){A.l--;const[px,py]=gl();psTok("o2",px,py,g.gx-g.R*1.6-Math.random()*40,-20,1.6,PS.iso=="w");psTok("h2o",g.gx-g.R*2.2,h+10,px,py,1.1,PS.iso=="w");
+  psTok("atp",px,py,g.cx-g.R,g.cy-g.R*.3+Math.random()*20,1.2,0);psTok("nad",px,py,g.cx-g.R,g.cy+g.R*.2+Math.random()*20,1.3,0)}
+ while(A.c>=1){A.c--;psTok("co2",w+10,g.cy-g.R*1.4+Math.random()*30,g.cx+g.R*.9,g.cy-g.R*.6,1.2,PS.iso=="c");psTok("adp",g.cx-g.R,g.cy,g.gx+g.R*.8,g.gy+(Math.random()-.5)*40,1.4,0);psTok("nadp",g.cx-g.R,g.cy+g.R*.3,g.gx+g.R*.8,g.gy+(Math.random()-.5)*40,1.5,0);
+  if(Math.floor(PS.C)%6==0)psTok("glc",g.cx+g.R*.6,g.cy+g.R*.7,w-30,h+20,1.8,PS.iso=="c")}
+ for(let i=PS.tok.length-1;i>=0;i--){PS.tok[i].t+=dt/PS.tok[i].dur;if(PS.tok[i].t>=1)PS.tok.splice(i,1)}
+ PS.ev.push([PS.t,lr,cr]);while(PS.ev.length&&PS.ev[0][0]<PS.t-60)PS.ev.shift();
+ if(!PS._h||PS.t-PS._h>.5){PS._h=PS.t;PS.hist.push([PS.t,PS.ATP,PS.NAD,cr*10,lr*10]);if(PS.hist.length>400)PS.hist.shift()}}
+function drawTok(x,k,X,Y,mark,s=1){const c={o2:"--o2",co2:"--co2",atp:"--atp",nad:"--nad",glc:"--glc",h2o:"--o2"}[k];
+ if(k=="ph"){x.fillStyle=PS.wl<=395?"rgba(255,214,90,.95)":wlRGB(PS.wl,.95);x.beginPath();x.arc(X,Y,3.2*s,0,7);x.fill();return}
+ if(k=="glc"){hexP(x,X,Y,10*s,col("--glc"),"rgba(0,0,0,.3)");if(mark){x.fillStyle=col("--iso");x.beginPath();x.arc(X,Y,3.5*s,0,7);x.fill()}return}
+ if(k=="adp"||k=="nadp"){x.strokeStyle=col(k=="adp"?"--atp":"--nad");x.lineWidth=2;x.beginPath();x.arc(X,Y,5*s,0,7);x.stroke();return}
+ if(k=="h2o"){x.fillStyle=alpha(col("--o2"),.35);x.beginPath();x.arc(X,Y,5*s,0,7);x.fill();if(mark){x.fillStyle=col("--iso");x.beginPath();x.arc(X,Y,2.5*s,0,7);x.fill()}return}
+ const r=(k=="o2"||k=="co2"?8:6)*s;x.fillStyle=col(c);x.beginPath();x.arc(X,Y,r,0,7);x.fill();
+ if(mark){x.strokeStyle=col("--iso");x.lineWidth=3;x.beginPath();x.arc(X,Y,r+2,0,7);x.stroke()}
+ if(k=="o2"||k=="co2")txt(x,k=="o2"?"O₂":"CO₂",X,Y+.5,{a:"center",size:9*s,w:700,c:"#fff"})}
+const pC=canv("pC",o=>{const x=o.x,w=o.w,h=o.h,g=psGeo(w,h);x.clearRect(0,0,w,h);
+ const day=PS.light&&PS.I>0;x.fillStyle=day?(PS.wl<=395?"rgba(255,220,120,.16)":wlRGB(PS.wl,.12)):"rgba(20,30,60,.18)";x.fillRect(0,0,w,h);
+ x.fillStyle=alpha(col("--chl"),.1);x.strokeStyle=alpha(col("--chl"),.7);x.lineWidth=3;x.beginPath();x.ellipse(w*.52,h*.58,w*.47,h*.38,0,0,7);x.fill();x.stroke();
+ txt(x,"Chloroplast",w*.52,h*.58-h*.38+16,{a:"center",size:13,w:700,c:alpha(col("--chl"),.95)});
+ for(let k=-1;k<=1;k++){const sx=g.gx+k*g.R*.62;for(let j=0;j<6;j++){const yy=g.gy-g.R*.45+j*g.R*.17+(k?g.R*.08:0);x.fillStyle=col("--chl");rr(x,sx-g.R*.28,yy,g.R*.56,g.R*.13,6);x.fill();x.strokeStyle="rgba(0,0,0,.25)";x.lineWidth=1;x.stroke()}}
+ txt(x,"Thylakoide",g.gx,g.gy+g.R*.75,{a:"center",size:13,w:700});txt(x,"Lichtreaktion",g.gx,g.gy+g.R*.75+16,{a:"center",size:12,c:col("--mut")});
+ x.strokeStyle=col("--ink");x.lineWidth=3;x.beginPath();x.arc(g.cx,g.cy,g.R,0,Math.PI*2);x.stroke();const sp=PS.t*PS.cr*.6;
+ for(let k=0;k<3;k++){const a=sp+k*2.094;x.fillStyle=col("--ink");x.beginPath();x.moveTo(g.cx+Math.cos(a)*(g.R+8),g.cy+Math.sin(a)*(g.R+8));x.lineTo(g.cx+Math.cos(a)*(g.R-8),g.cy+Math.sin(a)*(g.R-8));x.lineTo(g.cx+Math.cos(a+.18)*g.R,g.cy+Math.sin(a+.18)*g.R);x.fill()}
+ txt(x,"Calvin-",g.cx,g.cy-8,{a:"center",size:14,w:700});txt(x,"Zyklus",g.cx,g.cy+9,{a:"center",size:14,w:700});txt(x,"Stroma",g.cx,g.cy+g.R+18,{a:"center",size:12,c:col("--mut")});
+ if(day){x.fillStyle=PS.wl<=395?"#ffcf3a":wlRGB(PS.wl,1);x.beginPath();x.arc(g.gx,12,14,0,7);x.fill()}
+ for(const t of PS.tok){const u=t.t,e=u*u*(3-2*u),mx=(t.x0+t.x1)/2,my=(t.y0+t.y1)/2+t.bend;const X=(1-e)*(1-e)*t.x0+2*(1-e)*e*mx+e*e*t.x1,Y=(1-e)*(1-e)*t.y0+2*(1-e)*e*my+e*e*t.y1;drawTok(x,t.kind,X,Y,t.mark)}
+ const bw=16,bh=h*.28,bx=w*.5-26,by=h*.62;for(const[i,k,c,l]of[[0,"ATP","--atp","ATP"],[1,"NAD","--nad","NADPH"]]){const X=bx+i*34;x.fillStyle=col("--line");x.fillRect(X,by,bw,bh);x.fillStyle=col(c);const f=PS[k]/30;x.fillRect(X,by+bh*(1-f),bw,bh*f);x.strokeStyle=col("--mut");x.strokeRect(X,by,bw,bh);txt(x,l,X+bw/2,by+bh+12,{a:"center",size:11,w:700})}
+ txt(x,"Akkus",bx+25,by-12,{a:"center",size:12,c:col("--mut")});
+ if(!PS.co2)txt(x,"kein CO₂",w-12,g.cy-g.R*1.4,{a:"right",size:13,w:700,c:col("--inh")})});
+const pT=canv("pT",o=>{const H=PS.hist,t1=Math.max(30,PS.t);chart(o,{x0:Math.max(0,t1-120),x1:t1,y0:0,y1:32,xl:"Zeit in s",yl:"Füllstand / Rate",extra:(x,X,Y)=>{lineSeries(x,X,Y,H,1,"--atp");lineSeries(x,X,Y,H,2,"--nad");lineSeries(x,X,Y,H,3,"--glc");lineSeries(x,X,Y,H,4,"--o2")}})});
+const pM=canv("pM",o=>{const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const L=8,W=w-16,y=14,bh=30,segs=[[72,"Kohlenstoff (aus CO₂)","--co2"],[96,"Sauerstoff (aus CO₂)","--glc"],[12,"Wasserstoff (aus Wasser)","--o2"]];let X=L;
+ for(const[m,t,c]of segs){const ww=W*m/180;x.fillStyle=col(c);x.fillRect(X,y,ww,bh);txt(x,m>20?Math.round(m/1.8)+" %":"",X+ww/2,y+bh/2,{a:"center",size:13,w:700,c:"#fff"});X+=ww}
+ X=L;let ty=y+bh+16;for(const[m,t,c]of segs){x.fillStyle=col(c);x.fillRect(X,ty-5,10,10);txt(x,t,X+14,ty,{size:12});X+=Math.min(W/3,x.measureText(t).width+34)}});
+function psEq(){const l=lv(),i=PS.iso,R=s=>`<span style="color:var(--iso);font-weight:700">${s}</span>`;
+ if(l==1){$("#pEq").innerHTML="Kohlenstoffdioxid + Wasser <span class='mut'>—Licht→</span> Zucker + Sauerstoff";return}
+ $("#pEq").innerHTML=i=="w"?`6 CO₂ + 12 H₂${R("¹⁸O")} → C₆H₁₂O₆ + 6 ${R("¹⁸O₂")} + 6 H₂O`:i=="c"?`6 C${R("¹⁸O₂")} + 12 H₂O → C₆H₁₂${R("¹⁸O₆")} + 6 O₂ + 6 H₂${R("¹⁸O")}`:"6 CO₂ + 12 H₂O → C₆H₁₂O₆ + 6 O₂ + 6 H₂O"}
+function psUpd(){const m=PS.ev.length?PS.ev.reduce((s,e)=>[s[0]+e[1],s[1]+e[2]],[0,0]).map(v=>v/PS.ev.length*60):[0,0];
+ kpi("pK",[["O₂ pro Minute",de(m[0],2)],["CO₂ gebunden pro Minute",de(m[1],2)],["Zucker gebildet",de(Math.floor(PS.C/6),3)],["ATP-Akku",Math.round(PS.ATP/30*100)+" %"]]);
+ let s;if(!PS.light||!PS.I)s=PS.cr>.05?"Licht aus – der Calvin-Zyklus läuft noch, solange die Akkus ATP und NADPH nicht leer sind.":"Kein Licht: keine Lichtreaktion, kein Sauerstoff. Die Akkus sind leer – auch der Calvin-Zyklus steht still.";
+ else if(!PS.co2)s=PS.lr>.05?"Ohne CO₂ arbeitet der Calvin-Zyklus nicht. Die Akkus laufen voll …":"Die Akkus sind voll, weil kein CO₂ verarbeitet wird. Dann stoppt auch die Lichtreaktion – trotz Licht entsteht kein Sauerstoff.";
+ else if(PS.wl>395&&wirk(PS.wl)<.3)s=`${wlName(PS.wl)[0].toUpperCase()+wlName(PS.wl).slice(1)}es Licht wird von Chlorophyll kaum aufgenommen. Die Photosynthese läuft nur langsam.`;
+ else s="Licht und CO₂ sind da: Lichtreaktion und Calvin-Zyklus laufen im Gleichschritt.";
+ if(PS.iso!="0"&&lv()>1)s+=PS.iso=="w"?" <b>Markiert:</b> Das ¹⁸O aus dem Wasser taucht im Sauerstoff auf (roter Ring).":" <b>Markiert:</b> Das ¹⁸O aus dem CO₂ landet im Zucker, nicht im Sauerstoff.";
+ $("#pInfo").innerHTML=s}
+$("#pGo").onclick=()=>{PS.run=!PS.run;$("#pGo").textContent=PS.run?"Pause":"Weiter"};
+$("#pRe").onclick=()=>{psReset();pC.redraw()};
+const pSetL=seg("pL",v=>PS.light=+v),pSetC=seg("pCO",v=>PS.co2=+v),pSetI=seg("pIso",v=>{PS.iso=v;psEq()});
+$("#pI").oninput=e=>{PS.I=e.target.value/100;$("#pIo").textContent=e.target.value+" %"};
+$("#pW").oninput=e=>{PS.wl=+e.target.value;$("#pWo").textContent=PS.wl<=395?"weiß":PS.wl+" nm ("+wlName(PS.wl)+")"};
+function psSet(light,I,wl,co2,iso){PS.light=light;pSetL(light);PS.I=I/100;$("#pI").value=I;$("#pIo").textContent=I+" %";PS.wl=wl;$("#pW").value=wl;$("#pW").oninput({target:$("#pW")});PS.co2=co2;pSetC(co2);PS.iso=iso||"0";pSetI(PS.iso);psEq();if(!PS.run)$("#pGo").onclick()}
+tasks("photosynthese",[
+ {l:1,h:"Was braucht die Pflanze?",p:"Beobachte, welche Stoffe hineinkommen und welche hinausgehen. Schreib die Wortgleichung auf und vergleiche mit dem Kästchen rechts.",set:()=>psSet(1,70,390,1)},
+ {l:1,h:"Licht aus!",p:"Vermute: Hört der Calvin-Zyklus sofort auf, wenn das Licht ausgeht? Schalte das Licht aus und beobachte die Akkus.",set:()=>psSet(1,100,390,1)},
+ {l:1,h:"Woher kommt das Holz?",p:"Ein Baum wiegt Tonnen. Woher stammt diese Masse? Schau dir den Balken „Woher kommt die Masse?“ an und erkläre van Helmonts Versuch.",set:()=>psSet(1,70,390,1)},
+ {l:2,h:"Ohne CO₂",p:"Entferne das CO₂. Warum entsteht nach kurzer Zeit auch kein Sauerstoff mehr, obwohl das Licht an ist?",set:()=>psSet(1,70,390,1)},
+ {l:2,h:"Woher stammt der Sauerstoff?",p:"Markiere zuerst das Wasser, dann das CO₂ mit ¹⁸O. Wohin wandert die Markierung jeweils? Was folgt daraus?",set:()=>psSet(1,70,390,1,"w")},
+ {l:2,h:"Grünes Licht",p:"Stell grünes Licht (530 nm) ein und vergleiche mit rotem (670 nm). Erkläre mit der Farbe der Blätter.",set:()=>psSet(1,100,530,1)},
+ {l:3,h:"Bilanz prüfen",p:"Lies ab, wie viel O₂ pro Minute entsteht und wie viel CO₂ gebunden wird. Passt das Verhältnis zur Summengleichung?"}]);
+
+/* ===================== Station: Wasserpest ===================== */
+const WP={d:20,f:"w",c:1,T:20,count:-1,n:0,bub:[],fast:false,ser:[],rows:[]};
+const FIL={w:[1,"weiß"],r:[.45,"rot"],b:[.4,"blau"],g:[.08,"grün"],y:[.18,"gelb"]};
+const FILC={w:"rgba(255,236,150,",r:"rgba(235,60,50,",b:"rgba(60,110,240,",g:"rgba(60,190,80,",y:"rgba(240,210,40,"};
+const wpLux=d=>30000*(10/d)**2;
+const wpTf=T=>T>=50?0:Math.exp(.07*(T-20))*(T>33?Math.exp(-(((T-33)/6)**2)):1);
+function wpTerms(o){const E=wpLux(o.d)*FIL[o.f][0];return{L:70*E/(E+8000),C:70*(o.c+.05)/(o.c+.45),T:45*wpTf(o.T)}}
+function wpRate(o){const t=wpTerms(o);if(t.T<=0)return 0;const sm=(t.L**-5+t.C**-5+t.T**-5)**(-1/5);return Math.max(0,sm-3)}
+function wpLim(o){const t=wpTerms(o);const m=Math.min(t.L,t.C,t.T);return m==t.L?"Licht":m==t.C?"CO₂":"Temperatur"}
+const wC=canv("wC",o=>{const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const bx=w*.6,bw=Math.min(w*.3,240),by=h*.18,bh=h*.7,lx=bx-bw/2-30-(WP.d-10)/90*(bx-bw/2-110);
+ const E=wpLux(WP.d),glow=clamp(E/30000,0,1);
+ const gr=x.createLinearGradient(lx,0,bx,0);gr.addColorStop(0,FILC[WP.f]+(.15+.45*glow)+")");gr.addColorStop(1,FILC[WP.f]+"0)");x.fillStyle=gr;x.beginPath();x.moveTo(lx+20,h*.45-30);x.lineTo(bx+bw/2,by+20);x.lineTo(bx+bw/2,by+bh);x.lineTo(lx+20,h*.45+30);x.closePath();x.fill();
+ x.fillStyle=col("--mut");rr(x,lx-26,h*.45-34,40,68,8);x.fill();x.fillStyle="#ffe58a";x.beginPath();x.arc(lx+14,h*.45,20,-1.57,1.57);x.fill();
+ if(WP.f!="w"){x.fillStyle=FILC[WP.f]+".8)";x.fillRect(lx+40,h*.45-36,8,72)}
+ txt(x,"Lampe",lx-6,h*.45+50,{a:"center",size:12,c:col("--mut")});
+ x.strokeStyle=col("--mut");x.lineWidth=1;x.setLineDash([4,4]);x.beginPath();x.moveTo(lx+14,h*.92);x.lineTo(bx,h*.92);x.stroke();x.setLineDash([]);txt(x,WP.d+" cm · "+de(Math.round(E/100)*100,3)+" lx",(lx+bx)/2,h*.92+12,{a:"center",size:12,w:600,c:col("--mut")});
+ const wy=by+bh*.12;x.fillStyle=WP.T>30?"rgba(240,150,90,.22)":WP.T<8?"rgba(120,170,240,.3)":"rgba(120,180,240,.22)";x.fillRect(bx-bw/2,wy,bw,by+bh-wy);
+ x.strokeStyle=col("--ink");x.lineWidth=2.5;x.beginPath();x.moveTo(bx-bw/2,by);x.lineTo(bx-bw/2,by+bh);x.lineTo(bx+bw/2,by+bh);x.lineTo(bx+bw/2,by);x.stroke();
+ const sx=bx-bw*.05,top=wy+bh*.18,bot=by+bh-10;x.strokeStyle=col("--chl");x.lineWidth=4;x.beginPath();x.moveTo(sx,top);x.quadraticCurveTo(sx+12,(top+bot)/2,sx-6,bot);x.stroke();
+ for(let k=0;k<14;k++){const t=k/13,yy=top+10+(bot-top-14)*t,xx=sx+12*Math.sin(t*3)-3;for(const sg of[-1,1]){x.fillStyle=col("--chl");x.beginPath();x.ellipse(xx+sg*12,yy,13,4.5,sg*.5,0,7);x.fill()}}
+ x.fillStyle=col("--chl");x.beginPath();x.arc(sx,top,4,0,7);x.fill();
+ for(const b of WP.bub){x.strokeStyle=alpha(col("--o2"),.9);x.fillStyle="rgba(255,255,255,.7)";x.lineWidth=1.3;x.beginPath();x.arc(sx+b.dx,b.y,b.r,0,7);x.fill();x.stroke()}
+ const tx=bx+bw/2-22,ty=by+20;x.fillStyle=col("--card");rr(x,tx-5,ty,10,bh*.6,5);x.fill();x.strokeStyle=col("--mut");x.stroke();x.fillStyle=col("--inh");const tf=clamp(WP.T/50,0,1);x.fillRect(tx-2.5,ty+bh*.6*(1-tf),5,bh*.6*tf);x.beginPath();x.arc(tx,ty+bh*.6+4,7,0,7);x.fill();txt(x,WP.T+" °C",tx-10,ty-10,{a:"center",size:12,w:600});
+ txt(x,"Natron "+de(WP.c,2)+" g/L",bx-bw/2+8,by+bh-12,{size:12,w:600,c:col("--mut")});
+ if(WP.count>=0)txt(x,`Zählen: ${WP.n} Bläschen · ${Math.floor(WP.count)} s`,w-12,20,{a:"right",size:15,w:700})});
+function wpStep(dt,h){const sd=dt*(WP.fast?6:1),r=wpRate(WP)/60;const by=h*.18,bh=h*.7,top=by+bh*.12+bh*.18;
+ if(Math.random()<r*sd){WP.bub.push({y:top-4,dx:(Math.random()-.5)*4,r:2.5+Math.random()*2.5,v:40+Math.random()*30});if(WP.count>=0)WP.n++}
+ for(let i=WP.bub.length-1;i>=0;i--){const b=WP.bub[i];b.y-=b.v*dt*(WP.fast?2:1);b.dx+=(Math.random()-.5)*.6;if(b.y<by+bh*.12)WP.bub.splice(i,1)}
+ if(WP.count>=0){WP.count+=sd;if(WP.count>=60){WP.rows.push([WP.d,FIL[WP.f][1],WP.c,WP.T,WP.n]);WP.count=-1;wpTab();$("#wCount").disabled=false;$("#wCount").textContent="1 Minute zählen"}}}
+function wpTab(){$("#wTab").innerHTML=WP.rows.map((r,i)=>`<tr><td>${i+1}</td><td class="n">${r[0]} cm</td><td>${r[1]}</td><td class="n">${de(r[2],2)} g/L</td><td class="n">${r[3]} °C</td><td class="n">${r[4]}</td></tr>`).join("")||`<tr><td colspan="6" class="mut">Noch keine Messwerte.</td></tr>`}
+wpTab();
+const WVAR={d:{l:"Lampenabstand in cm",xs:[10,15,20,25,30,40,50,60,80,100],x0:0,x1:100},c:{l:"Natron in g/L",xs:[0,.25,.5,.75,1,1.5,2,3,4],x0:0,x1:4},T:{l:"Temperatur in °C",xs:[0,5,10,15,20,25,30,35,40,45,50],x0:0,x1:50}};
+const SCOL=["--sub","--inh","--chl","--allo","--glc","--mut"];
+const wG=canv("wG",o=>{const v=$("#wVar").value,V=WVAR[v],S=WP.ser.filter(s=>s.v==v);const ym=Math.max(20,...S.flatMap(s=>s.pts.map(p=>p[1])))*1.15;
+ chart(o,{x0:V.x0,x1:V.x1,y0:0,y1:ym,xl:V.l,yl:"Bläschen pro Minute",series:S.map((s,i)=>({pts:s.pts,c:SCOL[i%6],line:true})),legend:S.length?S.map((s,i)=>[s.lab,SCOL[i%6]]):null})});
+function wpUpd(){const r=wpRate(WP);kpi("wK",[["Lichtstärke",de(Math.round(wpLux(WP.d)*FIL[WP.f][0]/100)*100,3)+" lx"],["erwartet",de(r,2)+" Bläschen/min"]].concat(lv()>1?[["begrenzt durch",r<.5&&WP.T<50?"Licht":wpLim(WP)]]:[]));
+ $("#wInfo").innerHTML=WP.T>=50?"Bei 50 °C sind die Enzyme zerstört – keine Photosynthese mehr.":r<1?"Kaum Bläschen. "+(lv()>2?"Die Photosynthese gleicht hier gerade die Atmung aus (Kompensationspunkt).":"Was fehlt der Pflanze?"):"Ändere immer nur eine Größe und zähle eine Minute."}
+$("#wD").oninput=e=>{WP.d=+e.target.value;$("#wDo").textContent=WP.d+" cm"};
+$("#wF").onchange=e=>WP.f=e.target.value;
+$("#wCO").oninput=e=>{WP.c=+e.target.value;$("#wCo").textContent=de(WP.c,2)+" g/L"};
+$("#wT").oninput=e=>{WP.T=+e.target.value;$("#wTo").textContent=WP.T+" °C"};
+$("#wFast").onclick=()=>{WP.fast=!WP.fast;$("#wFast").setAttribute("aria-pressed",WP.fast)};
+$("#wCount").onclick=()=>{WP.count=0;WP.n=0;$("#wCount").disabled=true;$("#wCount").textContent="zähle …"};
+$("#wVar").onchange=()=>wG.redraw();
+$("#wSer").onclick=()=>{const v=$("#wVar").value,V=WVAR[v];const o={d:WP.d,f:WP.f,c:WP.c,T:WP.T};
+ const lab=v=="d"?`${FIL[WP.f][1]}, ${de(WP.c,2)} g/L, ${WP.T} °C`:v=="c"?`${WP.d} cm, ${FIL[WP.f][1]}, ${WP.T} °C`:`${WP.d} cm, ${FIL[WP.f][1]}, ${de(WP.c,2)} g/L`;
+ WP.ser.push({v,lab,pts:V.xs.map(xv=>{const q=Object.assign({},o,{[v]:xv});return[xv,poisson(wpRate(q))]})});wG.redraw()};
+$("#wClr").onclick=()=>{WP.ser=WP.ser.filter(s=>s.v!=$("#wVar").value);wG.redraw()};
+$("#wTClr").onclick=()=>{WP.rows=[];wpTab()};
+$("#wCsv").onclick=()=>copyCSV("Abstand in cm;Licht;Natron in g/L;Temperatur in °C;Bläschen pro min\n"+WP.rows.map(r=>[r[0],r[1],String(r[2]).replace(".",","),r[3],r[4]].join(";")).join("\n"),$("#wMsg"));
+function wpSet(d,f,c,T,v){WP.d=d;$("#wD").value=d;$("#wDo").textContent=d+" cm";WP.f=f;$("#wF").value=f;WP.c=c;$("#wCO").value=c;$("#wCo").textContent=de(c,2)+" g/L";WP.T=T;$("#wT").value=T;$("#wTo").textContent=T+" °C";if(v){$("#wVar").value=v;wG.redraw()}}
+tasks("wasserpest",[
+ {l:1,h:"Näher an die Lampe",p:"Vermute: Was passiert, wenn du den Abstand halbierst? Zähle bei 40 cm und bei 20 cm je eine Minute.",set:()=>wpSet(40,"w",1,20,"d")},
+ {l:1,h:"Lichtfarben",p:"Zähle bei 20 cm mit rotem, blauem und grünem Filter. Ordne die Farben nach der Bläschenzahl.",set:()=>wpSet(20,"r",1,20)},
+ {l:1,h:"Ohne Natron",p:"Nimm eine Messreihe zum Natron auf. Warum bilden sich ohne Natron kaum Bläschen, obwohl es hell ist?",set:()=>wpSet(15,"w",0,20,"c")},
+ {l:2,h:"Das kürzeste Brett",p:"Nimm bei 10 cm eine Natron-Messreihe auf und bei 60 cm eine zweite. Warum hilft bei 60 cm mehr Natron kaum? Nutze den Begriff „begrenzender Faktor“.",set:()=>wpSet(10,"w",1,20,"c")},
+ {l:2,h:"Temperatur",p:"Nimm eine Temperatur-Messreihe bei 10 cm und 2 g/L Natron auf. Wo liegt das Optimum? Warum fällt die Kurve über 35 °C ab?",set:()=>wpSet(10,"w",2,20,"T")},
+ {l:3,h:"Abstandsgesetz",p:"Prüfe mit den Lux-Werten: Fällt die Lichtstärke mit 1/Abstand²? Warum ist die Bläschenzahl trotzdem nicht einfach umgekehrt proportional zum Abstandsquadrat?"}]);
+
+/* ===================== Station: Spektrum (Engelmann) ===================== */
+const SP={mode:"spec",run:true,B:[],hist:new Array(60).fill(0)};
+function spReset(){SP.B=[];for(let i=0;i<450;i++)SP.B.push({u:Math.random(),v:(Math.random()*2-1),a:Math.random()*6.28})}
+spReset();
+const spLam=u=>400+300*u;
+function spP(u){if(u<0||u>1)return 0;const l=spLam(u);return SP.mode=="white"?.55:SP.mode=="green"?(l>495&&l<570?wirk(l):0):wirk(l)}
+function spStep(dt){for(const b of SP.B){const P=spP(b.u),sp=.12*(1-.85*P)+.012;b.a+=gauss()*2.2*Math.sqrt(dt);
+ const gu=(spP(b.u+.01)-spP(b.u-.01))/.02;b.u+=(Math.cos(b.a)*sp+gu*.02)*dt;b.v+=(Math.sin(b.a)*sp*4-b.v*P*1.6)*dt;
+ if(b.u<0){b.u=0;b.a=Math.PI-b.a}if(b.u>1){b.u=1;b.a=Math.PI-b.a}if(Math.abs(b.v)>1){b.v=Math.sign(b.v);b.a=-b.a}}
+ const H=new Array(60).fill(0);for(const b of SP.B)if(Math.abs(b.v)<.35)H[Math.min(59,Math.floor(b.u*60))]++;SP.hist=H}
+const sC=canv("sC",o=>{const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const L=w*.06,R=w*.94,fy=h*.5;
+ x.fillStyle="rgba(10,14,20,.9)";x.fillRect(0,0,w,h);
+ for(let i=0;i<300;i++){const u=i/300,X=L+u*(R-L),l=spLam(u);x.fillStyle=SP.mode=="white"?"rgba(255,255,240,.18)":SP.mode=="green"?(l>495&&l<570?wlRGB(l,.32):"rgba(0,0,0,0)"):wlRGB(l,.34);x.fillRect(X,h*.12,(R-L)/300+1,h*.76)}
+ if(SP.mode!="white")for(const lm of[400,450,500,550,600,650,700]){const X=L+(lm-400)/300*(R-L);txt(x,lm+" nm",X,h*.08,{a:"center",size:11,c:"#cfd6e0"})}
+ for(let k=0;k<22;k++){const X=L+k*(R-L)/22;x.fillStyle="rgba(70,170,90,.85)";rr(x,X+1,fy-10,(R-L)/22-2,20,6);x.fill();x.fillStyle="rgba(30,110,50,.9)";for(let q=0;q<3;q++){x.beginPath();x.arc(X+(R-L)/22*(.25+q*.25),fy+(q%2?3:-3),2.6,0,7);x.fill()}}
+ txt(x,"Algenfaden (Cladophora)",L,fy+28,{size:12,c:"#cfd6e0"});
+ if($("#sHist").checked){const mx=Math.max(8,...SP.hist);x.fillStyle="rgba(230,235,245,.55)";SP.hist.forEach((n,i)=>{const bw=(R-L)/60;x.fillRect(L+i*bw+1,h*.88-n/mx*h*.2,bw-2,n/mx*h*.2)});txt(x,"Bakterien am Faden",L,h*.88-h*.2-10,{size:11,c:"#cfd6e0"})}
+ x.fillStyle="#f2f4f8";for(const b of SP.B){const X=L+b.u*(R-L),Y=fy+b.v*h*.3;x.beginPath();x.ellipse(X,Y,2.6,1.4,b.a,0,7);x.fill()}});
+const sG=canv("sG",o=>{const on=v=>$$(".sPig").find(c=>c.value==v)?.checked;const mx=Math.max(1,...SP.hist);
+ chart(o,{x0:400,x1:700,y0:0,y1:1.1,xl:"Wellenlänge in nm",yl:"relativ",extra:(x,X,Y)=>{for(let l=400;l<700;l+=2){x.fillStyle=wlRGB(l,.22);x.fillRect(X(l),Y(1.1),X(l+2)-X(l)+.5,Y(0)-Y(1.1))}
+  x.fillStyle=alpha(col("--mut"),.35);SP.hist.forEach((n,i)=>{const l0=400+i*5;x.fillRect(X(l0)+1,Y(n/mx),X(l0+5)-X(l0)-2,Y(0)-Y(n/mx))})},
+  series:[on("a")&&{fn:absA,c:"--chl",pts:[]},on("b")&&{fn:absB,c:"--sub",pts:[],dash:[6,4]},on("k")&&{fn:absK,c:"--glc",pts:[],dash:[2,3]},on("w")&&{fn:wirk,c:"--ink",pts:[]}].filter(Boolean),
+  legend:[on("a")&&["Chlorophyll a","--chl"],on("b")&&["Chlorophyll b","--sub"],on("k")&&["Carotinoide","--glc"],on("w")&&["Wirkung","--ink"]].filter(Boolean)})});
+function spUpd(){let best=[0,0],sec=[0,0];SP.hist.forEach((n,i)=>{if(n>best[0]){sec=best;best=[n,i]}else if(n>sec[0]&&Math.abs(i-best[1])>8)sec=[n,i]});
+ $("#sInfo").innerHTML=SP.mode=="white"?"Weißes Licht überall gleich: Die Bakterien verteilen sich gleichmäßig um den Faden.":SP.mode=="green"?"Nur grünes Licht: Die Alge bildet kaum Sauerstoff, die Bakterien sammeln sich nicht.":`Die meisten Bakterien sind bei etwa ${400+best[1]*5+2} nm (${wlName(400+best[1]*5)})`+(sec[0]>best[0]*.5?` und bei ${400+sec[1]*5+2} nm (${wlName(400+sec[1]*5)}).`:".")}
+seg("sMode",v=>{SP.mode=v});
+$("#sGo").onclick=()=>{SP.run=!SP.run;$("#sGo").textContent=SP.run?"Pause":"Weiter"};
+$("#sRe").onclick=spReset;
+$$(".sPig").forEach(c=>c.onchange=()=>sG.redraw());
+tasks("spektrum",[
+ {l:1,h:"Wo sammeln sie sich?",p:"Vermute zuerst, dann beobachte eine Minute lang: Bei welchen Farben versammeln sich die Bakterien? Was sagt das über die Photosynthese?",set:()=>{seg("sMode",v=>SP.mode=v)("spec");SP.mode="spec";spReset()}},
+ {l:1,h:"Weißes Licht",p:"Beleuchte mit weißem Licht und verteile die Bakterien neu. Wozu dient dieser Vergleich?",set:()=>{seg("sMode",v=>SP.mode=v)("white");SP.mode="white";spReset()}},
+ {l:1,h:"Warum sind Blätter grün?",p:"Stell nur grünes Licht ein. Erkläre mit deiner Beobachtung, warum Blätter grün aussehen.",set:()=>{seg("sMode",v=>SP.mode=v)("green");SP.mode="green";spReset()}},
+ {l:2,h:"Absorption und Wirkung",p:"Vergleiche das Wirkungsspektrum mit der Absorption von Chlorophyll a. Warum wirkt auch Licht um 480 nm, das Chlorophyll a kaum aufnimmt?"},
+ {l:3,h:"Energie der Photonen",p:"Berechne die Energie eines Photons bei 450 nm und bei 680 nm. Warum ist blaues Licht trotzdem nicht doppelt so wirksam?"}]);
+
+/* ===================== Station: Zellatmung ===================== */
+const ZA={run:true,org:"m",dem:2,O:100,glc:true,cy:false,un:false};
+function zReset(){Object.assign(ZA,{pyr:.1,NADH:3.5,h:35,ATP:48,t:0,glcUsed:0,atpMade:0,co2:0,h2o:0,lac:0,heat:0,ang:0,win:[],hist:[],tok:[],acc:{g:0,c:0,e:0,s:0,f:0,l:0},rates:{g:0,c:0,e:0,s:0,f:0,l:0,use:0}})}
+zReset();
+const ZK={kg:2.5,kc:1.5,kf:60,kp:8,ke:12,ks:150,kl:1.1};
+function zStep(dt){const n=4,d=dt/n,K=ZK;for(let k=0;k<n;k++){const Z=ZA,NADp=40-Z.NADH,o2f=clamp(Z.O/(Z.O+8)*1.08,0,1),nf=Z.NADH/40;
+ const g=Z.glc?K.kg*(NADp/40)*(1-Z.ATP/60)**2:0;
+ const c=K.kc*Z.pyr*(NADp/40);
+ const f=K.kf*Z.pyr*nf**K.kp*(Z.org=="m"?1:.9)*4;
+ const e=Z.cy?0:K.ke*nf*o2f*Math.max(0,1-Z.h/100);
+ const s=K.ks*Math.max(0,(Z.h-15)/85)*(1-Z.ATP/60);
+ const l=Z.un?K.kl*Z.h:0;
+ const use=Z.dem*Math.min(1,Z.ATP/4);
+ Z.pyr+=(2*g-c-f)*d;Z.NADH+=(2*g+4.6*c-f-e)*d;Z.h+=(10*e-s-l)*d;Z.ATP+=(2*g+c+s/4-use)*d;
+ Z.pyr=Math.max(0,Z.pyr);Z.NADH=clamp(Z.NADH,0,40);Z.h=clamp(Z.h,0,100);Z.ATP=clamp(Z.ATP,0,60);
+ const made=(2*g+c+s/4)*d;Z.glcUsed+=g*d;Z.atpMade+=made;Z.co2+=(3*c+(Z.org=="h"?f:0))*d;Z.h2o+=e*d;Z.lac+=f*d;Z.heat+=l*d;Z.t+=d;
+ Z.rates={g,c,e,s,f,l,use};Z.win.push([d,g*d,made,f*d]);
+ for(const[kk,v]of[["g",g],["c",c],["e",e*2],["s",s/4],["f",f],["l",l/4]])Z.acc[kk]+=v*d}
+ let T=0;for(let i=ZA.win.length-1;i>=0;i--){T+=ZA.win[i][0];if(T>20){ZA.win.splice(0,i);break}}
+ ZA.ang+=ZA.rates.s*dt*.05;
+ if(!ZA._h||ZA.t-ZA._h>.5){ZA._h=ZA.t;const r=zWin();ZA.hist.push([ZA.t,r.atp,ZA.h/10,ZA.lac]);if(ZA.hist.length>400)ZA.hist.shift()}}
+function zWin(){let t=0,g=0,a=0,f=0;for(const w of ZA.win){t+=w[0];g+=w[1];a+=w[2];f+=w[3]}return{atp:t?a/t:0,per:g>.05?a/g:0,f:t?f/t:0}}
+function zGeo(w,h){const top=h*.25,my=h*.6;return{top,my,L:w*.04,R:w*.96,B:h*.97,gx:w*.26,gy:h*.11,cx:w*.24,cy:h*.8,pumps:[w*.17,w*.35,w*.53],tx:w*.8}}
+function zTokens(dt,w,h){const G=zGeo(w,h),A=ZA.acc,T=ZA.tok,add=(k,x0,y0,x1,y1,dur)=>{if(T.length<300)T.push({k,x0,y0,x1,y1,t:0,dur,b:(Math.random()-.5)*30})};
+ while(A.g>=.25){A.g-=.25;add("glc",-10,G.gy+(Math.random()-.5)*20,G.gx-40,G.gy,1)}
+ while(A.c>=.5){A.c-=.5;add("pyr",G.gx+40,G.gy,G.cx,G.cy-30,1.2);add("co2",G.cx,G.cy,G.cx-40+Math.random()*80,G.top-30,1.6);add("nadh",G.cx+30,G.cy,G.pumps[0],G.my+20,1)}
+ while(A.f>=.5){A.f-=.5;add("lac",G.gx+40,G.gy,w+10,G.gy-20+Math.random()*40,1.4);if(ZA.org=="h")add("co2",G.gx+50,G.gy,w*.7,-15,1.4)}
+ while(A.e>=1){A.e--;const p=G.pumps[Math.floor(Math.random()*3)];add("hup",p,G.my+16,p+(Math.random()-.5)*30,G.my-30-Math.random()*30,.7);add("el",G.pumps[0],G.my,G.pumps[2],G.my,1.1)}
+ while(A.s>=.5){A.s-=.5;add("hdn",G.tx,G.my-30,G.tx,G.my+24,.6);add("atp",G.tx,G.my+30,G.tx+60+Math.random()*40,G.my+60+Math.random()*60,.9)}
+ while(A.l>=.5){A.l-=.5;add("hlk",w*.66,G.my-20,w*.66,G.my+30,.5)}
+ for(let i=T.length-1;i>=0;i--){T[i].t+=dt/T[i].dur;if(T[i].t>=1)T.splice(i,1)}}
+const zC=canv("zC",o=>{const x=o.x,w=o.w,h=o.h,G=zGeo(w,h);x.clearRect(0,0,w,h);
+ x.fillStyle=alpha(col("--glc"),.07);x.fillRect(0,0,w,G.top-6);txt(x,"Zellplasma",10,14,{size:12,w:700,c:col("--mut")});
+ x.fillStyle=col("--card");x.strokeStyle=col("--ink");x.lineWidth=2;rr(x,G.gx-48,G.gy-20,96,40,8);x.fill();x.stroke();txt(x,"Glykolyse",G.gx,G.gy,{a:"center",size:14,w:700});
+ txt(x,ZA.org=="m"?"→ Milchsäure":"→ Alkohol + CO₂",w-10,G.gy,{a:"right",size:13,w:700,c:col(ZA.rates.f>.05?"--inh":"--mut")});
+ x.fillStyle=alpha(col("--prod"),.08);x.strokeStyle=alpha(col("--prod"),.8);x.lineWidth=3;rr(x,G.L,G.top,G.R-G.L,G.B-G.top,40);x.fill();x.stroke();
+ txt(x,"Mitochondrium",G.L+18,G.top+16,{size:12,w:700,c:alpha(col("--prod"),.95)});
+ const lev=G.my-(G.my-G.top-26)*ZA.h/100;x.fillStyle=alpha(col("--o2"),.25);x.fillRect(G.L+6,lev,G.R-G.L-12,G.my-lev);x.strokeStyle=alpha(col("--o2"),.7);x.lineWidth=2;x.beginPath();x.moveTo(G.L+6,lev);x.lineTo(G.R-6,lev);x.stroke();
+ txt(x,"Stausee: H⁺ zwischen den Membranen",G.L+18,G.top+34,{size:12,c:col("--mut")});
+ const nh=Math.round(ZA.h*.7);const rg=rngB(7);x.fillStyle=col("--h");for(let i=0;i<nh;i++){const X=G.L+20+rg()*(G.R-G.L-40),Y=lev+6+rg()*Math.max(2,G.my-lev-12)+Math.sin(ZA.t*3+i)*2;x.beginPath();x.arc(X,Y,2.6,0,7);x.fill()}
+ x.fillStyle=col("--chl");x.fillRect(G.L+6,G.my-4,G.R-G.L-12,8);txt(x,"innere Membran (Staumauer)",w*.665,G.my+16,{a:"center",size:11,c:col("--mut")});
+ const PN=["Pumpe 1","Pumpe 2","Pumpe 3"];G.pumps.forEach((p,i)=>{x.fillStyle=ZA.cy&&i==2?col("--metal"):col("--allo");rr(x,p-16,G.my-20,32,40,7);x.fill();txt(x,PN[i],p,G.my+30,{a:"center",size:11,w:600})});
+ if(ZA.cy)txt(x,"Cyanid!",G.pumps[2],G.my-30,{a:"center",size:12,w:700,c:col("--inh")});
+ x.save();x.translate(G.tx,G.my);x.fillStyle=col("--atp");x.beginPath();x.arc(0,0,24,0,7);x.fill();x.strokeStyle=col("--ink");x.lineWidth=2;for(let k=0;k<6;k++){const a=ZA.ang+k*Math.PI/3;x.beginPath();x.moveTo(0,0);x.lineTo(Math.cos(a)*22,Math.sin(a)*22);x.stroke()}x.restore();
+ txt(x,"ATP-Synthase",G.tx,G.my+36,{a:"center",size:12,w:700});txt(x,"(Turbine)",G.tx,G.my+50,{a:"center",size:11,c:col("--mut")});
+ if(ZA.un){x.fillStyle=`rgba(240,120,40,${.25+clamp(ZA.rates.l/60,0,.6)})`;x.beginPath();x.arc(w*.66,G.my,26,0,7);x.fill();txt(x,"Leck → Wärme",w*.66,G.my-34,{a:"center",size:11,w:700,c:col("--prod")})}
+ x.strokeStyle=col("--ink");x.lineWidth=2.5;x.beginPath();x.arc(G.cx,G.cy,30,0,6.2);x.stroke();const ca=ZA.t*ZA.rates.c;x.fillStyle=col("--ink");x.beginPath();x.arc(G.cx+Math.cos(ca)*30,G.cy+Math.sin(ca)*30,5,0,7);x.fill();
+ txt(x,"Citrat-",G.cx,G.cy-7,{a:"center",size:12,w:700});txt(x,"zyklus",G.cx,G.cy+8,{a:"center",size:12,w:700});txt(x,"Matrix",G.L+18,G.B-14,{size:12,w:700,c:col("--mut")});
+ txt(x,`O₂ ${ZA.O} % → H₂O`,G.pumps[2],G.my+60,{a:"center",size:12,w:700,c:col("--o2")});
+ const bx=G.R-30,bh=G.B-G.my-80,by=G.my+64;x.fillStyle=col("--line");x.fillRect(bx,by,14,bh);x.fillStyle=col("--atp");x.fillRect(bx,by+bh*(1-ZA.ATP/60),14,bh*ZA.ATP/60);x.strokeStyle=col("--mut");x.lineWidth=1;x.strokeRect(bx,by,14,bh);txt(x,"ATP",bx+7,by-9,{a:"center",size:11,w:700});
+ for(const t of ZA.tok){const u=t.t,e=u*u*(3-2*u),mx=(t.x0+t.x1)/2+t.b,my=(t.y0+t.y1)/2;const X=(1-e)*(1-e)*t.x0+2*(1-e)*e*mx+e*e*t.x1,Y=(1-e)*(1-e)*t.y0+2*(1-e)*e*my+e*e*t.y1;
+  if(t.k=="glc")hexP(x,X,Y,8,col("--glc"),"rgba(0,0,0,.3)");else if(t.k=="pyr"){x.fillStyle=col("--glc");x.beginPath();x.ellipse(X,Y,6,4,0,0,7);x.fill()}
+  else if(t.k=="lac"){x.fillStyle=col("--inh");x.beginPath();x.ellipse(X,Y,6,4,0,0,7);x.fill()}
+  else if(t.k=="co2"){x.fillStyle=col("--co2");x.beginPath();x.arc(X,Y,6,0,7);x.fill()}
+  else if(t.k=="nadh"){x.fillStyle=col("--nad");x.beginPath();x.arc(X,Y,5,0,7);x.fill()}
+  else if(t.k=="el"){x.fillStyle="#ffd43b";x.beginPath();x.arc(X,Y-4,3.5,0,7);x.fill()}
+  else if(t.k=="atp"){x.fillStyle=col("--atp");x.beginPath();x.arc(X,Y,5,0,7);x.fill();x.strokeStyle="rgba(0,0,0,.3)";x.lineWidth=1;x.stroke()}
+  else{x.fillStyle=col("--h");x.beginPath();x.arc(X,Y,3,0,7);x.fill()}}});
+const zT=canv("zT",o=>{const H=ZA.hist,t1=Math.max(30,ZA.t),ym=Math.max(14,...H.map(r=>Math.max(r[1],r[3])))*1.1;chart(o,{x0:Math.max(0,t1-120),x1:t1,y0:0,y1:ym,xl:"Zeit in s",yl:"Wert",extra:(x,X,Y)=>{lineSeries(x,X,Y,H,1,"--atp");lineSeries(x,X,Y,H,2,"--o2");lineSeries(x,X,Y,H,3,"--inh")}})});
+function zUpd(){const r=zWin();kpi("zK",[["ATP pro Sekunde",de(r.atp,2)],["ATP pro Glukose",r.per?de(r.per,2):"–"],["Bedarf gedeckt",Math.round(clamp(r.atp/ZA.dem,0,1)*100)+" %"],[ZA.org=="m"?"Milchsäure":"Alkohol",de(ZA.lac,3)]]);
+ let s;if(ZA.cy)s="Cyanid blockiert die letzte Pumpe. Die Elektronen können nicht mehr an Sauerstoff abgegeben werden – die ganze Atmungskette steht. Für einen Menschen ist das tödlich.";
+ else if(ZA.O<10)s="Ohne Sauerstoff staut sich NADH. Die Zelle gärt: Nur die Glykolyse läuft, mit 2 ATP pro Glukose.";
+ else if(ZA.un)s="Das Leck lässt H⁺ ohne Turbine zurückfließen. Die Zelle verbrennt viel Zucker, bildet wenig ATP und wird warm.";
+ else if(r.atp<ZA.dem*.85)s="Der Bedarf ist größer, als die Atmung liefern kann. Die Glykolyse läuft auf Hochtouren, und es entsteht "+(ZA.org=="m"?"Milchsäure – der Muskel ermüdet.":"Alkohol.");
+ else if(!ZA.glc&&r.atp<.3)s="Kein Zucker mehr: Die Zelle hat keinen Brennstoff.";
+ else s="Mit Sauerstoff wird der Zucker vollständig zu CO₂ und Wasser abgebaut. Der Stausee bleibt gefüllt, die Turbine dreht sich.";
+ $("#zInfo").innerHTML=s}
+$("#zGo").onclick=()=>{ZA.run=!ZA.run;$("#zGo").textContent=ZA.run?"Pause":"Weiter"};
+$("#zRe").onclick=()=>zReset();
+const zSetO=seg("zOrg",v=>{ZA.org=v;ZA.lac=0}),zSetD=seg("zDem",v=>ZA.dem=+v);
+$("#zO").oninput=e=>{ZA.O=+e.target.value;$("#zOo").textContent=ZA.O+" %"};
+$("#zG").onchange=e=>ZA.glc=e.target.checked;$("#zCy").onchange=e=>ZA.cy=e.target.checked;$("#zUn").onchange=e=>ZA.un=e.target.checked;
+function zSet(org,dem,O,cy,un){ZA.org=org;zSetO(org);ZA.dem=dem;zSetD(dem);ZA.O=O;$("#zO").value=O;$("#zOo").textContent=O+" %";ZA.cy=cy;$("#zCy").checked=cy;ZA.un=un;$("#zUn").checked=un;ZA.glc=true;$("#zG").checked=true;zReset();if(!ZA.run)$("#zGo").onclick()}
+tasks("zellatmung",[
+ {l:1,h:"Der Weg des Zuckers",p:"Verfolge eine Glukose von links bis zum ATP. Wo entsteht das CO₂, das du ausatmest? Wo wird Sauerstoff gebraucht?",set:()=>zSet("m",2,100,false,false)},
+ {l:1,h:"Sprint",p:"Stell „Sprint“ ein. Reicht die Atmung? Was entsteht im Muskel, und wie viel ATP liefert jetzt eine Glukose?",set:()=>zSet("m",13,100,false,false)},
+ {l:1,h:"Ohne Sauerstoff",p:"Dreh den Sauerstoff auf 0 %. Vergleiche „ATP pro Glukose“ mit vorher. Warum müssen wir atmen?",set:()=>zSet("m",2,100,false,false)},
+ {l:1,h:"Hefe ohne Luft",p:"Wähle die Hefezelle und nimm den Sauerstoff weg. Was entsteht? Wo nutzt man das (Brot, Bier)?",set:()=>zSet("h",2,0,false,false)},
+ {l:2,h:"Gift",p:"Schalte Cyanid ein. Erkläre mit dem Stausee-Bild, warum die Turbine stehen bleibt, obwohl genug Zucker und Sauerstoff da sind.",set:()=>zSet("m",2,100,false,false)},
+ {l:2,h:"Leck in der Staumauer",p:"Schalte den Entkoppler ein und beobachte ATP pro Glukose und den Zuckerverbrauch. Wozu nutzen Tiere im Winterschlaf diesen Trick?",set:()=>zSet("m",2,100,false,false)},
+ {l:3,h:"Rechnen",p:"Berechne mit den Modellzahlen (siehe Erklärung), wie viel ATP eine Glukose bei vollständiger Atmung liefert. Vergleiche mit der Anzeige."}]);
+
+/* ===================== Station: Gärung (Hefe) ===================== */
+const YEA={glc:{n:"Hefe + Traubenzucker",s:"Traubenz.",f:1},sac:{n:"Hefe + Haushaltszucker",s:"Haush.-Z.",f:.85},sta:{n:"Hefe + Stärke",s:"Stärke",f:.07},sus:{n:"Hefe + Süßstoff",s:"Süßstoff",f:0},non:{n:"Hefe ohne Zucker",s:"ohne Z.",f:.03},noy:{n:"Traubenzucker ohne Hefe",s:"ohne Hefe",f:0}};
+const GA={fl:["glc","sac","sta","noy"],T:35,air:0,fast:true,run:false,t:0,V:[0,0,0,0],E:[0,0,0,0],rows:[],test:-1,testT:0,bub:[]};
+const yTf=T=>T>=55?0:Math.exp(-(((T-34)/(T<34?14:9))**2));
+function yGas(k,t){const r=YEA[k].f*yTf(GA.T);if(!r)return 0;const td=GA.air?Math.min(40,8/r):0;return 600*(1-Math.exp(-r*Math.max(0,t-td)/40))}
+$("#gSel").innerHTML=GA.fl.map((t,i)=>`<div class="tr"><b>${i+1}</b><select data-i="${i}">${Object.entries(YEA).map(([k,s])=>`<option value="${k}"${k==t?" selected":""}>${s.n}</option>`).join("")}</select></div>`).join("");
+$("#gTest").innerHTML=GA.fl.map((t,i)=>`<option value="${i}">${i+1}</option>`).join("");
+$$("#gSel select").forEach(s=>s.onchange=()=>{GA.fl[+s.dataset.i]=s.value;GA.V.fill(0);GA.E.fill(0);GA.t=0;GA.run=false;gUpd()});
+const gC=canv("gC",o=>{const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const n=4,fw=Math.min(130,w/5.2),gap=(w-n*fw)/(n+1),base=h-50,fh=Math.min(h*.42,200);
+ x.fillStyle=alpha(col(GA.T>45?"#f08a24":GA.T<10?"#3d7ddb":"#7fb3e0"),.2);x.fillRect(gap*.4,base-fh*.45,w-gap*.8,fh*.45+12);
+ for(let i=0;i<n;i++){const cx=gap+i*(fw+gap)+fw/2,k=GA.fl[i],neck=fw*.18,ny=base-fh,V=GA.V[i];
+  const liq=base-fh*.35;x.fillStyle=alpha(col(k=="noy"?"#cfe3f7":"#e8d9b0"),.85);x.beginPath();x.moveTo(cx-fw/2+(fw/2-neck)*(base-liq)/(base-ny-20)*0,base);x.lineTo(cx-fw/2+ (fw/2-neck)*((liq-base)/(ny+20-base)),liq);x.lineTo(cx+fw/2-(fw/2-neck)*((liq-base)/(ny+20-base)),liq);x.lineTo(cx+fw/2,base);x.closePath();x.fill();
+  if(GA.run&&YEA[k].f*yTf(GA.T)>0)for(let q=0;q<8;q++){x.fillStyle="rgba(255,255,255,.85)";x.beginPath();x.arc(cx+(Math.random()-.5)*fw*.6,liq+Math.random()*(base-liq-4),1.5+Math.random()*1.5,0,7);x.fill()}
+  x.strokeStyle=col("--ink");x.lineWidth=2.2;x.beginPath();x.moveTo(cx-neck,ny);x.lineTo(cx-neck,ny+20);x.lineTo(cx-fw/2,base);x.lineTo(cx+fw/2,base);x.lineTo(cx+neck,ny+20);x.lineTo(cx+neck,ny);x.stroke();
+  const br=neck*1.1+Math.cbrt(V)*fw*.055,bcy=ny-br*.9;x.fillStyle=["#e2475b","#3d7ddb","#2f9e5a","#f08a24"][i];x.globalAlpha=.85;x.beginPath();if(V<5){x.ellipse(cx,ny-8,neck*1.15,10,0,0,7)}else{x.ellipse(cx,bcy,br,br*1.1,0,0,7)}x.fill();x.globalAlpha=1;
+  x.fillStyle=x.fillStyle;x.fillRect(cx-neck-2,ny-4,2*neck+4,8);
+  txt(x,(i+1)+"",cx,base+14,{a:"center",size:14,w:700});txt(x,YEA[k].s,cx,base+30,{a:"center",size:12,w:600});txt(x,Math.round(V)+" ml",cx,base+44,{a:"center",size:11,c:col("--mut")});
+  if(GA.test==i){const tx=cx+fw*.78,ty=base-60,milky=V>40?clamp(GA.testT/1.5,0,1):0;x.strokeStyle=col("--ink");x.lineWidth=1.5;x.beginPath();x.moveTo(cx+neck,ny+5);x.quadraticCurveTo(tx,ny-30,tx,ty-10);x.stroke();
+   x.fillStyle=`rgba(${230},${235},${240},${.25+.7*milky})`;rr(x,tx-9,ty,18,50,8);x.fill();x.stroke();txt(x,milky>.5?"trüb":"klar",tx,ty+62,{a:"center",size:11,w:700})}}
+ txt(x,`Wasserbad ${GA.T} °C  ·  t = ${Math.floor(Math.min(60,GA.t))} min`,w-12,18,{a:"right",size:14,w:700})});
+function gUpd(){$("#gInfo").innerHTML=GA.run?"Versuch läuft …":GA.t>=60?"Fertig. Prüfe das Gas mit Kalkwasser.":"Wähle den Inhalt der Kolben und starte.";$("#gGo").disabled=GA.run;$("#gGo").textContent=GA.run?"läuft …":"Versuch starten"}
+function gTab(){$("#gTab").innerHTML=GA.rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r[0]}</td><td class="n">${r[1]} °C</td><td>${r[2]}</td><td class="n">${r[3]} ml</td><td class="n">${de(r[4],2)} %vol</td></tr>`).join("")||`<tr><td colspan="6" class="mut">Noch keine Messwerte.</td></tr>`}
+gTab();
+function gStep(dt){if(GA.test>=0)GA.testT+=dt;if(!GA.run)return;GA.t+=dt*(GA.fast?2:.5);const t=Math.min(60,GA.t);for(let i=0;i<4;i++){GA.V[i]=yGas(GA.fl[i],t);GA.E[i]=GA.V[i]/600*.73}
+ if(GA.t>=60){GA.run=false;for(let i=0;i<4;i++){const m=Math.max(0,GA.V[i]*(1+.05*gauss())+2*gauss());GA.V[i]=Math.round(m/5)*5;GA.rows.push([YEA[GA.fl[i]].n,GA.T,GA.air?"viel":"wenig",GA.V[i],Math.max(0,GA.E[i]*(1+.05*gauss()))])}gTab();gUpd()}}
+$("#gGo").onclick=()=>{GA.t=0;GA.V.fill(0);GA.run=true;GA.test=-1;gUpd()};
+$("#gFast").onclick=()=>{GA.fast=!GA.fast;$("#gFast").setAttribute("aria-pressed",GA.fast)};
+$("#gT").oninput=e=>{GA.T=+e.target.value;$("#gTo").textContent=GA.T+" °C"};
+const gSetA=seg("gAir",v=>GA.air=+v);
+$("#gTestB").onclick=()=>{GA.test=+$("#gTest").value;GA.testT=0};
+$("#gClr").onclick=()=>{GA.rows=[];gTab()};
+$("#gCsv").onclick=()=>copyCSV("Inhalt;Temperatur in °C;Luft;Gas in ml;Alkohol in %vol\n"+GA.rows.map(r=>[r[0],r[1],r[2],r[3],de(r[4],2)].join(";")).join("\n"),$("#gMsg"));
+function gSet(fl,T,air){GA.fl=fl.slice();$$("#gSel select").forEach((s,i)=>s.value=GA.fl[i]);GA.T=T;$("#gT").value=T;$("#gTo").textContent=T+" °C";GA.air=air;gSetA(air);GA.t=0;GA.V.fill(0);GA.run=false;GA.test=-1;gUpd()}
+tasks("gaerung",[
+ {l:1,h:"Welcher Zucker?",p:"Vermute zuerst: Welcher Ballon wird am größten? Starte mit Traubenzucker, Haushaltszucker, Stärke und Süßstoff.",set:()=>gSet(["glc","sac","sta","sus"],35,0)},
+ {l:1,h:"Kontrollversuche",p:"Wozu braucht man einen Kolben ohne Zucker und einen ohne Hefe? Führe den Versuch durch und begründe.",set:()=>gSet(["glc","non","noy","glc"],35,0)},
+ {l:1,h:"Welches Gas?",p:"Prüfe nach dem Versuch das Gas aus Kolben 1 und Kolben 3 mit Kalkwasser. Was beweist die Trübung?",set:()=>gSet(["glc","sac","noy","sus"],35,0)},
+ {l:1,h:"Germteig",p:"Viermal Traubenzucker: Miss bei 5, 20, 35 und 60 °C (jeweils neu starten). Wie warm sollte die Milch für einen Germteig sein?",set:()=>gSet(["glc","glc","glc","glc"],5,0)},
+ {l:2,h:"Mit Luft",p:"Vergleiche „wenig Luft“ und „viel Luft“ bei Traubenzucker. Warum bleibt der Ballon mit Luft anfangs schlaff, und warum ist weniger Alkohol entstanden?",set:()=>gSet(["glc","glc","sac","sac"],35,1)},
+ {l:3,h:"Rechnen",p:"Wie viel Glukose hat die Hefe vergoren, wenn 600 ml CO₂ entstehen? (1 mol Gas ≈ 24 L bei Raumtemperatur; C₆H₁₂O₆ → 2 C₂H₅OH + 2 CO₂)"}]);
+
+/* ===================== Station: Glasglocke ===================== */
+const VOL=60000;
+const GL={run:true,plant:true,mouse:true,candle:false,cLit:true,mode:"c",spd:30};
+function glReset(){Object.assign(GL,{t:8*60,O2:VOL*.2095,CO2:VOL*.0004,hist:[],stop:"",cLit:true});GL.hist.push([0,glO(),glC(),glLight()])}
+const glO=()=>GL.O2/VOL*100,glC=()=>GL.CO2/VOL*100;
+const glLight=()=>GL.mode=="d"?1:GL.mode=="n"?0:((GL.t/60)%24>=6&&(GL.t/60)%24<20?1:0);
+glReset();
+function glStep(dtm){const steps=Math.ceil(dtm);const d=dtm/steps;for(let k=0;k<steps;k++){const L=glLight(),cp=glC();let dO=0,dC=0;
+ if(GL.plant){const ps=L*300/60*cp/(cp+.04);const r=15/60;dO+=ps-r;dC+=-ps+r}
+ if(GL.mouse&&!GL.stop){dO-=90/60;dC+=90/60}
+ if(GL.candle&&GL.cLit){if(glO()<16)GL.cLit=false;else{dO-=50;dC+=35}}
+ GL.O2=Math.max(0,GL.O2+dO*d);GL.CO2=Math.max(0,GL.CO2+dC*d);GL.t+=d;
+ if(GL.mouse&&!GL.stop&&(glC()>=3||glO()<15)){GL.stop=glC()>=3?"CO₂":"O₂";GL.mouse=false;$("#lM").checked=false}}
+ const t0=GL.hist.length?GL.hist[GL.hist.length-1][0]:0;if(GL.t-8*60-t0>=5)GL.hist.push([GL.t-8*60,glO(),glC(),glLight()])}
+function clock(){const m=Math.floor(GL.t)%1440;return`Tag ${Math.floor(GL.t/1440)+1}, ${String(Math.floor(m/60)).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`}
+const lC=canv("lC",o=>{const x=o.x,w=o.w,h=o.h,L=glLight();x.clearRect(0,0,w,h);
+ x.fillStyle=L?"rgba(255,226,140,.22)":"rgba(15,25,60,.55)";x.fillRect(0,0,w,h);
+ if(L){x.fillStyle="#ffcf3a";x.beginPath();x.arc(w-50,44,22,0,7);x.fill()}else{x.fillStyle="#e8ecf5";x.beginPath();x.arc(w-50,44,16,0,7);x.fill();x.fillStyle="rgba(15,25,60,1)";x.beginPath();x.arc(w-43,39,14,0,7);x.fill()}
+ const cx=w*.46,base=h*.86,R=Math.min(w*.36,h*.5);
+ x.fillStyle=col("--mut");x.fillRect(cx-R-20,base,2*R+40,12);
+ const cO=clamp(glC()/3,0,1);x.fillStyle=`rgba(120,130,140,${.04+.25*cO})`;x.beginPath();x.moveTo(cx-R,base);x.lineTo(cx-R,base-R*.6);x.arc(cx,base-R*.6,R,Math.PI,0);x.lineTo(cx+R,base);x.closePath();x.fill();
+ x.strokeStyle=alpha(col("--o2"),.7);x.lineWidth=3;x.stroke();x.fillStyle=alpha(col("--o2"),.8);x.beginPath();x.arc(cx,base-R*1.6-8,9,0,7);x.fill();
+ const nC=Math.round(clamp(glC()/.04,0,90)*.6+2);const rg=rngB(11);for(let i=0;i<nC;i++){const a=rg()*Math.PI,rad=rg()*R*.95,X=cx+Math.cos(a+Math.PI)*rad*(rg()>.5?1:-1)*.95,Y=base-R*.6-Math.sin(a)*rad*.9+rg()*R*.5+Math.sin(GL.t*.05+i)*3;if(Y>base-6)continue;x.fillStyle=alpha(col("--co2"),.75);x.beginPath();x.arc(X,Y,3.3,0,7);x.fill()}
+ if(GL.plant){const px=cx-R*.5;x.fillStyle="#b5652e";x.beginPath();x.moveTo(px-26,base);x.lineTo(px-32,base-34);x.lineTo(px+32,base-34);x.lineTo(px+26,base);x.fill();
+  x.strokeStyle=col("--chl");x.lineWidth=4;for(const[dx,hh]of[[-10,R*.75],[6,R*.95],[18,R*.6]]){x.beginPath();x.moveTo(px+dx*.3,base-34);x.quadraticCurveTo(px+dx*1.5,base-34-hh*.5,px+dx,base-34-hh);x.stroke();for(let q=1;q<6;q++){const yy=base-34-hh*q/6,xx=px+dx*(.3+q/6);for(const sg of[-1,1]){x.fillStyle=col("--chl");x.beginPath();x.ellipse(xx+sg*14,yy,15,6,sg*.4,0,7);x.fill()}}}}
+ if(GL.candle){const kx=cx+R*.05;x.fillStyle="#f3ead6";x.fillRect(kx-9,base-60,18,60);x.strokeStyle=col("--mut");x.lineWidth=1;x.strokeRect(kx-9,base-60,18,60);x.strokeStyle="#333";x.beginPath();x.moveTo(kx,base-60);x.lineTo(kx,base-68);x.stroke();
+  if(GL.cLit){const fl=14+Math.sin(performance.now()/90)*2;const g=x.createRadialGradient(kx,base-76,1,kx,base-76,fl*1.8);g.addColorStop(0,"#fff7c2");g.addColorStop(.4,"#ffb020");g.addColorStop(1,"rgba(255,120,0,0)");x.fillStyle=g;x.beginPath();x.ellipse(kx,base-76,fl*.55,fl*1.2,0,0,7);x.fill()}else txt(x,"erloschen",kx,base-80,{a:"center",size:11,w:700,c:col("--mut")})}
+ const mx=cx+R*.52,my=base-16;if(GL.mouse){const br=GL.stop?0:(glC()>1.5||glO()<17?1:0);x.fillStyle="#9aa1ab";x.beginPath();x.ellipse(mx,my,30,16+Math.sin(performance.now()/(br?90:300))*1.2,0,0,7);x.fill();x.beginPath();x.arc(mx-26,my-8,11,0,7);x.fill();x.fillStyle="#e8b4bc";x.beginPath();x.arc(mx-24,my-20,6,0,7);x.fill();x.fillStyle="#222";x.beginPath();x.arc(mx-32,my-10,2,0,7);x.fill();x.strokeStyle="#9aa1ab";x.lineWidth=2.5;x.beginPath();x.moveTo(mx+28,my);x.quadraticCurveTo(mx+52,my-18,mx+60,my+2);x.stroke();if(br)txt(x,"atmet schwer",mx,my-36,{a:"center",size:11,w:700,c:col("--inh")})}
+ txt(x,clock(),14,22,{size:15,w:700,c:L?col("--ink"):"#e8ecf5"})});
+const lG=canv("lG",o=>{const H=GL.hist,t1=Math.max(24*60,H.length?H[H.length-1][0]:0),t0=Math.max(0,t1-72*60),cmax=Math.max(.1,...H.map(r=>r[2]))*1.2;
+ chart(o,{x0:t0/60,x1:t1/60,y0:14,y1:23,xl:"Zeit in Stunden",yl:"O₂ in %",extra:(x,X,Y)=>{x.fillStyle="rgba(255,210,80,.16)";for(let i=1;i<H.length;i++)if(H[i][3])x.fillRect(X(H[i-1][0]/60),Y(23),X(H[i][0]/60)-X(H[i-1][0]/60)+.5,Y(14)-Y(23));
+  x.strokeStyle=col("--o2");x.lineWidth=2.4;x.beginPath();H.forEach((r,i)=>i?x.lineTo(X(r[0]/60),Y(r[1])):x.moveTo(X(r[0]/60),Y(r[1])));x.stroke();
+  const Yc=v=>Y(14+v/cmax*9);x.strokeStyle=col("--co2");x.setLineDash([6,3]);x.beginPath();H.forEach((r,i)=>i?x.lineTo(X(r[0]/60),Yc(r[2])):x.moveTo(X(r[0]/60),Yc(r[2])));x.stroke();x.setLineDash([]);
+  const st=nice(cmax);for(let v=0;v<=cmax;v+=st)txt(x,de(v,2)+" %",X(t1/60)-4,Yc(v),{a:"right",size:11,c:col("--co2")})}})});
+function glUpd(){kpi("lK",[["Uhrzeit",clock()],["Sauerstoff",de(glO(),3)+" %"],["CO₂",de(glC(),2)+" %"],["Maus",GL.stop?"befreit":GL.mouse?(glC()>1.5||glO()<17?"Atemnot":"munter"):"–"]]);
+ let s=GL.stop?`Versuch abgebrochen: ${GL.stop=="CO₂"?"zu viel CO₂":"zu wenig Sauerstoff"} – die Maus wurde befreit. Mit „Frische Luft“ beginnst du neu.`:"";
+ if(!s){if(GL.candle&&!GL.cLit)s="Die Kerze ist bei etwa 16 % Sauerstoff ausgegangen. Hake sie ab und wieder an, um sie neu anzuzünden.";
+  else if(GL.plant&&glLight()&&glC()<.012)s="Die Pflanze hat fast alles CO₂ verbraucht. Jetzt fehlt ihr der Rohstoff für die Photosynthese.";
+  else if(GL.plant&&glLight())s="Tag: Die Pflanze nimmt CO₂ auf und gibt Sauerstoff ab.";
+  else if(GL.plant)s="Nacht: Keine Photosynthese. Auch die Pflanze atmet und gibt CO₂ ab.";
+  else s="Ohne Pflanze wird der Sauerstoff nur verbraucht.";}
+ $("#lInfo").innerHTML=s}
+$("#lP").onchange=e=>GL.plant=e.target.checked;
+$("#lM").onchange=e=>{GL.mouse=e.target.checked;if(GL.mouse&&GL.stop){GL.mouse=false;e.target.checked=false}};
+$("#lK2").onchange=e=>{GL.candle=e.target.checked;GL.cLit=true};
+const lSetL=seg("lL",v=>GL.mode=v),lSetS=seg("lSp",v=>GL.spd=+v);
+$("#lGo").onclick=()=>{GL.run=!GL.run;$("#lGo").textContent=GL.run?"Pause":"Weiter"};
+$("#lRe").onclick=()=>{glReset();GL.mouse=$("#lM").checked=true;GL.plant=$("#lP").checked;GL.candle=$("#lK2").checked};
+function glSet(p,m,k,mode,spd){$("#lP").checked=GL.plant=p;$("#lK2").checked=GL.candle=k;GL.mode=mode;lSetL(mode);GL.spd=spd;lSetS(spd);glReset();GL.mouse=m;$("#lM").checked=m;if(!GL.run)$("#lGo").onclick()}
+tasks("glocke",[
+ {l:1,h:"Priestleys Kerze",p:"Stell nur die Kerze unter die Glocke. Wie lange brennt sie? Ist dann der ganze Sauerstoff verbraucht?",set:()=>glSet(false,false,true,"d",10)},
+ {l:1,h:"Die Pflanze hilft",p:"Kerze und Pflanze, immer Tag: Lass einige Stunden vergehen und zünde die Kerze neu an (ab- und anhaken). Was hat die Pflanze bewirkt?",set:()=>glSet(true,false,true,"d",120)},
+ {l:1,h:"Maus allein",p:"Vermute: Wie lange hat die Maus allein genug Luft? Beobachte CO₂ und Sauerstoff.",set:()=>glSet(false,true,false,"c",120)},
+ {l:1,h:"Pflanze und Maus",p:"Pflanze und Maus im Tag-Nacht-Wechsel: Beschreibe die Kurven über drei Tage. Wann steigt der CO₂-Gehalt, wann sinkt er?",set:()=>glSet(true,true,false,"c",120)},
+ {l:2,h:"Ewige Nacht",p:"Pflanze und Maus, immer Nacht. Warum hilft die Pflanze jetzt nicht – sondern verbraucht selbst Sauerstoff?",set:()=>glSet(true,true,false,"n",120)},
+ {l:3,h:"Die Erde als Glasglocke",p:"Die CO₂-Kurve der Erdatmosphäre (Mauna Loa) schwankt jedes Jahr auf und ab. Erkläre das mit dieser Station – und überlege, was die Kerze in diesem Bild bedeuten könnte."}]);
+
+/* ===================== Schleife ===================== */
+let last=performance.now();
+function loop(now){const dt=clamp((now-last)/1000,0,.05);last=now;
+ if(cur=="photosynthese"){if(PS.run)psStep(dt,pC.w,pC.h);pC.redraw();if(lv()>1)pT.redraw();if(now-(loop.u||0)>250){loop.u=now;psUpd()}}
+ else if(cur=="wasserpest"){wpStep(dt,wC.h);wC.redraw();if(now-(loop.u||0)>250){loop.u=now;wpUpd()}}
+ else if(cur=="spektrum"){if(SP.run)spStep(dt);sC.redraw();if(now-(loop.u||0)>400){loop.u=now;spUpd();if(lv()>1)sG.redraw()}}
+ else if(cur=="zellatmung"){if(ZA.run){zStep(dt);zTokens(dt,zC.w,zC.h)}zC.redraw();if(lv()>1)zT.redraw();if(now-(loop.u||0)>250){loop.u=now;zUpd()}}
+ else if(cur=="gaerung"){gStep(dt);gC.redraw()}
+ else if(cur=="glocke"){if(GL.run)glStep(dt*GL.spd);lC.redraw();if(now-(loop.u||0)>250){loop.u=now;lG.redraw();glUpd()}}
+ requestAnimationFrame(loop)}
+function rngB(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s^=s>>>17;s^=s<<5;return(s>>>0)/4294967296}}
+try{const l=localStorage.getItem("stofflvl");if(l)setLvl(l)}catch(e){}
+document.body.addEventListener("click",e=>{if(e.target.closest(".lvl")){psEq();sG.redraw();wG.redraw()}});
+addEventListener("keydown",e=>{if(e.target.closest("input,select,textarea"))return;if(e.code=="Space"){const b={photosynthese:"#pGo",spektrum:"#sGo",zellatmung:"#zGo",glocke:"#lGo",wasserpest:"#wCount",gaerung:"#gGo"}[cur];if(b){e.preventDefault();$(b).click()}}});
+route();psEq();psUpd();wpUpd();gUpd();glUpd();spUpd();requestAnimationFrame(loop);
+
+</script>
+</body>
+</html>
