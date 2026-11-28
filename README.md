@@ -40,6 +40,7 @@ Schlagwörter. Ist nicht klar, in welches Fach eine neue Simulation gehört: nac
 | `Enzyme/` | `Enzymlabor.html` | **Biologie:** Enzym und Substrat als Teilchen (Schlüssel-Schloss, Induced Fit), Aktivierungsenergie, Temperatur und pH mit Messreihen, Sättigungskurve (Michaelis-Menten), Hemmstoffe, Katalase-Versuch |
 | `Stoffwechsel/` | `Stoffwechsellabor.html` | **Biologie:** Photosynthese im Chloroplasten (Lichtreaktion, Calvin-Zyklus, ¹⁸O-Markierung), Wasserpest-Versuch (begrenzende Faktoren), Engelmann-Versuch mit Absorptions- und Wirkungsspektrum, Zellatmung als Wasserkraftwerk (Gärung, Cyanid, Entkoppler), Hefe-Ballon-Versuch, Glasglocke nach Priestley |
 | `Zellteilung/` | `Zellteilungslabor.html` | **Biologie:** Mitose und Meiose Schritt für Schritt (auch selbst ordnen und trennen), Vergleich, Vielfalt der Keimzellen und Geschwister, Nondisjunktion und Karyogramm-Rätsel, Zwiebelwurzelspitze mit Mitoseindex |
+| `Vererbung/` | `Vererbungslabor.html` | **Biologie:** Erbsengarten (P, F1, F2, Rückkreuzung, Klassenstatistik), Kreuzungsschema zum Selbstausfüllen (ein/zwei Merkmale, Blutgruppen), Zufall und Chi-Quadrat, Fantasiewesen züchten mit Zuchtauftrag und Testkreuzung, Detektiv-Rätsel, Stammbaumanalyse |
 
 ## Stoßprozesse – Stoss-Simulation.html
 
@@ -407,4 +408,14 @@ Modelle: Photosynthese mit Pools für ATP und NADPH (Lichtreaktion 3 ATP + 2 NAD
 - **Vielfalt:** Keimzellen bei 1–23 Paaren bilden, verschiedene Kombinationen zählen (2ⁿ); Crossing-over; zwei Geschwister mit nach Großeltern gefärbten Chromosomen und Übereinstimmung in %.
 - **Fehler & Karyogramm:** Nondisjunktion von Chromosom 21 in Meiose I oder II mit Tabelle der Keimzellen und Befruchtungsergebnis; schematische Karyogramme (46,XX, 46,XY, Trisomie 21/18/13, Turner, Klinefelter) mit Rätselmodus; ab *Mittel*: Häufigkeit von Trisomie 21 nach Alter der Mutter (gerundete Literaturwerte).
 - **Mikroskop:** gefärbte Zwiebelwurzelspitze mit zufällig verteilten Phasen; Zellen nach Phase markieren, sofortige Rückmeldung abschaltbar; Auszählung, Mitoseindex, geschätzte Phasendauer (Anteil · 20 h).
+
+## Vererbung – Vererbungslabor.html (Biologie)
+
+- Sechs Stationen, direkt aufrufbar: `#mendel`, `#punnett`, `#zufall`, `#wesen`, `#detektiv`, `#stammbaum`; jeweils mit Aufträgen, Erklärungen und drei Niveaustufen.
+- **Erbsengarten:** Blütenfarbe, Samenform, Samenfarbe oder Wunderblume (intermediär); P → F1 → F2 mit 4–1000 Nachkommen; ab *Mittel*: Genotypen, Rückkreuzung; Klassenstatistik zum Sammeln mehrerer F2-Zählungen.
+- **Kreuzungsschema:** Keimzellen-Kärtchen antippen und an den Rand legen (Mutter links, Vater oben), dann Felder aufdecken; ein Merkmal, zwei Merkmale (ab *Mittel*, 9 : 3 : 3 : 1) oder Blutgruppen AB0 (kodominant); Ergebnis mit Anteilen und Genotypen.
+- **Zufall:** Familien mit 1–8 Kindern von Aa × Aa; Verteilung gegen Binomialverteilung; ab *Mittel* Vergleich beobachtet/erwartet, ab *Anspruchsvoll* Chi-Quadrat-Test (z. B. mit Mendels Zahlen).
+- **Wesen züchten:** „Flauschis“ mit drei Genen (Fellfarbe, Hörner, Schwanz); Dominanz je Gen tauschen oder auf intermediär stellen; Eltern wählen, 4–32 Nachkommen, Nachkommen als neue Eltern, Testkreuzung, Zuchtauftrag (reinerbiges Wesen mit Zielaussehen).
+- **Detektiv:** Eltern und 40 Nachkommen sichtbar, Genotypen gesucht; ein oder zwei Gene; Prüfung über die erwarteten Verhältnisse.
+- **Stammbaum:** zufällig erzeugte, eindeutige Stammbäume (autosomal-dominant, autosomal-rezessiv, X-chromosomal-rezessiv) über drei Generationen; Antwort mit Begründung; ab *Mittel* Genotypen und Überträger:innen.
 

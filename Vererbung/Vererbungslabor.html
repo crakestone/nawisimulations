@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vererbungslabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: sachliches Laborheft, ruhig und genau, mit Augenzwinkern bei den Flauschis
+   IDEA: Kärtchen, Kreuzungstabellen und kleine Fantasiewesen – Vererbung zum Anfassen
+   COLOUR and TYPE: Weiß bzw. Nacht; Mendel-Violett, Flauschi-Blau/Gelb; Archivo + Source Sans 3
+   LAYOUT: Stationsleiste, Experiment groß links, Regler rechts, darunter Aufträge und Erklärung */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#111419);--ink:light-dark(#15181d,#e9ecf1);--mut:light-dark(#566170,#9ea8b5);
+--line:light-dark(#d8dde4,#2d343e);--soft:light-dark(#f2f5f3,#171d1b);--card:light-dark(#ffffff,#161b21);
+--acc:light-dark(#15803d,#5fd38d);--accink:light-dark(#ffffff,#0c1a12);
+--enz:light-dark(#2f9e5a,#46b874);--enzd:light-dark(#9aa79e,#5d6862);--sub:#3d7ddb;--prod:#f08a24;--inh:#e2475b;--allo:#8a5cc7;--metal:light-dark(#4b5563,#9ca3af);--wrong:light-dark(#7c8796,#8f9aa8);
+--grid:light-dark(#e6ebe8,#242b29)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Source Sans 3",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Archivo,system-ui,sans-serif;line-height:1.08;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4vw,40px)}h2{font-size:clamp(24px,3vw,32px)}h3{font-size:18px;margin-bottom:6px}
+header{padding:18px max(4vw,14px) 0;border-bottom:1px solid var(--line)}
+.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.top p{margin:4px 0 0;color:var(--mut);max-width:62ch}
+.lvl{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:10px}
+.lvl button{border:0;background:none;color:var(--ink);padding:8px 12px;border-radius:7px;font:600 15px "Source Sans 3",sans-serif;cursor:pointer;min-height:40px}
+.lvl button[aria-pressed=true]{background:var(--acc);color:var(--accink)}
+nav.scroll{display:flex;gap:2px;margin-top:14px;overflow-x:auto;scrollbar-width:thin}
+nav a{flex:none;padding:10px 14px;color:var(--mut);text-decoration:none;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap}
+nav a.on{color:var(--ink);border-color:var(--acc)}
+nav a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.st{display:none;padding:22px max(4vw,14px) 40px;max-width:1500px;margin:0 auto}
+.st.on{display:block}
+.lead{color:var(--mut);max-width:75ch;margin:6px 0 16px}
+.work{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+@media(max-width:980px){.work{grid-template-columns:minmax(0,1fr)}}
+.stage{display:grid;gap:12px}
+.fig{position:relative;min-height:220px;background:var(--soft);border-radius:12px;overflow:hidden;touch-action:none}
+.fig>canvas{position:absolute;inset:0;width:100%;height:100%}
+.fig.tall{height:min(62vh,520px)}.fig.mid{height:340px}.fig.low{height:250px}
+.ctrl{display:grid;gap:12px;background:var(--soft);padding:14px;border-radius:12px}
+.ctrl .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ctrl label{font-weight:600;font-size:15px}
+.lab{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-size:15px}
+.ctrl .lab output{font-weight:400;color:var(--mut);white-space:nowrap}
+button.b,select{font:600 15px "Source Sans 3",sans-serif;min-height:44px;padding:8px 13px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button.b.pri{background:var(--acc);border-color:var(--acc);color:var(--accink)}
+button.b.sm{min-height:36px;padding:5px 10px;font-size:14px}
+button.b[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button.b:disabled{opacity:.5;cursor:default}
+select{font-weight:400;font-size:16px;width:100%}
+input[type=range]{width:100%;accent-color:var(--acc);min-height:30px}
+.chk{display:flex;gap:8px;align-items:center;font-weight:400!important;cursor:pointer;min-height:32px}
+.chk input{width:20px;height:20px;accent-color:var(--acc)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px}
+.kpi div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.kpi span{display:block;font-size:13px;color:var(--mut)}.kpi b{font:700 22px/1.15 Archivo,sans-serif;font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--mut)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid rgba(0,0,0,.2)}
+.msg{padding:10px 12px;border-radius:10px;font-weight:600;background:var(--soft)}
+.msg.warn{background:rgba(226,71,91,.14)}.msg.ok{background:rgba(58,164,92,.15)}
+.tasks{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:20px}
+.task{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.task p{margin:0;font-size:15.5px}
+.task .lv{font-size:13px;font-weight:700;color:var(--mut)}
+.task button{align-self:flex-start;margin-top:auto}
+.expl{margin-top:20px;border-top:1px solid var(--line);padding-top:6px}
+details summary{cursor:pointer;font-weight:700;padding:10px 0;font-family:Archivo,sans-serif;font-size:18px}
+details .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px 28px}
+details p{margin:0 0 10px;max-width:70ch}
+body[data-lvl="1"] .l2,body[data-lvl="1"] .l3,body[data-lvl="2"] .l3{display:none!important}
+.note{font-size:14px;color:var(--mut);margin:6px 0 0}
+.mut{color:var(--mut)}.small{font-size:14px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px}
+.eq{font-family:Archivo,sans-serif;font-size:19px}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.seg{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);padding:4px;border-radius:10px}
+.seg button{flex:1;border:0;background:none;color:var(--ink);min-height:40px;border-radius:7px;font:600 15px "Source Sans 3",sans-serif;cursor:pointer;padding:4px 6px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.tubes{display:grid;gap:6px}
+.tubes .tr{display:grid;grid-template-columns:28px minmax(0,1fr);gap:6px;align-items:center}
+.tubes .tr b{font-family:Archivo,sans-serif;text-align:center}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+:root{--teal:#14a3a3;--glc:#f08a24}
+.tiles{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.tile{font:700 20px Archivo,sans-serif!important;min-width:64px}
+.tile[aria-pressed=true]{background:var(--acc)!important;color:var(--accink)!important;border-color:var(--acc)!important}
+.tile.used{opacity:.35}
+table.pq{border-collapse:separate;border-spacing:6px;width:auto;margin:0 auto}
+table.pq th,table.pq td{border:0;text-align:center;border-radius:10px;padding:8px 10px;min-width:74px}
+table.pq th.corner{color:var(--mut);font-size:14px}
+table.pq th.slot{background:var(--soft);font:700 20px Archivo,sans-serif;cursor:pointer;border:2px solid var(--acc)}
+table.pq th.slot.empty{border-style:dashed;color:var(--mut)}
+table.pq td.cell{background:var(--soft);min-height:56px}
+table.pq td.cell b{display:block;font:700 18px Archivo,sans-serif}
+table.pq td.cell span{font-size:13px;color:var(--mut)}
+table.pq td.cell span i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+table.pq td.cell.empty{cursor:pointer;color:var(--mut);font-size:13px;border:2px dashed var(--line)}
+.gsel{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.gsel select{width:auto}
+</style>
+</head>
+<body data-lvl="1">
+<header>
+ <div class="top">
+  <div><h1><a id="home" href="../index.html" style="color:inherit;text-decoration:none" title="Zur Startseite">Vererbungslabor</a></h1><p>Mendels Erbsen nachzüchten, Kreuzungsschemata selbst ausfüllen, den Zufall verstehen – und eigene Fantasiewesen züchten, Rätsel lösen und Stammbäume deuten.</p></div>
+  <div class="lvl" role="group" aria-label="Niveau"><button data-l="1" aria-pressed="true">Einfach</button><button data-l="2" aria-pressed="false">Mittel</button><button data-l="3" aria-pressed="false">Anspruchsvoll</button></div>
+ </div>
+ <nav class="scroll" id="nav"><a href="#mendel">Erbsengarten</a><a href="#punnett">Kreuzungsschema</a><a href="#zufall">Zufall</a><a href="#wesen">Wesen züchten</a><a href="#detektiv">Detektiv</a><a href="#stammbaum">Stammbaum</a></nav>
+</header>
+
+<!-- ========== MENDEL ========== -->
+<section class="st" id="st-mendel">
+ <h2>Erbsengarten: Mendels Versuche</h2>
+ <p class="lead">Gregor Mendel kreuzte im Klostergarten in Brünn reinerbige Erbsen und zählte die Nachkommen. Kreuze selbst: Elterngeneration (P) → 1. Tochtergeneration (F1) → 2. Tochtergeneration (F2).</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="gaC"></canvas></div>
+   <div class="kpi" id="gaK"></div>
+   <div class="card"><h3>Klassenstatistik (F2)</h3><p id="gaKl" style="margin:0" class="small"></p></div>
+  </div>
+  <aside class="ctrl">
+   <div><label for="gaTr">Merkmal</label><select id="gaTr"><option value="bl">Blütenfarbe (violett / weiß)</option><option value="fo">Samenform (rund / runzlig)</option><option value="fa">Samenfarbe (gelb / grün)</option><option value="wu">Wunderblume (rot / weiß, intermediär)</option></select></div>
+   <div class="row"><button class="b pri" id="gaP">Neu: P-Generation</button></div>
+   <div class="row"><button class="b" id="gaF1">P kreuzen → F1</button><button class="b" id="gaF2">F1 × F1 → F2</button></div>
+   <button class="b l2" id="gaRk">Rückkreuzung: F1 × reinerbig rezessiv</button>
+   <div><div class="lab"><span>Nachkommen</span><output id="gaNo">40</output></div><input type="range" id="gaN" min="4" max="1000" value="40"></div>
+   <label class="chk l2"><input type="checkbox" id="gaG"> Genotypen zeigen</label>
+   <div class="row"><button class="b" id="gaAdd">Zur Klassenstatistik</button><button class="b sm" id="gaClr">Statistik leeren</button></div>
+   <div class="card small" id="gaInfo"></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-mendel"></div>
+ <div class="expl"><details><summary>Erklärung: Mendelsche Regeln</summary><div class="cols">
+  <p><b>Gen und Allel.</b> Ein Gen ist ein Abschnitt der DNA für ein Merkmal, z. B. die Blütenfarbe. Es gibt es in Varianten, den <b>Allelen</b> (violett oder weiß). Jede Pflanze hat zwei Allele – eines von jedem Elternteil.</p>
+  <p><b>1. Regel – Uniformität.</b> Kreuzt man zwei reinerbige Eltern, die sich in einem Merkmal unterscheiden, sind alle Nachkommen der F1 gleich (uniform).</p>
+  <p><b>2. Regel – Spaltung.</b> Kreuzt man die F1 untereinander, tauchen in der F2 beide Merkmale wieder auf – beim dominant-rezessiven Erbgang im Verhältnis 3 : 1, beim intermediären 1 : 2 : 1.</p>
+  <p><b>Dominant und rezessiv.</b> Das dominante Allel (Großbuchstabe) setzt sich durch, das rezessive (Kleinbuchstabe) zeigt sich nur, wenn es doppelt vorhanden ist. Rezessiv heißt nicht „seltener“ oder „schwächer“ – es versteckt sich nur in Mischerbigen.</p>
+  <p class="l2"><b>Mendels Zahlen.</b> 5474 runde : 1850 runzlige Samen (2,96 : 1), 6022 gelbe : 2001 grüne (3,01 : 1), 705 violette : 224 weiße Blüten (3,15 : 1). Er zählte Tausende – bei wenigen Pflanzen weicht das Verhältnis stark ab.</p>
+  <p class="l2"><b>Rückkreuzung.</b> Kreuzt man einen Mischerbigen (Aa) mit einem reinerbig Rezessiven (aa), entstehen beide Merkmale im Verhältnis 1 : 1. So erkennt man, ob ein dominant aussehendes Lebewesen misch- oder reinerbig ist (Testkreuzung).</p>
+ </div></details></div>
+</section>
+
+<!-- ========== PUNNETT ========== -->
+<section class="st" id="st-punnett">
+ <h2>Kreuzungsschema selbst ausfüllen</h2>
+ <p class="lead">Jedes Elternteil gibt mit jeder Keimzelle <b>ein</b> Allel weiter. Tippe ein Keimzellen-Kärtchen an und dann ein freies Feld am Rand der Tabelle. Danach füllst du die Felder in der Tabelle aus.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="card"><div class="grid2" style="align-items:start">
+    <div><h3>Mutter: <span id="puMg"></span></h3><div id="puMt" class="tiles"></div></div>
+    <div><h3>Vater: <span id="puVg"></span></h3><div id="puVt" class="tiles"></div></div></div></div>
+   <div class="card" style="overflow-x:auto"><table class="pq" id="puT"></table></div>
+   <div class="card" id="puRes"></div>
+  </div>
+  <aside class="ctrl">
+   <div><label>Art der Kreuzung</label><div class="seg" id="puMo" style="flex-wrap:wrap"><button data-v="1" aria-pressed="true">ein Merkmal</button><button data-v="2" class="l2">zwei Merkmale</button><button data-v="bg">Blutgruppen</button></div></div>
+   <div><label for="puM">Genotyp Mutter</label><select id="puM"></select></div>
+   <div><label for="puV">Genotyp Vater</label><select id="puV"></select></div>
+   <div class="row"><button class="b" id="puNew">Neu beginnen</button><button class="b" id="puAuto">Alles ausfüllen</button></div>
+   <div class="card small" id="puInfo"></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-punnett"></div>
+ <div class="expl"><details><summary>Erklärung: Kreuzungsschema, 9 : 3 : 3 : 1, Blutgruppen</summary><div class="cols">
+  <p><b>Kreuzungsschema.</b> Am Rand stehen die möglichen Keimzellen der Eltern, in den Feldern die möglichen Kinder. Jedes Feld ist gleich wahrscheinlich. So kann man Verhältnisse vorhersagen – aber nicht, was ein einzelnes Kind bekommt.</p>
+  <p class="l2"><b>Zwei Merkmale (3. Regel – Unabhängigkeit).</b> Liegen zwei Gene auf verschiedenen Chromosomen, werden sie unabhängig verteilt. Bei AaBb × AaBb entstehen 16 Kombinationen, äußerlich im Verhältnis 9 : 3 : 3 : 1. Gene auf demselben Chromosom werden dagegen oft gemeinsam vererbt (Genkopplung).</p>
+  <p><b>Blutgruppen.</b> Das Gen hat drei Allele: A, B und 0. A und B sind <b>kodominant</b> – beide zeigen sich (Blutgruppe AB). 0 ist rezessiv: Blutgruppe 0 hat nur, wer 00 trägt. Darum können zwei Eltern mit Blutgruppe A ein Kind mit Blutgruppe 0 haben.</p>
+ </div></details></div>
+</section>
+
+<!-- ========== ZUFALL ========== -->
+<section class="st" id="st-zufall">
+ <h2>Zufall: Hat jede Familie 3 : 1?</h2>
+ <p class="lead">Zwei mischerbige Eltern (Aa × Aa) bekommen je vier Kinder. Nach dem Kreuzungsschema hat ein Kind mit Wahrscheinlichkeit ¼ das rezessive Merkmal. Haben darum alle Familien genau ein solches Kind?</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig mid" style="height:300px"><canvas id="zuC"></canvas></div>
+   <div class="card"><h3>Wie viele Kinder mit rezessivem Merkmal pro Familie?</h3><div class="fig low" style="height:250px"><canvas id="zuG"></canvas></div><p class="note">Balken: deine Familien; Punkte: erwartete Anteile.</p></div>
+   <div class="card l2"><h3>Passt das zu 3 : 1? (Chi-Quadrat-Test)</h3>
+    <div class="grid2"><div><div class="lab"><span>dominantes Merkmal gezählt</span></div><input type="number" id="chD" value="5474" min="0" style="width:100%;font-size:16px;padding:8px"></div><div><div class="lab"><span>rezessives Merkmal gezählt</span></div><input type="number" id="chR" value="1850" min="0" style="width:100%;font-size:16px;padding:8px"></div></div>
+    <div style="margin-top:8px"><select id="chE" style="width:auto"><option value="3">erwartet 3 : 1</option><option value="1">erwartet 1 : 1</option></select></div>
+    <p id="chOut" style="margin:10px 0 0"></p></div>
+  </div>
+  <aside class="ctrl">
+   <div class="row"><button class="b pri" id="zu1">20 Familien</button><button class="b" id="zu100">+ 500 Familien</button></div>
+   <button class="b" id="zuClr">Zurücksetzen</button>
+   <div><div class="lab"><span>Kinder pro Familie</span><output id="zuKo">4</output></div><input type="range" id="zuK" min="1" max="8" value="4"></div>
+   <div class="card small" id="zuInfo"></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-zufall"></div>
+ <div class="expl"><details><summary>Erklärung: Wahrscheinlichkeit und große Zahlen</summary><div class="cols">
+  <p><b>Jedes Kind neu.</b> Bei jedem Kind wird neu „gewürfelt“. Ein rezessives Kind macht das nächste nicht weniger wahrscheinlich. Darum gibt es Familien mit gar keinem und Familien mit mehreren Kindern mit rezessivem Merkmal.</p>
+  <p><b>Große Zahlen.</b> Erst wenn man sehr viele Kinder zusammenzählt, nähert sich das Verhältnis 3 : 1. Darum hat Mendel Tausende Erbsen gezählt.</p>
+  <p class="l2"><b>Wahrscheinlichkeiten.</b> Bei vier Kindern hat nur etwa 42 % der Familien genau ein Kind mit rezessivem Merkmal; 32 % haben keines, 21 % zwei, 5 % drei und 0,4 % vier (Binomialverteilung).</p>
+  <p class="l3"><b>Chi-Quadrat-Test.</b> χ² = Σ (beobachtet − erwartet)² / erwartet. Bei einem Freiheitsgrad gilt eine Abweichung ab χ² &gt; 3,84 als signifikant (p &lt; 5 %). Mendels Zahlen passen sogar auffällig gut – manche Fachleute vermuten, dass er geschönt hat.</p>
+ </div></details></div>
+</section>
+
+<!-- ========== WESEN ========== -->
+<section class="st" id="st-wesen">
+ <h2>Wesen züchten: dein eigenes Erbgut-Labor</h2>
+ <p class="lead">Die „Flauschis“ haben drei Gene: Fellfarbe, Hörner und Schwanz. Lege fest, welches Allel dominant ist, stelle zwei Eltern zusammen und lass sie Nachkommen bekommen. Mit Nachkommen kannst du weiterzüchten.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall" style="height:min(70vh,600px)"><canvas id="weC"></canvas></div>
+   <div class="card"><h3>Nachkommen</h3><div style="overflow-x:auto"><table><thead><tr><th>Aussehen</th><th class="n">Anzahl</th><th class="n">Anteil</th></tr></thead><tbody id="weTab"></tbody></table></div></div>
+  </div>
+  <aside class="ctrl">
+   <div class="card small" id="weGenes"></div>
+   <div><label>Elter 1</label><div id="weE1" class="gsel"></div></div>
+   <div><label>Elter 2</label><div id="weE2" class="gsel"></div></div>
+   <div class="row"><button class="b pri" id="weGo">Nachkommen bekommen</button></div>
+   <div><div class="lab"><span>Anzahl Nachkommen</span><output id="weNo">16</output></div><input type="range" id="weN" min="4" max="32" step="4" value="16"></div>
+   <div class="row"><button class="b sm" id="weS1" disabled>Auswahl → Elter 1</button><button class="b sm" id="weS2" disabled>Auswahl → Elter 2</button></div>
+   <button class="b sm" id="weTest" disabled>Testkreuzung mit der Auswahl</button>
+   <label class="chk"><input type="checkbox" id="weGeno"> Genotypen zeigen</label>
+   <div class="card small"><b>Zuchtauftrag</b><p id="weMis" style="margin:4px 0"></p><div class="row"><button class="b sm pri" id="weChk" disabled>Auswahl abgeben</button><button class="b sm" id="weMisN">Neuer Auftrag</button></div><p id="weMisR" style="margin:6px 0 0"></p></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-wesen"></div>
+ <div class="expl"><details><summary>Erklärung: Genotyp, Phänotyp, Züchtung</summary><div class="cols">
+  <p><b>Genotyp und Phänotyp.</b> Der Genotyp sind die Allele (z. B. Ff), der Phänotyp ist das Aussehen (blaues Fell). Zwei Wesen mit gleichem Aussehen können verschiedene Genotypen haben – FF und Ff sehen beide blau aus, wenn F dominant ist.</p>
+  <p><b>Rezessive Merkmale züchten ist leicht.</b> Wer ein rezessives Merkmal zeigt, ist dafür immer reinerbig.</p>
+  <p><b>Dominante Merkmale reinerbig züchten ist schwer.</b> Man sieht nicht, ob ein Wesen FF oder Ff ist. Die Lösung: Testkreuzung mit einem reinerbig rezessiven Partner. Bekommen alle Nachkommen das dominante Merkmal, war das Wesen wahrscheinlich reinerbig.</p>
+  <p class="l2"><b>Intermediär.</b> Stellst du ein Gen auf „intermediär“, zeigen Mischerbige eine Zwischenform (grünes Fell, kleine Hörner, mittlerer Schwanz). Dann verrät das Aussehen den Genotyp.</p>
+ </div></details></div>
+</section>
+
+<!-- ========== DETEKTIV ========== -->
+<section class="st" id="st-detektiv">
+ <h2>Detektiv: Welche Eltern waren es?</h2>
+ <p class="lead">Zwei Flauschi-Eltern haben viele Nachkommen bekommen. Du siehst die Eltern und ihre Kinder, aber nicht die Allele. Finde die Genotypen der Eltern heraus.</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall" style="height:min(60vh,500px)"><canvas id="deC"></canvas></div>
+   <div class="card"><h3>Gezählte Nachkommen</h3><div style="overflow-x:auto"><table><thead><tr><th>Aussehen</th><th class="n">Anzahl</th></tr></thead><tbody id="deTab"></tbody></table></div></div>
+  </div>
+  <aside class="ctrl">
+   <div><label>Schwierigkeit</label><div class="seg" id="deMo"><button data-v="1" aria-pressed="true">ein Gen</button><button data-v="2">zwei Gene</button></div></div>
+   <div><label>Mein Tipp: Elter 1</label><div id="deE1" class="gsel"></div></div>
+   <div><label>Mein Tipp: Elter 2</label><div id="deE2" class="gsel"></div></div>
+   <div class="row"><button class="b pri" id="deChk">Prüfen</button><button class="b" id="deNew">Neuer Fall</button></div>
+   <div class="card small" id="deInfo"></div>
+   <div class="card small" id="deScore"></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-detektiv"></div>
+</section>
+
+<!-- ========== STAMMBAUM ========== -->
+<section class="st" id="st-stammbaum">
+ <h2>Stammbaum deuten</h2>
+ <p class="lead">Bei Menschen kann man nicht kreuzen – man liest Erbgänge aus Familienstammbäumen. Quadrat: Mann, Kreis: Frau, ausgefüllt: Merkmal tritt auf. Welcher Erbgang liegt vor?</p>
+ <div class="work">
+  <div class="stage">
+   <div class="fig tall"><canvas id="stC"></canvas></div>
+   <div class="card" id="stOut"><p class="mut" style="margin:0">Wähle rechts deine Antwort.</p></div>
+  </div>
+  <aside class="ctrl">
+   <div><label>Erbgang?</label><div class="tubes" id="stAns"><button class="b" data-v="ad">autosomal-dominant</button><button class="b" data-v="ar">autosomal-rezessiv</button><button class="b" data-v="xr">X-chromosomal-rezessiv</button></div></div>
+   <div class="row"><button class="b pri" id="stNew">Neuer Stammbaum</button></div>
+   <label class="chk l2"><input type="checkbox" id="stGeno"> Genotypen zeigen</label>
+   <div class="card small" id="stScore"></div>
+  </aside>
+ </div>
+ <div class="tasks" id="tk-stammbaum"></div>
+ <div class="expl"><details><summary>Erklärung: Erbgänge erkennen</summary><div class="cols">
+  <p><b>Autosomal-rezessiv.</b> Zwei Eltern ohne das Merkmal haben ein Kind mit dem Merkmal – dann müssen beide Überträger (Aa) sein. Frauen und Männer gleich oft betroffen. Beispiel: Mukoviszidose.</p>
+  <p><b>Autosomal-dominant.</b> Jede betroffene Person hat mindestens einen betroffenen Elternteil; das Merkmal überspringt keine Generation. Zwei betroffene Eltern können ein gesundes Kind haben. Beispiel: Chorea Huntington.</p>
+  <p><b>X-chromosomal-rezessiv.</b> Fast nur Männer sind betroffen, denn sie haben nur ein X. Vererbt wird über Mütter, die selbst unauffällig sind (Überträgerinnen). Ein betroffener Vater gibt das Merkmal nie an seine Söhne weiter. Beispiele: Rot-Grün-Sehschwäche, Bluterkrankheit.</p>
+  <p class="l2"><b>Vorsicht.</b> Ein kleiner Stammbaum ist oft nicht eindeutig. Suche nach der entscheidenden Familie – zwei gesunde Eltern mit krankem Kind schließen „dominant“ aus.</p>
+ </div></details></div>
+</section>
+
+<script>
+/* ===================== Grundlagen ===================== */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const de=(x,p=3)=>Number(Number(x).toPrecision(p)).toLocaleString("de-AT",{maximumFractionDigits:10});
+const SUPD="⁰¹²³⁴⁵⁶⁷⁸⁹";const sup=n=>String(n).replace(/-/g,"⁻").replace(/\d/g,d=>SUPD[d]);
+function sci(x,p=2){if(x===0)return"0";const e=Math.floor(Math.log10(Math.abs(x)));if(e>=-2&&e<5)return de(x,p);return de(x/10**e,p)+" · 10"+sup(e)}
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const angD=(a,b)=>{let d=a-b;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;return d};
+const probe=document.createElement("i");probe.style.display="none";document.body.appendChild(probe);let CC={};
+function col(v){if(CC[v])return CC[v];probe.style.color=v.startsWith("var")||v.startsWith("#")?v:`var(${v})`;return CC[v]=getComputedStyle(probe).color}
+function alpha(c,a){const m=c.match(/[\d.]+/g);return m?`rgba(${m[0]},${m[1]},${m[2]},${a})`:c}
+const REG=[];
+function canv(id,draw){const c=document.getElementById(id);const o={c,draw,x:null,w:0,h:0};const fit=()=>{const r=c.getBoundingClientRect();if(!r.width||!r.height)return;const d=devicePixelRatio||1;c.width=Math.round(r.width*d);c.height=Math.round(r.height*d);o.w=r.width;o.h=r.height;o.x=c.getContext("2d");o.x.setTransform(d,0,0,d,0,0);draw(o)};o.fit=fit;o.redraw=()=>{if(o.x&&o.w)draw(o)};new ResizeObserver(fit).observe(c);REG.push(o);return o}
+const redrawAll=()=>{CC={};REG.forEach(o=>o.redraw())};
+new MutationObserver(redrawAll).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme","class","style"]});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",redrawAll);
+function txt(x,s,X,Y,o={}){x.font=`${o.w||400} ${o.size||13}px "Source Sans 3",system-ui,sans-serif`;x.fillStyle=o.c||col("--ink");x.textAlign=o.a||"left";x.textBaseline=o.b||"middle";x.fillText(s,X,Y)}
+function seg(id,cb){const el=document.getElementById(id);el.querySelectorAll("button").forEach(b=>b.onclick=()=>{el.querySelectorAll("button").forEach(q=>q.setAttribute("aria-pressed",q===b));cb(b.dataset.v)});return v=>{el.querySelectorAll("button").forEach(q=>q.setAttribute("aria-pressed",q.dataset.v==v))}}
+function kpi(id,items){document.getElementById(id).innerHTML=items.map(([k,v])=>`<div><span>${k}</span><b>${v}</b></div>`).join("")}
+const TL=["","einfach","mittel","anspruchsvoll"];
+function tasks(id,list){const el=document.getElementById("tk-"+id);el.innerHTML="";list.forEach(t=>{const d=document.createElement("div");d.className="task"+(t.l==2?" l2":t.l==3?" l3":"");d.innerHTML=`<span class="lv">${TL[t.l]}</span><h3>${t.h}</h3><p>${t.p}</p>`;if(t.set){const b=document.createElement("button");b.className="b sm";b.textContent="Einstellen";b.onclick=()=>{t.set();document.getElementById("st-"+id).scrollIntoView({behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"})};d.appendChild(b)}el.appendChild(d)})}
+function setLvl(l){document.body.dataset.lvl=l;$$(".lvl button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l==l));try{localStorage.setItem("verblvl",l)}catch(e){}setTimeout(()=>{REG.forEach(o=>o.fit())},20)}
+$$(".lvl button").forEach(b=>b.onclick=()=>setLvl(b.dataset.l));
+const VIEWS=["mendel", "punnett", "zufall", "wesen", "detektiv", "stammbaum"];let cur="mendel";
+function route(){const h=location.hash.slice(1);cur=VIEWS.includes(h)?h:"mendel";$$(".st").forEach(s=>s.classList.toggle("on",s.id=="st-"+cur));$$("#nav a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")=="#"+cur));setTimeout(()=>REG.forEach(o=>o.fit()),10)}
+addEventListener("hashchange",route);
+const sleep=()=>new Promise(r=>setTimeout(r,0));
+
+/* ===================== Diagramm ===================== */
+function nice(r){const e=10**Math.floor(Math.log10(r/5));for(const m of[1,2,2.5,5,10])if(r/(m*e)<=6)return m*e;return 10*e}
+function chart(o,c){const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const L=54,R=14,T=14,B=40;
+ const X=v=>L+(v-c.x0)/(c.x1-c.x0)*(w-L-R),Y=v=>h-B-(v-c.y0)/(c.y1-c.y0)*(h-T-B);
+ x.strokeStyle=col("--grid");x.lineWidth=1;x.font='12px "Source Sans 3",sans-serif';
+ const sx=nice(c.x1-c.x0),sy=nice(c.y1-c.y0);
+ for(let v=Math.ceil(c.x0/sx)*sx;v<=c.x1+1e-9;v+=sx){x.beginPath();x.moveTo(X(v),T);x.lineTo(X(v),h-B);x.stroke();txt(x,de(v,3),X(v),h-B+12,{a:"center",c:col("--mut"),size:12})}
+ for(let v=Math.ceil(c.y0/sy)*sy;v<=c.y1+1e-9;v+=sy){x.beginPath();x.moveTo(L,Y(v));x.lineTo(w-R,Y(v));x.stroke();txt(x,de(v,3),L-6,Y(v),{a:"right",c:col("--mut"),size:12})}
+ x.strokeStyle=col("--mut");x.beginPath();x.moveTo(L,T);x.lineTo(L,h-B);x.lineTo(w-R,h-B);x.stroke();
+ txt(x,c.xl,(L+w-R)/2,h-10,{a:"center",c:col("--mut"),size:13,w:600});
+ x.save();x.translate(13,(T+h-B)/2);x.rotate(-Math.PI/2);txt(x,c.yl,0,0,{a:"center",c:col("--mut"),size:13,w:600});x.restore();
+ x.save();x.beginPath();x.rect(L,T,w-L-R,h-T-B);x.clip();
+ (c.extra||(()=>{}))(x,X,Y);
+ for(const s of c.series||[]){const cc=col(s.c);
+  if(s.fn){x.strokeStyle=cc;x.lineWidth=2;x.setLineDash(s.dash||[]);x.beginPath();for(let i=0;i<=200;i++){const v=c.x0+(c.x1-c.x0)*i/200,y=s.fn(v);if(!isFinite(y))continue;i?x.lineTo(X(v),Y(y)):x.moveTo(X(v),Y(y))}x.stroke();x.setLineDash([])}
+  if(s.line&&s.pts.length>1){x.strokeStyle=alpha(cc,.55);x.lineWidth=1.6;x.beginPath();s.pts.forEach((p,i)=>i?x.lineTo(X(p[0]),Y(p[1])):x.moveTo(X(p[0]),Y(p[1])));x.stroke()}
+  if(s.pts){x.fillStyle=cc;for(const p of s.pts){x.beginPath();x.arc(X(p[0]),Y(p[1]),s.r||4,0,7);x.fill()}}}
+ x.restore();
+ if(c.legend){let yy=T+10;for(const [t,cc] of c.legend){x.fillStyle=col(cc);x.fillRect(w-R-150,yy-5,12,10);txt(x,t,w-R-133,yy,{size:12,c:col("--ink")});yy+=17}}}
+
+/* ===================== Hilfen ===================== */
+const lv=()=>+document.body.dataset.lvl;
+function rr(x,X,Y,W,H,r){x.beginPath();x.roundRect?x.roundRect(X,Y,W,H,r):x.rect(X,Y,W,H)}
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const norm=g=>g.split("").sort((a,b)=>(a===a.toLowerCase())-(b===b.toLowerCase())||a.localeCompare(b)).join("");
+const ratio=(a,b)=>b?de(a/b,3)+" : 1":"–";
+
+/* ===================== Erbsengarten ===================== */
+const TR={bl:{n:"Blütenfarbe",d:"violett",r:"weiß",cd:"#8a4fc0",cr:"#f3eff8",kind:"flower"},fo:{n:"Samenform",d:"rund",r:"runzlig",cd:"#e3c35a",cr:"#e3c35a",kind:"form"},
+ fa:{n:"Samenfarbe",d:"gelb",r:"grün",cd:"#f2cf3a",cr:"#7cbf4a",kind:"seed"},wu:{n:"Blütenfarbe Wunderblume",d:"rot",r:"weiß",i:"rosa",cd:"#e0344d",cr:"#f6f1f3",ci:"#f39ab0",kind:"flower",inter:true}};
+const GA={tr:"bl",gen:"P",pl:[],N:40,stat:{}};
+const gaPh=g=>{const t=TR[GA.tr],u=(g.match(/A/g)||[]).length;return t.inter?(u==2?"d":u==1?"i":"r"):(u?"d":"r")};
+function gaSet(gen,pl){GA.gen=gen;GA.pl=pl;gaC.redraw();gaUpd()}
+const child=(a,b)=>norm(pick(a)+pick(b));
+$("#gaP").onclick=()=>gaSet("P",["AA","aa"]);
+$("#gaF1").onclick=()=>{if(GA.gen!="P"){$("#gaInfo").innerHTML="<b>Starte zuerst mit der P-Generation.</b>";return}gaSet("F1",Array.from({length:Math.min(GA.N,60)},()=>child("AA","aa")))};
+$("#gaF2").onclick=()=>{if(GA.gen!="F1"&&GA.gen!="F2"){$("#gaInfo").innerHTML="<b>Erzeuge zuerst die F1.</b>";return}gaSet("F2",Array.from({length:GA.N},()=>child("Aa","Aa")))};
+$("#gaRk").onclick=()=>{if(GA.gen=="P"){$("#gaInfo").innerHTML="<b>Erzeuge zuerst die F1.</b>";return}gaSet("RK",Array.from({length:GA.N},()=>child("Aa","aa")))};
+$("#gaN").oninput=e=>{GA.N=+e.target.value;$("#gaNo").textContent=GA.N};
+$("#gaTr").onchange=e=>{GA.tr=e.target.value;gaSet("P",["AA","aa"])};
+$("#gaG").onchange=()=>gaC.redraw();
+function drawPlant(x,cx,cy,s,g){const t=TR[GA.tr],p=gaPh(g),c=p=="d"?t.cd:p=="i"?t.ci:t.cr;
+ if(t.kind=="flower"){x.strokeStyle="#4f9a3c";x.lineWidth=Math.max(1.5,s*.12);x.beginPath();x.moveTo(cx,cy+s*.9);x.lineTo(cx,cy);x.stroke();x.fillStyle="#5fb04a";x.beginPath();x.ellipse(cx+s*.25,cy+s*.55,s*.25,s*.1,-.5,0,7);x.fill();
+  for(let k=0;k<5;k++){const a=k*1.2566;x.fillStyle=c;x.beginPath();x.ellipse(cx+Math.cos(a)*s*.32,cy+Math.sin(a)*s*.32,s*.3,s*.2,a,0,7);x.fill();x.strokeStyle="rgba(0,0,0,.25)";x.lineWidth=.8;x.stroke()}x.fillStyle="#f3c94a";x.beginPath();x.arc(cx,cy,s*.13,0,7);x.fill()}
+ else{const wr=t.kind=="form"&&p=="r";x.fillStyle=c;x.beginPath();for(let k=0;k<=40;k++){const a=k/40*6.283,r=s*.45*(wr?1+.12*Math.sin(a*7+cx)+.06*Math.sin(a*13):1);x.lineTo(cx+Math.cos(a)*r,cy+s*.3+Math.sin(a)*r)}x.closePath();x.fill();x.strokeStyle="rgba(0,0,0,.3)";x.lineWidth=1;x.stroke();
+  x.fillStyle="rgba(255,255,255,.4)";x.beginPath();x.arc(cx-s*.15,cy+s*.15,s*.1,0,7);x.fill()}
+ if($("#gaG").checked&&lv()>1&&s>12)txt(x,g,cx,cy+s*1.15,{a:"center",size:Math.max(10,s*.4),w:700,c:col("--mut")})}
+const gaC=canv("gaC",o=>{const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const t=TR[GA.tr];
+ const name={P:"Elterngeneration P (reinerbig)",F1:"1. Tochtergeneration F1",F2:"2. Tochtergeneration F2",RK:"Rückkreuzung F1 × reinerbig rezessiv"}[GA.gen]||"";txt(x,name,14,20,{size:16,w:700});
+ if(!GA.pl.length){txt(x,"Klicke „Neu: P-Generation“.",w/2,h/2,{a:"center",size:15,c:col("--mut")});return}
+ if(GA.gen=="P"){const s=Math.min(w,h)*.14;drawPlant(x,w*.32,h*.42,s,"AA");drawPlant(x,w*.68,h*.42,s,"aa");txt(x,"×",w/2,h*.45,{a:"center",size:40,w:700});txt(x,t.d,w*.32,h*.42+s*1.6,{a:"center",size:15,w:700});txt(x,t.r,w*.68,h*.42+s*1.6,{a:"center",size:15,w:700});
+  if($("#gaG").checked&&lv()>1){txt(x,"AA",w*.32,h*.42+s*1.6+20,{a:"center",size:14,c:col("--mut")});txt(x,"aa",w*.68,h*.42+s*1.6+20,{a:"center",size:14,c:col("--mut")})}return}
+ const n=Math.min(GA.pl.length,200),cols=Math.ceil(Math.sqrt(n*w/(h-50)*1.1)),rows=Math.ceil(n/cols),cw=(w-20)/cols,ch=(h-50)/rows,s=Math.min(cw,ch)*.38;
+ for(let i=0;i<n;i++){drawPlant(x,10+(i%cols+.5)*cw,40+(Math.floor(i/cols)+.35)*ch,s,GA.pl[i])}
+ if(GA.pl.length>n)txt(x,`… und ${GA.pl.length-n} weitere (mitgezählt)`,w-14,20,{a:"right",size:13,c:col("--mut")})});
+function gaUpd(){const t=TR[GA.tr],P=GA.pl,d=P.filter(g=>gaPh(g)=="d").length,i=P.filter(g=>gaPh(g)=="i").length,r=P.filter(g=>gaPh(g)=="r").length;
+ const K=[[t.d,d]];if(t.inter)K.push([t.i,i]);K.push([t.r,r]);K.push(["Verhältnis",t.inter?(r?`${de(d/r,2)} : ${de(i/r,2)} : 1`:"–"):ratio(d,r)]);
+ if(lv()>1&&GA.gen!="P")K.push(["AA : Aa : aa",`${P.filter(g=>g=="AA").length} : ${P.filter(g=>g=="Aa").length} : ${P.filter(g=>g=="aa").length}`]);kpi("gaK",K);
+ $("#gaInfo").innerHTML=GA.gen=="P"?"Zwei reinerbige Eltern. Was erwartest du in der F1?":GA.gen=="F1"?(t.inter?"Alle F1-Pflanzen sind gleich – und zwar rosa, eine Mischform. Das ist der intermediäre Erbgang.":`Alle F1-Pflanzen sind gleich (${t.d}). Das ${t.r}e Merkmal ist verschwunden – oder nur versteckt?`):GA.gen=="F2"?(t.inter?"In der F2 tauchen rot, rosa und weiß wieder auf – etwa 1 : 2 : 1.":`Das ${t.r}e Merkmal ist wieder da! Mit vielen Pflanzen nähert sich das Verhältnis 3 : 1.`):"Rückkreuzung: etwa 1 : 1 – so erkennt man Mischerbige.";
+ const S=GA.stat[GA.tr];$("#gaKl").innerHTML=S?`${TR[GA.tr].n}: ${S.d} ${t.d}`+(t.inter?`, ${S.i} ${t.i}`:"")+`, ${S.r} ${t.r} aus ${S.n} Zählungen – Verhältnis `+(t.inter?(S.r?`${de(S.d/S.r,2)} : ${de(S.i/S.r,2)} : 1`:"–"):ratio(S.d,S.r)):"Noch leer. Zählt in der Klasse jede eine kleine F2 und sammelt alles hier."}
+$("#gaAdd").onclick=()=>{if(GA.gen!="F2"){$("#gaInfo").innerHTML="<b>Nur F2-Ergebnisse kommen in die Klassenstatistik.</b>";return}const S=GA.stat[GA.tr]=GA.stat[GA.tr]||{d:0,i:0,r:0,n:0};GA.pl.forEach(g=>S[gaPh(g)]++);S.n++;gaUpd()};
+$("#gaClr").onclick=()=>{delete GA.stat[GA.tr];gaUpd()};
+function gaTask(tr,N){GA.tr=tr;$("#gaTr").value=tr;GA.N=N;$("#gaN").value=N;$("#gaNo").textContent=N;gaSet("P",["AA","aa"])}
+tasks("mendel",[
+ {l:1,h:"Uniformität",p:"Kreuze die P-Generation. Wie sehen alle F1-Pflanzen aus? Formuliere die 1. Mendelsche Regel.",set:()=>gaTask("bl",24)},
+ {l:1,h:"Wo ist Weiß hin?",p:"Erzeuge die F2 mit 40 Pflanzen. Woher kommt das weiße Merkmal, obwohl die F1 nur violett war?",set:()=>gaTask("bl",40)},
+ {l:1,h:"Wenige oder viele",p:"Erzeuge fünfmal eine F2 mit 8 Pflanzen und dann eine mit 1000. Vergleiche die Verhältnisse. Warum zählte Mendel so viele Erbsen?",set:()=>gaTask("fa",8)},
+ {l:1,h:"Klassenstatistik",p:"Jede:r erzeugt eine F2 mit 20 Samen und fügt sie zur Klassenstatistik hinzu (oder ihr sammelt die Zahlen an der Tafel). Wie nah kommt die Klasse an 3 : 1?",set:()=>gaTask("fo",20)},
+ {l:2,h:"Intermediär",p:"Wähle die Wunderblume und kreuze bis zur F2. Warum kann man hier den Genotyp am Aussehen ablesen?",set:()=>gaTask("wu",60)},
+ {l:2,h:"Rückkreuzung",p:"Kreuze die F1 mit einer weißen Pflanze. Welches Verhältnis erwartest du? Wozu ist das nützlich?",set:()=>gaTask("bl",100)},
+ {l:3,h:"Mendels Glück",p:"Mendel wählte Merkmale, deren Gene auf verschiedenen Chromosomen liegen und die eindeutig dominant-rezessiv vererbt werden. Warum wäre er mit anderen Merkmalen vermutlich gescheitert?"}]);
+
+/* ===================== Kreuzungsschema ===================== */
+const PU={mo:"1",m:"Aa",v:"Aa",mt:[],vt:[],rh:[],ch:[],cells:{},sel:null};
+const PUOPT={"1":["AA","Aa","aa"],"2":["AABB","AABb","AAbb","AaBB","AaBb","Aabb","aaBB","aaBb","aabb"],bg:["AA","A0","BB","B0","AB","00"]};
+const bgPh=g=>g.includes("A")&&g.includes("B")?"AB":g.includes("A")?"A":g.includes("B")?"B":"0";
+function puGam(g){if(PU.mo=="2")return[g[0]+g[2],g[0]+g[3],g[1]+g[2],g[1]+g[3]];return[g[0],g[1]]}
+function puComb(a,b){if(PU.mo=="2")return norm(a[0]+b[0])+norm(a[1]+b[1]);if(PU.mo=="bg"){const o="AB0";return[a,b].sort((p,q)=>o.indexOf(p)-o.indexOf(q)).join("")}return norm(a+b)}
+function puPh(g){if(PU.mo=="bg")return"Blutgruppe "+bgPh(g);const A=/A/.test(g.slice(0,2))?"violett":"weiß";if(PU.mo=="1")return A;return A+", "+(/B/.test(g.slice(2))?"rund":"runzlig")}
+const PHC={"violett":"#8a4fc0","weiß":"#d9d2e6","Blutgruppe A":"#e2475b","Blutgruppe B":"#3d7ddb","Blutgruppe AB":"#8a5cc7","Blutgruppe 0":"#9ca3af"};
+const phCol=p=>PHC[p]||PHC[p.split(",")[0]];
+function puNew(){const G=PUOPT[PU.mo];$("#puM").innerHTML=G.map(g=>`<option${g==PU.m?" selected":""}>${g}</option>`).join("");$("#puV").innerHTML=G.map(g=>`<option${g==PU.v?" selected":""}>${g}</option>`).join("");
+ PU.mt=puGam(PU.m).map(g=>({g,used:false}));PU.vt=puGam(PU.v).map(g=>({g,used:false}));PU.rh=PU.mt.map(()=>null);PU.ch=PU.vt.map(()=>null);PU.cells={};PU.sel=null;puDraw()}
+function puDraw(){$("#puMg").textContent=PU.m+(PU.mo=="bg"?` (${bgPh(PU.m)})`:` (${puPh(PU.m)})`);$("#puVg").textContent=PU.v+(PU.mo=="bg"?` (${bgPh(PU.v)})`:` (${puPh(PU.v)})`);
+ const tiles=(L,side)=>L.map((t,i)=>`<button class="b tile${t.used?" used":""}" data-s="${side}" data-i="${i}" aria-pressed="${PU.sel&&PU.sel.s==side&&PU.sel.i==i}" ${t.used?"disabled":""}>${t.g}</button>`).join("");
+ $("#puMt").innerHTML=tiles(PU.mt,"m");$("#puVt").innerHTML=tiles(PU.vt,"v");
+ let h=`<tr><th class="corner">♀ \\ ♂</th>${PU.ch.map((g,j)=>`<th class="slot${g?"":" empty"}" data-s="v" data-j="${j}">${g||"?"}</th>`).join("")}</tr>`;
+ PU.rh.forEach((r,i)=>{h+=`<tr><th class="slot${r?"":" empty"}" data-s="m" data-j="${i}">${r||"?"}</th>`+PU.ch.map((c,j)=>{const k=i+","+j,v=PU.cells[k];if(v){const p=puPh(v);return`<td class="cell"><b>${v}</b><span><i style="background:${phCol(p)}"></i>${p.replace("Blutgruppe ","")}</span></td>`}return`<td class="cell empty" data-k="${k}">${r&&c?"antippen":""}</td>`}).join("")+"</tr>"});
+ $("#puT").innerHTML=h;
+ $$("#puMt .tile,#puVt .tile").forEach(b=>b.onclick=()=>{PU.sel={s:b.dataset.s,i:+b.dataset.i};puDraw();puMsg("Jetzt ein freies Feld am "+(PU.sel.s=="m"?"linken":"oberen")+" Rand antippen.")});
+ $$("#puT th.slot").forEach(t=>t.onclick=()=>{if(!PU.sel){puMsg("Tippe zuerst ein Keimzellen-Kärtchen an.");return}const sd=t.dataset.s,j=+t.dataset.j,L=sd=="m"?PU.rh:PU.ch;
+  if(sd!=PU.sel.s){puMsg("<b>Falscher Rand:</b> "+(PU.sel.s=="m"?"Keimzellen der Mutter gehören an den linken Rand.":"Keimzellen des Vaters gehören an den oberen Rand."));return}if(L[j]){puMsg("Dieses Feld ist schon belegt.");return}
+  const T=sd=="m"?PU.mt:PU.vt;L[j]=T[PU.sel.i].g;T[PU.sel.i].used=true;PU.sel=null;puDraw();puMsg(PU.rh.every(Boolean)&&PU.ch.every(Boolean)?"Alle Keimzellen sind am Rand. Tippe jetzt die Felder an.":"Weiter so!")});
+ $$("#puT td.empty").forEach(t=>t.onclick=()=>{const[i,j]=t.dataset.k.split(",").map(Number);if(!PU.rh[i]||!PU.ch[j]){puMsg("Fülle zuerst die Keimzellen am Rand aus.");return}PU.cells[t.dataset.k]=puComb(PU.rh[i],PU.ch[j]);puDraw()});
+ puRes()}
+function puMsg(m){$("#puInfo").innerHTML=m}
+function puRes(){const V=Object.values(PU.cells),n=PU.rh.length*PU.ch.length;if(V.length<n){$("#puRes").innerHTML=`<p class="mut" style="margin:0">Noch ${n-V.length} von ${n} Feldern auszufüllen.</p>`;return}
+ const cnt=(f)=>{const o={};V.forEach(v=>{const k=f(v);o[k]=(o[k]||0)+1});return Object.entries(o).sort((a,b)=>b[1]-a[1])};
+ const P=cnt(puPh),G=cnt(v=>v);
+ $("#puRes").innerHTML=`<h3>Ergebnis</h3><p style="margin:0 0 6px"><b>Aussehen:</b> ${P.map(([k,c])=>`<span style="white-space:nowrap"><i style="display:inline-block;width:11px;height:11px;border-radius:3px;background:${phCol(k)};margin:0 4px 0 2px"></i>${k}: ${c}/${n} = ${de(c/n*100,3)} %</span>`).join(" · ")}</p>
+  <p style="margin:0" class="small"><b>Genotypen:</b> ${G.map(([k,c])=>`${k}: ${c}`).join(" · ")}</p><p style="margin:6px 0 0" class="small">Verhältnis Aussehen: ${P.map(p=>p[1]).join(" : ")}</p>`}
+const puSetMo=seg("puMo",v=>{PU.mo=v;PU.m=PU.v=v=="2"?"AaBb":v=="bg"?"A0":"Aa";if(v=="bg")PU.v="B0";puNew();puMsg("Tippe ein Keimzellen-Kärtchen an.")});
+$("#puM").onchange=e=>{PU.m=e.target.value;puNew()};$("#puV").onchange=e=>{PU.v=e.target.value;puNew()};
+$("#puNew").onclick=puNew;
+$("#puAuto").onclick=()=>{PU.rh=PU.mt.map(t=>t.g);PU.ch=PU.vt.map(t=>t.g);PU.mt.forEach(t=>t.used=true);PU.vt.forEach(t=>t.used=true);PU.rh.forEach((r,i)=>PU.ch.forEach((c,j)=>PU.cells[i+","+j]=puComb(r,c)));PU.sel=null;puDraw()};
+function puSet(mo,m,v){PU.mo=mo;puSetMo(mo);PU.m=m;PU.v=v;puNew();puMsg("Tippe ein Keimzellen-Kärtchen an.")}
+tasks("punnett",[
+ {l:1,h:"Aa × Aa",p:"Fülle das Schema für zwei mischerbige Eltern aus. Welcher Anteil der Kinder ist weiß? Vergleiche mit dem Erbsengarten.",set:()=>puSet("1","Aa","Aa")},
+ {l:1,h:"Testkreuzung",p:"Fülle Aa × aa und AA × aa aus. Wie unterscheidet man an den Nachkommen, ob eine violette Pflanze AA oder Aa ist?",set:()=>puSet("1","Aa","aa")},
+ {l:1,h:"Blutgruppen",p:"Mutter A0, Vater B0: Welche Blutgruppen können die Kinder haben? Kann ein Kind Blutgruppe 0 haben?",set:()=>puSet("bg","A0","B0")},
+ {l:2,h:"Zwei Merkmale",p:"Fülle AaBb × AaBb aus (16 Felder!). Zähle die vier Erscheinungsbilder. Kommst du auf 9 : 3 : 3 : 1?",set:()=>puSet("2","AaBb","AaBb")},
+ {l:3,h:"Vaterschaft",p:"Ein Kind hat Blutgruppe 0, die Mutter Blutgruppe A. Welche Blutgruppen kommen für den Vater in Frage, welche sind ausgeschlossen? Prüfe mit dem Schema."}]);
+
+/* ===================== Zufall ===================== */
+const ZU={k:4,fam:[]};
+function zuAdd(n){for(let i=0;i<n;i++)ZU.fam.push(Array.from({length:ZU.k},()=>Math.random()<.25));zuC.redraw();zuG.redraw();zuUpd()}
+const binom=(n,k,p)=>{let c=1;for(let i=0;i<k;i++)c=c*(n-i)/(i+1);return c*p**k*(1-p)**(n-k)};
+const zuC=canv("zuC",o=>{const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const F=ZU.fam.slice(-20);if(!F.length){txt(x,"Klicke „20 Familien“.",w/2,h/2,{a:"center",size:15,c:col("--mut")});return}
+ const cols=2,rows=10,cw=w/cols,rh=h/rows;F.forEach((f,i)=>{const X0=(i%cols)*cw+10,Y0=Math.floor(i/cols)*rh+rh/2;txt(x,"Familie "+(ZU.fam.length-F.length+i+1),X0,Y0,{size:12,c:col("--mut")});
+  f.forEach((r,j)=>{const cx=X0+90+j*Math.min(26,(cw-110)/ZU.k),s=Math.min(9,rh*.32);x.fillStyle=r?"#8a4fc0":"transparent";x.strokeStyle=r?"#8a4fc0":col("--mut");x.lineWidth=1.6;x.beginPath();x.arc(cx,Y0-s*.6,s*.55,0,7);x.fill();x.stroke();x.beginPath();x.moveTo(cx-s*.8,Y0+s*1.1);x.quadraticCurveTo(cx,Y0-s*.2,cx+s*.8,Y0+s*1.1);x.closePath();x.fill();x.stroke()});
+  const n=f.filter(Boolean).length;txt(x,`${n} von ${ZU.k}`,X0+100+ZU.k*Math.min(26,(cw-110)/ZU.k),Y0,{size:12,w:700,c:n*4==ZU.k?col("--acc"):col("--ink")})})});
+const zuG=canv("zuG",o=>{const k=ZU.k,N=ZU.fam.length,H=new Array(k+1).fill(0);ZU.fam.forEach(f=>H[f.filter(Boolean).length]++);
+ chart(o,{x0:-.6,x1:k+.6,y0:0,y1:Math.max(.5,...H.map(v=>N?v/N:0),...Array.from({length:k+1},(_,i)=>binom(k,i,.25)))*1.15,xl:"Kinder mit rezessivem Merkmal",yl:"Anteil der Familien",extra:(x,X,Y)=>{
+  H.forEach((v,i)=>{if(!N)return;x.fillStyle=alpha(col("--allo"),.55);x.fillRect(X(i-.35),Y(v/N),X(i+.35)-X(i-.35),Y(0)-Y(v/N))});
+  for(let i=0;i<=k;i++){const p=binom(k,i,.25);x.fillStyle=col("--ink");x.beginPath();x.arc(X(i),Y(p),4.5,0,7);x.fill()}}})});
+function zuUpd(){const N=ZU.fam.length,k=ZU.k,ex=ZU.fam.filter(f=>f.filter(Boolean).length*4==k).length,tot=ZU.fam.reduce((s,f)=>s+f.filter(Boolean).length,0);
+ $("#zuInfo").innerHTML=N?`${N} Familien, ${N*k} Kinder: ${tot} mit rezessivem Merkmal (${de(tot/(N*k)*100,3)} %).`+(k%4==0?` Genau im Verhältnis 3 : 1 sind nur ${Math.round(ex/N*100)} % der Familien.`:""):"Noch keine Familien."}
+$("#zu1").onclick=()=>zuAdd(20);$("#zu100").onclick=()=>zuAdd(500);
+$("#zuClr").onclick=()=>{ZU.fam=[];zuC.redraw();zuG.redraw();zuUpd()};
+$("#zuK").oninput=e=>{ZU.k=+e.target.value;$("#zuKo").textContent=ZU.k;$("#zuClr").onclick()};
+function erfc(z){const t=1/(1+.5*z);return t*Math.exp(-z*z-1.26551223+t*(1.00002368+t*(.37409196+t*(.09678418+t*(-.18628806+t*(.27886807+t*(-1.13520398+t*(1.48851587+t*(-.82215223+t*.17087277)))))))))}
+function chUpd(){const d=+$("#chD").value||0,r=+$("#chR").value||0,n=d+r,q=+$("#chE").value,ed=n*q/(q+1),er=n/(q+1);if(!n){$("#chOut").textContent="";return}
+ const chi=(d-ed)**2/ed+(r-er)**2/er,p=erfc(Math.sqrt(chi/2));
+ $("#chOut").innerHTML=`Erwartet: ${de(ed,4)} : ${de(er,4)} · beobachtet ${d} : ${r} = ${ratio(d,r)}.<span class="l3"><br>χ² = ${de(chi,3)} · p ≈ ${p<.001?"< 0,001":de(p,2)} → ${chi>3.84?"<b>signifikante Abweichung</b> – das passt vermutlich nicht zu "+q+" : 1.":"keine signifikante Abweichung – die Abweichung kann Zufall sein."}</span>`}
+["chD","chR","chE"].forEach(i=>$("#"+i).addEventListener("input",chUpd));
+tasks("zufall",[
+ {l:1,h:"Vorhersage",p:"Vermute zuerst: Wie viele von 20 Familien mit 4 Kindern haben genau ein Kind mit rezessivem Merkmal? Klicke dann „20 Familien“.",set:()=>{$("#zuK").value=4;$("#zuK").oninput({target:$("#zuK")})}},
+ {l:1,h:"Viele Familien",p:"Füge 500 Familien dazu. Wie nah kommen die Balken an die Punkte? Was sagt das über einzelne Familien?"},
+ {l:2,h:"Einzelkinder",p:"Stell 1 Kind pro Familie ein. Welcher Anteil der Familien hat ein Kind mit rezessivem Merkmal? Vergleiche mit ¼."},
+ {l:3,h:"Mendel überprüfen",p:"Teste Mendels Zahlen (5474 : 1850) und eure Klassenstatistik mit dem Chi-Quadrat-Test. Passt es zu 3 : 1?"}]);
+
+/* ===================== Flauschi-Gene ===================== */
+const GN={F:{n:"Fellfarbe",up:"blau",lo:"gelb",mid:"grün",mode:"d"},H:{n:"Hörner",up:"keine Hörner",lo:"Hörner",mid:"kleine Hörner",mode:"d"},S:{n:"Schwanz",up:"langer Schwanz",lo:"kurzer Schwanz",mid:"mittlerer Schwanz",mode:"d"}};
+const GK=["F","H","S"];
+function phG(def,k,gt){const u=(gt.match(/[A-Z]/g)||[]).length;return def.mode=="i"?(u==2?"up":u==1?"mid":"lo"):(u?"up":"lo")}
+const FCOL={blau:"#4a7fe0",gelb:"#f2c230",grün:"#6cbf5a"};
+function phenoTxt(defs,keys,ind){return keys.map(k=>defs[k][phG(defs[k],k,ind[k])]).join(", ")}
+function drawFl(x,cx,cy,s,ind,defs,o={}){const lab=k=>defs[k]&&ind[k]?defs[k][phG(defs[k],k,ind[k])]:null;
+ const fc=lab("F"),hv=lab("H"),sv=lab("S"),col0=FCOL[fc]||"#4a7fe0";
+ const tl=sv==null?0:sv.startsWith("lang")?1:sv.startsWith("mittl")?.55:.22;
+ if(tl){x.strokeStyle=col0;x.lineWidth=s*.12;x.lineCap="round";x.beginPath();x.moveTo(cx+s*.55,cy+s*.2);x.quadraticCurveTo(cx+s*(.7+tl*.5),cy-s*.1,cx+s*(.6+tl*.7),cy-s*(.1+tl*.45));x.stroke()}
+ const hs=hv==null?0:hv=="Hörner"?1:hv=="kleine Hörner"?.5:0;if(hs){x.fillStyle="#e9dcc0";x.strokeStyle="rgba(0,0,0,.3)";x.lineWidth=1;for(const sg of[-1,1]){x.beginPath();x.moveTo(cx+sg*s*.28,cy-s*.42);x.lineTo(cx+sg*s*(.38+.1*hs),cy-s*(.55+.45*hs));x.lineTo(cx+sg*s*.12,cy-s*.5);x.closePath();x.fill();x.stroke()}}
+ x.fillStyle=col0;x.beginPath();x.ellipse(cx,cy,s*.58,s*.52,0,0,7);x.fill();x.strokeStyle=o.sel?col("--ink"):"rgba(0,0,0,.25)";x.lineWidth=o.sel?3:1;x.stroke();
+ for(let k=0;k<7;k++){const a=k/7*6.28;x.strokeStyle="rgba(255,255,255,.35)";x.lineWidth=1;x.beginPath();x.moveTo(cx+Math.cos(a)*s*.5,cy+Math.sin(a)*s*.45);x.lineTo(cx+Math.cos(a)*s*.6,cy+Math.sin(a)*s*.55);x.stroke()}
+ for(const sg of[-1,1]){x.fillStyle="#fff";x.beginPath();x.arc(cx+sg*s*.18,cy-s*.08,s*.13,0,7);x.fill();x.fillStyle="#1b1f24";x.beginPath();x.arc(cx+sg*s*.18+s*.03,cy-s*.06,s*.065,0,7);x.fill()}
+ x.strokeStyle="#1b1f24";x.lineWidth=Math.max(1,s*.04);x.beginPath();x.arc(cx,cy+s*.12,s*.12,.3,2.8);x.stroke();
+ x.fillStyle=alpha(col0,1);x.fillRect(cx-s*.32,cy+s*.42,s*.14,s*.14);x.fillRect(cx+s*.18,cy+s*.42,s*.14,s*.14);
+ if(o.geno)txt(x,Object.keys(defs).filter(k=>ind[k]).map(k=>ind[k]).join(" "),cx,cy+s*.78,{a:"center",size:Math.max(10,s*.24),w:700,c:col("--mut")})}
+const randGt=k=>norm(pick([k,k.toLowerCase()])+pick([k,k.toLowerCase()]));
+const crossInd=(a,b,keys)=>{const o={};keys.forEach(k=>o[k]=norm(pick(a[k])+pick(b[k])));return o};
+
+/* ===================== Wesen ===================== */
+const WE={p1:{F:"Ff",H:"Hh",S:"Ss"},p2:{F:"Ff",H:"Hh",S:"Ss"},off:[],sel:-1,N:16,cross:0,test:false,mis:null};
+function geneSel(id,ind,cb){$("#"+id).innerHTML=GK.map(k=>`<select data-k="${k}" style="width:auto;min-height:40px;padding:4px 8px">${[k+k,k+k.toLowerCase(),k.toLowerCase()+k.toLowerCase()].map(g=>`<option${g==ind[k]?" selected":""}>${g}</option>`).join("")}</select>`).join(" ");
+ $$("#"+id+" select").forEach(s=>s.onchange=()=>{ind[s.dataset.k]=s.value;cb()})}
+function weGenesUI(){$("#weGenes").innerHTML="<b>Gene festlegen</b>"+GK.map(k=>{const d=GN[k];return`<div style="margin-top:6px">${d.n} (${k}): <b>${k}</b> = ${d.up}, <b>${k.toLowerCase()}</b> = ${d.lo}<div class="row" style="margin-top:4px"><button class="b sm" data-k="${k}" data-a="mode">${d.mode=="d"?"dominant-rezessiv":"intermediär"}</button><button class="b sm" data-k="${k}" data-a="swap">tauschen</button></div></div>`}).join("");
+ $$("#weGenes button").forEach(b=>b.onclick=()=>{const d=GN[b.dataset.k];if(b.dataset.a=="mode")d.mode=d.mode=="d"?"i":"d";else[d.up,d.lo]=[d.lo,d.up];weGenesUI();weC.redraw();weTab()})}
+function weParents(){geneSel("weE1",WE.p1,()=>weC.redraw());geneSel("weE2",WE.p2,()=>weC.redraw())}
+let weHit=[];
+const weC=canv("weC",o=>{const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);const geno=$("#weGeno").checked,s0=Math.min(w*.12,h*.12);weHit=[];
+ txt(x,WE.test?"Testkreuzung":"Eltern",14,18,{size:14,w:700});drawFl(x,w*.33,h*.13,s0,WE.p1,GN,{geno});txt(x,"×",w*.5,h*.13,{a:"center",size:30,w:700});drawFl(x,w*.67,h*.13,s0,WE.p2,GN,{geno});
+ if(!geno){txt(x,phenoTxt(GN,GK,WE.p1),w*.33,h*.13+s0*.85,{a:"center",size:12,c:col("--mut")});txt(x,phenoTxt(GN,GK,WE.p2),w*.67,h*.13+s0*.85,{a:"center",size:12,c:col("--mut")})}
+ x.strokeStyle=col("--line");x.beginPath();x.moveTo(10,h*.27);x.lineTo(w-10,h*.27);x.stroke();
+ if(!WE.off.length){txt(x,"Klicke „Nachkommen bekommen“.",w/2,h*.6,{a:"center",size:15,c:col("--mut")});return}
+ txt(x,`Nachkommen (Kreuzung ${WE.cross}) – klicke ein Wesen an, um es auszuwählen`,14,h*.27+16,{size:13,w:600,c:col("--mut")});
+ const n=WE.off.length,cols=8,rows=Math.ceil(n/cols),cw=(w-20)/cols,ch=(h*.7-30)/rows,s=Math.min(cw,ch)*.42;
+ WE.off.forEach((ind,i)=>{const cx=10+(i%cols+.5)*cw,cy=h*.27+34+(Math.floor(i/cols)+.45)*ch;if(i==WE.sel){x.fillStyle=alpha(col("--acc"),.18);rr(x,cx-cw/2+3,cy-ch*.45,cw-6,ch-6,10);x.fill()}drawFl(x,cx,cy,s,ind,GN,{geno,sel:i==WE.sel});weHit.push([cx,cy,cw/2,ch/2])})});
+weC.c.addEventListener("click",e=>{const r=weC.c.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top;const i=weHit.findIndex(([cx,cy,a,b])=>Math.abs(px-cx)<a&&Math.abs(py-cy)<b);if(i<0)return;WE.sel=WE.sel==i?-1:i;["weS1","weS2","weTest","weChk"].forEach(b=>$("#"+b).disabled=WE.sel<0);weC.redraw()});
+function weTab(){const o={};WE.off.forEach(ind=>{const k=phenoTxt(GN,GK,ind);o[k]=(o[k]||0)+1});const n=WE.off.length;$("#weTab").innerHTML=Object.entries(o).sort((a,b)=>b[1]-a[1]).map(([k,c])=>`<tr><td>${k}</td><td class="n">${c}</td><td class="n">${Math.round(c/n*100)} %</td></tr>`).join("")||`<tr><td colspan="3" class="mut">Noch keine Nachkommen.</td></tr>`}
+function weBreed(){WE.off=Array.from({length:WE.N},()=>crossInd(WE.p1,WE.p2,GK));WE.sel=-1;WE.cross++;["weS1","weS2","weTest","weChk"].forEach(b=>$("#"+b).disabled=true);weC.redraw();weTab()}
+$("#weGo").onclick=()=>{WE.test=false;weBreed()};
+$("#weN").oninput=e=>{WE.N=+e.target.value;$("#weNo").textContent=WE.N};
+$("#weS1").onclick=()=>{WE.p1=Object.assign({},WE.off[WE.sel]);WE.test=false;weParents();weC.redraw()};
+$("#weS2").onclick=()=>{WE.p2=Object.assign({},WE.off[WE.sel]);WE.test=false;weParents();weC.redraw()};
+$("#weTest").onclick=()=>{const s=Object.assign({},WE.off[WE.sel]);WE.p1=s;WE.p2={F:"ff",H:"hh",S:"ss"};WE.test=true;weParents();weBreed();$("#weMisR").innerHTML="Testkreuzung mit einem reinerbig rezessiven Partner. Zeigen alle Nachkommen das dominante Merkmal, war die Auswahl wohl reinerbig."};
+$("#weGeno").onchange=()=>weC.redraw();
+function weMission(){const keys=lv()==1?[pick(["F","H"])]:pick([["F","H"],["F","S"],["H","S"]]);const t={};keys.forEach(k=>t[k]=pick(["up","lo"]));WE.mis={t,start:WE.cross};WE.p1={F:"Ff",H:"Hh",S:"Ss"};WE.p2={F:"Ff",H:"Hh",S:"Ss"};WE.off=[];weParents();weC.redraw();weTab();
+ $("#weMis").innerHTML=`Züchte ein <b>reinerbiges</b> Wesen mit diesem Aussehen: <b>${keys.map(k=>GN[k][t[k]]).join(", ")}</b>. Start: zwei mischerbige Eltern. Möglichst wenige Kreuzungen!`;$("#weMisR").textContent=""}
+$("#weMisN").onclick=weMission;
+$("#weChk").onclick=()=>{const ind=WE.off[WE.sel],M=WE.mis;if(!M)return;const keys=Object.keys(M.t);const look=keys.every(k=>phG(GN[k],k,ind[k])==M.t[k]),pure=keys.every(k=>ind[k][0]==ind[k][1]);
+ $("#weMisR").innerHTML=look&&pure?`<b>Geschafft!</b> Genotyp ${keys.map(k=>ind[k]).join(" ")} – reinerbig, nach ${WE.cross-M.start} Kreuzung${WE.cross-M.start==1?"":"en"}.`:look?"<b>Sieht richtig aus, ist aber mischerbig.</b> Eine Testkreuzung hätte es verraten.":"Das Aussehen passt noch nicht zum Auftrag."};
+function weSet(p1,p2,modes,mis){Object.assign(GN.F,{up:"blau",lo:"gelb"});Object.assign(GN.H,{up:"keine Hörner",lo:"Hörner"});Object.assign(GN.S,{up:"langer Schwanz",lo:"kurzer Schwanz"});GK.forEach((k,i)=>GN[k].mode=modes[i]);weGenesUI();WE.p1=p1;WE.p2=p2;WE.off=[];WE.test=false;weParents();weC.redraw();weTab();if(mis)weMission()}
+tasks("wesen",[
+ {l:1,h:"Erste Familie",p:"Kreuze ein reinerbig blaues (FF) mit einem gelben Flauschi (ff). Wie sehen die Kinder aus? Kreuze dann zwei Kinder miteinander.",set:()=>weSet({F:"FF",H:"HH",S:"SS"},{F:"ff",H:"HH",S:"SS"},["d","d","d"])},
+ {l:1,h:"Zuchtauftrag",p:"Nimm einen Zuchtauftrag an. Wähle geschickt Nachkommen als neue Eltern. Wie viele Kreuzungen brauchst du?",set:()=>weSet({F:"Ff",H:"Hh",S:"Ss"},{F:"Ff",H:"Hh",S:"Ss"},["d","d","d"],true)},
+ {l:1,h:"Blau ist nicht gleich blau",p:"Schalte die Genotypen ein. Finde zwei blaue Nachkommen mit verschiedenem Genotyp. Wie könnte man sie ohne Genotyp-Anzeige unterscheiden?"},
+ {l:2,h:"Testkreuzung",p:"Wähle ein blaues Flauschi und mache eine Testkreuzung. Was bedeutet es, wenn auch nur ein gelbes Kind dabei ist?"},
+ {l:2,h:"Intermediär",p:"Stelle die Fellfarbe auf „intermediär“ und kreuze Ff × Ff. Welches Verhältnis siehst du? Warum ist ein Zuchtauftrag jetzt leichter?",set:()=>weSet({F:"Ff",H:"HH",S:"SS"},{F:"Ff",H:"HH",S:"SS"},["i","d","d"])},
+ {l:3,h:"Drei Gene",p:"Kreuze FfHhSs × FfHhSs mit 32 Nachkommen. Wie viele verschiedene Erscheinungsbilder erwartest du theoretisch? Wie wahrscheinlich ist ein Wesen, das alle drei rezessiven Merkmale zeigt?",set:()=>weSet({F:"Ff",H:"Hh",S:"Ss"},{F:"Ff",H:"Hh",S:"Ss"},["d","d","d"])}]);
+weGenesUI();weParents();weTab();weMission();
+
+/* ===================== Detektiv ===================== */
+const DGN={F:{n:"Fellfarbe",up:"blau",lo:"gelb",mode:"d"},H:{n:"Hörner",up:"keine Hörner",lo:"Hörner",mode:"d"}};
+const DE={mo:1,keys:["F"],p1:null,p2:null,off:[],t1:{},t2:{},score:[0,0]};
+function dist(a,b,keys){const o={};const go=(i,acc)=>{if(i==keys.length){const k=phenoTxt(DGN,keys,acc);o[k]=(o[k]||0)+1;return}const g=keys[i];for(const x of a[g])for(const y of b[g])go(i+1,Object.assign({},acc,{[g]:norm(x+y)}))};go(0,{});const s=Object.values(o).reduce((p,q)=>p+q,0);for(const k in o)o[k]/=s;return o}
+const same=(A,B)=>{const ks=new Set([...Object.keys(A),...Object.keys(B)]);for(const k of ks)if(Math.abs((A[k]||0)-(B[k]||0))>1e-9)return false;return true};
+function deNew(){DE.keys=DE.mo==1?["F"]:["F","H"];let tr=0;do{DE.p1={};DE.p2={};DE.keys.forEach(k=>{DE.p1[k]=randGt(k);DE.p2[k]=randGt(k)});tr++}while(tr<50&&Object.keys(dist(DE.p1,DE.p2,DE.keys)).length<2);
+ DE.off=Array.from({length:40},()=>crossInd(DE.p1,DE.p2,DE.keys));DE.t1={};DE.t2={};DE.keys.forEach(k=>{DE.t1[k]=k+k;DE.t2[k]=k+k});
+ const gs=(id,ind)=>{$("#"+id).innerHTML=DE.keys.map(k=>`<select data-k="${k}" style="width:auto;min-height:40px;padding:4px 8px">${[k+k,k+k.toLowerCase(),k.toLowerCase()+k.toLowerCase()].map(g=>`<option>${g}</option>`).join("")}</select>`).join(" ");$$("#"+id+" select").forEach(s=>s.onchange=()=>ind[s.dataset.k]=s.value)};
+ gs("deE1",DE.t1);gs("deE2",DE.t2);$("#deInfo").innerHTML=`Dominant: ${DE.keys.map(k=>`<b>${k}</b> = ${DGN[k].up}`).join(", ")}; rezessiv: ${DE.keys.map(k=>`<b>${k.toLowerCase()}</b> = ${DGN[k].lo}`).join(", ")}.`;
+ const o={};DE.off.forEach(ind=>{const k=phenoTxt(DGN,DE.keys,ind);o[k]=(o[k]||0)+1});$("#deTab").innerHTML=Object.entries(o).sort((a,b)=>b[1]-a[1]).map(([k,c])=>`<tr><td>${k}</td><td class="n">${c}</td></tr>`).join("");deC.redraw()}
+const deC=canv("deC",o=>{const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);if(!DE.p1)return;const s0=Math.min(w*.11,h*.13);
+ drawFl(x,w*.33,h*.15,s0,DE.p1,DGN,{});txt(x,"×",w*.5,h*.15,{a:"center",size:30,w:700});drawFl(x,w*.67,h*.15,s0,DE.p2,DGN,{});
+ txt(x,"Elter 1: "+phenoTxt(DGN,DE.keys,DE.p1),w*.33,h*.15+s0*.85,{a:"center",size:12,w:600,c:col("--mut")});txt(x,"Elter 2: "+phenoTxt(DGN,DE.keys,DE.p2),w*.67,h*.15+s0*.85,{a:"center",size:12,w:600,c:col("--mut")});
+ const cols=10,cw=(w-20)/cols,ch=(h*.62)/4,s=Math.min(cw,ch)*.4;DE.off.forEach((ind,i)=>drawFl(x,10+(i%cols+.5)*cw,h*.36+(Math.floor(i/cols)+.5)*ch,s,ind,DGN,{}))});
+$("#deChk").onclick=()=>{const ok=same(dist(DE.t1,DE.t2,DE.keys),dist(DE.p1,DE.p2,DE.keys))&&phenoTxt(DGN,DE.keys,DE.t1)==phenoTxt(DGN,DE.keys,DE.p1)&&phenoTxt(DGN,DE.keys,DE.t2)==phenoTxt(DGN,DE.keys,DE.p2);
+ const ok2=!ok&&same(dist(DE.t1,DE.t2,DE.keys),dist(DE.p1,DE.p2,DE.keys))&&phenoTxt(DGN,DE.keys,DE.t1)==phenoTxt(DGN,DE.keys,DE.p2);
+ DE.score[1]++;if(ok||ok2)DE.score[0]++;
+ const tip=phenoTxt(DGN,DE.keys,DE.t1)!=phenoTxt(DGN,DE.keys,DE.p1)&&!ok2?" Tipp: Dein Elter 1 hätte gar nicht dieses Aussehen.":"";
+ $("#deInfo").innerHTML=ok||ok2?`<b>Richtig!</b> Die Eltern waren ${DE.keys.map(k=>DE.p1[k]).join(" ")} × ${DE.keys.map(k=>DE.p2[k]).join(" ")}.`:`<b>Noch nicht.</b> Mit deinen Eltern würde man ein anderes Verhältnis erwarten.${tip} Überlege: Gibt es Kinder mit rezessivem Merkmal? Dann tragen beide Eltern ein rezessives Allel.`;
+ $("#deScore").textContent=`Gelöst: ${DE.score[0]} von ${DE.score[1]} Versuchen`};
+$("#deNew").onclick=deNew;seg("deMo",v=>{DE.mo=+v;deNew()});
+tasks("detektiv",[
+ {l:1,h:"Gelbe Kinder",p:"Zwei blaue Eltern haben auch gelbe Kinder. Was weißt du dann sicher über die Allele beider Eltern?"},
+ {l:1,h:"Fünf Fälle",p:"Löse fünf Fälle mit einem Gen. Notiere jeweils, woran du es erkannt hast."},
+ {l:2,h:"Zwei Gene",p:"Stell „zwei Gene“ ein. Betrachte die Gene einzeln: zuerst nur die Fellfarbe, dann nur die Hörner."},
+ {l:3,h:"Grenzen",p:"Warum kann man bei manchen Fällen nicht eindeutig sagen, ob ein Elternteil FF oder Ff ist? Wie viele Nachkommen bräuchte man, um sicherer zu sein?"}]);
+deNew();
+
+/* ===================== Stammbaum ===================== */
+const STN={ad:"autosomal-dominant",ar:"autosomal-rezessiv",xr:"X-chromosomal-rezessiv"};
+const ST={mode:"ar",P:[],score:[0,0],answered:false};
+function affected(p,m){if(m=="ad")return p.g.includes("A");if(m=="ar")return p.g=="aa";return p.sex=="m"?p.g[0]=="a":p.g=="aa"}
+function kid(f,mo,m,sex){if(m=="xr"){const fromM=pick(mo.g.split(""));return sex=="m"?fromM+"Y":norm(fromM+f.g[0])}return norm(pick(f.g)+pick(mo.g))}
+function stGen(){const m=pick(["ad","ar","xr"]);for(let tr=0;tr<400;tr++){const P=[];const add=(sex,g,gen,par)=>{const p={sex,g,gen,par,id:P.length};P.push(p);return p};
+ let f,mo;if(m=="ad"){const af=Math.random()<.5;f=add("m",af?"Aa":"aa",0);mo=add("f",af?"aa":"Aa",0)}else if(m=="ar"){f=add("m",pick(["Aa","Aa","AA"]),0);mo=add("f",pick(["Aa","Aa","aa"]),0)}else{f=add("m",pick(["AY","AY","aY"]),0);mo=add("f",pick(["Aa","Aa","AA"]),0)}
+ if(m=="ar"&&f.g=="AA"&&mo.g!="aa")continue;if(m=="xr"&&mo.g=="AA"&&f.g=="AY")continue;
+ const II=[];const nII=3+Math.floor(Math.random()*2);for(let i=0;i<nII;i++){const sex=pick(["m","f"]);II.push(add(sex,kid(f,mo,m,sex),1,[f.id,mo.id]))}
+ const married=II.filter(()=>Math.random()<.6).slice(0,2);if(married.length<2)married.push(...II.filter(p=>!married.includes(p)).slice(0,2-married.length));
+ for(const p of married){const sx=p.sex=="m"?"f":"m";const g=m=="ad"?"aa":m=="ar"?(Math.random()<.3?"Aa":"AA"):(sx=="m"?"AY":"AA");const sp=add(sx,g,1,null);sp.spouse=p.id;p.sp=sp.id;
+  const fa=p.sex=="m"?p:sp,mm=p.sex=="m"?sp:p;const n=2+Math.floor(Math.random()*2);for(let i=0;i<n;i++){const sex=pick(["m","f"]);add(sex,kid(fa,mm,m,sex),2,[fa.id,mm.id])}}
+ P.forEach(p=>p.aff=affected(p,m));const A=P.filter(p=>p.aff),par=p=>p.par?p.par.map(i=>P[i]):null;
+ if(A.length<2||A.length>P.length*.6)continue;
+ let ok=false;if(m=="ar")ok=P.some(p=>p.aff&&p.par&&par(p).every(q=>!q.aff));
+ if(m=="ad")ok=P.some(p=>p.gen==2&&p.aff&&par(p).some(q=>q.aff))&&P.some(p=>p.par&&!p.aff&&par(p).some(q=>q.aff));
+ if(m=="xr")ok=A.filter(p=>p.sex=="m").length>=2&&!A.some(p=>p.sex=="f")&&P.some(p=>p.gen==2&&p.aff&&!par(p).find(q=>q.sex=="f").aff);
+ if(ok){ST.mode=m;ST.P=P;ST.answered=false;return}}
+ stGen()}
+function stLayout(w,h){const P=ST.P,II=P.filter(p=>p.gen==1&&p.par),slots=[];II.forEach(p=>{slots.push(p);if(p.sp!=null)slots.push(P[p.sp])});
+ const sp=w/(slots.length+1);slots.forEach((p,i)=>{p.x=sp*(i+1);p.y=h*.45});const I=P.filter(p=>p.gen==0);I[0].x=w/2-sp*.6;I[1].x=w/2+sp*.6;I.forEach(p=>p.y=h*.16);
+ II.filter(p=>p.sp!=null).forEach(p=>{const s=P[p.sp],kids=P.filter(q=>q.gen==2&&q.par.includes(p.id)),mx=(p.x+s.x)/2,ks=Math.min(sp*.75,60);kids.forEach((k,i)=>{k.x=mx+(i-(kids.length-1)/2)*ks;k.y=h*.76})})}
+const stC=canv("stC",o=>{const x=o.x,w=o.w,h=o.h;x.clearRect(0,0,w,h);if(!ST.P.length)return;stLayout(w,h);const P=ST.P,r=Math.min(16,w/40),show=$("#stGeno").checked&&lv()>1;
+ x.strokeStyle=col("--ink");x.lineWidth=1.6;
+ const fam=(a,b,kids)=>{x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke();if(!kids.length)return;const mx=(a.x+b.x)/2,yb=(a.y+kids[0].y)/2;x.beginPath();x.moveTo(mx,a.y);x.lineTo(mx,yb);const xs=kids.map(k=>k.x);x.moveTo(Math.min(...xs,mx),yb);x.lineTo(Math.max(...xs,mx),yb);kids.forEach(k=>{x.moveTo(k.x,yb);x.lineTo(k.x,k.y-r)});x.stroke()};
+ const I=P.filter(p=>p.gen==0);fam(I[0],I[1],P.filter(p=>p.gen==1&&p.par));P.filter(p=>p.gen==1&&p.par&&p.sp!=null).forEach(p=>fam(p,P[p.sp],P.filter(q=>q.gen==2&&q.par.includes(p.id))));
+ ["I","II","III"].forEach((t,i)=>txt(x,t,14,h*[.16,.45,.76][i],{size:15,w:700,c:col("--mut")}));
+ P.forEach((p,i)=>{x.fillStyle=p.aff?col("--ink"):col("--bg");x.strokeStyle=col("--ink");x.lineWidth=2;x.beginPath();if(p.sex=="m")x.rect(p.x-r,p.y-r,2*r,2*r);else x.arc(p.x,p.y,r,0,7);x.fill();x.stroke();
+  const carrier=!p.aff&&(ST.mode=="ar"&&p.g=="Aa"||ST.mode=="xr"&&p.sex=="f"&&p.g=="Aa");if(show&&carrier){x.fillStyle=col("--ink");x.beginPath();x.arc(p.x,p.y,r*.3,0,7);x.fill()}
+  if(show){const g=ST.mode=="xr"?(p.sex=="m"?"X"+(p.g[0]=="A"?"ᴬ":"ᵃ")+"Y":"X"+(p.g[0]=="A"?"ᴬ":"ᵃ")+"X"+(p.g[1]=="A"?"ᴬ":"ᵃ")):p.g;txt(x,g,p.x,p.y+r+12,{a:"center",size:12,w:700,c:col("--mut")})}})});
+$$("#stAns button").forEach(b=>b.onclick=()=>{if(ST.answered)return;ST.answered=true;const ok=b.dataset.v==ST.mode;ST.score[1]++;if(ok)ST.score[0]++;
+ const why={ar:"Zwei Eltern ohne das Merkmal haben ein Kind mit dem Merkmal – also tragen beide das Allel versteckt. Das geht nur rezessiv. Frauen und Männer können betroffen sein.",ad:"Betroffene haben immer einen betroffenen Elternteil, das Merkmal überspringt keine Generation. Betroffene Eltern haben auch Kinder ohne Merkmal – das passt zu dominant (Aa).",xr:"Nur Männer sind betroffen. Sie haben das Merkmal von ihren Müttern, die selbst unauffällig sind (Überträgerinnen)."}[ST.mode];
+ $("#stOut").innerHTML=`<p style="margin:0">${ok?"<b>Richtig!</b>":"<b>Nicht ganz.</b> Es ist "+STN[ST.mode]+"."} ${why}</p>`+(lv()>1?"<p class='note'>Schalte „Genotypen zeigen“ ein, um die Allele zu sehen.</p>":"");$("#stScore").textContent=`Richtig: ${ST.score[0]} von ${ST.score[1]}`});
+$("#stNew").onclick=()=>{stGen();$("#stOut").innerHTML="<p class='mut' style='margin:0'>Wähle rechts deine Antwort.</p>";stC.redraw()};
+$("#stGeno").onchange=()=>stC.redraw();
+tasks("stammbaum",[
+ {l:1,h:"Fünf Stammbäume",p:"Löse fünf Stammbäume. Schreibe zu jedem den Satz auf, der dich überzeugt hat."},
+ {l:1,h:"Das Erkennungszeichen",p:"Finde in einem autosomal-rezessiven Stammbaum die Familie, die „dominant“ ausschließt. Erkläre."},
+ {l:2,h:"Überträger",p:"Schalte die Genotypen ein. Wer ist Überträger:in (Punkt), ohne selbst das Merkmal zu zeigen?"},
+ {l:3,h:"Vater und Sohn",p:"Warum kann ein Vater eine X-chromosomal-rezessive Krankheit nie an seinen Sohn weitergeben, aber an seine Enkel?"}]);
+stGen();
+
+/* ===================== Start ===================== */
+try{const l=localStorage.getItem("verblvl");if(l)setLvl(l)}catch(e){}
+document.body.addEventListener("click",e=>{if(e.target.closest(".lvl")){gaUpd();gaC.redraw();chUpd();stC.redraw()}});
+route();gaSet("P",["AA","aa"]);puNew();puMsg("Tippe ein Keimzellen-Kärtchen an.");zuUpd();chUpd();
+
+</script>
+</body>
+</html>
