@@ -43,6 +43,7 @@ Schlagwörter. Ist nicht klar, in welches Fach eine neue Simulation gehört: nac
 | `Zellteilung/` | `Zellteilungslabor.html` | **Biologie:** Mitose und Meiose Schritt für Schritt (auch selbst ordnen und trennen), Vergleich, Vielfalt der Keimzellen und Geschwister, Nondisjunktion und Karyogramm-Rätsel, Zwiebelwurzelspitze mit Mitoseindex |
 | `Vererbung/` | `Vererbungslabor.html` | **Biologie:** Erbsengarten (P, F1, F2, Rückkreuzung, Klassenstatistik), Kreuzungsschema zum Selbstausfüllen (ein/zwei Merkmale, Blutgruppen), Zufall und Chi-Quadrat, Fantasiewesen züchten mit Zuchtauftrag und Testkreuzung, Detektiv-Rätsel, Stammbaumanalyse |
 | `Mathematik/` | `Trigonometrielabor.html` | **Mathematik:** Einheitskreis (sin, cos, tan, Vorzeichen, Symmetrien, Bogenmaß, exakte Werte), vom Kreis zur Kurve (Gleichungen sin x = k), rechtwinkeliges Dreieck mit Sachaufgaben und Aufgabengenerator, Sinusfunktion a · sin(b(x − c)) + d mit Rätsel und Ton, Sinus- und Kosinussatz mit Vermessung |
+| `Informatik/` | `Binaerlabor.html` | **Informatik:** Zahlensysteme (Bits, Hex, Oktal, Divisionsverfahren, Rätsel), Logikgatter mit Wahrheitstafeln (DIN/US, Schaltermodell, Tafel ausfüllen, geheimes Gatter), Schaltungsbaukasten mit automatischer Wahrheitstafel und Aufgaben, Halb-/Volladdierer und Addierwerk, Zweierkomplement und Subtrahierwerk, schriftliches Rechnen im Zweiersystem |
 
 ## Stoßprozesse – Stoss-Simulation.html
 
@@ -453,3 +454,28 @@ Gleiche Farben überall: Sinus rot, Kosinus blau, Tangens violett, Winkel orange
 - **Sinus- und Kosinussatz:** Dreieck mit ziehbaren Ecken, Winkelsumme, Sinussatz mit Umkreis, Kosinussatz, Flächenformeln,
   Vermessung einer Flussbreite.
 
+## Informatik – Binaerlabor.html
+
+Sechs Stationen (auch direkt über `#zahlen`, `#gatter`, `#bauen`, `#addierer`, `#minus`, `#rechner`), jeweils mit Versuchen,
+Aufträgen, Erklärungen und drei Niveaustufen:
+
+- **Zahlensysteme:** 1–16 Bit als Lämpchen mit Stellenwerten zum Antippen; Zählen (Überlauf), verdoppeln/halbieren durch Verschieben,
+  Dezimal-, Binär- und Hex-Eingabe; ab *Mittel* Hex-Gruppen und Divisionsverfahren, *Anspruchsvoll* Zweierpotenzen, Oktalgruppen.
+  Rätsel „Zahl einstellen“ und „Zahl ablesen“.
+- **Logikgatter:** UND, ODER, NICHT, NAND, NOR, XOR, XNOR mit 2 oder 3 Eingängen; Schaltzeichen nach DIN EN 60617 oder US-Norm;
+  Wahrheitstafel mit antippbaren Zeilen; Schaltermodell (Reihe, parallel, Öffner, Wechselschaltung); Schreibweisen in Worten,
+  Logik, Schaltalgebra und Programmiersprachen. Üben: Wahrheitstafel ausfüllen, geheimes Gatter erraten.
+- **Schaltungen bauen:** Schalter, Lämpchen und Gatter (2–4 Eingänge) hinzufügen und mit Kabeln verbinden; Wahrheitstafel und
+  Formel entstehen automatisch, *Anspruchsvoll* mit disjunktiver Normalform. Aufgaben mit Live-Prüfung (Alarmanlage,
+  Mehrheitsentscheid, NICHT/UND/ODER nur aus NAND, Halb- und Volladdierer), dazu De Morgan, RS-Flipflop und Taktgeber.
+  Zeitlupe, Rückgängig.
+- **Addierer:** Halbaddierer und Volladdierer aus Gattern mit Wahrheitstafel; Addierwerk mit 4 oder 8 Volladdierern,
+  Überlauf, Gatterlaufzeit in Zeitlupe (wandernder Übertrag), schriftliche Rechnung.
+- **Negative Zahlen:** Zahlenkreis mit 4 Bit (ohne Vorzeichen, Zweierkomplement, Vorzeichen und Betrag), Rechnen am Kreis
+  (3 − 5 = 3 + 11); Zweierkomplement Schritt für Schritt mit Probe; Addier-/Subtrahierwerk mit XOR-Gattern und Steuerbit M,
+  Deutung mit und ohne Vorzeichen, Carry und Overflow.
+- **Binärrechner:** schriftliches Addieren, Subtrahieren (Ergänzungsverfahren), Multiplizieren und Dividieren im Zweiersystem
+  Spalte für Spalte; bitweise UND, ODER, XOR, NICHT (Bitmaske, ASCII, XOR-Verschlüsselung) und Verschieben.
+
+Modell: Schaltungen werden schrittweise ausgewertet, bis sie stabil sind (Rückkopplungen behalten ihren Zustand); in der Zeitlupe
+schalten alle Gatter gleichzeitig mit einer Gatterlaufzeit von 0,35 s.

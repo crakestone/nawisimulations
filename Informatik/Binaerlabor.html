@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Binärlabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday school lab, calm and exact, legible on a projector
+   IDEA the electronics kit on the desk: switches, lamps, logic chips, a breadboard, the column sum in the exercise book
+   PICTURE the live canvas (bit lamps, gates with glowing wires, adder chains, column arithmetic)
+   COLOUR white ground, dark ink; signal 1 orange, signal 0 grey, A blue, B magenta, carry violet, accent cyan (Informatik)
+   TYPE Atkinson Hyperlegible, JetBrains Mono for bits
+   LAYOUT laptop: experiments | stage | panel; phone: stage, panel, experiments */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#10161b);--ink:light-dark(#14212b,#e6ecf1);--mut:light-dark(#5a6772,#9babb7);--line:light-dark(#dde3e8,#29343d);--pan:light-dark(#f2f5f7,#18212a);--fld:light-dark(#ffffff,#0c1115);
+  --on:light-dark(#e8590c,#ff8a3d);--off:light-dark(#aab4bd,#4a5661);--acc:light-dark(#0e7490,#22b8cf);--a:light-dark(#2762c9,#6198ff);--b:light-dark(#c2255c,#f06595);--c:light-dark(#7b3cc4,#bb90ff);--ok:light-dark(#1f7a4d,#53c98a);--no:light-dark(#d6336c,#ff6b8b);--amb:light-dark(#c27a0e,#f2b443)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 "Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:clip}
+button,select,input{font:inherit;color:inherit}
+#app{display:grid;grid-template-rows:auto minmax(0,1fr);height:100%}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand svg{flex:none}
+h1{font-size:26px;line-height:1.05;margin:0;letter-spacing:-.02em}
+h1 a{color:inherit;text-decoration:none}
+h1 a:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+.tabs{display:flex;gap:3px;background:var(--pan);padding:4px;border-radius:12px;flex-wrap:wrap}
+.tabs button{border:0;background:none;padding:8px 11px;border-radius:9px;cursor:pointer;font-weight:700;min-height:40px}
+.tabs button[aria-selected=true]{background:var(--ink);color:var(--bg)}
+.btn{border:1px solid var(--line);background:var(--bg);padding:7px 12px;border-radius:9px;cursor:pointer;min-height:38px;white-space:nowrap}
+.btn:hover{border-color:var(--mut)}
+.btn[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.hot{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:700}
+.btn:disabled{opacity:.45;cursor:default}
+.tsep{width:1px;align-self:stretch;background:var(--line);margin:0 4px}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--a);outline-offset:2px}
+.lvl{display:flex;gap:3px;background:var(--pan);padding:4px;border-radius:12px}
+.lvl button{border:0;background:none;padding:6px 9px;border-radius:8px;cursor:pointer;font-size:14px;min-height:34px}
+.lvl button[aria-pressed=true]{background:var(--bg);box-shadow:0 0 0 1px var(--line);font-weight:700}
+main{display:grid;grid-template-columns:250px minmax(0,1fr) 340px;min-height:0}
+#lib{overflow:auto;border-right:1px solid var(--line);padding:12px}
+#lib h2{font-size:13px;color:var(--mut);margin:14px 4px 6px;font-weight:700}
+#lib h2:first-child{margin-top:2px}
+.pre{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:10px;cursor:pointer;margin-bottom:2px}
+.pre b{display:block;font-size:15px}
+.pre span{display:block;font-size:13px;color:var(--mut);line-height:1.3}
+.pre:hover{background:var(--pan)}
+.pre[aria-current=true]{background:var(--pan);box-shadow:inset 3px 0 0 var(--acc)}
+#stage{display:flex;flex-direction:column;min-height:0}
+#tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line);min-height:55px}
+#cvw{position:relative;flex:1;min-height:320px;background:var(--fld)}
+#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+#status{font-size:13px;color:var(--mut);padding:5px 12px;border-top:1px solid var(--line);min-height:28px}
+#panel{overflow:auto;border-left:1px solid var(--line);padding:6px 14px 20px}
+.card{border-bottom:1px solid var(--line);padding:10px 0 12px}
+.card:last-child{border-bottom:0}
+.card h3{font-size:17px;margin:0 0 6px;line-height:1.2}
+.card p{margin:4px 0}
+.obs{background:var(--pan);border-radius:10px;padding:9px 11px;margin:6px 0}
+details summary{cursor:pointer;font-weight:700;margin-top:6px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;align-items:center;margin:8px 0 2px;font-size:14px}
+.row output{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--acc);height:26px;margin:0}
+.seg{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
+.seg button{flex:1 1 auto;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:6px 8px;cursor:pointer;min-height:36px;font-size:14px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chk{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px}
+.chk label{display:flex;align-items:center;gap:6px;min-height:32px;cursor:pointer}
+.chk input{width:18px;height:18px;accent-color:var(--acc)}
+.kv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;font-size:15px;margin-top:6px}
+.kv b{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.formel{background:var(--pan);border-radius:10px;padding:9px 11px;font-size:15px;line-height:1.7;margin-top:6px;font-variant-numeric:tabular-nums;overflow-x:auto}
+.mono,.inp.mono{font-family:"JetBrains Mono",ui-monospace,Consolas,monospace}
+.small{font-size:13px;color:var(--mut)}
+.big{font-size:clamp(28px,4vw,40px);font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums}
+.inp{border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--bg);font-size:16px;min-height:40px;width:9em;flex:1 1 8em}
+.fl{display:grid;grid-template-columns:5.2em minmax(0,1fr);gap:6px 8px;align-items:center;margin-top:6px}
+.fl label{font-size:14px;color:var(--mut)}
+.fl .inp{width:100%}
+.res{font-weight:700;margin-top:6px}
+.res.ok{color:var(--ok)}.res.no{color:var(--no)}
+.tt{border-collapse:collapse;font-family:"JetBrains Mono",ui-monospace,Consolas,monospace;font-size:14px;margin-top:6px}
+.tt th,.tt td{border:1px solid var(--line);padding:3px 9px;text-align:center}
+.tt th{background:var(--pan)}
+.tt tr.cur td{background:color-mix(in srgb,var(--on) 18%,transparent);font-weight:700}
+.tt td.o{font-weight:700}
+.tt td.bad{color:var(--no)}
+.tt tbody tr{cursor:pointer}
+.ttw{overflow:auto;max-height:430px}
+.on{color:var(--on);font-weight:700}.ca{color:var(--a);font-weight:700}.cb{color:var(--b);font-weight:700}.cc{color:var(--c);font-weight:700}.cok{color:var(--ok);font-weight:700}
+.sch{border-collapse:collapse;font-size:18px;margin-top:4px}
+.sch th{padding:1px 8px 1px 0;color:var(--mut);font-weight:700;text-align:right}
+.sch td{padding:1px 5px;text-align:center;min-width:1.1em}
+.sch tr.tl td{border-top:2px solid var(--ink)}
+.sch td.sv{font-family:"Atkinson Hyperlegible",system-ui,sans-serif;font-size:13px;color:var(--mut);text-align:left;padding-left:12px}
+.sch td.bad{color:var(--no);font-weight:700}.sch td.on{color:var(--on);font-weight:700}.sch td.ca{color:var(--a)}.sch td.cb{color:var(--b)}.sch td.cc{color:var(--c);font-size:13px}
+#probe{display:none}
+@media(max-width:1150px){main{grid-template-columns:215px minmax(0,1fr) 300px}.tabs button{padding:8px 8px}}
+@media(max-width:900px){
+  html,body,#app{height:auto}
+  main{grid-template-columns:minmax(0,1fr)}
+  #stage{order:1}
+  #cvw{flex:none;height:min(64vh,560px)}
+  #panel{order:2;border:0;border-top:1px solid var(--line);overflow:visible}
+  #lib{order:3;border:0;border-top:1px solid var(--line);overflow:visible}
+  h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div class="brand">
+    <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect x="2.5" y="6" width="13" height="22" rx="3" fill="none" stroke="currentColor" stroke-width="2.4"/><text x="9" y="22.5" font-size="14" font-weight="700" text-anchor="middle" fill="currentColor" font-family="sans-serif">0</text><rect x="18.5" y="6" width="13" height="22" rx="3" fill="#e8590c"/><text x="25" y="22.5" font-size="14" font-weight="700" text-anchor="middle" fill="#fff" font-family="sans-serif">1</text></svg>
+    <h1><a href="../index.html" title="Zur Startseite">Binärlabor</a></h1>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Stationen">
+    <button role="tab" data-mode="zahlen">Zahlensysteme</button>
+    <button role="tab" data-mode="gatter">Logikgatter</button>
+    <button role="tab" data-mode="bauen">Schaltungen bauen</button>
+    <button role="tab" data-mode="addierer">Addierer</button>
+    <button role="tab" data-mode="minus">Negative Zahlen</button>
+    <button role="tab" data-mode="rechner">Binärrechner</button>
+  </nav>
+  <div class="lvl" role="group" aria-label="Niveau"><button data-lvl="1">Einfach</button><button data-lvl="2">Mittel</button><button data-lvl="3">Anspruchsvoll</button></div>
+  <button class="btn" id="bFull">Vollbild</button>
+</header>
+<main>
+  <aside id="lib" aria-label="Versuche"></aside>
+  <section id="stage">
+    <div id="tools"></div>
+    <div id="cvw"><canvas id="cv" aria-label="Simulation"></canvas></div>
+    <div id="status"></div>
+  </section>
+  <aside id="panel" aria-label="Einstellungen"></aside>
+</main>
+</div>
+<div id="probe"></div>
+<script>
+{
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const cv=$('#cv'),ctx=cv.getContext('2d'),PN=$('#panel'),TL=$('#tools');
+let CW=1,CH=1,DPR=1;
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const PI=Math.PI,TAU=PI*2;
+const mod=(x,m)=>((x%m)+m)%m;
+const FONT='"Atkinson Hyperlegible",system-ui,sans-serif',MONO='"JetBrains Mono",ui-monospace,Consolas,monospace';
+const MODES={},APP={mode:'',frame:0,lvl:2};
+const lvlShow=n=>APP.lvl>=n;
+const F=v=>(v<0?'−':'')+Math.abs(v).toLocaleString('de-AT');
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const bitsOf=(v,n)=>{const r=[];for(let i=n-1;i>=0;i--)r.push((v>>>i)&1);return r};
+/* Binärzahl mit Vierergruppen */
+function bstr(v,n,gap=' '){let s='';for(let i=n-1;i>=0;i--){s+=(v>>>i)&1;if(i&&i%4===0)s+=gap}return s}
+const hstr=(v,n)=>(v>>>0).toString(16).toUpperCase().padStart(Math.ceil(n/4),'0');
+const ostr=v=>(v>>>0).toString(8);
+const sub2=s=>s+'₂';
+const SUPD='⁰¹²³⁴⁵⁶⁷⁸⁹',sup=n=>String(n).split('').map(c=>SUPD[+c]).join('');
+const signed=(v,n)=>v>=2**(n-1)?v-2**n:v;
+
+/* ---------- Farben ---------- */
+const C={};
+const rgb=s=>{const m=s.match(/[\d.]+/g)||[0,0,0];return [+m[0],+m[1],+m[2]]};
+const cs=(k,a)=>a==null?`rgb(${C[k].join(',')})`:`rgba(${C[k].join(',')},${a})`;
+const CK=['bg','ink','mut','line','pan','fld','on','off','acc','a','b','c','ok','no','amb'];
+function readCols(){const pr=$('#probe');for(const k of CK){pr.style.color=`var(--${k})`;C[k]=rgb(getComputedStyle(pr).color)}}
+
+/* ---------- Weltkoordinaten: jede Station zeichnet in einer festen Fläche ---------- */
+const V={s:1,ox:0,oy:0,w:1000,h:600};
+function bg(){ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle=cs('fld');ctx.fillRect(0,0,CW,CH)}
+function view(w,h){V.w=w;V.h=h;V.s=Math.min((CW-12)/w,(CH-12)/h);V.ox=(CW-w*V.s)/2;V.oy=(CH-h*V.s)/2;ctx.setTransform(DPR*V.s,0,0,DPR*V.s,DPR*V.ox,DPR*V.oy)}
+const wx=x=>(x-V.ox)/V.s,wy=y=>(y-V.oy)/V.s;
+/* Tippflächen, die beim Zeichnen angelegt werden */
+let HITS=[];
+const hit=(x,y,w,h,fn,data)=>HITS.push({x,y,w,h,fn,data});
+function hitAt(x,y){for(let i=HITS.length-1;i>=0;i--){const h=HITS[i];if(x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h)return h}return null}
+
+function txt(s,x,y,col,al='left',size=14,bold=false,font=FONT){ctx.font=`${bold?'700 ':''}${size}px ${font}`;ctx.textAlign=al;ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle=cs('fld',.92);ctx.strokeText(s,x,y);ctx.fillStyle=col;ctx.fillText(s,x,y)}
+function txtn(s,x,y,col,al='left',size=14,bold=false,font=FONT){ctx.font=`${bold?'700 ':''}${size}px ${font}`;ctx.textAlign=al;ctx.fillStyle=col;ctx.fillText(s,x,y)}
+function tw(s,size,bold=false,font=FONT){ctx.font=`${bold?'700 ':''}${size}px ${font}`;return ctx.measureText(s).width}
+function line(x1,y1,x2,y2,col,w=1,dash){ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineCap='round';if(dash)ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();if(dash)ctx.setLineDash([])}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
+function box(x,y,w,h,r,fill,stroke,lw=2){rr(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.stroke()}}
+function dot(x,y,r,col){ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fillStyle=col;ctx.fill()}
+function arrow(x1,y1,x2,y2,col,w=2.5,hs=9){line(x1,y1,x2,y2,col,w);const a=Math.atan2(y2-y1,x2-x1);ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-hs*Math.cos(a-.45),y2-hs*Math.sin(a-.45));ctx.lineTo(x2-hs*Math.cos(a+.45),y2-hs*Math.sin(a+.45));ctx.closePath();ctx.fillStyle=col;ctx.fill()}
+/* Leitung: Signal 1 orange und dick, Signal 0 grau */
+const sigCol=v=>v?cs('on'):cs('off');
+function wire(pts,v,w){ctx.strokeStyle=sigCol(v);ctx.lineWidth=w||(v?4:3);ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.stroke()}
+const orth=(x1,y1,x2,y2,mx)=>{if(Math.abs(y1-y2)<.5)return [[x1,y1],[x2,y2]];mx=mx==null?(x1+x2)/2:mx;return [[x1,y1],[mx,y1],[mx,y2],[x2,y2]]};
+const knot=(x,y,v)=>dot(x,y,5,sigCol(v));
+
+/* ---------- Gatter ---------- */
+const GT={
+ AND:{de:'UND',din:'&',neg:false,f:a=>a.every(x=>x)},
+ OR:{de:'ODER',din:'≥1',neg:false,f:a=>a.some(x=>x)},
+ NOT:{de:'NICHT',din:'1',neg:true,f:a=>!a[0]},
+ NAND:{de:'NAND',din:'&',neg:true,f:a=>!a.every(x=>x)},
+ NOR:{de:'NOR',din:'≥1',neg:true,f:a=>!a.some(x=>x)},
+ XOR:{de:'XOR',din:'=1',neg:false,f:a=>a.reduce((s,x)=>s^x,0)===1},
+ XNOR:{de:'XNOR',din:'=',neg:true,f:a=>a.reduce((s,x)=>s^x,0)===0}
+};
+const gEval=(t,a)=>GT[t].f(a)?1:0;
+const GW=74;
+const gH=n=>Math.max(58,n*26+6);
+/* Lage der Anschlüsse eines Gatters, Körper links oben bei (x,y) */
+function gPins(t,x,y,n){if(t==='NOT')n=1;const h=gH(n),ins=[];for(let i=0;i<n;i++)ins.push([x-18,n===1?y+h/2:y+h*(i+1)/(n+1)]);return {ins,out:[x+GW+18,y+h/2],h}}
+let NORM='din';
+function drawGate(t,x,y,n,ins,out,opt={}){if(t==='NOT')n=1;const P=gPins(t,x,y,n),h=P.h,ym=y+h/2,g=GT[t],w=GW;
+  const ink=opt.col||cs('ink'),fill=opt.fill||cs('fld');
+  /* Eingangsstummel */
+  P.ins.forEach((p,i)=>{let x2=x;if(NORM==='us'&&(t==='OR'||t==='NOR'||t==='XOR'||t==='XNOR')){const u=(p[1]-y)/h;x2=x+.5*w*.5*u*(1-u)*2}wire([[p[0],p[1]],[x2+1,p[1]]],ins[i]??0,3.5)});
+  const bub=g.neg;
+  wire([[bub?x+w+12:x+w,ym],P.out],out??0,3.5);
+  ctx.lineWidth=2.6;ctx.strokeStyle=ink;ctx.fillStyle=fill;ctx.lineJoin='round';
+  if(opt.secret){rr(x,y,w,h,6);ctx.fill();ctx.stroke();txtn('?',x+w/2,ym+11,ink,'center',30,true)}
+  else if(NORM==='din'){rr(x,y,w,h,4);ctx.fill();ctx.stroke();txtn(g.din,x+w/2,y+24,ink,'center',21,true)}
+  else{ctx.beginPath();
+    if(t==='AND'||t==='NAND'){const r=h/2;ctx.moveTo(x,y);ctx.lineTo(x+w-r,y);ctx.arc(x+w-r,ym,r,-PI/2,PI/2);ctx.lineTo(x,y+h);ctx.closePath()}
+    else if(t==='NOT'){ctx.moveTo(x+4,y+6);ctx.lineTo(x+w-2,ym);ctx.lineTo(x+4,y+h-6);ctx.closePath()}
+    else{ctx.moveTo(x,y);ctx.quadraticCurveTo(x+w*.55,y,x+w,ym);ctx.quadraticCurveTo(x+w*.55,y+h,x,y+h);ctx.quadraticCurveTo(x+w*.25,ym,x,y)}
+    ctx.fill();ctx.stroke();
+    if(t==='XOR'||t==='XNOR'){ctx.beginPath();ctx.moveTo(x-9,y);ctx.quadraticCurveTo(x-9+w*.25,ym,x-9,y+h);ctx.stroke()}}
+  if(bub&&!opt.secret){ctx.beginPath();ctx.arc(x+w+6,ym,6,0,TAU);ctx.fillStyle=fill;ctx.fill();ctx.lineWidth=2.4;ctx.strokeStyle=ink;ctx.stroke()}
+  if(opt.label)txt(opt.label,x+w/2,y-8,cs('mut'),'center',13,true);
+  return P}
+/* Schalter als Eingang: Mitte (cx,cy), Ausgang rechts */
+function drawSwitch(cx,cy,name,v,fn,opt={}){const w=opt.w||66,h=opt.h||46,x=cx-w/2,y=cy-h/2;
+  box(x,y,w,h,10,v?cs('on'):cs('pan'),v?cs('on'):cs('ink'),2.4);
+  txtn(v?'1':'0',cx,cy+10,v?'#fff':cs('ink'),'center',27,true,MONO);
+  if(name)txt(name,opt.right?x+w+10:x-10,cy+7,opt.col||cs('ink'),opt.right?'left':'right',opt.size||20,true);
+  if(fn)hit(x-6,y-6,w+12,h+12,fn);
+  return [x+w,cy]}
+/* Lämpchen als Ausgang: Eingang links */
+function drawLamp(cx,cy,r,v,name,opt={}){
+  if(v){const g=ctx.createRadialGradient(cx,cy,r*.3,cx,cy,r*2.3);g.addColorStop(0,cs('on',.45));g.addColorStop(1,cs('on',0));ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,r*2.3,0,TAU);ctx.fill()}
+  ctx.beginPath();ctx.arc(cx,cy,r,0,TAU);ctx.fillStyle=v?cs('on'):cs('pan');ctx.fill();ctx.lineWidth=2.4;ctx.strokeStyle=v?cs('on'):cs('ink');ctx.stroke();
+  txtn(v==null?'?':v?'1':'0',cx,cy+r*.36,v?'#fff':cs('mut'),'center',r*.95,true,MONO);
+  if(name){if(opt.below)txt(name,cx,cy+r+22,opt.col||cs('ink'),'center',opt.size||20,true);else txt(name,opt.left?cx-r-10:cx+r+10,cy+7,opt.col||cs('ink'),opt.left?'right':'left',opt.size||20,true)}
+  return [cx-r,cy]}
+/* Wahrheitstafel auf der Bühne */
+function drawTable(x,y,heads,rows,nIn,cur,opt={}){const cw=opt.cw||46,rh=opt.rh||34,W=heads.length*cw;
+  box(x,y,W,rh,6,cs('pan'));
+  heads.forEach((hd,j)=>txtn(hd,x+cw*j+cw/2,y+rh/2+6,j<nIn?cs('ink'):cs('on'),'center',16,true));
+  rows.forEach((r,i)=>{const yy=y+rh*(i+1);
+    if(i===cur)box(x,yy,W,rh,4,cs('on',.16));
+    r.forEach((v,j)=>{let s=v==null?'?':String(v),col=j<nIn?cs('ink'):cs('on');
+      if(opt.mark&&opt.mark[i]&&j>=nIn){const m=opt.mark[i][j-nIn];if(m===false)col=cs('no');else if(m===true)col=cs('ok')}
+      if(v==null)col=cs('mut');
+      txtn(s,x+cw*j+cw/2,yy+rh/2+7,col,'center',18,j>=nIn||i===cur,MONO)});
+    line(x,yy,x+W,yy,cs('line'),1);
+    if(opt.rowFn)hit(x,yy,W*(opt.cellFn?nIn/heads.length:1),rh,()=>opt.rowFn(i));
+    if(opt.cellFn)for(let j=nIn;j<heads.length;j++)hit(x+cw*j,yy,cw,rh,()=>opt.cellFn(i,j-nIn))});
+  line(x+cw*nIn,y,x+cw*nIn,y+rh*(rows.length+1),cs('ink'),2);
+  box(x,y,W,rh*(rows.length+1),6,null,cs('line'),1.5);
+  return {w:W,h:rh*(rows.length+1)}}
+
+/* ---------- Bedienfeld ---------- */
+const range=(id,label,min,max,step,val)=>`<div class="row"><label for="${id}">${label}</label><output id="${id}-o"></output></div><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}">`;
+const seg=(key,opts,cur)=>`<div class="seg" role="group">${opts.map(([l,v])=>`<button data-${key}="${v}" aria-pressed="${String(v)===String(cur)}">${l}</button>`).join('')}</div>`;
+const chk=(id,label,on)=>`<label><input type="checkbox" id="${id}"${on?' checked':''}> ${label}</label>`;
+const infoCard=p=>`<div class="card"><h3>${p.t}</h3><div class="obs"><b>Beobachte:</b> ${p.obs}</div><details><summary>Was passiert?</summary><p>${p.why}</p></details></div>`;
+const setOut=(id,t)=>{const o=$('#'+id+'-o');if(o)o.textContent=t};
+const setTxt=(id,t)=>{const o=$('#'+id);if(o&&o.textContent!==t)o.textContent=t};
+const setHTML=(id,t)=>{const o=$('#'+id);if(o&&o.innerHTML!==t)o.innerHTML=t};
+const syncVal=(id,v)=>{const r=$('#'+id);if(r&&document.activeElement!==r&&r.value!==String(v))r.value=v};
+function groupBy(arr){const g=[];for(const p of arr){let x=g.find(q=>q.h===p.g);if(!x)g.push(x={h:p.g,items:[]});x.items.push(p)}return g}
+function renderLib(title,arr,cur,pickFn){let i=0;
+  $('#lib').innerHTML=`<h2>${title}</h2>`+groupBy(arr).map(g=>`<h2>${g.h}</h2>`+g.items.map(p=>`<button class="pre" data-i="${i++}" aria-current="${i-1===cur}"><b>${p.t}</b><span>${p.d}</span></button>`).join('')).join('');
+  $('#lib').onclick=e=>{const b=e.target.closest('.pre');if(b){pickFn(+b.dataset.i);if(innerWidth<900)$('#stage').scrollIntoView({behavior:'smooth'})}}}
+/* Zahl aus Eingabefeld: dezimal, binär (0b…, …₂) oder hex (0x…) */
+function parseNum(s,base){s=String(s).trim().replace(/[\s_ ₂]/g,'');if(!s)return null;
+  if(base===2){if(!/^[01]+$/.test(s))return null;return parseInt(s,2)}
+  if(base===16){s=s.replace(/^0x/i,'');if(!/^[0-9a-f]+$/i.test(s))return null;return parseInt(s,16)}
+  if(!/^-?\d+$/.test(s))return null;return parseInt(s,10)}
+/* Standard für Stationen, die nur Tippflächen nutzen */
+const tapDown=(x,y)=>{const h=hitAt(wx(x),wy(y));if(h)h.fn(h.data)};
+cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect(),h=hitAt(wx(e.clientX-r.left),wy(e.clientY-r.top));cv.style.cursor=h?'pointer':(MODES[APP.mode]?.cursor?.()||'default')});
+
+/* =====================================================================
+   STATION 1: ZAHLENSYSTEME
+   ===================================================================== */
+const Z={pi:0,init:false,n:4,v:0,play:false,acc:0,spd:2,fl:[],task:null,oct:false,div:false,lock:false,msg:''};
+const ZP=[
+ {g:'Bits',t:'Bits als Lämpchen',d:'Vier Lämpchen, 16 Zahlen',s:{n:4,v:0},
+  obs:'Tippe auf die Lämpchen. Welche Zahl entsteht, wenn nur das linke Lämpchen leuchtet? Und wenn alle vier leuchten?',
+  why:'Ein Bit kennt nur zwei Zustände: 0 (aus) und 1 (an). Jede Stelle ist doppelt so viel wert wie die rechts daneben: 1, 2, 4, 8. Die Zahl ist die Summe der Stellenwerte, deren Lämpchen leuchten. Mit allen vier Lämpchen sind das 8 + 4 + 2 + 1 = 15. Zusammen mit der 0 gibt es also 16 verschiedene Zahlen.'},
+ {g:'Bits',t:'Zählen im Zweiersystem',d:'Wie ein Kilometerzähler mit nur 0 und 1',s:{n:4,v:0,play:true},
+  obs:'Beobachte beim Zählen: Wie oft wechselt das rechte Lämpchen, wie oft das linke? Was passiert nach 1111?',
+  why:'Beim Zählen springt die rechte Stelle bei jedem Schritt um. Wird aus einer 1 eine 0, entsteht ein Übertrag in die nächste Stelle, genau wie beim Kilometerzähler nach der 9. Darum wechselt jede Stelle halb so oft wie ihre rechte Nachbarin. Nach 1111 (= 15) sind alle Stellen voll: Mit vier Bits geht es wieder bei 0000 weiter. Das nennt man Überlauf.'},
+ {g:'Bits',t:'Ein Byte',d:'8 Bit: die größte Zahl',s:{n:8,v:0},
+  obs:'Acht Bits nennt man ein Byte. Stelle die größte Zahl ein, die in ein Byte passt. Versuche dann, 200 einzustellen.',
+  why:'Die Stellenwerte eines Bytes sind 128, 64, 32, 16, 8, 4, 2 und 1. Zusammen ergeben sie 255. Ein Byte kann also 256 verschiedene Zahlen von 0 bis 255 speichern. Deshalb reicht zum Beispiel jeder Farbanteil (Rot, Grün, Blau) am Bildschirm von 0 bis 255. Für 200 braucht man 128 + 64 + 8 = 200, also 1100 1000.'},
+ {g:'Bits',t:'Gerade oder ungerade?',d:'Ein Bit verrät es sofort',s:{n:8,v:37},
+  obs:'Stelle verschiedene gerade und ungerade Zahlen ein. Welches Bit zeigt sofort, ob eine Zahl gerade ist?',
+  why:'Alle Stellenwerte außer dem rechten (1, 2, 4, 8 …) sind gerade. Nur die Einerstelle ganz rechts kann eine Zahl ungerade machen. Ist das rechte Bit 1, ist die Zahl ungerade, sonst gerade. Computer prüfen das genau so, mit einem einzigen Bit.'},
+ {g:'Bits',t:'Verdoppeln und Halbieren',d:'Alle Bits verschieben',s:{n:8,v:13},
+  obs:'Drücke „⇐ ×2“: Alle Bits rücken eine Stelle nach links. Was passiert mit der Zahl? Was passiert bei „⇒ :2“, wenn die Zahl ungerade ist?',
+  why:'Im Zehnersystem wird eine Zahl zehnmal so groß, wenn man eine 0 anhängt. Im Zweiersystem wird sie dadurch doppelt so groß. Nach links verschieben heißt also mal 2, nach rechts verschieben heißt durch 2. Das rechte Bit fällt dabei hinaus, deshalb geht bei ungeraden Zahlen der Rest verloren: 13 : 2 = 6. Links fällt ein Bit hinaus, wenn die Zahl nicht mehr in die Bits passt.'},
+ {g:'Bits',t:'Wie viele Zahlen passen hinein?',d:'1, 2, 3 … 16 Bits',s:{n:3,v:0},
+  obs:'Verändere unter „Zahl“ die Anzahl der Bits. Wie viele verschiedene Zahlen gibt es mit 1, 2, 3 und 4 Bits? Erkennst du die Regel?',
+  why:'Jedes zusätzliche Bit verdoppelt die Anzahl der möglichen Zahlen: Mit n Bits gibt es 2 · 2 · … · 2 = 2ⁿ Zahlen, von 0 bis 2ⁿ − 1. Mit 16 Bits sind es schon 65 536. Mit 32 Bits sind es etwa 4,3 Milliarden, so viele verschiedene IPv4-Adressen gibt es im Internet.'},
+ {g:'Umrechnen',t:'Hexadezimal',d:'Vier Bits sind eine Ziffer',s:{n:8,v:183,lvl:2},
+  obs:'Je vier Bits bilden eine Hexadezimalziffer. Welche Ziffern gibt es nach der 9? Welche Hex-Zahl ist 1111 1111?',
+  why:'Vier Bits haben 16 Möglichkeiten. Das Hexadezimalsystem (Sechzehnersystem) braucht darum 16 Ziffern: 0 bis 9 und dann A (10), B (11), C (12), D (13), E (14), F (15). Lange Binärzahlen werden so kurz und gut lesbar: 1111 1111 = FF = 255. Hex-Zahlen begegnen dir bei Farbcodes wie #FF8800 oder bei Geräteadressen.'},
+ {g:'Umrechnen',t:'Vom Zehner- ins Zweiersystem',d:'Divisionsverfahren',s:{n:8,v:164,div:true,lvl:2},
+  obs:'Gib unter „Zahl“ eine Dezimalzahl ein. Rechts unten steht das Divisionsverfahren. Lies die Reste von unten nach oben.',
+  why:'Man dividiert die Zahl immer wieder durch 2 und schreibt den Rest auf (0 oder 1). Der erste Rest ist das rechte Bit, der letzte Rest das linke. Eine zweite Methode: Man zieht von der Zahl die größte passende Zweierpotenz ab (128, 64, 32 …) und setzt dort eine 1, bis nichts mehr übrig ist.'},
+ {g:'Umrechnen',t:'Oktalsystem',d:'Drei Bits sind eine Ziffer',s:{n:9,v:420,oct:true,lvl:3},
+  obs:'Die Klammern fassen jetzt drei Bits zusammen. Welche Ziffern kommen im Oktalsystem vor? Warum kann man Binärzahlen so leicht umrechnen?',
+  why:'Drei Bits haben 8 Möglichkeiten, das Oktalsystem (Achtersystem) hat die Ziffern 0 bis 7. Weil 8 = 2³ und 16 = 2⁴ Zweierpotenzen sind, kann man Binärzahlen gruppenweise umrechnen, ganz ohne Division. Beim Zehnersystem geht das nicht, denn 10 ist keine Zweierpotenz.'},
+ {g:'Üben',t:'Zahl einstellen',d:'Rätsel: Lämpchen einschalten',s:{n:8,v:0,task:'set'},
+  obs:'Schalte die Lämpchen so, dass die gesuchte Zahl entsteht. Beginne beim größten passenden Stellenwert.',
+  why:'Strategie: Suche den größten Stellenwert, der noch in die Zahl passt, schalte ihn ein und ziehe ihn ab. Mit dem Rest machst du weiter. Beispiel 45: 32 passt (Rest 13), 16 nicht, 8 passt (Rest 5), 4 passt (Rest 1), 2 nicht, 1 passt. Also 0010 1101.'},
+ {g:'Üben',t:'Zahl ablesen',d:'Rätsel: Welche Zahl leuchtet?',s:{n:8,v:0,task:'read'},
+  obs:'Die Lämpchen zeigen eine Zahl. Zähle die Stellenwerte der leuchtenden Lämpchen zusammen und gib das Ergebnis ein.',
+  why:'Über jedem Lämpchen steht sein Stellenwert. Addiere nur die Stellenwerte, deren Lämpchen leuchten. Ein Trick für die Kontrolle: Ist das rechte Bit 1, muss das Ergebnis ungerade sein.'}
+];
+const zMax=()=>2**Z.n-1;
+function zSet(v){v=mod(Math.round(v),2**Z.n);const o=Z.v;Z.v=v;for(let i=0;i<Z.n;i++)if(((o>>>i)&1)!==((v>>>i)&1))Z.fl[i]=1}
+function zNewTask(){const n=Z.n,lo=Z.task==='read'?1:2,hi=zMax();let t;do t=rnd(lo,hi);while(t===Z.task?.t);Z.task={k:Z.task?.k||'set',t,ok:false,tries:0};
+  if(Z.task.k==='read'){Z.v=t;Z.lock=true}else{Z.v=0;Z.lock=false}Z.msg=''}
+function zLoad(i){Z.pi=i;const s=ZP[i].s;Object.assign(Z,{n:4,v:0,play:false,oct:false,div:false,task:null,lock:false,msg:''},s);Z.fl=[];
+  if(s.lvl&&APP.lvl<s.lvl)setLvl(s.lvl,true);
+  if(s.task){Z.task={k:s.task};zNewTask()}
+  zTools();zPanel();renderLib('Versuche: Zahlensysteme',ZP,i,zLoad)}
+function zTools(){TL.innerHTML=`<button class="btn hot" id="zPlay" aria-pressed="${Z.play}">${Z.play?'Anhalten':'Zählen'}</button><button class="btn" data-z="dec">−1</button><button class="btn" data-z="inc">+1</button><span class="tsep"></span><button class="btn" data-z="shl" title="Alle Bits nach links: mal 2">⇐ ×2</button><button class="btn" data-z="shr" title="Alle Bits nach rechts: durch 2">⇒ :2</button><span class="tsep"></span><button class="btn" data-z="zero">Alle 0</button><button class="btn" data-z="all">Alle 1</button><button class="btn" data-z="rnd">Zufall</button>`;
+  TL.querySelectorAll('button').forEach(b=>b.disabled=Z.lock&&b.id!=='zPlay'?true:false);if(Z.lock)$('#zPlay').disabled=true;
+  TL.onclick=e=>{const b=e.target.closest('button');if(!b||Z.lock)return;
+    if(b.id==='zPlay'){Z.play=!Z.play;Z.acc=0;b.setAttribute('aria-pressed',Z.play);b.textContent=Z.play?'Anhalten':'Zählen';return}
+    const k=b.dataset.z,v=Z.v;({dec:()=>zSet(v-1),inc:()=>zSet(v+1),shl:()=>zSet(v*2),shr:()=>zSet(Math.floor(v/2)),zero:()=>zSet(0),all:()=>zSet(zMax()),rnd:()=>zSet(rnd(0,zMax()))})[k]?.();zCheck()}}
+function zCheck(){const T=Z.task;if(!T||T.k!=='set'||T.ok)return;if(Z.v===T.t){T.ok=true;Z.msg='ok'}}
+function zPanel(){const p=ZP[Z.pi],T=Z.task;
+  let h=infoCard(p);
+  if(T)h+=`<div class="card"><h3>${T.k==='set'?'Stelle diese Zahl ein':'Welche Zahl leuchtet?'}</h3>${T.k==='set'?`<div class="big" id="zTT">${T.t}</div>`:`<div class="fl"><label for="zAns">Antwort</label><input class="inp" id="zAns" inputmode="numeric" autocomplete="off"></div><button class="btn hot" id="zOk" style="margin-top:8px">Prüfen</button>`}<div class="res" id="zRes"></div><button class="btn" id="zNext" style="margin-top:8px">Neue Zahl</button></div>`;
+  h+=`<div class="card"><h3>Zahl</h3>${range('zN','Anzahl Bits',1,16,1,Z.n)}
+    ${T?'':`<div class="fl"><label for="zDec">Dezimal</label><input class="inp" id="zDec" inputmode="numeric" autocomplete="off"><label for="zBin">Binär</label><input class="inp mono" id="zBin" autocomplete="off" spellcheck="false">${lvlShow(2)?'<label for="zHex">Hex</label><input class="inp mono" id="zHex" autocomplete="off" spellcheck="false">':''}</div><div class="small" id="zWarn"></div>`}
+    <div class="kv" id="zKV"></div>
+    ${lvlShow(3)?`<div class="chk" style="margin-top:6px">${chk('zOct','Dreiergruppen (Oktal) statt Vierergruppen (Hex)',Z.oct)}</div>`:''}</div>`;
+  if(!T)h+=`<div class="card"><h3>Zählen</h3>${range('zSp','Tempo',.5,10,.5,Z.spd)}</div>`;
+  if(!T&&(lvlShow(2)||Z.div))h+=`<div class="card"><h3>Divisionsverfahren</h3><div class="formel mono" id="zDiv"></div>${lvlShow(3)?'<h3 style="margin-top:10px">Zweierpotenzen abziehen</h3><div class="formel mono" id="zSub"></div>':''}</div>`;
+  PN.innerHTML=h;
+  PN.oninput=e=>{const id=e.target.id,s=e.target.value;
+    if(id==='zN'){Z.n=+s;Z.v=Math.min(Z.v,zMax());if(Z.task)zNewTask();zPanel();return}
+    if(id==='zSp'){Z.spd=+s;return}
+    if(id==='zDec'||id==='zBin'||id==='zHex'){const v=parseNum(s,id==='zBin'?2:id==='zHex'?16:10);
+      if(v==null||v<0){setTxt('zWarn',s.trim()?'Diese Eingabe ist keine gültige Zahl.':'');return}
+      let need=Math.max(1,Math.ceil(Math.log2(v+1)));if(id==='zBin')need=Math.max(need,s.replace(/[^01]/g,'').length);
+      if(need>16){setTxt('zWarn','Die Zahl braucht mehr als 16 Bit.');return}
+      if(need>Z.n){Z.n=need;syncVal('zN',Z.n)}setTxt('zWarn','');zSet(v)}};
+  PN.onchange=e=>{if(e.target.id==='zOct')Z.oct=e.target.checked};
+  PN.onclick=e=>{const id=e.target.id;
+    if(id==='zNext'){zNewTask();zPanel();zTools()}
+    if(id==='zOk')zAnswer()};
+  PN.onkeydown=e=>{if(e.target.id==='zAns'&&e.key==='Enter')zAnswer()}}
+function zAnswer(){const T=Z.task,a=parseNum($('#zAns').value,10);if(a==null)return;T.tries++;
+  if(a===T.t){T.ok=true;Z.msg='ok'}else Z.msg=a<T.t?'Zu klein. Hast du alle leuchtenden Stellenwerte addiert?':'Zu groß. Zählst du vielleicht auch dunkle Lämpchen mit?'}
+let ZW=1000;
+function zLayout(){const n=Z.n,gap=n>8?(ZW<1000?3:6):10,grp=Z.oct?3:4,extra=n>4?(ZW<1000?8:14):0,ng=Math.ceil(n/grp)-1;
+  let cw=Math.min(104,(ZW-60-(n-1)*gap-ng*extra)/n);const W=n*cw+(n-1)*gap+ng*extra,x0=(ZW-W)/2,ch=Math.min(150,cw*1.45);
+  const X=i=>{const k=n-1-i;return x0+k*(cw+gap)+(ng-Math.floor(i/grp))*extra};return {cw,ch,X,grp,y0:96}}
+function zDraw(){bg();ZW=CW/CH<1.1?600:1000;view(ZW,ZW<1000?640:540);HITS=[];const L=zLayout(),n=Z.n,v=Z.v,{cw,ch,X,y0}=L,T=Z.task;
+  txt('Stellenwert',X(n-1),y0-(lvlShow(3)?58:38),cs('mut'),'left',13,true);
+  for(let i=0;i<n;i++){const x=X(i),b=(v>>>i)&1,pv=2**i,f=Z.fl[i]||0;
+    const pvs=F(pv),fs=Math.min(22,cw*.42/Math.max(1,pvs.length*.55));
+    txtn(pvs,x+cw/2,y0-10,cs('ink'),'center',fs,true);
+    if(lvlShow(3))txtn('2'+sup(i),x+cw/2,y0-32,cs('mut'),'center',Math.min(17,cw*.36));
+    box(x,y0,cw,ch,Math.min(14,cw*.18),b?cs('on',.1):cs('pan'),f>0?cs('acc',.35+.65*f):b?cs('on'):cs('line'),f>0?4:2.4);
+    const r=Math.min(cw*.32,34),cy=y0+ch*.38;
+    if(b){const g=ctx.createRadialGradient(x+cw/2,cy,r*.3,x+cw/2,cy,r*1.9);g.addColorStop(0,cs('on',.5));g.addColorStop(1,cs('on',0));ctx.fillStyle=g;ctx.beginPath();ctx.arc(x+cw/2,cy,r*1.9,0,TAU);ctx.fill()}
+    ctx.beginPath();ctx.arc(x+cw/2,cy,r,0,TAU);ctx.fillStyle=b?cs('on'):cs('fld');ctx.fill();ctx.lineWidth=2.4;ctx.strokeStyle=b?cs('on'):cs('off');ctx.stroke();
+    txtn(String(b),x+cw/2,y0+ch*.86,b?cs('on'):cs('mut'),'center',Math.min(36,cw*.5),true,MONO);
+    txtn(b?pvs:'–',x+cw/2,y0+ch+26,b?cs('on'):cs('off'),'center',fs*.85,b);
+    if(!Z.lock)hit(x,y0,cw,ch,()=>{zSet(v^(1<<i));zCheck()})}
+  /* Gruppen für Hex oder Oktal */
+  const showG=lvlShow(2)&&n>1,by=y0+ch+44;
+  if(showG){const g=L.grp;for(let s=0;s<n;s+=g){const hi=Math.min(n-1,s+g-1),xl=X(hi),xr=X(s)+cw,d=(v>>>s)&(2**g-1);
+      ctx.strokeStyle=cs('acc');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xl+3,by);ctx.lineTo(xl+3,by+8);ctx.lineTo(xr-3,by+8);ctx.lineTo(xr-3,by);ctx.stroke();
+      txtn(d.toString(g===4?16:8).toUpperCase(),(xl+xr)/2,by+36,cs('acc'),'center',26,true,MONO)}
+    txt(L.grp===4?'Hex':'Oktal',X(n-1)-12,by+33,cs('acc'),'right',14,true)}
+  /* Summe der Stellenwerte */
+  const terms=[];for(let i=n-1;i>=0;i--)if((v>>>i)&1)terms.push(F(2**i));
+  const hidden=T&&T.k==='read'&&!T.ok;
+  let eq=terms.length?(hidden?terms.join(' + ')+' = ?':terms.join(' + ')+' = '+F(v)):'Alle Bits sind 0: die Zahl 0';
+  let fs=36;while(fs>14&&tw(eq,fs,true)>ZW-40)fs-=2;
+  const ey=showG?y0+ch+130:y0+ch+92;
+  txt(eq,ZW/2,ey,cs('ink'),'center',fs,true);
+  /* Darstellungen */
+  const parts=[['Binär',sub2(bstr(v,n))]];if(!hidden)parts.unshift(['Dezimal',F(v)]);if(lvlShow(2))parts.push(['Hex',hidden?'?':hstr(v,n)]);if(lvlShow(3))parts.push(['Oktal',hidden?'?':ostr(v)]);
+  const ry=ey+58,segw=(ZW-40)/parts.length;
+  parts.forEach(([k,s],j)=>{const cx=20+segw*(j+.5);txtn(k,cx,ry,cs('mut'),'center',13,true);txtn(s,cx,ry+30,cs('ink'),'center',Math.min(26,segw/Math.max(4,s.length)*1.6),true,MONO)});
+  if(T&&T.ok)txt('Richtig!',ZW/2,ey-fs-14,cs('ok'),'center',22,true)}
+function zUpd(){const v=Z.v,n=Z.n,T=Z.task;setOut('zN',n+' Bit');setOut('zSp',String(Z.spd).replace('.',',')+' Schritte/s');
+  syncVal('zDec',v);syncVal('zBin',bstr(v,n,''));syncVal('zHex',hstr(v,n));
+  setHTML('zKV',`<span>Mögliche Zahlen</span><b>${F(2**n)}</b><span>Bereich</span><b>0 bis ${F(zMax())}</b>${lvlShow(3)?`<span>Größte Zahl</span><b>2${sup(n)} − 1</b>`:''}`);
+  if(T){if(T.k==='set'){const r=T.ok?'<span class="res ok">Richtig! '+F(T.t)+' = '+bstr(T.t,n)+'₂</span>':Z.v>T.t?'Noch zu groß: '+F(v):'Bisher: '+F(v);setHTML('zRes',r);$('#zRes').className='res'+(T.ok?' ok':'')}
+    else{setHTML('zRes',Z.msg==='ok'?'Richtig! '+bstr(T.t,n)+'₂ = '+F(T.t):Z.msg);$('#zRes').className='res '+(Z.msg==='ok'?'ok':Z.msg?'no':'')}}
+  if($('#zDiv')){let h='',x=v;if(x===0)h='0 : 2 = 0 Rest <b class="on">0</b>';const rs=[];
+    while(x>0){const q=Math.floor(x/2),r=x%2;rs.push(r);h+=`${F(x)} : 2 = ${F(q)} Rest <b class="on">${r}</b><br>`;x=q}
+    if(v>0)h+=`Reste von unten nach oben: <b class="on">${rs.slice().reverse().join('')}₂</b>`;setHTML('zDiv',h)}
+  if($('#zSub')){let h='',x=v;for(let i=n-1;i>=0;i--){const p=2**i;if(p<=x){h+=`${F(x)} − ${F(p)} = ${F(x-p)} → Bit ${i} ist 1<br>`;x-=p}}setHTML('zSub',h||'Nichts abzuziehen: 0')}
+  $('#status').textContent=`${n} Bit: ${F(2**n)} verschiedene Zahlen von 0 bis ${F(zMax())}. Tippe auf ein Lämpchen, um das Bit umzuschalten.`}
+MODES.zahlen={enter(){if(!Z.init){Z.init=true;zLoad(0)}else{zTools();zPanel();renderLib('Versuche: Zahlensysteme',ZP,Z.pi,zLoad)}},panel:zPanel,
+  frame(dt){for(let i=0;i<Z.fl.length;i++)if(Z.fl[i]>0)Z.fl[i]=Math.max(0,Z.fl[i]-dt*2.5);
+    if(Z.play){Z.acc+=dt*Z.spd;while(Z.acc>=1){Z.acc-=1;zSet(Z.v+1)}}},
+  draw:zDraw,upd:zUpd,down:tapDown,move(){},up(){},key(k){if(k===' '&&!Z.lock){$('#zPlay')?.click();return true}return false}};
+
+/* =====================================================================
+   STATION 2: LOGIKGATTER
+   ===================================================================== */
+const OL=s=>`<span style="text-decoration:overline">${s}</span>`;
+const GI={
+ AND:{w:'A UND B',l:'A ∧ B',a:'A · B',py:'A and B',c:'A && B',bit:'A & B',m:'Nur wenn <b>alle</b> Eingänge 1 sind, ist der Ausgang 1.'},
+ OR:{w:'A ODER B',l:'A ∨ B',a:'A + B',py:'A or B',c:'A || B',bit:'A | B',m:'Sobald <b>mindestens ein</b> Eingang 1 ist, ist der Ausgang 1.'},
+ NOT:{w:'NICHT A',l:'¬A',a:OL('A'),py:'not A',c:'!A',bit:'~A',m:'Der Ausgang ist immer das <b>Gegenteil</b> des Eingangs.'},
+ NAND:{w:'NICHT (A UND B)',l:'¬(A ∧ B)',a:OL('A · B'),py:'not (A and B)',c:'!(A && B)',bit:'~(A & B)',m:'Der Ausgang ist nur dann 0, wenn <b>alle</b> Eingänge 1 sind.'},
+ NOR:{w:'NICHT (A ODER B)',l:'¬(A ∨ B)',a:OL('A + B'),py:'not (A or B)',c:'!(A || B)',bit:'~(A | B)',m:'Der Ausgang ist nur dann 1, wenn <b>alle</b> Eingänge 0 sind.'},
+ XOR:{w:'ENTWEDER A ODER B',l:'A ⊕ B',a:'A ⊕ B',py:'A != B',c:'A != B',bit:'A ^ B',m:'Der Ausgang ist 1, wenn die Eingänge <b>verschieden</b> sind.'},
+ XNOR:{w:'A GLEICH B',l:'A ↔ B',a:OL('A ⊕ B'),py:'A == B',c:'A == B',bit:'~(A ^ B)',m:'Der Ausgang ist 1, wenn die Eingänge <b>gleich</b> sind.'}
+};
+const GORDER=['AND','OR','NOT','NAND','NOR','XOR','XNOR'];
+const G={pi:0,init:false,t:'AND',in:[0,0,0],n:2,view:'gatter',quiz:null,box:null,msg:''};
+const GP=[
+ {g:'Grundgatter',t:'UND',d:'Beide müssen 1 sein',s:{t:'AND'},
+  obs:'Schalte A und B. Wann leuchtet das Lämpchen? Wechsle dann oben zur Darstellung „Schalter“.',
+  why:'Das UND-Gatter gibt nur dann 1 aus, wenn A und B gleichzeitig 1 sind. Im Schaltermodell sind zwei Schalter hintereinander (in Reihe) geschaltet: Strom fließt nur, wenn beide geschlossen sind. Beispiel: Eine Presse in der Werkstatt startet nur, wenn beide Hände je einen Knopf drücken (Zweihandschaltung).'},
+ {g:'Grundgatter',t:'ODER',d:'Mindestens einer muss 1 sein',s:{t:'OR'},
+  obs:'Wann leuchtet das Lämpchen? Was passiert, wenn beide Schalter auf 1 stehen?',
+  why:'ODER gibt 1 aus, sobald mindestens ein Eingang 1 ist, auch wenn beide 1 sind. Im Alltag meint „oder“ oft „entweder – oder“, in der Logik nicht. Im Schaltermodell liegen die Schalter nebeneinander (parallel): Jeder der beiden Wege reicht. Beispiel: Die Klingel läutet, wenn jemand an der Vordertür oder an der Hintertür drückt.'},
+ {g:'Grundgatter',t:'NICHT',d:'Das Gegenteil',s:{t:'NOT',n:1},
+  obs:'Schalte A um. Was macht das NICHT-Gatter? Wie sieht der Schalter in der Darstellung „Schalter“ aus?',
+  why:'NICHT kehrt das Signal um: Aus 0 wird 1, aus 1 wird 0. Im Schaltzeichen bedeutet der kleine Kreis „umkehren“. Im Schaltermodell ist das ein Öffner: Er ist geschlossen, solange man ihn nicht drückt, und öffnet beim Drücken. Beispiel: das Licht im Kühlschrank. Die geschlossene Tür drückt den Schalter, das Licht ist aus.'},
+ {g:'Grundgatter',t:'XOR',d:'Entweder – oder',s:{t:'XOR'},
+  obs:'Wann leuchtet das Lämpchen? Vergleiche mit ODER: In welcher Zeile ist das Ergebnis anders?',
+  why:'XOR (exklusives ODER, „entweder – oder“) gibt 1 aus, wenn die beiden Eingänge verschieden sind. Sind beide 1, ist der Ausgang 0. Im Schaltermodell ist das die Wechselschaltung im Stiegenhaus: Mit jedem der beiden Schalter kann man das Licht umschalten. XOR ist außerdem die Regel für die Einerstelle beim Addieren: 1 + 1 = 10₂, die Einerstelle ist 0.'},
+ {g:'Umgekehrte Gatter',t:'NAND',d:'NICHT-UND',s:{t:'NAND'},
+  obs:'Vergleiche die Wahrheitstafel mit der von UND. Was bedeutet der kleine Kreis am Ausgang?',
+  why:'NAND heißt NICHT-UND: zuerst UND, dann umkehren. Der Ausgang ist nur dann 0, wenn alle Eingänge 1 sind. Im Schaltermodell sind zwei Öffner parallel: Erst wenn beide gedrückt sind, ist der Stromkreis unterbrochen. NAND ist ein Universalgatter: Aus NAND-Gattern allein lässt sich jede Schaltung bauen (siehe „Schaltungen bauen“). Speicherkarten und SSDs arbeiten mit „NAND-Flash“.'},
+ {g:'Umgekehrte Gatter',t:'NOR',d:'NICHT-ODER',s:{t:'NOR'},
+  obs:'Bei welcher einzigen Kombination leuchtet das Lämpchen? Vergleiche mit ODER.',
+  why:'NOR heißt NICHT-ODER: Der Ausgang ist nur dann 1, wenn alle Eingänge 0 sind. Im Schaltermodell sind zwei Öffner in Reihe. Auch NOR ist ein Universalgatter. Der Bordcomputer der Apollo-Mondflüge war fast ausschließlich aus NOR-Gattern aufgebaut.'},
+ {g:'Umgekehrte Gatter',t:'XNOR',d:'Sind beide gleich?',s:{t:'XNOR'},
+  obs:'Wann leuchtet das Lämpchen? Welche Frage beantwortet dieses Gatter?',
+  why:'XNOR (Äquivalenz) gibt 1 aus, wenn beide Eingänge gleich sind. Es ist das umgekehrte XOR. So vergleicht ein Computer zwei Bits. Mehrere XNOR-Gatter mit einem UND dahinter vergleichen ganze Zahlen: Nur wenn jedes Bitpaar gleich ist, sind die Zahlen gleich.'},
+ {g:'Mehr Eingänge',t:'Drei Eingänge',d:'Acht Zeilen in der Tabelle',s:{t:'AND',n:3,lvl:2},
+  obs:'Wie viele Zeilen hat die Wahrheitstafel jetzt? Probiere auch ODER und XOR mit drei Eingängen aus.',
+  why:'Mit drei Eingängen gibt es 2 · 2 · 2 = 8 Kombinationen, mit n Eingängen 2ⁿ. Die Zeilen sind einfach die Binärzahlen von 000 bis 111. UND braucht lauter Einsen, ODER mindestens eine Eins. XOR mit drei Eingängen gibt 1 aus, wenn die Anzahl der Einsen ungerade ist. Damit prüft man zum Beispiel bei der Datenübertragung, ob ein Bit verfälscht wurde (Paritätsbit).'},
+ {g:'Üben',t:'Wahrheitstafel ausfüllen',d:'Nur das Schaltzeichen ist bekannt',s:{quiz:true},
+  obs:'Du siehst nur das Schaltzeichen. Tippe in der Tabelle auf die Fragezeichen beim Ausgang und trage 0 oder 1 ein. Dann „Prüfen“.',
+  why:'Merkhilfe für die Zeichen nach DIN EN 60617: „&“ heißt UND, „≥1“ heißt „mindestens eine 1“ (ODER), „=1“ heißt „genau eine 1“ (XOR), „=“ heißt „gleich“ (XNOR), „1“ mit Kreis ist NICHT. Ein kleiner Kreis am Ausgang kehrt das Ergebnis immer um.'},
+ {g:'Üben',t:'Geheimes Gatter',d:'Was steckt im Kasten?',s:{box:true},
+  obs:'Im Kasten steckt ein unbekanntes Gatter. Probiere die Schalter aus und beobachte das Lämpchen. Tippe dann rechts auf deine Vermutung.',
+  why:'Ein Gatter ist durch seine Wahrheitstafel vollständig beschrieben. Erst wenn du alle vier Kombinationen ausprobiert hast, weißt du sicher, welches Gatter es ist. Nach zwei oder drei Versuchen passen oft noch mehrere. So untersucht man auch in der Technik unbekannte Bauteile („Black Box“).'}
+];
+const gN=()=>G.t==='NOT'?1:G.n;
+const gIns=()=>G.in.slice(0,gN());
+const gRow=()=>gIns().reduce((s,x)=>s*2+x,0);
+const gOut=()=>gEval(G.t,gIns());
+const gNames=n=>['A','B','C'].slice(0,n);
+function gRows(t,n){const r=[];for(let k=0;k<2**n;k++){const a=bitsOf(k,n);r.push([...a,gEval(t,a)])}return r}
+function gNewQuiz(){let t;do t=pick(GORDER);while(t===G.quiz?.t);G.t=t;G.n=t==='NOT'?1:2;G.quiz={t,user:Array(2**gN()).fill(null),mark:null,ok:false};G.in=[0,0,0]}
+function gNewBox(){let t;do t=pick(GORDER.filter(x=>x!=='NOT'));while(t===G.box?.t);G.t=t;G.n=2;G.box={t,seen:new Set(),guess:null,ok:false,msg:''};G.in=[0,0,0]}
+function gLoad(i){G.pi=i;const s=GP[i].s;Object.assign(G,{t:'AND',n:2,quiz:null,box:null},s);G.in=[0,0,0];if(s.lvl&&APP.lvl<s.lvl)setLvl(s.lvl,true);
+  if(s.quiz)gNewQuiz();if(s.box){gNewBox();G.view='gatter'}if(G.t==='NOT')G.n=1;else if(!s.n)G.n=2;
+  gTools();gPanel();renderLib('Versuche: Logikgatter',GP,i,gLoad)}
+function gTools(){TL.innerHTML=`<span class="small">Darstellung</span>${seg('gv',[['Gatter','gatter'],['Schalter','schalter']],G.view)}<span class="tsep"></span><span class="small">Schaltzeichen</span>${seg('gn',[['DIN','din'],['US','us']],NORM)}`;
+  TL.querySelectorAll('.seg').forEach(s=>s.style.margin='0');
+  if(G.box)TL.querySelector('[data-gv=schalter]').disabled=true;
+  TL.onclick=e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.gv)G.view=b.dataset.gv;if(b.dataset.gn){NORM=b.dataset.gn;try{localStorage.setItem('bin-norm',NORM)}catch(_){}}gTools()}}
+function gPanel(){const p=GP[G.pi],T=G.t,I=GI[T];let h=infoCard(p);
+  if(!G.quiz&&!G.box){h+=`<div class="card"><h3>Gatter</h3>${seg('gt',GORDER.map(k=>[GT[k].de,k]),T)}${lvlShow(2)&&T!=='NOT'?'<div class="row"><span>Eingänge</span></div>'+seg('gk',[['2',2],['3',3]],G.n):''}</div>`;
+    h+=`<div class="card"><h3>Merksatz</h3><p>${I.m}${T==='XOR'&&G.n===3?' Bei drei Eingängen: wenn die Anzahl der Einsen ungerade ist.':''}</p></div>`;
+    h+=`<div class="card"><h3>Schreibweisen</h3><div class="kv"><span>In Worten</span><b>${I.w}</b>${lvlShow(2)?`<span>Logik</span><b>${I.l}</b><span>Schaltalgebra</span><b>${I.a}</b>`:''}${lvlShow(3)?`<span>Python</span><b class="mono">${I.py}</b><span>Java, C</span><b class="mono">${I.c}</b><span>bitweise</span><b class="mono">${I.bit}</b>`:''}</div>${G.n===3&&T!=='NOT'?'<p class="small">Mit drei Eingängen kommt C genauso dazu, z. B. A ∧ B ∧ C.</p>':''}</div>`}
+  if(G.quiz)h+=`<div class="card"><h3>Welche Ausgänge?</h3><p>Tippe auf die Felder der Spalte <b class="on">X</b>.</p><button class="btn hot" id="gChk">Prüfen</button> <button class="btn" id="gNew">Neues Gatter</button><div class="res" id="gRes"></div></div>`;
+  if(G.box)h+=`<div class="card"><h3>Deine Vermutung</h3>${seg('gg',GORDER.filter(k=>k!=='NOT').map(k=>[GT[k].de,k]),G.box.guess)}<div class="res" id="gRes"></div><button class="btn" id="gNew" style="margin-top:8px">Neuer Kasten</button></div>`;
+  h+=`<div class="card"><h3>Wahrheitstafel</h3><p class="small">Jede Zeile ist eine mögliche Kombination der Eingänge. Tippe auf eine Zeile, um sie einzustellen.</p></div>`;
+  PN.innerHTML=h;
+  PN.onclick=e=>{const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.gt){G.t=b.dataset.gt;if(G.t!=='NOT'&&G.n<2)G.n=2;gPanel()}
+    if(b.dataset.gk){G.n=+b.dataset.gk;gPanel()}
+    if(b.id==='gNew'){G.quiz?gNewQuiz():gNewBox();gPanel()}
+    if(b.id==='gChk'){const Q=G.quiz,R=gRows(Q.t,gN());Q.mark=R.map((r,i)=>[Q.user[i]==null?null:Q.user[i]===r[r.length-1]]);Q.ok=Q.mark.every(m=>m[0]===true);G.msg=Q.ok?'ok':Q.user.includes(null)?'Fülle zuerst alle Felder aus.':'Die rot markierten Zeilen stimmen noch nicht.'}
+    if(b.dataset.gg){const B=G.box;B.guess=b.dataset.gg;const R=gRows(B.t,2),cand=GORDER.filter(k=>k!=='NOT'&&[...B.seen].every(i=>gEval(k,R[i].slice(0,2))===R[i][2]));
+      const fits=[...B.seen].every(i=>gEval(B.guess,R[i].slice(0,2))===R[i][2]);
+      if(B.guess===B.t&&B.seen.size===4){B.ok=true;B.msg='<span class="cok">Richtig! Du hast alle vier Kombinationen geprüft: Es ist '+GT[B.t].de+'.</span>'}
+      else if(B.guess===B.t){B.ok=true;B.msg='<span class="cok">Richtig geraten!</span> Sicher war das aber noch nicht: Zu deinen Versuchen passen '+cand.map(k=>GT[k].de).join(', ')+'.'}
+      else if(fits)B.msg='Das passt zu deinen bisherigen Versuchen, ist aber nicht das gesuchte Gatter. Probiere weitere Kombinationen.';
+      else B.msg='<span style="color:var(--no);font-weight:700">Nein.</span> '+GT[B.guess].de+' passt nicht zu dem, was du beobachtet hast.';gPanel()}}}
+function gInputsLayout(n){return n===1?[280]:n===2?[200,360]:[170,280,390]}
+function gDraw(){bg();view(1000,560);HITS=[];const n=gN(),ins=gIns(),out=gOut(),names=gNames(n),Q=G.quiz,B=G.box;
+  if(G.view==='schalter'&&!B)gDrawSwitches(n,ins,out);
+  else{const ys=gInputsLayout(n),k=1.75,P0=gPins(G.t,0,0,n),gx=360,gy=280-P0.h*k/2;
+    const pins=[];ys.forEach((y,i)=>{pins.push(drawSwitch(110,y,names[i],ins[i],()=>{G.in[i]^=1}))});
+    const hideQ=Q&&!Q.ok,dOut=hideQ?0:out;
+    ctx.save();ctx.translate(gx,gy);ctx.scale(k,k);drawGate(G.t,0,0,n,ins,dOut,{secret:!!B});ctx.restore();
+    P0.ins.forEach((p,i)=>{const px=gx+p[0]*k,py=gy+p[1]*k;wire(orth(pins[i][0],pins[i][1],px,py,230+i*14),ins[i])});
+    const op=[gx+P0.out[0]*k,gy+P0.out[1]*k];const lp=drawLamp(640,280,36,hideQ?null:out,'X');wire([op,lp],dOut);
+    if(!Q&&!B){const I=GI[G.t];let s=lvlShow(2)?I.l:I.w;if(G.n===3&&G.t!=='NOT')s=s.replace('A ∧ B','A ∧ B ∧ C').replace('A ∨ B','A ∨ B ∨ C').replace('A ⊕ B','A ⊕ B ⊕ C').replace('A UND B','A UND B UND C').replace('A ODER B','A ODER B ODER C');
+      txt(s,420,470,cs('ink'),'center',26,true);
+      if(lvlShow(2)){let e=s;names.forEach((nm,i)=>{e=e.split(nm).join(String(ins[i]))});txt(e+' = '+out,420,508,cs('on'),'center',22,true,MONO)}}
+    else if(B)txt('Was steckt im Kasten?',420,470,cs('ink'),'center',24,true);
+    else txt(Q.ok?'Es ist '+GT[Q.t].de+'.':'Welches Gatter ist das?',420,470,Q.ok?cs('ok'):cs('ink'),'center',24,true)}
+  /* Wahrheitstafel */
+  const R=gRows(G.t,n),heads=[...names,'X'];let rows=R,mark=null;
+  if(Q)rows=R.map((r,i)=>[...r.slice(0,n),Q.user[i]]),mark=Q.mark;
+  if(B)rows=R.map((r,i)=>[...r.slice(0,n),B.seen.has(i)||B.ok?r[n]:null]);
+  const cw=58,rh=n===3?42:48,tx=1000-30-cw*(n+1),ty=n===3?90:150;
+  txt('Wahrheitstafel',tx,ty-14,cs('mut'),'left',14,true);
+  drawTable(tx,ty,heads,rows,n,gRow(),{cw,rh,mark,rowFn:i=>{bitsOf(i,n).forEach((b,j)=>G.in[j]=b)},cellFn:Q&&!Q.ok?(i)=>{Q.user[i]=Q.user[i]==null?0:1-Q.user[i];Q.mark=null;G.msg=''}:null})}
+/* Schaltermodell: Batterie, Taster, Lämpchen */
+function contact(x1,x2,y,nc,pressed,label,fn,v){const closed=nc?!pressed:pressed,col=v?cs('on'):cs('ink');
+  dot(x1,y,5,col);dot(x2,y,5,col);
+  const L=x2-x1,a=closed?-.06:-.42;ctx.strokeStyle=closed&&v?cs('on'):cs('ink');ctx.lineWidth=3.5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x1+Math.cos(a)*L*(closed?1:.98),y+Math.sin(a)*L);ctx.stroke();
+  if(nc){line(x2,y,x2,y-L*.12-4,cs('ink'),2.5)}
+  /* Taster-Knopf */
+  const mx=x1+L*.55,my=y+Math.sin(a)*L*.55,top=y-Math.min(L*.45,50)-(pressed?0:10);
+  line(mx,my-3,mx,top+10,cs('mut'),2,[4,4]);box(mx-16,top-4,32,14,4,pressed?cs('on'):cs('pan'),cs('ink'),2);
+  txt(label,mx-24,top+8,cs('ink'),'right',20,true);
+  if(lvlShow(2))txtn(nc?'Öffner':'Schließer',(x1+x2)/2,y+28,cs('mut'),'center',12);
+  hit(x1-6,top-36,L+12,y-top+50,fn)}
+function gDrawSwitches(n,ins,out){const t=G.t,yT=170,yB=410,xL=90,xR=600,ly=290;
+  const nc=t==='NOT'||t==='NAND'||t==='NOR',par=t==='OR'||t==='NAND',ser=t==='AND'||t==='NOR'||t==='NOT',W=t==='XOR'||t==='XNOR';
+  const vm=out;
+  /* Batterie und Ring */
+  wire([[xL,ly-12],[xL,yT],[180,yT]],vm);wire([[520,yT],[xR,yT],[xR,ly-34]],vm);wire([[xR,ly+34],[xR,yB],[xL,yB],[xL,ly+12]],vm);
+  line(xL-24,ly-12,xL+24,ly-12,cs('ink'),3);line(xL-12,ly+12,xL+12,ly+12,cs('ink'),7);txt('+',xL+32,ly-6,cs('mut'),'left',16,true);txt('−',xL+22,ly+24,cs('mut'),'left',16,true);
+  drawLamp(xR,ly,34,out,'X');
+  const tg=i=>()=>{G.in[i]^=1};
+  if(W&&n===3){wire([[180,yT],[520,yT]],0);txt('XOR mit drei Eingängen gibt es hier nur als Gatter.',350,yT-40,cs('mut'),'center',15);return}
+  if(ser){const k=n,seg=(520-180)/k;for(let i=0;i<k;i++){const a=180+seg*i,b=a+seg;const c1=a+seg*.2,c2=b-seg*.2;wire([[a,yT],[c1,yT]],vm);wire([[c2,yT],[b,yT]],vm);contact(c1,c2,yT,nc,ins[i],gNames(k)[i],tg(i),vm)}}
+  else if(par){const ys=n===2?[yT-60,yT+60]:[yT-70,yT,yT+70],xs=200,xe=500;wire([[180,yT],[xs,yT]],vm);wire([[xe,yT],[520,yT]],vm);
+    line(xs,ys[0],xs,ys[ys.length-1],sigCol(vm),vm?4:3);line(xe,ys[0],xe,ys[ys.length-1],sigCol(vm),vm?4:3);
+    ys.forEach((y,i)=>{const closed=nc?!ins[i]:ins[i],bv=vm&&closed;wire([[xs,y],[290,y]],bv);wire([[410,y],[xe,y]],bv);contact(290,410,y,nc,ins[i],gNames(n)[i],tg(i),bv)});
+    dot(xs,yT,5,sigCol(vm));dot(xe,yT,5,sigCol(vm))}
+  else if(W){const yU=yT-55,yD=yT+55,pa=230,pb=470,ca=300,cb=400;const a=ins[0],b=ins[1];
+    const aSel=a?yD:yU,bSel=t==='XOR'?(b?yU:yD):(b?yD:yU);
+    wire([[180,yT],[pa,yT]],vm);wire([[pb,yT],[520,yT]],vm);
+    [yU,yD].forEach(y=>{const live=vm&&y===aSel;wire([[ca,y],[cb,y]],live);dot(ca,y,5,sigCol(live));dot(cb,y,5,sigCol(live))});
+    dot(pa,yT,5,sigCol(vm));dot(pb,yT,5,sigCol(vm));
+    line(pa,yT,ca,aSel,vm?cs('on'):cs('ink'),3.5);line(pb,yT,cb,bSel,vm?cs('on'):cs('ink'),3.5);
+    txt('A',pa,yT-24,cs('ink'),'center',20,true);txt('B',pb,yT-24,cs('ink'),'center',20,true);
+    txtn('A = '+a+(a?' (unten)':' (oben)'),pa,yT+90,cs('mut'),'center',13);txtn('B = '+b+(bSel===yD?' (unten)':' (oben)'),pb,yT+90,cs('mut'),'center',13);
+    if(lvlShow(2))txtn('Wechselschaltung',350,yT+118,cs('mut'),'center',13,true);
+    hit(pa-30,yU-30,90,yD-yU+60,tg(0));hit(pb-60,yU-30,90,yD-yU+60,tg(1))}
+  txtn(out?'Der Stromkreis ist geschlossen: Das Lämpchen leuchtet.':'Der Stromkreis ist unterbrochen.',350,yB+50,out?cs('on'):cs('mut'),'center',16,true);
+  txtn('Tippe auf einen Taster, um ihn zu drücken (1) oder loszulassen (0).',350,yB+78,cs('mut'),'center',13)}
+function gUpd(){const B=G.box,Q=G.quiz;
+  if(B){B.seen.add(gRow());setHTML('gRes',B.msg)}
+  if(Q){setHTML('gRes',G.msg==='ok'?'<span class="cok">Alles richtig! Das ist '+GT[Q.t].de+'.</span>':G.msg)}
+  $('#status').textContent=B?`Geprüfte Kombinationen: ${B.seen.size} von 4`:`Tippe auf die Schalter oder auf eine Zeile der Wahrheitstafel. Ausgang X = ${gOut()}.`}
+MODES.gatter={enter(){if(!G.init){G.init=true;gLoad(0)}else{gTools();gPanel();renderLib('Versuche: Logikgatter',GP,G.pi,gLoad)}},panel:gPanel,
+  frame(){},draw:gDraw,upd:gUpd,down:tapDown,move(){},up(){},key(){return false}};
+
+/* =====================================================================
+   STATION 3: SCHALTUNGEN BAUEN
+   ===================================================================== */
+const K={pi:0,init:false,parts:[],wires:[],sel:null,drag:null,wd:null,hist:[],slow:false,acc:0,task:null,allowed:null,nid:1,osc:false,hover:null};
+const KW=1000,KH=620;
+function kPart(k,x,y,o={}){const p={id:K.nid++,k,x,y,n:k==='NOT'?1:k==='IN'||k==='OUT'?0:(o.n||2),name:o.name||'',v:0,val:0};K.parts.push(p);return p}
+function kWire(a,b,i=0){K.wires=K.wires.filter(w=>!(w.to===b.id&&w.i===i));K.wires.push({from:a.id,to:b.id,i})}
+const kById=id=>K.parts.find(p=>p.id===id);
+function kGeo(p){if(p.k==='IN')return {x:p.x-33,y:p.y-23,w:66,h:46,ins:[],out:[p.x+33+16,p.y]};
+  if(p.k==='OUT')return {x:p.x-26,y:p.y-26,w:52,h:52,ins:[[p.x-26-16,p.y]],out:null};
+  const P=gPins(p.k,p.x,p.y,p.n);return {x:p.x,y:p.y,w:GW+(GT[p.k].neg?12:0),h:P.h,ins:P.ins,out:P.out}}
+const kSnap=()=>JSON.stringify({p:K.parts.map(({id,k,x,y,n,name,v})=>({id,k,x,y,n,name,v})),w:K.wires,nid:K.nid});
+function kPush(){K.hist.push(kSnap());if(K.hist.length>80)K.hist.shift()}
+function kUndo(){const s=K.hist.pop();if(!s)return;const o=JSON.parse(s);K.parts=o.p.map(p=>({...p,val:0}));K.wires=o.w;K.nid=o.nid;if(!kById(K.sel))K.sel=null;kSettle();kPanel()}
+/* Simulation: Gauss-Seidel bis stabil (Speicher bleibt erhalten) */
+function kInVals(p,val){const a=[];for(let i=0;i<p.n;i++){const w=K.wires.find(w=>w.to===p.id&&w.i===i);a.push(w?(val.get(w.from)||0):0)}return a}
+function kOutIn(p,val){const w=K.wires.find(w=>w.to===p.id);return w?(val.get(w.from)||0):0}
+function kStep(val,sync){const src=sync?new Map(val):val;let ch=false;
+  for(const p of K.parts){if(p.k==='OUT')continue;const nv=p.k==='IN'?p.v:gEval(p.k,kInVals(p,src));if(val.get(p.id)!==nv){val.set(p.id,nv);ch=true}}return ch}
+function kSettleMap(val){for(let s=0;s<60;s++)if(!kStep(val,false))return true;return false}
+function kSettle(){const val=new Map(K.parts.map(p=>[p.id,p.val]));K.osc=!kSettleMap(val);kApply(val)}
+function kApply(val){for(const p of K.parts)p.val=p.k==='OUT'?kOutIn(p,val):val.get(p.id)||0}
+function kHasLoop(){const adj=new Map();K.wires.forEach(w=>{if(!adj.has(w.from))adj.set(w.from,[]);adj.get(w.from).push(w.to)});const st=new Map();
+  const dfs=u=>{st.set(u,1);for(const v of adj.get(u)||[]){if(st.get(v)===1)return true;if(!st.get(v)&&dfs(v))return true}st.set(u,2);return false};
+  for(const p of K.parts)if(!st.get(p.id)&&dfs(p.id))return true;return false}
+const kIns=()=>K.parts.filter(p=>p.k==='IN').sort((a,b)=>a.name.localeCompare(b.name,'de')||a.y-b.y);
+const kOuts=()=>K.parts.filter(p=>p.k==='OUT').sort((a,b)=>a.y-b.y);
+function kTable(){const I=kIns(),O=kOuts(),n=I.length;if(n>5)return null;const rows=[];
+  for(let r=0;r<2**n;r++){const bits=bitsOf(r,n),val=new Map();K.parts.forEach(p=>val.set(p.id,0));I.forEach((p,j)=>val.set(p.id,bits[j]));
+    const saved=I.map(p=>p.v);I.forEach((p,j)=>p.v=bits[j]);kSettleMap(val);I.forEach((p,j)=>p.v=saved[j]);
+    rows.push({bits,out:O.map(o=>kOutIn(o,val))})}return {I,O,rows}}
+/* Formel aus der Schaltung */
+const OPS={AND:' ∧ ',OR:' ∨ ',XOR:' ⊕ ',NAND:' ∧ ',NOR:' ∨ ',XNOR:' ⊕ '};
+function kExpr(id,seen=new Set()){const p=kById(id);if(!p)return {s:'0',atom:true};if(p.k==='IN')return {s:p.name||'?',atom:true};
+  if(seen.has(id))return {s:'…',atom:true};seen=new Set(seen);seen.add(id);
+  const args=[];for(let i=0;i<p.n;i++){const w=K.wires.find(w=>w.to===p.id&&w.i===i);args.push(w?kExpr(w.from,seen):{s:'0',atom:true})}
+  const wrap=a=>a.atom?a.s:'('+a.s+')';
+  if(p.k==='NOT')return {s:'¬'+wrap(args[0]),atom:true};
+  const inner=args.map(wrap).join(OPS[p.k]);
+  if(GT[p.k].neg)return {s:'¬('+inner+')',atom:true};return {s:inner,atom:false}}
+function kDNF(T,j){const terms=[];T.rows.forEach(r=>{if(r.out[j])terms.push(T.I.map((p,i)=>(r.bits[i]?'':'¬')+p.name).join(' ∧ '))});
+  if(!terms.length)return '0';if(terms.length===T.rows.length)return '1';if(terms.length>8)return terms.length+' Terme (zu lang)';return terms.map(t=>T.I.length>1?'('+t+')':t).join(' ∨ ')}
+/* Versuche */
+const tt=(n,f)=>{const r=[];for(let k=0;k<2**n;k++)r.push(f(...bitsOf(k,n))?1:0);return r};
+const KP=[
+ {g:'Ausprobieren',t:'Leerer Baukasten',d:'Zwei Schalter, ein Lämpchen',
+  b(){const A=kPart('IN',90,190,{name:'A'}),B=kPart('IN',90,420,{name:'B'});kPart('OUT',900,300,{name:'X'})},
+  obs:'Füge oben Gatter hinzu und verbinde sie: von einem Ausgang (rechts am Bauteil) zu einem Eingang ziehen. Die Wahrheitstafel rechts entsteht von selbst.',
+  why:'Jede Schaltung aus Gattern ohne Rückkopplung ist ein Schaltnetz: Die Ausgänge hängen nur davon ab, wie die Schalter gerade stehen. Deshalb kann man sie vollständig mit einer Wahrheitstafel beschreiben. Umgekehrt lässt sich zu jeder Wahrheitstafel eine Schaltung bauen.'},
+ {g:'Ausprobieren',t:'XOR aus UND, ODER, NICHT',d:'Ein Gatter aus anderen bauen',
+  b(){const A=kPart('IN',90,170,{name:'A'}),B=kPart('IN',90,430,{name:'B'}),o=kPart('OR',330,120),a=kPart('AND',330,380),n=kPart('NOT',530,380),a2=kPart('AND',720,240),X=kPart('OUT',910,269,{name:'X'});
+    kWire(A,o,0);kWire(B,o,1);kWire(A,a,0);kWire(B,a,1);kWire(a,n);kWire(o,a2,0);kWire(n,a2,1);kWire(a2,X)},
+  obs:'Vergleiche die Wahrheitstafel mit der von XOR. Lies die Schaltung als Satz: „A oder B, aber nicht beide“.',
+  why:'XOR ist 1, wenn mindestens ein Eingang 1 ist (ODER), aber nicht beide (NICHT UND). Beides verknüpft mit UND ergibt (A ∨ B) ∧ ¬(A ∧ B). So entstehen in der Technik komplizierte Gatter aus einfachen.'},
+ {g:'Ausprobieren',t:'Gesetze von De Morgan',d:'Zwei Schaltungen, gleiche Tabelle',
+  b(){const A=kPart('IN',90,170,{name:'A'}),B=kPart('IN',90,440,{name:'B'}),a=kPart('AND',330,90),n=kPart('NOT',540,90),X=kPart('OUT',900,119,{name:'X'}),
+    na=kPart('NOT',330,290),nb=kPart('NOT',330,420),o=kPart('OR',560,355),Y=kPart('OUT',900,384,{name:'Y'});
+    kWire(A,a,0);kWire(B,a,1);kWire(a,n);kWire(n,X);kWire(A,na);kWire(B,nb);kWire(na,o,0);kWire(nb,o,1);kWire(o,Y)},
+  obs:'Oben wird ¬(A ∧ B) gebaut, unten ¬A ∨ ¬B. Vergleiche die Spalten X und Y. Baue danach ¬(A ∨ B) und ¬A ∧ ¬B.',
+  why:'Die Gesetze von De Morgan sagen: ¬(A ∧ B) = ¬A ∨ ¬B und ¬(A ∨ B) = ¬A ∧ ¬B. In Worten: „Nicht beide“ ist dasselbe wie „mindestens einer nicht“. Mit diesen Gesetzen kann man Schaltungen umformen, etwa um nur noch NAND-Gatter zu verwenden.'},
+ {g:'Aufgaben',t:'Alarmanlage',d:'Scharf UND (Tür ODER Fenster)',lvl:1,
+  b(){kPart('IN',90,140,{name:'S'});kPart('IN',90,310,{name:'T'});kPart('IN',90,480,{name:'F'});kPart('OUT',900,310,{name:'X'})},
+  task:{ins:['S','T','F'],outs:{X:tt(3,(s,t,f)=>s&&(t||f))}},
+  obs:'Baue die Alarmanlage: Die Sirene X soll heulen, wenn die Anlage scharf geschaltet ist (S) und die Tür (T) oder das Fenster (F) offen ist.',
+  why:'Der Satz enthält schon die Schaltung: „T oder F“ ist ein ODER-Gatter, sein Ausgang kommt zusammen mit S in ein UND-Gatter. Als Formel: X = S ∧ (T ∨ F). Die Klammer ist wichtig: Ohne sie würde ein offenes Fenster auch bei ausgeschalteter Anlage Alarm auslösen.'},
+ {g:'Aufgaben',t:'Mehrheitsentscheid',d:'Zwei von drei stimmen zu',
+  b(){kPart('IN',90,140,{name:'A'});kPart('IN',90,310,{name:'B'});kPart('IN',90,480,{name:'C'});kPart('OUT',900,310,{name:'M'})},
+  task:{ins:['A','B','C'],outs:{M:tt(3,(a,b,c)=>a+b+c>=2)}},
+  obs:'Drei Personen stimmen ab. Das Lämpchen M soll leuchten, wenn mindestens zwei zustimmen (1).',
+  why:'Mindestens zwei sind dafür, wenn A und B, oder A und C, oder B und C zustimmen. Das sind drei UND-Gatter, deren Ausgänge in ein ODER mit drei Eingängen gehen: M = (A ∧ B) ∨ (A ∧ C) ∨ (B ∧ C). Tipp: Ein Gatter auswählen und rechts die Zahl der Eingänge auf 3 stellen.'},
+ {g:'Aufgaben',t:'NICHT aus NAND',d:'Nur NAND-Gatter erlaubt',
+  b(){kPart('IN',90,300,{name:'A'});kPart('OUT',900,300,{name:'X'})},allowed:['NAND'],
+  task:{ins:['A'],outs:{X:tt(1,a=>!a)}},
+  obs:'Baue ein NICHT-Gatter nur aus NAND. Hinweis: Ein Ausgang darf zu mehreren Eingängen führen.',
+  why:'Führt man A an beide Eingänge eines NAND-Gatters, rechnet es ¬(A ∧ A) = ¬A. Ein NAND mit zusammengeschalteten Eingängen ist also ein NICHT-Gatter.'},
+ {g:'Aufgaben',t:'UND und ODER aus NAND',d:'NAND kann alles',lvl:2,
+  b(){kPart('IN',90,200,{name:'A'});kPart('IN',90,420,{name:'B'});kPart('OUT',900,200,{name:'U'});kPart('OUT',900,420,{name:'O'})},allowed:['NAND'],
+  task:{ins:['A','B'],outs:{U:tt(2,(a,b)=>a&&b),O:tt(2,(a,b)=>a||b)}},
+  obs:'Baue nur aus NAND-Gattern ein UND (Ausgang U) und ein ODER (Ausgang O).',
+  why:'UND: NAND und danach ein NAND als NICHT (zwei Gatter). ODER nach De Morgan: A ∨ B = ¬(¬A ∧ ¬B). Man kehrt A und B mit je einem NAND um und verbindet sie mit einem dritten NAND. Weil NICHT, UND und ODER aus NAND gebaut werden können, lässt sich jede Schaltung aus NAND bauen. Chips verwenden darum oft nur einen Gattertyp.'},
+ {g:'Aufgaben',t:'Halbaddierer selbst bauen',d:'Zwei Bits addieren',
+  b(){kPart('IN',90,200,{name:'A'});kPart('IN',90,420,{name:'B'});kPart('OUT',900,200,{name:'S'});kPart('OUT',900,420,{name:'Ü'})},
+  task:{ins:['A','B'],outs:{S:tt(2,(a,b)=>a!==b),'Ü':tt(2,(a,b)=>a&&b)}},
+  obs:'Baue eine Schaltung, die zwei Bits addiert: S ist die Summenstelle, Ü der Übertrag. Es gilt 0 + 0 = 00, 0 + 1 = 01, 1 + 1 = 10.',
+  why:'Die Spalte S ist genau die Wahrheitstafel von XOR, die Spalte Ü die von UND. Ein XOR und ein UND, beide an A und B angeschlossen, bilden den Halbaddierer. Er ist der Grundbaustein jedes Rechenwerks (siehe Station „Addierer“).'},
+ {g:'Aufgaben',t:'Volladdierer selbst bauen',d:'Drei Bits addieren',lvl:2,
+  b(){kPart('IN',90,140,{name:'A'});kPart('IN',90,310,{name:'B'});kPart('IN',90,480,{name:'C'});kPart('OUT',900,220,{name:'S'});kPart('OUT',900,420,{name:'Ü'})},
+  task:{ins:['A','B','C'],outs:{S:tt(3,(a,b,c)=>(a+b+c)%2),'Ü':tt(3,(a,b,c)=>a+b+c>=2)}},
+  obs:'Addiere drei Bits A, B und den Übertrag C von der Stelle davor. S ist die Summenstelle, Ü der neue Übertrag.',
+  why:'Zwei Halbaddierer hintereinander: Der erste addiert A und B, der zweite addiert dazu C. Ein Übertrag entsteht, wenn einer der beiden Halbaddierer einen liefert, deshalb kommen beide Überträge in ein ODER. Zusammen: 2 XOR, 2 UND, 1 ODER. Ab Niveau Anspruchsvoll zeigt die Formel-Karte die disjunktive Normalform.'},
+ {g:'Speicher',t:'RS-Flipflop',d:'Eine Schaltung, die sich etwas merkt',lvl:2,
+  b(){const R=kPart('IN',90,140,{name:'R'}),S=kPart('IN',90,470,{name:'S'}),n2=kPart('NOR',440,410),n1=kPart('NOR',440,130),Q=kPart('OUT',900,159,{name:'Q'}),Qn=kPart('OUT',900,439,{name:'Q̄'});
+    kWire(R,n1,0);kWire(n2,n1,1);kWire(n1,n2,0);kWire(S,n2,1);kWire(n1,Q);kWire(n2,Qn)},
+  obs:'Schalte S kurz auf 1 und wieder auf 0. Was zeigt Q danach? Schalte dann R kurz auf 1 und wieder auf 0.',
+  why:'Die Ausgänge der beiden NOR-Gatter sind über Kreuz zurückgeführt (Rückkopplung). Ein kurzer Impuls an S (Setzen) schaltet Q auf 1, und Q bleibt 1, auch wenn S wieder 0 ist. R (Rücksetzen) schaltet Q auf 0. Bei S = R = 0 merkt sich die Schaltung ihr letztes Bit: Das ist ein Speicher für ein Bit. Eine Wahrheitstafel reicht hier nicht mehr, denn der Ausgang hängt auch von der Vorgeschichte ab. Arbeitsspeicher besteht aus Milliarden solcher Speicherzellen.'},
+ {g:'Speicher',t:'Taktgeber',d:'Ein NICHT-Gatter, das sich selbst umschaltet',lvl:3,slow:true,
+  b(){const n=kPart('NOT',450,271),X=kPart('OUT',800,300,{name:'X'});kWire(n,n);kWire(n,X)},
+  obs:'Der Ausgang des NICHT-Gatters ist mit seinem eigenen Eingang verbunden. Beobachte in der Zeitlupe. Was passiert ohne Zeitlupe?',
+  why:'Ist der Ausgang 1, wird der Eingang 1 und der Ausgang nach kurzer Zeit 0, dann wieder 1 und so weiter. Echte Gatter brauchen dafür einige Milliardstel Sekunden (Gatterlaufzeit). So entsteht ein Taktsignal, das Computer im Gleichtakt arbeiten lässt. Ohne Zeitlupe wird keine stabile Lösung gefunden: Die Schaltung schwingt.'}
+];
+function kLoad(i){K.pi=i;const p=KP[i];if(p.lvl&&APP.lvl<p.lvl)setLvl(p.lvl,true);K.parts=[];K.wires=[];K.nid=1;K.sel=null;K.hist=[];K.task=p.task||null;K.allowed=p.allowed||null;K.slow=!!p.slow;K.acc=0;
+  p.b();kSettle();kTools();kPanel();renderLib('Versuche: Schaltungen bauen',KP,i,kLoad)}
+const KADD=['IN','OUT',...GORDER];
+function kTools(){const al=K.allowed;TL.innerHTML=`<button class="btn" data-ka="IN">+ Schalter</button><button class="btn" data-ka="OUT">+ Lämpchen</button><span class="tsep"></span>`+
+  GORDER.filter(t=>!al||al.includes(t)).map(t=>`<button class="btn" data-ka="${t}">${GT[t].de}</button>`).join('')+
+  `<span class="tsep"></span><button class="btn" id="kDel" ${K.sel?'':'disabled'}>Entfernen</button><button class="btn" id="kUndo" ${K.hist.length?'':'disabled'}>Rückgängig</button><button class="btn" id="kClr">Leeren</button>`;
+  TL.onclick=e=>{const b=e.target.closest('button');if(!b||b.disabled)return;
+    if(b.dataset.ka)kAdd(b.dataset.ka);
+    if(b.id==='kDel')kDelete();if(b.id==='kUndo')kUndo();
+    if(b.id==='kClr'){kPush();K.parts=K.parts.filter(p=>K.task?(p.k==='IN'||p.k==='OUT'):false);K.wires=[];K.sel=null;kSettle();kPanel()}
+    kTools()}}
+function kFree(k){const n=k==='NOT'?1:2,cand=[];
+  if(k==='IN')for(let y=80;y<=560;y+=70)cand.push([90,y]);else if(k==='OUT')for(let y=80;y<=560;y+=70)cand.push([900,y]);
+  else for(let x=260;x<=720;x+=115)for(let y=60;y<=520;y+=90)cand.push([x,y]);
+  const ov=(a,b)=>a.x<b.x+b.w+30&&b.x<a.x+a.w+30&&a.y<b.y+b.h+16&&b.y<a.y+a.h+16;
+  for(const [x,y] of cand){const g=kGeo({k,x,y,n});if(!K.parts.some(p=>ov(g,kGeo(p))))return [x,y]}return cand[0]}
+function kName(k){const used=new Set(K.parts.map(p=>p.name));const L=k==='IN'?'ABCDEFGHIJKLMNOP':'XYZWVUTQ';for(const c of L)if(!used.has(c))return c;return '?'}
+function kAdd(k){kPush();const [x,y]=kFree(k);const p=kPart(k,x,y,{name:k==='IN'||k==='OUT'?kName(k):''});K.sel=p.id;kSettle();kPanel()}
+function kDelete(){if(!K.sel)return;kPush();K.parts=K.parts.filter(p=>p.id!==K.sel);K.wires=K.wires.filter(w=>w.from!==K.sel&&w.to!==K.sel);K.sel=null;kSettle();kPanel();kTools()}
+function kPanel(){const p=KP[K.pi],s=kById(K.sel);let h=infoCard(p);
+  if(K.task)h+=`<div class="card"><h3>Aufgabe</h3><div id="kTask" class="res"></div>${K.allowed?`<p class="small">Erlaubt: nur ${K.allowed.map(t=>GT[t].de).join(', ')}</p>`:''}</div>`;
+  if(s){const io=s.k==='IN'||s.k==='OUT';h+=`<div class="card"><h3>${s.k==='IN'?'Schalter':s.k==='OUT'?'Lämpchen':'Gatter '+GT[s.k].de}</h3>${io?`<div class="fl"><label for="kNm">Name</label><input class="inp" id="kNm" maxlength="6" value="${s.name}" autocomplete="off"></div>`:''}${!io&&s.k!=='NOT'?'<div class="row"><span>Eingänge</span></div>'+seg('kn',[['2',2],['3',3],['4',4]],s.n):''}<button class="btn" id="kDel2" style="margin-top:8px">Entfernen</button></div>`}
+  h+=`<div class="card"><h3>Wahrheitstafel</h3><div id="kTT" class="ttw"></div></div>`;
+  if(lvlShow(2))h+=`<div class="card"><h3>Formel</h3><div class="formel" id="kEx"></div>${lvlShow(3)?'<h3 style="margin-top:10px">Aus der Tabelle (disjunktive Normalform)</h3><div class="formel" id="kDNF"></div>':''}</div>`;
+  h+=`<div class="card"><h3>Bedienung</h3><p class="small">Kabel: vom Ausgang rechts an einem Bauteil zu einem Eingang links ziehen. Ein Ausgang darf zu mehreren Eingängen führen. Kabel lösen: am Eingang anfassen und wegziehen. Schalter antippen schaltet um. Entf löscht, Strg+Z macht rückgängig.</p><div class="chk">${chk('kSlow','Zeitlupe (Signale wandern sichtbar)',K.slow)}</div></div>`;
+  PN.innerHTML=h;
+  PN.oninput=e=>{if(e.target.id==='kNm'&&s){s.name=e.target.value.trim()||'?'}};
+  PN.onchange=e=>{if(e.target.id==='kSlow'){K.slow=e.target.checked;K.acc=0}if(e.target.id==='kNm')kPush()};
+  PN.onclick=e=>{const b=e.target.closest('button,tr[data-r]');if(!b)return;
+    if(b.dataset.kn&&s){kPush();const n=+b.dataset.kn;s.n=n;K.wires=K.wires.filter(w=>!(w.to===s.id&&w.i>=n));kSettle();kPanel()}
+    if(b.id==='kDel2')kDelete();
+    if(b.dataset.r!=null){const bits=bitsOf(+b.dataset.r,kIns().length);kIns().forEach((p,j)=>p.v=bits[j]);if(!K.slow)kSettle()}}}
+function kPinAt(x,y,kind){let best=null,bd=17;for(const p of K.parts){const g=kGeo(p);
+  if(kind!=='in'&&g.out){const d=Math.hypot(g.out[0]-x,g.out[1]-y);if(d<bd){bd=d;best={p,out:true}}}
+  if(kind!=='out')g.ins.forEach((q,i)=>{const d=Math.hypot(q[0]-x,q[1]-y);if(d<bd){bd=d;best={p,i}}})}return best}
+function kDown(sx,sy){const x=wx(sx),y=wy(sy),pin=kPinAt(x,y);
+  if(pin&&pin.out){K.wd={from:pin.p.id,x,y};return}
+  if(pin){const w=K.wires.find(w=>w.to===pin.p.id&&w.i===pin.i);if(w){kPush();K.wires=K.wires.filter(q=>q!==w);K.wd={from:w.from,x,y,pushed:true};kSettle()}else K.wd={to:pin.p.id,i:pin.i,x,y};return}
+  for(let j=K.parts.length-1;j>=0;j--){const p=K.parts[j],g=kGeo(p);if(x>=g.x-6&&x<=g.x+g.w+6&&y>=g.y-6&&y<=g.y+g.h+6){K.sel=p.id;K.drag={id:p.id,dx:x-p.x,dy:y-p.y,sx:x,sy:y,moved:false,snap:kSnap()};kPanel();kTools();return}}
+  if(K.sel){K.sel=null;kPanel();kTools()}}
+function kMove(sx,sy){const x=wx(sx),y=wy(sy);K.hover=[x,y];
+  if(K.wd){K.wd.x=x;K.wd.y=y;return}
+  const d=K.drag;if(!d)return;if(!d.moved&&Math.hypot(x-d.sx,y-d.sy)<5)return;d.moved=true;const p=kById(d.id);
+  p.x=clamp(Math.round((x-d.dx)/10)*10,40,KW-60);p.y=clamp(Math.round((y-d.dy)/10)*10,30,KH-40)}
+function kUp(){const W=K.wd;if(W){const pin=kPinAt(W.x,W.y,W.from!=null?'in':'out');
+    if(W.from!=null&&pin&&!pin.out){if(!W.pushed)kPush();kWire(kById(W.from),pin.p,pin.i)}
+    else if(W.to!=null&&pin&&pin.out){kPush();kWire(pin.p,kById(W.to),W.i)}
+    K.wd=null;if(!K.slow)kSettle();kTools();return}
+  const d=K.drag;if(d){const p=kById(d.id);if(!d.moved&&p&&p.k==='IN'){p.v^=1;if(!K.slow)kSettle()}
+    else if(d.moved){K.hist.push(d.snap);if(K.hist.length>80)K.hist.shift()}K.drag=null;kTools()}}
+function kRoute(a,b,i=0){const [x1,y1]=a,[x2,y2]=b;if(x2>=x1+24){let mx=x2-26-14*i;if(mx<x1+12)mx=(x1+x2)/2;return orth(x1,y1,x2,y2,mx)}
+  const my=Math.abs(y1-y2)<70?Math.max(y1,y2)+60:(y1+y2)/2+(y2>y1?-16:16);return [[x1,y1],[x1+18,y1],[x1+18,my],[x2-18-10*i,my],[x2-18-10*i,y2],[x2,y2]]}
+function kDraw(){bg();view(KW,KH);HITS=[];
+  ctx.fillStyle=cs('line');for(let x=20;x<KW;x+=40)for(let y=20;y<KH;y+=40)ctx.fillRect(x-1,y-1,2,2);
+  /* Kabel */
+  const fan=new Map();K.wires.forEach(w=>fan.set(w.from,(fan.get(w.from)||0)+1));
+  const kn=[];for(const w of K.wires){const a=kById(w.from),b=kById(w.to);if(!a||!b)continue;const ga=kGeo(a),gb=kGeo(b),pts=kRoute(ga.out,gb.ins[w.i],w.i);wire(pts,a.val);if((fan.get(w.from)||0)>1&&pts.length>2)kn.push([pts[1][0],pts[1][1],a.val])}
+  kn.forEach(([x,y,v])=>knot(x,y,v));
+  /* Bauteile */
+  for(const p of K.parts){const g=kGeo(p),sel=p.id===K.sel;
+    if(sel){ctx.setLineDash([6,5]);box(g.x-12,g.y-12,g.w+24+(p.k==='IN'?16:0),g.h+24,10,null,cs('acc'),2);ctx.setLineDash([])}
+    if(p.k==='IN'){drawSwitch(p.x,p.y,p.name,p.v,null,{size:18});wire([[p.x+33,p.y],g.out],p.v,3.5)}
+    else if(p.k==='OUT'){wire([g.ins[0],[p.x-26,p.y]],p.val,3.5);drawLamp(p.x,p.y,26,p.val,p.name,{size:18})}
+    else drawGate(p.k,p.x,p.y,p.n,kInVals(p,new Map(K.parts.map(q=>[q.id,q.val]))),p.val);
+    /* Anschlüsse */
+    g.ins.forEach((q,i)=>{const con=K.wires.some(w=>w.to===p.id&&w.i===i);ctx.beginPath();ctx.arc(q[0],q[1],5,0,TAU);ctx.fillStyle=con?cs('ink'):cs('fld');ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=cs('ink');ctx.stroke()});
+    if(g.out){ctx.beginPath();ctx.arc(g.out[0],g.out[1],5.5,0,TAU);ctx.fillStyle=sigCol(p.val);ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=cs('ink');ctx.stroke();
+      if((fan.get(p.id)||0)>1)knot(g.out[0],g.out[1],p.val)}}
+  const W=K.wd;if(W){const s=W.from!=null?kGeo(kById(W.from)).out:kGeo(kById(W.to)).ins[W.i];
+    ctx.setLineDash([7,6]);wire([s,[W.x,W.y]],W.from!=null?kById(W.from).val:0,3);ctx.setLineDash([]);
+    const want=W.from!=null?'in':'out';for(const p of K.parts){const g=kGeo(p);const pts=want==='in'?g.ins:(g.out?[g.out]:[]);pts.forEach(q=>{ctx.beginPath();ctx.arc(q[0],q[1],10,0,TAU);ctx.strokeStyle=cs('acc');ctx.lineWidth=2.5;ctx.stroke()})}}
+  if(!K.parts.some(p=>p.k!=='IN'&&p.k!=='OUT')&&!W)txt('Füge oben ein Gatter hinzu und verbinde es mit Schaltern und Lämpchen.',KW/2,KH-20,cs('mut'),'center',15)}
+function kUpd(){const T=kTable(),loop=kHasLoop(),task=K.task;let h='';
+  if(!T)h='<p class="small">Mit mehr als fünf Schaltern wird die Tabelle zu lang.</p>';
+  else if(!T.I.length)h='<p class="small">Füge einen Schalter hinzu.</p>';
+  else{const cur=T.I.reduce((s,p)=>s*2+p.v,0),tgt=task?T.O.map(o=>task.outs[o.name]):[];
+    h=`<table class="tt"><thead><tr>${T.I.map(p=>`<th>${p.name}</th>`).join('')}${T.O.map((o,j)=>(tgt[j]?`<th class="small">soll</th>`:'')+`<th class="on">${o.name}</th>`).join('')}</tr></thead><tbody>`+
+      T.rows.map((r,i)=>`<tr data-r="${i}"${i===cur&&!loop?' class="cur"':''}>${r.bits.map(b=>`<td>${b}</td>`).join('')}${r.out.map((v,j)=>(tgt[j]?`<td class="small">${tgt[j][i]}</td>`:'')+`<td class="o${tgt[j]&&tgt[j][i]!==v?' bad':''}">${v}</td>`).join('')}</tr>`).join('')+'</tbody></table>';
+    if(loop)h+='<p class="small">Die Schaltung hat eine Rückkopplung. Die Ausgänge hängen dann auch vom gespeicherten Zustand ab, die Tabelle gilt nur, wenn man von „alles 0“ startet.</p>'}
+  setHTML('kTT',h);
+  if(task&&T){const names=Object.keys(task.outs);let okRows=0,ok=true,miss='';
+    const sameIns=task.ins.length===T.I.length&&task.ins.every((n,i)=>T.I[i]?.name===n);
+    names.forEach(nm=>{if(!T.O.find(o=>o.name===nm)){ok=false;miss=nm}});
+    if(!sameIns){setHTML('kTask','Die Schalter müssen '+task.ins.join(', ')+' heißen.');$('#kTask').className='res'}
+    else if(miss){setHTML('kTask','Es fehlt das Lämpchen '+miss+'.');$('#kTask').className='res'}
+    else{T.rows.forEach((r,i)=>{if(names.every(nm=>r.out[T.O.findIndex(o=>o.name===nm)]===task.outs[nm][i]))okRows++});ok=okRows===T.rows.length;
+      setHTML('kTask',ok?'Geschafft! Alle Zeilen stimmen.':`${okRows} von ${T.rows.length} Zeilen stimmen.`);$('#kTask').className='res'+(ok?' ok':'')}}
+  if($('#kEx')){const O=kOuts();setHTML('kEx',O.length?O.map(o=>{const w=K.wires.find(w=>w.to===o.id);return `<b class="on">${o.name}</b> = ${w?kExpr(w.from).s:'nicht angeschlossen'}`}).join('<br>'):'Kein Lämpchen')}
+  if($('#kDNF'))setHTML('kDNF',T&&T.I.length?T.O.map((o,j)=>`<b class="on">${o.name}</b> = ${kDNF(T,j)}`).join('<br>'):'–');
+  $('#status').textContent=K.osc&&!K.slow?'Die Schaltung findet keinen stabilen Zustand: Sie schwingt. Schalte die Zeitlupe ein.':`${K.parts.filter(p=>GT[p.k]).length} Gatter, ${K.wires.length} Kabel. Zum Verbinden vom Ausgang (rechts) zu einem Eingang (links) ziehen.`}
+MODES.bauen={enter(){if(!K.init){K.init=true;kLoad(0)}else{kTools();kPanel();renderLib('Versuche: Schaltungen bauen',KP,K.pi,kLoad)}},panel:kPanel,
+  frame(dt){if(K.slow){K.acc+=dt;if(K.acc>.35){K.acc=0;const val=new Map(K.parts.map(p=>[p.id,p.val]));kStep(val,true);kApply(val)}}else{kSettle()}},
+  draw:kDraw,upd:kUpd,down:kDown,move:kMove,up:kUp,cursor:()=>K.drag?.moved?'grabbing':'default',
+  key(k,e){if((k==='Delete'||k==='Backspace')&&K.sel){kDelete();return true}if((k==='z'||k==='Z')&&(e.ctrlKey||e.metaKey)){kUndo();kTools();return true}return false}};
+
+/* =====================================================================
+   Gemeinsam: Gatter an beliebiger Stelle und Addierwerk-Kette
+   ===================================================================== */
+const SUB='₀₁₂₃₄₅₆₇₈₉',sub=n=>String(n).split('').map(c=>SUB[+c]).join('');
+function placeGate(t,cx,cy,k,n,ins,out,opt){const P=gPins(t,0,0,n),x=cx-GW/2*k,y=cy-P.h*k/2;
+  ctx.save();ctx.translate(x,y);ctx.scale(k,k);drawGate(t,0,0,n,ins,out,opt);ctx.restore();
+  return {ins:P.ins.map(p=>[x+p[0]*k,y+p[1]*k]),out:[x+P.out[0]*k,y+P.out[1]*k]}}
+const fa=(a,b,c)=>({s:a^b^c,c:(a&b)|(a&c)|(b&c)});
+/* Kette aus n Volladdierern; M = null (Addierer) oder 0/1 (Addier-/Subtrahierwerk) */
+function chainCalc(n,A,B,M){const r={s:0,c:[],bb:[],sb:[]};let c=M?1:0;r.c[0]=c;
+  for(let i=0;i<n;i++){const a=(A>>>i)&1,b0=(B>>>i)&1,b=M?b0^1:b0,o=fa(a,b,c);r.bb[i]=b;r.sb[i]=o.s;r.s|=o.s<<i;c=o.c;r.c[i+1]=c}r.cout=c;return r}
+function drawChain(o){const {n,A,B,M}=o,R=chainCalc(n,A,B,M),colW=840/n,cxs=i=>960-colW*(i+.5),bw=Math.min(132,colW-30),bh=84,fy=o.fy||250,ready=i=>!o.slow||o.t>=(i+1)*o.delay;
+  const tw2=Math.min(48,colW*.36),hasM=M!=null,yT=o.yT||82;
+  if(hasM){const my=152;const mv=M;drawSwitch(52,my,'',mv,o.onM,{w:56,h:44});txt('M',52,my-32,cs('ink'),'center',18,true);txtn(mv?'minus':'plus',52,my+40,cs('mut'),'center',13,true);
+    wire([[80,my],[985,my],[985,fy+bh/2],[cxs(0)+bw/2,fy+bh/2]],mv)}
+  for(let i=0;i<n;i++){const cx=cxs(i),a=(A>>>i)&1,b=(B>>>i)&1,xa=cx-colW*.2,xb=cx+colW*.2,rd=ready(i);
+    if(lvlShow(2))txtn(lvlShow(3)?'2'+sup(i):F(2**i),cx,yT-46,cs('mut'),'center',13,true);
+    txtn('a'+sub(i),xa,yT-26,cs('a'),'center',15,true);txtn('b'+sub(i),xb,yT-26,cs('b'),'center',15,true);
+    drawSwitch(xa,yT,'',a,()=>o.onA(i),{w:tw2,h:38});drawSwitch(xb,yT,'',b,()=>o.onB(i),{w:tw2,h:38});
+    const ia=[cx-bw*.25,fy],ib=[cx+bw*.25,fy];
+    wire([[xa,yT+19],[xa,fy-40],[ia[0],fy-40],ia],a);
+    if(hasM){const g=placeGate('XOR',xb+4,200,.62,2,[b,M],R.bb[i]);wire([[xb,yT+19],[xb,g.ins[0][1]-0],[g.ins[0][0],g.ins[0][1]]],b);
+      wire([[g.ins[1][0]-6,152],[g.ins[1][0]-6,g.ins[1][1]],g.ins[1]],M);dot(g.ins[1][0]-6,152,4,sigCol(M));
+      wire([g.out,[g.out[0]+6,g.out[1]],[g.out[0]+6,fy-14],[ib[0],fy-14],ib],R.bb[i])}
+    else wire([[xb,yT+19],[xb,fy-40],[ib[0],fy-40],ib],b);
+    /* Übertrag in diese Stufe */
+    const cin=R.c[i],cinOk=i===0||ready(i-1);
+    if(i===0&&!hasM){wire([[cx+bw/2+30,fy+bh/2],[cx+bw/2,fy+bh/2]],0);txtn('0',cx+bw/2+40,fy+bh/2+6,cs('mut'),'center',16,true,MONO)}
+    if(i>0){const x1=cxs(i-1)-bw/2,x2=cx+bw/2;ctx.setLineDash(cinOk?[]:[5,6]);wire([[x1,fy+bh/2],[x2,fy+bh/2]],cinOk?cin:0);ctx.setLineDash([]);
+      if(cinOk)txt('Ü',(x1+x2)/2,fy+bh/2-10,cin?cs('c'):cs('mut'),'center',12,true)}
+    ctx.setLineDash(rd?[]:[6,6]);box(cx-bw/2,fy,bw,bh,10,rd?cs('pan'):cs('fld'),o.sel===i?cs('acc'):cs('ink'),o.sel===i?3.5:2.4);ctx.setLineDash([]);
+    txtn(bw>90?'Volladdierer':'VA',cx,fy+bh/2+7,cs('ink'),'center',bw>90?15:16,true);
+    if(o.onBox)hit(cx-bw/2,fy,bw,bh,()=>o.onBox(i));
+    const sy=fy+bh+64,sr=Math.min(28,colW*.2),sv=rd?R.sb[i]:0;wire([[cx,fy+bh],[cx,sy-sr]],sv);
+    if(rd)drawLamp(cx,sy,sr,R.sb[i]);else{ctx.beginPath();ctx.arc(cx,sy,sr,0,TAU);ctx.fillStyle=cs('fld');ctx.fill();ctx.setLineDash([4,4]);ctx.lineWidth=2;ctx.strokeStyle=cs('mut');ctx.stroke();ctx.setLineDash([]);txtn('?',cx,sy+8,cs('mut'),'center',22,true)}
+    txtn('s'+sub(i),cx,sy+sr+20,cs('on'),'center',14,true)}
+  /* Übertrag ganz links */
+  const lx=cxs(n-1)-bw/2,rd=ready(n-1),cv0=rd?R.cout:0,ly=fy+bh/2;ctx.setLineDash(rd?[]:[5,6]);wire([[lx,ly],[64,ly]],cv0);ctx.setLineDash([]);
+  if(rd)drawLamp(44,ly+60,20,R.cout);else txtn('?',44,ly+68,cs('mut'),'center',20,true);
+  wire([[64,ly],[44,ly],[44,ly+40]],cv0);txtn(hasM?'C':'Ü',44,ly+102,cs('c'),'center',15,true);
+  R.ready=rd;return R}
+const schr=(rows)=>`<table class="sch mono">${rows.map(r=>`<tr${r.cls?` class="${r.cls}"`:''}><th>${r.h||''}</th>${r.d.map(c=>`<td${c.c?` class="${c.c}"`:''}>${c.t}</td>`).join('')}<td class="sv">${r.v??''}</td></tr>`).join('')}</table>`;
+function addSchr(A,B,n,cin,lbls){const R=chainCalc(n,A,B,cin?1:0),cols=n+1,dig=(v,c)=>{const d=[];for(let i=cols-1;i>=0;i--)d.push({t:i>=n?'':(v>>>i)&1,c});return d};
+  const car=[];for(let i=cols-1;i>=0;i--)car.push({t:i>0&&R.c[i]?'1':'',c:'cc'});
+  const res=[];for(let i=cols-1;i>=0;i--)res.push({t:i===n?(R.cout?'1':''):R.sb[i],c:i===n?'bad':'on'});
+  return schr([{h:lbls[0],d:dig(A,'ca'),v:'('+lbls[2]+')'},{h:'+',d:dig(B,'cb'),v:'('+lbls[3]+')'},{h:'Ü',d:car},{h:'=',d:res,cls:'tl',v:'('+lbls[4]+')'}])}
+
+/* =====================================================================
+   STATION 4: ADDIERER
+   ===================================================================== */
+const A={pi:0,init:false,view:'halb',a:1,b:1,c:0,n:4,A:5,B:3,slow:false,t:99,delay:.45,sel:-1};
+const AP=[
+ {g:'Bausteine',t:'Halbaddierer',d:'Zwei Bits addieren',s:{view:'halb',a:1,b:1},
+  obs:'Stelle alle vier Kombinationen ein. Vergleiche die Spalten S und Ü in der Tabelle mit den Wahrheitstafeln der Logikgatter.',
+  why:'Im Zweiersystem gilt: 0 + 0 = 0, 0 + 1 = 1, 1 + 1 = 10₂ (zwei). Das Ergebnis hat zwei Stellen: die Summenstelle S und den Übertrag Ü. S ist 1, wenn genau ein Bit 1 ist, das ist ein XOR-Gatter. Ü ist nur bei 1 + 1 gleich 1, das ist ein UND-Gatter. Mehr braucht ein Halbaddierer nicht.'},
+ {g:'Bausteine',t:'Volladdierer',d:'Drei Bits addieren',s:{view:'voll',a:1,b:1,c:1},
+  obs:'Neben A und B kommt der Übertrag Üₑ von der Stelle rechts dazu. Was ergibt 1 + 1 + 1? Verfolge die Signale durch beide Halbaddierer.',
+  why:'Beim schriftlichen Addieren addiert man in jeder Spalte zwei Ziffern und den Übertrag. Der Volladdierer macht genau das mit zwei Halbaddierern: Der erste rechnet A + B, der zweite addiert Üₑ dazu. Entsteht in einem der beiden ein Übertrag, wird Üₐ = 1, darum das ODER-Gatter. 1 + 1 + 1 = 11₂ = 3: S = 1 und Üₐ = 1.'},
+ {g:'Rechenwerk',t:'4-Bit-Addierwerk',d:'5 + 3',s:{view:'werk',n:4,A:5,B:3},
+  obs:'Tippe auf die Bits von A (blau) und B (rot). Die Volladdierer sind wie Spalten beim schriftlichen Rechnen nebeneinander geschaltet. Tippe auf einen Volladdierer, um sein Inneres zu sehen.',
+  why:'Jede Stelle bekommt einen Volladdierer. Er addiert die beiden Bits seiner Spalte und den Übertrag von rechts und gibt seinen Übertrag nach links weiter. So rechnet das Addierwerk genau wie du beim schriftlichen Addieren: 0101 + 0011 = 1000, also 5 + 3 = 8.'},
+ {g:'Rechenwerk',t:'Der Übertrag wandert',d:'7 + 1 in Zeitlupe',s:{view:'werk',n:4,A:7,B:1,slow:true},
+  obs:'Die Zeitlupe ist eingeschaltet. Schalte das rechte Bit von B aus und wieder ein und beobachte, wie der Übertrag von rechts nach links wandert.',
+  why:'Ein Volladdierer kann erst fertig rechnen, wenn der Übertrag von rechts angekommen ist. Bei 0111 + 0001 muss der Übertrag durch alle Stufen laufen. Darum heißt diese Bauart Ripple-Carry-Addierer (ripple = plätschern, wandern). Je mehr Bits, desto länger dauert es, bis das Ergebnis feststeht.'},
+ {g:'Rechenwerk',t:'Überlauf',d:'12 + 7 in 4 Bit',s:{view:'werk',n:4,A:12,B:7},
+  obs:'Das Ergebnis wäre 19. Was zeigen die vier Summenlämpchen? Welche Bedeutung hat das Lämpchen Ü ganz links?',
+  why:'Mit vier Bits kann man nur bis 15 zählen. 12 + 7 = 19 = 10011₂ braucht fünf Bits. Die vier Lämpchen zeigen 0011 = 3, der Übertrag ganz links bleibt übrig. Diesen Überlauf muss der Computer bemerken, sonst rechnet er falsch. Darum merkt sich der Prozessor diesen letzten Übertrag in einem eigenen Bit (Carry-Flag).'},
+ {g:'Rechenwerk',t:'8-Bit-Addierwerk',d:'100 + 55',s:{view:'werk',n:8,A:100,B:55},
+  obs:'Ein Byte plus ein Byte. Stelle eigene Aufgaben unter „Zahlen“ ein und vergleiche mit der schriftlichen Rechnung im Bedienfeld.',
+  why:'Acht Volladdierer hintereinander addieren zwei Bytes. Die größte mögliche Summe ist 255 + 255 = 510, dafür braucht man neun Bits: Das neunte ist der Übertrag ganz links. Ein heutiger Prozessor addiert 64 Bit auf einmal.'},
+ {g:'Rechenwerk',t:'Wie lange dauert das Rechnen?',d:'255 + 1 mit Gatterlaufzeit',s:{view:'werk',n:8,A:255,B:1,slow:true},lvl:3,
+  obs:'Beobachte in Zeitlupe, wie lange es bei 255 + 1 dauert, bis alle Summenlämpchen feststehen. Probiere zum Vergleich 1 + 1.',
+  why:'Jedes Gatter braucht eine kleine Zeit, bis sein Ausgang umschaltet (Gatterlaufzeit, wenige Pikosekunden). Im Volladdierer liegen zwischen Üₑ und Üₐ zwei Gatter. Bei n Bits muss der Übertrag im schlimmsten Fall durch 2n Gatter. Schnelle Prozessoren verwenden darum Carry-Lookahead-Addierer, die alle Überträge gleichzeitig vorausberechnen, mit mehr Gattern, aber viel schneller.'}
+];
+function aLoad(i){A.pi=i;const p=AP[i];if(p.lvl&&APP.lvl<p.lvl)setLvl(p.lvl,true);Object.assign(A,{slow:false,sel:-1},p.s);A.t=A.slow?0:99;aTools();aPanel();renderLib('Versuche: Addierer',AP,i,aLoad)}
+function aTools(){TL.innerHTML=seg('av',[['Halbaddierer','halb'],['Volladdierer','voll'],['Addierwerk','werk']],A.view)+(A.view==='werk'?`<span class="tsep"></span>${seg('an',[['4 Bit',4],['8 Bit',8]],A.n)}<button class="btn" id="aRnd">Zufall</button><button class="btn" id="aAgain" ${A.slow?'':'disabled'}>Nochmal ablaufen</button>`:'');
+  TL.querySelectorAll('.seg').forEach(s=>s.style.margin='0');
+  TL.onclick=e=>{const b=e.target.closest('button');if(!b||b.disabled)return;
+    if(b.dataset.av){A.view=b.dataset.av;aTools();aPanel()}
+    if(b.dataset.an){A.n=+b.dataset.an;A.A&=2**A.n-1;A.B&=2**A.n-1;A.t=0;aTools();aPanel()}
+    if(b.id==='aRnd'){A.A=rnd(0,2**A.n-1);A.B=rnd(0,2**A.n-1);A.t=0}
+    if(b.id==='aAgain')A.t=0}}
+function aPanel(){const p=AP[A.pi];let h=infoCard(p);
+  if(A.view==='werk'){h+=`<div class="card"><h3>Zahlen</h3><div class="fl"><label for="aA" class="ca">A</label><input class="inp" id="aA" inputmode="numeric" autocomplete="off"><label for="aB" class="cb">B</label><input class="inp" id="aB" inputmode="numeric" autocomplete="off"></div><div class="small">Von 0 bis ${2**A.n-1}</div></div>
+    <div class="card"><h3>Schriftlich</h3><div id="aSch"></div><div class="res" id="aRes"></div></div>
+    <div class="card"><h3>Zeitlupe</h3><div class="chk">${chk('aSlow','Gatterlaufzeit zeigen',A.slow)}</div>${range('aDl','Zeit pro Volladdierer',.15,1.5,.05,A.delay)}</div>`;
+    if(lvlShow(3))h+=`<div class="card"><h3>Aufwand</h3><div class="kv"><span>Volladdierer</span><b>${A.n}</b><span>Gatter (je 2 XOR, 2 UND, 1 ODER)</span><b>${5*A.n}</b><span>Gatter auf dem längsten Weg</span><b>${2*A.n+1}</b></div></div>`}
+  else{const voll=A.view==='voll';h+=`<div class="card"><h3>Rechenregeln</h3><div class="formel mono">0 + 0 = 00<br>0 + 1 = 01<br>1 + 0 = 01<br>1 + 1 = 10${voll?'<br>1 + 1 + 1 = 11':''}</div><p class="small">Die linke Ziffer ist der Übertrag Ü, die rechte die Summenstelle S.</p></div>`;
+    if(lvlShow(2))h+=`<div class="card"><h3>Formeln</h3><div class="formel">${voll?'S = A ⊕ B ⊕ Üₑ<br>Üₐ = (A ∧ B) ∨ ((A ⊕ B) ∧ Üₑ)':'S = A ⊕ B<br>Ü = A ∧ B'}</div></div>`}
+  PN.innerHTML=h;
+  PN.oninput=e=>{const id=e.target.id;if(id==='aA'||id==='aB'){const v=parseNum(e.target.value,10);if(v==null||v<0||v>2**A.n-1)return;A[id==='aA'?'A':'B']=v;A.t=0}
+    if(id==='aDl'){A.delay=+e.target.value}};
+  PN.onchange=e=>{if(e.target.id==='aSlow'){A.slow=e.target.checked;A.t=A.slow?0:99;aTools()}}}
+function aDraw(){bg();view(1000,560);HITS=[];
+  if(A.view==='werk'){const R=drawChain({n:A.n,A:A.A,B:A.B,M:null,slow:A.slow,t:A.t,delay:A.delay,sel:A.sel,
+      onA:i=>{A.A^=1<<i;A.t=0},onB:i=>{A.B^=1<<i;A.t=0},onBox:i=>{A.a=(A.A>>>i)&1;A.b=(A.B>>>i)&1;A.c=chainCalc(A.n,A.A,A.B,0).c[i];A.view='voll';A.sel=i;aTools();aPanel()}});
+    const tot=A.A+A.B;let s=`A + B = ${F(A.A)} + ${F(A.B)} = `+(R.ready?F(R.s)+(R.cout?`  (mit Ü: ${F(tot)})`:''):'…');
+    txt(s,500,535,cs('ink'),'center',22,true);if(R.ready&&R.cout)txt('Überlauf! Das Ergebnis passt nicht in '+A.n+' Bit.',500,505,cs('no'),'center',17,true);return}
+  if(A.view==='halb'){const a=A.a,b=A.b,S=a^b,U=a&b;
+    const pa=drawSwitch(110,200,'A',a,()=>{A.a^=1}),pb=drawSwitch(110,380,'B',b,()=>{A.b^=1});
+    const gx=placeGate('XOR',430,200,1.45,2,[a,b],S,{label:lvlShow(2)?'XOR':''}),ga=placeGate('AND',430,380,1.45,2,[a,b],U,{label:lvlShow(2)?'UND':''});
+    wire([pa,[230,200],[230,gx.ins[0][1]],gx.ins[0]],a);wire([[230,gx.ins[0][1]],[230,ga.ins[0][1]],ga.ins[0]],a);knot(230,gx.ins[0][1],a);
+    wire([pb,[262,380],[262,ga.ins[1][1]],ga.ins[1]],b);wire([[262,ga.ins[1][1]],[262,gx.ins[1][1]],gx.ins[1]],b);knot(262,ga.ins[1][1],b);
+    const ls=drawLamp(670,200,34,S,'S'),lu=drawLamp(670,380,34,U,'Ü',{col:cs('c')});wire([gx.out,ls],S);wire([ga.out,lu],U);
+    const tx=1000-30-4*54,R=[];for(let k=0;k<4;k++){const [x,y]=bitsOf(k,2);R.push([x,y,x&y,x^y])}
+    txt('Wahrheitstafel',tx,136,cs('mut'),'left',14,true);
+    drawTable(tx,150,['A','B','Ü','S'],R,2,a*2+b,{cw:54,rh:46,rowFn:i=>{A.a=i>>1;A.b=i&1}});
+    txt(`${a} + ${b} = ${a+b}`,400,500,cs('ink'),'center',28,true);txt(`binär: Ü S = ${U}${S}`,400,535,cs('on'),'center',20,true,MONO);return}
+  /* Volladdierer */
+  const a=A.a,b=A.b,c=A.c,x1=a^b,u1=a&b,S=x1^c,u2=x1&c,UO=u1|u2,k=1.1;
+  const pa=drawSwitch(80,120,'A',a,()=>{A.a^=1;A.sel=-1},{w:56,h:42}),pb=drawSwitch(80,230,'B',b,()=>{A.b^=1;A.sel=-1},{w:56,h:42}),pc=drawSwitch(80,440,'',c,()=>{A.c^=1;A.sel=-1},{w:56,h:42});
+  txt('Üₑ',80,412,cs('c'),'center',17,true);
+  const X1=placeGate('XOR',270,150,k,2,[a,b],x1),A1=placeGate('AND',270,290,k,2,[a,b],u1),X2=placeGate('XOR',470,190,k,2,[x1,c],S),A2=placeGate('AND',470,370,k,2,[x1,c],u2),O=placeGate('OR',610,330,k,2,[u1,u2],UO);
+  if(lvlShow(2)){ctx.setLineDash([5,6]);box(150,90,200,250,12,null,cs('mut'),1.5);box(380,140,175,300,12,null,cs('mut'),1.5);ctx.setLineDash([]);txtn('Halbaddierer 1',250,82,cs('mut'),'center',13,true);txtn('Halbaddierer 2',467,458,cs('mut'),'center',13,true)}
+  const ja=168,jb=186;wire([pa,[ja,120],[ja,X1.ins[0][1]],X1.ins[0]],a);wire([[ja,X1.ins[0][1]],[ja,A1.ins[0][1]],A1.ins[0]],a);knot(ja,X1.ins[0][1],a);
+  wire([pb,[jb,230],[jb,X1.ins[1][1]],X1.ins[1]],b);wire([[jb,230],[jb,A1.ins[1][1]],A1.ins[1]],b);knot(jb,230,b);
+  const jx=395;wire([X1.out,[jx,X1.out[1]],[jx,X2.ins[0][1]],X2.ins[0]],x1);wire([[jx,X2.ins[0][1]],[jx,A2.ins[0][1]],A2.ins[0]],x1);knot(jx,X2.ins[0][1],x1);
+  const jc=412;wire([pc,[jc,440],[jc,X2.ins[1][1]],X2.ins[1]],c);wire([[jc,A2.ins[1][1]],A2.ins[1]],c);knot(jc,A2.ins[1][1],c);
+  wire([A1.out,[540,A1.out[1]],[540,O.ins[0][1]],O.ins[0]],u1);wire(orth(A2.out[0],A2.out[1],O.ins[1][0],O.ins[1][1],552),u2);
+  const ls=drawLamp(712,190,28,S,'S',{size:18,below:true}),lu=drawLamp(712,330,28,UO,'Üₐ',{col:cs('c'),size:18,below:true});wire([X2.out,ls],S);wire([O.out,lu],UO);
+  const tx=1000-22-5*44,R=[];for(let q=0;q<8;q++){const [x,y,z]=bitsOf(q,3);const r=fa(x,y,z);R.push([x,y,z,r.c,r.s])}
+  drawTable(tx,70,['A','B','Üₑ','Üₐ','S'],R,3,a*4+b*2+c,{cw:44,rh:40,rowFn:i=>{[A.a,A.b,A.c]=bitsOf(i,3);A.sel=-1}});
+  txt(`${a} + ${b} + ${c} = ${a+b+c}`,360,505,cs('ink'),'center',26,true);txt(`binär: Üₐ S = ${UO}${S}`,360,540,cs('on'),'center',19,true,MONO);
+  if(A.sel>=0)txt('Volladdierer an der Stelle '+A.sel+' aus dem Addierwerk',360,30,cs('acc'),'center',15,true)}
+function aUpd(){if(A.view==='werk'){syncVal('aA',A.A);syncVal('aB',A.B);setOut('aDl',String(A.delay.toFixed(2)).replace('.',',')+' s');
+    setHTML('aSch',addSchr(A.A,A.B,A.n,0,['A',0,F(A.A),F(A.B),F((A.A+A.B)%2**A.n)]));
+    const t=A.A+A.B;setHTML('aRes',t>2**A.n-1?`<span style="color:var(--no)">Überlauf: ${F(t)} braucht ${Math.ceil(Math.log2(t+1))} Bit.</span>`:`<span class="cok">${F(A.A)} + ${F(A.B)} = ${F(t)}</span>`)}
+  $('#status').textContent=A.view==='werk'?`Addierwerk mit ${A.n} Volladdierern. Tippe auf Bits, um sie umzuschalten.`:'Tippe auf die Schalter oder auf eine Zeile der Wahrheitstafel.'}
+MODES.addierer={enter(){if(!A.init){A.init=true;aLoad(0)}else{aTools();aPanel();renderLib('Versuche: Addierer',AP,A.pi,aLoad)}},panel:aPanel,
+  frame(dt){A.t+=dt},draw:aDraw,upd:aUpd,down:tapDown,move(){},up(){},key(){return false}};
+
+/* =====================================================================
+   STATION 5: NEGATIVE ZAHLEN UND SUBTRAHIERER
+   ===================================================================== */
+const N={pi:0,init:false,view:'kreis',rep:'zk',cpos:3,disp:3,k:5,anim:null,last:null,n:4,x:6,step:4,A:7,B:3,m:1,slow:false,t:99,delay:.45};
+const NP=[
+ {g:'Zahlenkreis',t:'Unter null zählen',d:'Was kommt vor 0000?',s:{view:'kreis',rep:'none',cpos:3},
+  obs:'Drücke mehrmals „−1“. Was kommt nach 0000? Erinnert dich das an etwas?',
+  why:'Mit vier Bits gibt es nur 16 Zahlen, sie liegen wie auf einer Uhr im Kreis. Zählt man von 0000 rückwärts, kommt 1111, wie bei einem Kilometerzähler, der rückwärts läuft und nach 0000 die 9999 zeigt. Darum liegt es nahe, 1111 als −1 zu lesen, 1110 als −2 und so weiter. Genau so speichern Computer negative Zahlen.'},
+ {g:'Zahlenkreis',t:'Negative Zahlen im Kreis',d:'Das Zweierkomplement',s:{view:'kreis',rep:'zk',cpos:12},
+  obs:'Innen stehen jetzt die Werte im Zweierkomplement. Welches Bit verrät sofort, ob eine Zahl negativ ist? Wo springt der Wert von der größten zur kleinsten Zahl?',
+  why:'Die linke Hälfte des Kreises ist negativ: Bei allen negativen Zahlen ist das höchste Bit 1, darum heißt es Vorzeichenbit. Mit vier Bits reicht der Bereich von −8 bis +7. Zwischen 0111 (+7) und 1000 (−8) liegt der Sprung: Wer dort weiterzählt, bekommt einen Überlauf, 7 + 1 ergibt −8.'},
+ {g:'Zahlenkreis',t:'Minus ist Plus andersherum',d:'3 − 5 und 3 + 11',s:{view:'kreis',rep:'zk',cpos:3,k:5},
+  obs:'Drücke „− 5 rechnen“ und merke dir, wo der Zeiger landet. Stelle wieder 3 ein und drücke „+ 11 rechnen“.',
+  why:'Auf dem Kreis mit 16 Plätzen sind 5 Schritte zurück dasselbe wie 11 Schritte vor, denn 5 + 11 = 16 ist eine ganze Runde. Statt 5 abzuziehen, kann man also 11 addieren. 11 = 1011 ist das Zweierkomplement von 5. Der Computer braucht deshalb kein eigenes Rechenwerk zum Subtrahieren, ein Addierwerk reicht.'},
+ {g:'Zahlenkreis',t:'Vorzeichen und Betrag?',d:'Warum nicht einfach ein Minus-Bit?',s:{view:'kreis',rep:'vb',cpos:2},lvl:3,
+  obs:'Die Beschriftung zeigt „Vorzeichen und Betrag“: das linke Bit ist das Minus, der Rest der Betrag. Wie oft kommt die Null vor? Was passiert mit dem Wert, wenn du in der linken Hälfte „+1“ drückst?',
+  why:'Diese naheliegende Idee hat zwei Nachteile: Es gibt zwei Nullen (0000 = +0 und 1000 = −0), und in der negativen Hälfte wird der Wert beim Weiterzählen kleiner statt größer. Ein normales Addierwerk würde falsch rechnen. Im Zweierkomplement gibt es nur eine Null, und +1 ist überall ein Schritt im Uhrzeigersinn. Deshalb verwenden alle heutigen Computer das Zweierkomplement.'},
+ {g:'Zweierkomplement',t:'Zweierkomplement bilden',d:'Umdrehen und 1 addieren',s:{view:'komp',n:4,x:6,step:0},
+  obs:'Drücke „Schritt“, bis −6 dasteht. Die letzte Zeile ist die Probe: Was ergibt 6 + (−6)?',
+  why:'So bildet man −x: alle Bits umdrehen (aus 0 wird 1, aus 1 wird 0) und dann 1 addieren. Warum das funktioniert: x und die umgedrehte Zahl ergeben zusammen 1111, also −1. Die umgedrehte Zahl ist darum −x − 1, und mit + 1 erhält man −x. Bei der Probe entsteht ganz links ein Übertrag, der nicht mehr in die vier Bits passt und wegfällt. Übrig bleibt 0000.'},
+ {g:'Zweierkomplement',t:'Ein Byte mit Vorzeichen',d:'−1, −128 und 0',s:{view:'komp',n:8,x:1,step:4},lvl:2,
+  obs:'Bilde im Byte die Zahlen −1, −100 und −0 (stelle x = 0 ein). Was passiert bei x = 128 (1000 0000)?',
+  why:'In einem Byte reicht der Bereich mit Vorzeichen von −128 bis +127. −1 ist immer 1111 1111. Das Zweierkomplement von 0 ist wieder 0, der Übertrag fällt hinaus. 1000 0000 ist −128: Umdrehen und 1 addieren ergibt wieder 1000 0000, denn +128 passt nicht in ein Byte mit Vorzeichen.'},
+ {g:'Subtrahierwerk',t:'Subtrahieren durch Addieren',d:'7 − 3 im Rechenwerk',s:{view:'werk',n:4,A:7,B:3,m:1},
+  obs:'Schalte M zwischen plus und minus um. Was machen die XOR-Gatter mit den Bits von B? Was kommt bei M = minus ganz rechts als Übertrag hinein?',
+  why:'Ein XOR-Gatter mit einer 1 am zweiten Eingang dreht das Bit um, mit einer 0 lässt es das Bit durch. Bei M = minus werden also alle Bits von B umgedreht, und der Übertrag ganz rechts ist 1. Das Werk rechnet A + (B umgedreht) + 1 = A + (−B) = A − B. Dasselbe Addierwerk kann so addieren und subtrahieren. Der Übertrag C = 1 ganz links fällt dabei weg.'},
+ {g:'Subtrahierwerk',t:'Ergebnis negativ',d:'3 − 5',s:{view:'werk',n:4,A:3,B:5,m:1},
+  obs:'Lies das Ergebnis ab. Als Zahl ohne Vorzeichen ist es 14, im Zweierkomplement aber …?',
+  why:'3 − 5 = −2. Das Ergebnis 1110 ist im Zweierkomplement genau −2. Das Werk rechnet einfach mit Bits, die Deutung „mit oder ohne Vorzeichen“ macht erst das Programm. Dass kein Übertrag C entstanden ist, zeigt: Ohne Vorzeichen wäre das Ergebnis negativ geworden, es musste „geborgt“ werden.'},
+ {g:'Subtrahierwerk',t:'Überlauf mit Vorzeichen',d:'6 + 3 = −7?',s:{view:'werk',n:4,A:6,B:3,m:0},lvl:3,
+  obs:'Addiere 6 + 3 mit vier Bits. Was zeigt das Ergebnis mit Vorzeichen? Achte auf das Bit V.',
+  why:'Mit Vorzeichen reichen vier Bits nur bis +7. 6 + 3 = 9 ergibt 1001, und das ist im Zweierkomplement −7: ein Überlauf. Er entsteht, wenn zwei Zahlen mit gleichem Vorzeichen addiert werden und das Ergebnis das andere Vorzeichen hat. Prozessoren melden ihn mit dem Overflow-Bit V. Der Übertrag C ist dafür nicht zuständig, er meldet den Überlauf ohne Vorzeichen.'}
+];
+const nSign=(v,n)=>{if(N.rep==='vb'){const m=2**(n-1);return v>=m?(v===m?'−0':'−'+(v-m)):String(v)}const s=signed(v,n);return s<0?'−'+(-s):String(s)};
+function nLoad(i){N.pi=i;const p=NP[i];if(p.lvl&&APP.lvl<p.lvl)setLvl(p.lvl,true);Object.assign(N,{anim:null,last:null,slow:false},p.s);N.disp=N.cpos;N.t=99;nTools();nPanel();renderLib('Versuche: Negative Zahlen',NP,i,nLoad)}
+function nTools(){let h=seg('nv',[['Zahlenkreis','kreis'],['Zweierkomplement','komp'],['Subtrahierwerk','werk']],N.view)+'<span class="tsep"></span>';
+  if(N.view==='kreis')h+=`<button class="btn" data-nk="-1">−1</button><button class="btn" data-nk="1">+1</button><span class="tsep"></span><button class="btn hot" id="nMinus">− ${N.k} rechnen</button><button class="btn" id="nPlus">+ ${16-N.k} rechnen</button>`;
+  if(N.view==='komp')h+=`<button class="btn hot" id="nStep">Schritt</button><button class="btn" id="nAll">Alles</button><button class="btn" id="nReset">Von vorn</button><span class="tsep"></span>${seg('nn',[['4 Bit',4],['8 Bit',8]],N.n)}`;
+  if(N.view==='werk')h+=`${seg('nm',[['M = plus',0],['M = minus',1]],N.m)}${seg('nn',[['4 Bit',4],['8 Bit',8]],N.n)}<button class="btn" id="nAgain" ${N.slow?'':'disabled'}>Nochmal ablaufen</button>`;
+  TL.innerHTML=h;TL.querySelectorAll('.seg').forEach(s=>s.style.margin='0');
+  TL.onclick=e=>{const b=e.target.closest('button');if(!b||b.disabled)return;
+    if(b.dataset.nv){N.view=b.dataset.nv;if(N.view==='kreis')N.n=4;nTools();nPanel();return}
+    if(b.dataset.nk){N.anim=null;N.cpos+= +b.dataset.nk}
+    if(b.id==='nMinus')nGo(-1,N.k);if(b.id==='nPlus')nGo(1,16-N.k);
+    if(b.id==='nStep')N.step=Math.min(4,N.step+1);if(b.id==='nAll')N.step=4;if(b.id==='nReset')N.step=0;
+    if(b.dataset.nn){N.n=+b.dataset.nn;const m=2**N.n-1;N.x&=m;N.A&=m;N.B&=m;N.t=0;nTools();nPanel()}
+    if(b.dataset.nm){N.m=+b.dataset.nm;N.t=0;nTools()}
+    if(b.id==='nAgain')N.t=0}}
+function nGo(dir,k){N.anim={dir,left:k,acc:0,start:mod(N.cpos,16),k};N.last=null}
+function nPanel(){const p=NP[N.pi];let h=infoCard(p);
+  if(N.view==='kreis'){h+=`<div class="card"><h3>Beschriftung innen</h3>${seg('nr',[['nur ohne Vorzeichen','none'],['Zweierkomplement','zk'],...(lvlShow(3)?[['Vorzeichen und Betrag','vb']]:[])],N.rep)}</div>
+    <div class="card"><h3>Rechnen am Kreis</h3>${range('nK','Abziehen',1,15,1,N.k)}<p class="small">Tippe auf eine Zahl am Kreis, um dort zu starten.</p><div class="res" id="nRes"></div></div>`}
+  if(N.view==='komp')h+=`<div class="card"><h3>Zahl x</h3><div class="fl"><label for="nX">x</label><input class="inp" id="nX" inputmode="numeric" autocomplete="off"></div><p class="small">Tippe oben auf die Bits von x oder gib eine Zahl ein, auch negativ.</p><div class="kv" id="nKV"></div></div>`;
+  if(N.view==='werk')h+=`<div class="card"><h3>Zahlen</h3><div class="fl"><label for="nA" class="ca">A</label><input class="inp" id="nA" inputmode="numeric" autocomplete="off"><label for="nB" class="cb">B</label><input class="inp" id="nB" inputmode="numeric" autocomplete="off"></div><p class="small">Auch negative Eingaben sind erlaubt (von ${-(2**(N.n-1))} bis ${2**N.n-1}).</p></div>
+    <div class="card"><h3>Ergebnis</h3><div class="kv" id="nKV"></div></div>${lvlShow(2)?'<div class="card"><h3>So rechnet das Werk</h3><div class="formel" id="nHow"></div></div>':''}
+    <div class="card"><h3>Zeitlupe</h3><div class="chk">${chk('nSlow','Gatterlaufzeit zeigen',N.slow)}</div></div>`;
+  PN.innerHTML=h;
+  PN.onclick=e=>{const b=e.target.closest('button');if(b?.dataset.nr){N.rep=b.dataset.nr;nPanel()}};
+  PN.oninput=e=>{const id=e.target.id;if(id==='nK'){N.k=+e.target.value;nTools();return}
+    if(id==='nX'||id==='nA'||id==='nB'){const v=parseNum(e.target.value,10),n=N.n;if(v==null||v< -(2**(n-1))||v>2**n-1)return;const u=mod(v,2**n);
+      if(id==='nX')N.x=u;else{N[id==='nA'?'A':'B']=u;N.t=0}}};
+  PN.onchange=e=>{if(e.target.id==='nSlow'){N.slow=e.target.checked;N.t=N.slow?0:99;nTools()}}}
+function nDraw(){bg();view(1000,560);HITS=[];
+  if(N.view==='kreis')return nDrawKreis();if(N.view==='komp')return nDrawKomp();
+  const n=N.n,R=drawChain({n,A:N.A,B:N.B,M:N.m,slow:N.slow,t:N.t,delay:N.delay,onA:i=>{N.A^=1<<i;N.t=0},onB:i=>{N.B^=1<<i;N.t=0},onM:()=>{N.m^=1;N.t=0;nTools()}});
+  if(!R.ready){txt('Das Werk rechnet …',500,520,cs('mut'),'center',20,true);return}
+  const op=N.m?'−':'+',u=N.m?mod(N.A-N.B,2**n):(N.A+N.B)%2**n;
+  txt(`ohne Vorzeichen: ${N.A} ${op} ${N.B} = ${u}`+(N.m?(N.A<N.B?'  (geborgt, falsch)':''):(N.A+N.B>=2**n?'  (Überlauf)':'')),500,510,cs('ink'),'center',19,true);
+  const sa=signed(N.A,n),sb=signed(N.B,n),sr=signed(u,n),exact=N.m?sa-sb:sa+sb,V=exact!==sr;
+  const fm=v=>v<0?'('+F(v)+')':F(v);txt(`mit Vorzeichen: ${fm(sa)} ${op} ${fm(sb)} = ${F(sr)}`+(V?'  Überlauf!':''),500,540,V?cs('no'):cs('acc'),'center',19,true)}
+function nDrawKreis(){const cx=290,cy=282,R=196,n=4,M=16,cur=mod(N.cpos,M),ang=v=>-PI/2+v*TAU/M;
+  ctx.beginPath();ctx.arc(cx,cy,R,0,TAU);ctx.strokeStyle=cs('line');ctx.lineWidth=10;ctx.stroke();
+  const bnd=(v,col,lab,out)=>{const a=ang(v-.5),c=Math.cos(a),s=Math.sin(a);ctx.setLineDash([6,5]);line(cx+c*(R-90),cy+s*(R-90),cx+c*(R+62),cy+s*(R+62),col,2.5);ctx.setLineDash([]);txt(lab,cx+c*(R+(out||70)),cy+s*(R+(out||70))+(s<0?-4:14),col,'center',12,true)};
+  bnd(0,cs('no'),'Überlauf ohne Vorzeichen',72);if(N.rep==='zk')bnd(8,cs('acc'),'Überlauf mit Vorzeichen',72);
+  for(let v=0;v<M;v++){const a=ang(v),c=Math.cos(a),s=Math.sin(a),on=v===cur;
+    dot(cx+c*R,cy+s*R,on?10:6,on?cs('on'):cs('ink'));
+    txtn(bstr(v,n,''),cx+c*(R+36),cy+s*(R+36)+6,on?cs('on'):cs('ink'),'center',15,true,MONO);
+    txtn(String(v),cx+c*(R-28),cy+s*(R-28)+6,cs('mut'),'center',15,on);
+    if(N.rep!=='none')txtn(nSign(v,n),cx+c*(R-62),cy+s*(R-62)+7,cs('acc'),'center',19,true);
+    hit(cx+c*(R+20)-30,cy+s*(R+20)-24,60,48,()=>{N.anim=null;N.cpos=v;N.disp=v;N.last=null})}
+  const a=ang(N.disp);arrow(cx,cy,cx+Math.cos(a)*(R-84),cy+Math.sin(a)*(R-84),cs('on'),4,14);dot(cx,cy,7,cs('on'));
+  if(N.rep!=='none'){txtn('innen:',cx,cy+50,cs('mut'),'center',12);txtn(N.rep==='zk'?'Zweierkomplement':'Vorzeichen + Betrag',cx,cy+66,cs('acc'),'center',13,true)}
+  /* Beschreibung rechts */
+  const x=590;let y=90;const L=(s,col,sz=20,b=true,f=FONT)=>{txt(s,x,y,col,'left',sz,b,f);y+=sz+16};
+  L('Zeiger auf',cs('mut'),14);L(bstr(cur,4,'')+'₂',cs('on'),34,true,MONO);
+  L('ohne Vorzeichen: '+cur,cs('ink'),20);if(N.rep!=='none')L((N.rep==='zk'?'Zweierkomplement: ':'Vorzeichen + Betrag: ')+nSign(cur,4),cs('acc'),20);
+  y+=14;const A=N.anim||N.last;
+  if(A){const sgn=A.dir<0?'−':'+',st=A.start;L('Rechnung',cs('mut'),14);L(`${st} ${sgn} ${A.k}`+(N.rep==='zk'?`   (${nSign(st,4)} ${sgn} ${A.k})`:''),cs('ink'),22);
+    if(!N.anim){const r=mod(st+A.dir*A.k,16);L(`= ${r}`+(N.rep!=='none'?`   (${nSign(r,4)})`:''),cs('on'),22);
+      const wrapU=A.dir>0?st+A.k>=16:st-A.k<0;if(wrapU)L('Grenze 1111 | 0000 überschritten',cs('no'),15);
+      if(N.rep==='zk'){const s0=signed(st,4),ex=s0+A.dir*A.k,sr=signed(r,4);if(A.dir<0&&A.k===N.k||A.dir>0&&A.k===16-N.k)L(A.dir<0?`Gleiches Ziel wie + ${16-A.k}`:`Gleiches Ziel wie − ${16-A.k}`,cs('ok'),15)}}
+    else L(`noch ${A.left} Schritte …`,cs('mut'),16,false)}
+  else L('Drücke „− '+N.k+' rechnen“',cs('mut'),16,false)}
+function nKompRows(){const n=N.n,m=2**n-1,x=N.x,nx=(~x)&m,neg=(nx+1)&m,carry1=[];let c=1;for(let i=0;i<n;i++){const b=(nx>>>i)&1;carry1[i]=c;c=b&c}
+  const sum=x+neg,cP=[];let cc=0;for(let i=0;i<n;i++){cP[i]=cc;const s=((x>>>i)&1)+((neg>>>i)&1)+cc;cc=s>>1}return {n,x,nx,neg,carry1,sumOut:sum>m?1:0,cP,cc}}
+function nDrawKomp(){const K2=nKompRows(),n=K2.n,cw=n===4?86:62,gap=n>4?14:0,W=n*cw+(n>4?gap:0),x0=960-W,cxs=i=>{const k=n-1-i;return x0+k*cw+(n>4&&i<4?gap:0)};
+  const rowY=[100,200,290,380,480],labels=['x','alle Bits umdrehen','+ 1','= −x','Probe: x + (−x)'];
+  const vals=[K2.x,K2.nx,1,K2.neg,0],cols=[cs('a'),cs('ink'),cs('mut'),cs('on'),cs('ok')];
+  for(let r=0;r<5;r++){if(r>N.step)break;const y=rowY[r],v=vals[r];
+    txt(labels[r],40,y+8,r===3?cs('on'):cs('ink'),'left',r===0||r===3?24:19,true);
+    let sv='';if(r===0)sv=`= ${K2.x} (mit Vorzeichen ${F(signed(K2.x,n))})`;if(r===1)sv=lvlShow(2)?`Einerkomplement = ${F(signed(K2.nx,n))}`:'';if(r===3)sv=`= ${F(signed(K2.neg,n))}`;if(r===4)sv=`= ${F(signed(K2.x,n))} + (${F(signed(K2.neg,n))}) = 0`;
+    if(sv)txtn(sv,40,y+34,cs('mut'),'left',14,true);
+    for(let i=0;i<n;i++){const x=cxs(i),b=(v>>>i)&1;
+      box(x+4,y-26,cw-8,52,8,b?cs('on',.14):cs('pan'),r===0?cs('a'):b?cs('on'):cs('line'),2);
+      txtn(String(b),x+cw/2,y+11,r===0?cs('a'):b?cs('on'):cs('mut'),'center',30,true,MONO);
+      if(r===0)hit(x+4,y-26,cw-8,52,()=>{N.x^=1<<i});
+      if(r===1)arrow(x+cw/2,rowY[0]+30,x+cw/2,y-30,cs('line'),2,7);
+      if(r===3&&lvlShow(2)&&K2.carry1[i]&&i>0)txtn('1',x+cw-10,y-30,cs('c'),'center',13,true,MONO);
+      if(r===4&&K2.cP[i]&&i>0)txtn('1',x+cw-10,y-30,cs('c'),'center',13,true,MONO)}
+    if(r===2||r===3)line(x0,rowY[3]-34,960,rowY[3]-34,cs('ink'),2)}
+  if(N.step>=4){const x=x0-cw;box(x+4,rowY[4]-26,cw-8,52,8,cs('pan'),cs('no'),2);txtn(String(K2.cc),x+cw/2,rowY[4]+11,cs('no'),'center',30,true,MONO);line(x+10,rowY[4]+20,x+cw-10,rowY[4]-20,cs('no'),3);
+    txtn('fällt weg',x+cw/2,rowY[4]+44,cs('no'),'center',13,true);line(x0,rowY[4]-34,960,rowY[4]-34,cs('ink'),2)}
+  if(N.step<4)txt('Drücke „Schritt“.',x0,rowY[N.step+1]+8,cs('mut'),'left',17,true);
+  if(N.step>=3&&K2.x===2**(n-1))txt(`Achtung: +${2**(n-1)} passt nicht in ${n} Bit mit Vorzeichen.`,40,540,cs('no'),'left',16,true)}
+function nUpd(){const n=N.n;
+  if(N.view==='komp'){syncVal('nX',N.x);const K2=nKompRows();setHTML('nKV',`<span>x ohne Vorzeichen</span><b>${K2.x}</b><span>x mit Vorzeichen</span><b>${F(signed(K2.x,n))}</b><span>−x</span><b class="mono">${bstr(K2.neg,n)}</b>${lvlShow(2)?`<span>Bereich mit ${n} Bit</span><b>${F(-(2**(n-1)))} bis ${F(2**(n-1)-1)}</b>`:''}`)}
+  if(N.view==='werk'){syncVal('nA',N.A);syncVal('nB',N.B);const R=chainCalc(n,N.A,N.B,N.m),u=R.s,sa=signed(N.A,n),sb=signed(N.B,n),ex=N.m?sa-sb:sa+sb,V=ex!==signed(u,n)?1:0;
+    setHTML('nKV',`<span>Ergebnis</span><b class="mono">${bstr(u,n)}</b><span>ohne Vorzeichen</span><b>${u}</b><span>mit Vorzeichen</span><b>${F(signed(u,n))}</b>${lvlShow(3)?`<span>Übertrag C</span><b>${R.cout}</b><span>Overflow V (mit Vorzeichen)</span><b>${V}</b>`:''}`);
+    setHTML('nHow',N.m?`A − B = A + ¬B + 1<br><span class="mono">${bstr(N.A,n)} + ${bstr((~N.B)&(2**n-1),n)} + 1</span>`:`A + B<br><span class="mono">${bstr(N.A,n)} + ${bstr(N.B,n)}</span>`)}
+  $('#status').textContent=N.view==='kreis'?'Vier Bits: 16 Zahlen im Kreis. Im Uhrzeigersinn +1, gegen den Uhrzeigersinn −1.':N.view==='komp'?'Zweierkomplement: alle Bits umdrehen, dann 1 addieren.':'Addier- und Subtrahierwerk: Bei M = minus drehen die XOR-Gatter B um, und ganz rechts kommt ein Übertrag 1 hinein.'}
+MODES.minus={enter(){if(!N.init){N.init=true;nLoad(0)}else{nTools();nPanel();renderLib('Versuche: Negative Zahlen',NP,N.pi,nLoad)}},panel:nPanel,
+  frame(dt){N.t+=dt;const A=N.anim;if(A){A.acc+=dt;if(A.acc>.24){A.acc=0;N.cpos+=A.dir;A.left--;if(A.left<=0){N.last={...A};N.anim=null}}}
+    N.disp+=(N.cpos-N.disp)*Math.min(1,dt*12)},
+  draw:nDraw,upd:nUpd,down:tapDown,move(){},up(){},key(){return false}};
+
+/* =====================================================================
+   STATION 6: BINÄRRECHNER (schriftlich, Schritt für Schritt)
+   ===================================================================== */
+const R={pi:0,init:false,op:'add',a:13,b:6,n:8,step:0,play:false,acc:0};
+const ROPS=[['+','add'],['−','sub'],['·','mul'],[':','div'],['UND','and'],['ODER','or'],['XOR','xor'],['NICHT','not'],['⇐','shl'],['⇒','shr']];
+const RP=[
+ {g:'Grundrechnungsarten',t:'Addieren',d:'5 + 3 schriftlich',s:{op:'add',a:5,b:3,n:4,step:0},
+  obs:'Drücke „Schritt“ und rechne Spalte für Spalte mit. Wann entsteht ein Übertrag?',
+  why:'Schriftlich addiert man im Zweiersystem genau wie im Zehnersystem: von rechts nach links, Spalte für Spalte. Nur wird schon bei 2 statt bei 10 übertragen: 1 + 1 = 10₂ heißt „schreibe 0, Übertrag 1“. Und 1 + 1 + 1 = 11₂ heißt „schreibe 1, Übertrag 1“. Mehr Regeln gibt es nicht.'},
+ {g:'Grundrechnungsarten',t:'Viele Überträge',d:'11 + 7',s:{op:'add',a:11,b:7,n:8,step:0},
+  obs:'Verfolge die Überträge (violett). In welchen Spalten wird 1 + 1 + 1 gerechnet?',
+  why:'Ein Übertrag kann durch mehrere Spalten weiterwandern, so wie bei 999 + 1 im Zehnersystem. 1011 + 0111 = 10010: Die Überträge laufen von rechts bis zur fünften Stelle. Im Rechenwerk macht das die Kette aus Volladdierern (Station „Addierer“).'},
+ {g:'Grundrechnungsarten',t:'Überlauf',d:'200 + 100 in einem Byte',s:{op:'add',a:200,b:100,n:8,step:99},
+  obs:'Das Ergebnis 300 passt nicht in 8 Bit. Welche Zahl bleibt übrig, wenn man den Übertrag links weglässt?',
+  why:'Ein Byte reicht bis 255. 300 = 1 0010 1100 braucht neun Bits. Ohne das neunte Bit bleibt 0010 1100 = 44 = 300 − 256. Programme müssen solche Überläufe erkennen. In alten Videospielen sind dadurch berühmte Fehler entstanden, etwa Punktezähler, die nach dem Höchstwert wieder bei null beginnen.'},
+ {g:'Grundrechnungsarten',t:'Subtrahieren',d:'13 − 6 mit Ergänzen',s:{op:'sub',a:13,b:6,n:8,step:0},
+  obs:'Gerechnet wird mit dem Ergänzungsverfahren wie in der Schule: „6 plus wie viel ergibt 13?“ – nur spaltenweise in Bits. Achte auf den Übertrag unter B.',
+  why:'In jeder Spalte addiert man die Ziffer von B und den Übertrag und ergänzt auf die Ziffer von A. Geht das nicht, ergänzt man auf 10₂ bzw. 11₂ (also auf 2 bzw. 3) und schreibt in die nächste Spalte einen Übertrag 1. Der Computer rechnet anders: Er addiert das Zweierkomplement von B (Station „Negative Zahlen“).'},
+ {g:'Grundrechnungsarten',t:'Multiplizieren',d:'13 · 5',s:{op:'mul',a:13,b:5,step:0},
+  obs:'Für jede Ziffer von B entsteht eine Zeile. Was steht in der Zeile, wenn die Ziffer 1 ist, und was bei 0?',
+  why:'Im Zweiersystem ist das Einmaleins winzig: mal 1 heißt abschreiben, mal 0 ergibt 0. Jede Zeile ist also entweder A oder lauter Nullen, jeweils eine Stelle weiter rechts. Danach addiert man die Zeilen. Ein Rechenwerk multipliziert genau so: verschieben und addieren.'},
+ {g:'Grundrechnungsarten',t:'Dividieren',d:'45 : 6',s:{op:'div',a:45,b:6,step:0},
+  obs:'Wie beim schriftlichen Dividieren: Wie oft geht 110 in die ersten Stellen? Im Zweiersystem ist die Antwort immer 0 oder 1.',
+  why:'Man nimmt so viele Stellen, bis der Divisor hineinpasst. Passt er, schreibt man 1 und rechnet den Rest aus, passt er nicht, schreibt man 0. Dann holt man die nächste Ziffer herunter. Weil die Quotientenziffer nur 0 oder 1 sein kann, muss man nur vergleichen: „Ist der Rest mindestens so groß wie der Divisor?“'},
+ {g:'Verschieben',t:'Mal 2 ist Verschieben',d:'13 ⇐ 3 = 13 · 8',s:{op:'shl',a:13,b:3,n:8,step:0},
+  obs:'Bei jedem Schritt rücken alle Bits eine Stelle nach links, rechts kommt eine 0 dazu. Wie verändert sich die Zahl bei jedem Schritt?',
+  why:'Eine Verschiebung nach links verdoppelt die Zahl, drei Verschiebungen ergeben mal 8 = 2³. Nach rechts verschieben halbiert (ohne Rest). Prozessoren können sehr schnell verschieben, deshalb rechnen Programme mal 2, mal 4 oder mal 8 oft so. Fällt links eine 1 hinaus, ist das ein Überlauf.'},
+ {g:'Bitweise Verknüpfen',t:'Bitmaske mit UND',d:'Bits herausfiltern',s:{op:'and',a:182,b:15,n:8,step:99},
+  obs:'B = 0000 1111 ist eine Maske. Welche Bits von A bleiben übrig, welche werden 0?',
+  why:'UND lässt ein Bit nur durch, wenn in der Maske an dieser Stelle eine 1 steht. Mit 0000 1111 bleiben die rechten vier Bits von A erhalten, die linken werden gelöscht. So holt ein Programm einzelne Teile aus einer Zahl heraus, zum Beispiel einen Farbanteil oder den Netzwerkteil einer IP-Adresse (Subnetzmaske).'},
+ {g:'Bitweise Verknüpfen',t:'Bits setzen mit ODER',d:'Aus „H“ wird „h“',s:{op:'or',a:72,b:32,n:8,step:99},
+  obs:'72 ist im ASCII-Code der Buchstabe „H“. Welche Zahl entsteht mit ODER 32 (0010 0000)? Tipp: 104 ist „h“.',
+  why:'ODER setzt ein Bit auf 1, wenn es in der Maske 1 ist, alle anderen Bits bleiben, wie sie sind. Im ASCII-Code unterscheiden sich Groß- und Kleinbuchstaben genau in diesem einen Bit mit dem Wert 32. ODER 32 macht also aus jedem Großbuchstaben einen Kleinbuchstaben.'},
+ {g:'Bitweise Verknüpfen',t:'Geheimschrift mit XOR',d:'Zweimal XOR hebt sich auf',s:{op:'xor',a:77,b:42,n:8,step:99},
+  obs:'A ist die Nachricht, B der geheime Schlüssel. Drücke dann „Ergebnis als A übernehmen“ und verknüpfe noch einmal mit demselben Schlüssel.',
+  why:'XOR dreht genau die Bits um, bei denen der Schlüssel 1 ist. Macht man das zweimal mit demselben Schlüssel, werden dieselben Bits wieder zurückgedreht: (A ⊕ B) ⊕ B = A. Darauf beruht das One-Time-Pad: Mit einem zufälligen Schlüssel, der nur einmal verwendet wird, ist es nachweislich nicht zu knacken.'},
+ {g:'Bitweise Verknüpfen',t:'NICHT',d:'Alle Bits umdrehen',s:{op:'not',a:105,n:8,step:99},
+  obs:'Was ergeben A und NICHT A zusammengezählt? Probiere es mit mehreren Zahlen.',
+  why:'NICHT dreht jedes Bit um. An jeder Stelle steht dann bei A oder bei NICHT A eine 1, aber nie bei beiden. Zusammen ergeben sie darum immer 1111 1111 = 255. NICHT A ist also 255 − A. Mit 1 dazu erhält man das Zweierkomplement, also −A.'}
+];
+const rMask=()=>2**R.n-1;
+const rUsesN=()=>!['mul','div'].includes(R.op);
+const rOne=()=>R.op==='not';
+const bin=v=>(v>>>0).toString(2);
+/* Plan: Gitter mit Spalten von links, Zeilen, Linien; Zellen erscheinen ab einem Schritt */
+function rPlan(){const op=R.op,n=R.n,a=R.a,b=R.b,P={W:0,rows:[],rules:[],hl:[],ex:[],n:0,res:null,note:''};
+  const cell=(c,t,col,s=0,o={})=>({c,t:String(t),col,s,...o});
+  if(op==='add'||op==='sub'||op==='and'||op==='or'||op==='xor'||op==='not'){
+    const W=op==='add'?n+1:n;P.W=W;const col=i=>W-1-i;
+    if(op==='sub'){let A0=a,B0=b,neg=false;if(a<b){A0=b;B0=a;neg=true}
+      const ra=[],rb=[],ru=[],rs=[];let u=0;P.ex[0]=(neg?`A < B: Wir rechnen ${B0} − ${A0} und setzen am Ende ein Minus davor. `:'')+'Wir rechnen von rechts nach links und ergänzen in jeder Spalte.';
+      for(let i=0;i<n;i++){const ai=(A0>>>i)&1,bi=(B0>>>i)&1,s=bi+u;let d,nu;if(ai>=s){d=ai-s;nu=0}else{d=ai+2-s;nu=1}
+        ra.push(cell(col(i),ai,'a'));rb.push(cell(col(i),bi,'b'));rs.push(cell(col(i),d,'on',i+1));if(nu&&i<n-1)ru.push(cell(col(i+1),1,'c',i+1,{small:true}));
+        P.hl[i+1]=col(i);P.ex[i+1]=`Spalte ${i+1}: `+(u?`${bi} + Übertrag 1 = ${s}. `:'')+(nu?`Von ${s} bis ${ai} geht nicht, also bis ${ai?'11₂ (3)':'10₂ (2)'}: Es fehlt ${d}. Schreibe ${d}, Übertrag 1.`:`Von ${s} bis ${ai} fehlt ${d}. Schreibe ${d}.`);u=nu}
+      P.rows=[{lab:'',cells:ra},{lab:'−',cells:rb},{lab:'Ü',small:true,cells:ru},{lab:neg?'= −':'=',cells:rs}];P.rules=[{after:2,s:0}];P.n=n;P.res=neg?-(A0-B0):A0-B0;
+      P.ex[n]+=` Ergebnis: ${neg?'−':''}${bstr(A0-B0,n)}₂ = ${F(P.res)}.`;return P}
+    const ra=[],rb=[],rc=[],rs=[];let c=0;P.ex[0]=op==='add'?'Wir rechnen von rechts nach links, Spalte für Spalte.':'Jede Spalte wird für sich verknüpft, ohne Übertrag.';
+    for(let i=0;i<n;i++){const ai=(a>>>i)&1,bi=(b>>>i)&1;ra.push(cell(col(i),ai,'a'));if(op!=='not')rb.push(cell(col(i),bi,'b'));
+      let s,t;if(op==='add'){const sm=ai+bi+c;s=sm&1;const nc=sm>>1;if(nc)rc.push(cell(col(i+1),1,'c',i+1,{small:true}));
+          t=`Spalte ${i+1}: ${ai} + ${bi}${c?' + Übertrag 1':''} = ${sm}`+(sm>1?` = ${bin(sm)}₂ → schreibe ${s}, Übertrag 1.`:` → schreibe ${s}.`);c=nc}
+        else{s=op==='and'?ai&bi:op==='or'?ai|bi:op==='xor'?ai^bi:1-ai;t=op==='not'?`Spalte ${i+1}: NICHT ${ai} = ${s}`:`Spalte ${i+1}: ${ai} ${({and:'UND',or:'ODER',xor:'XOR'})[op]} ${bi} = ${s}`}
+      rs.push(cell(col(i),s,'on',i+1));P.hl[i+1]=col(i);P.ex[i+1]=t}
+    if(op==='add'&&c){rs.push(cell(0,1,'no',n));P.ex[n]+=` Der letzte Übertrag passt nicht mehr in ${n} Bit: Überlauf!`}
+    const L={add:'+',and:'UND',or:'ODER',xor:'XOR',not:'NICHT'}[op];
+    P.rows=op==='not'?[{lab:'NICHT',cells:ra},{lab:'=',cells:rs}]:[{lab:'',cells:ra},{lab:L,cells:rb},...(op==='add'?[{lab:'Ü',small:true,cells:rc}]:[]),{lab:'=',cells:rs}];
+    P.rules=[{after:P.rows.length-2,s:0}];P.n=n;P.res=op==='add'?a+b:op==='and'?a&b:op==='or'?a|b:op==='xor'?a^b:(~a)&rMask();return P}
+  if(op==='shl'||op==='shr'){const k=clamp(b,0,n),W=n+2,col=i=>W-2-i;P.W=W;P.rows.push({lab:'A',cells:bitsOf(a,n).map((x,j)=>cell(j+1,x,'a'))});P.ex[0]=`Alle Bits werden ${k}-mal um eine Stelle nach ${op==='shl'?'links':'rechts'} geschoben.`;
+    let v=a;for(let s=1;s<=k;s++){const out=op==='shl'?(v>>>(n-1))&1:v&1;v=op==='shl'?(v<<1)&rMask():v>>>1;
+      const cs2=bitsOf(v,n).map((x,j)=>cell(j+1,x,(op==='shl'&&j===n-1)||(op==='shr'&&j===0)?'acc':'on',s));
+      cs2.push(cell(op==='shl'?0:W-1,out,out?'no':'mut',s,{strike:true}));P.rows.push({lab:(op==='shl'?'⇐ ':'⇒ ')+s,cells:cs2});
+      P.ex[s]=`Schritt ${s}: ${op==='shl'?'links':'rechts'} fällt eine ${out} hinaus, ${op==='shl'?'rechts':'links'} kommt eine 0 dazu. Wert: ${F(v)}`+(out&&op==='shl'?' – Überlauf!':out?' – Rest geht verloren.':'.')}
+    P.n=k;P.res=v;return P}
+  if(op==='mul'){const sa=bin(a),sb=bin(b),la=sa.length,lb=sb.length,prod=a*b,lp=bin(prod).length;const top=la+1+lb,W=Math.max(top,lp+1);P.W=W;
+    const tr=[];[...sa].forEach((d,j)=>tr.push(cell(W-top+j,d,'a')));tr.push(cell(W-top+la,'·','ink'));[...sb].forEach((d,j)=>tr.push(cell(W-lb+j,d,'b')));P.rows.push({lab:'',cells:tr});
+    P.ex[0]='Für jede Ziffer von B (von links nach rechts) schreiben wir eine Zeile, jeweils eine Stelle weiter rechts.';
+    [...sb].forEach((d,j)=>{const end=W-lb+j,v=d==='1'?sa:'0'.repeat(la),cl=[];[...v].forEach((x,q)=>cl.push(cell(end-la+1+q,x,d==='1'?'on':'mut',j+1)));P.rows.push({lab:'',cells:cl});
+      P.hl[j+1]=end;P.ex[j+1]=`Ziffer ${j+1} von B ist ${d}: `+(d==='1'?'A abschreiben, die letzte Ziffer unter diese Ziffer von B.':'mal 0 ergibt lauter Nullen.')});
+    const pr=bin(prod),cl=[];[...pr].forEach((x,q)=>cl.push(cell(W-pr.length+q,x,'on',lb+1)));P.rows.push({lab:'=',cells:cl});P.rules=[{after:0,s:0},{after:lb,s:lb+1}];
+    P.n=lb+1;P.hl[lb+1]=null;P.ex[lb+1]=`Die Zeilen addieren: ${sa}₂ · ${sb}₂ = ${pr}₂, also ${F(a)} · ${F(b)} = ${F(prod)}.`;P.res=prod;return P}
+  if(op==='div'){if(b===0){P.W=1;P.note='Durch 0 kann man nicht dividieren.';P.res=null;return P}
+    const sa=bin(a),sd=bin(b),la=sa.length,ld=sd.length,q=Math.floor(a/b),r=a%b;const steps=[];let cur=0,started=false;
+    for(let i=0;i<la;i++){cur=cur*2+ +sa[i];if(!started&&cur<b&&i<la-1)continue;started=true;const qq=cur>=b?1:0,rr2=qq?cur-b:cur;steps.push({i,cur,q:qq,r:rr2});cur=rr2}
+    const sq=steps.map(s=>s.q).join(''),W=la+1+ld+1+Math.max(1,sq.length);P.W=W;
+    const tr=[];[...sa].forEach((d,j)=>tr.push(cell(j,d,'a')));tr.push(cell(la,':','ink'));[...sd].forEach((d,j)=>tr.push(cell(la+1+j,d,'b')));tr.push(cell(la+1+ld,'=','ink'));
+    steps.forEach((s,k)=>tr.push(cell(la+2+ld+k,s.q,'on',k+1)));P.rows.push({lab:'',cells:tr});
+    P.ex[0]=`Wir nehmen so viele Stellen von A, bis ${sd}₂ hineinpasst.`;
+    steps.forEach((s,k)=>{const last=k===steps.length-1,v=last?s.r:s.r*2+ +sa[s.i+1],bs=bin(v),endc=last?s.i:s.i+1,cl=[];
+      [...bs].forEach((x,j)=>cl.push(cell(endc-bs.length+1+j,x,last?'c':'ink',k+1,{bring:!last&&j===bs.length-1})));P.rows.push({lab:'',cells:cl});
+      P.hl[k+1]=s.i;P.ex[k+1]=`${bin(s.cur)}₂ (${s.cur}) : ${sd}₂ (${b}) → ${s.q?`passt einmal, schreibe 1, Rest ${bin(s.r)}₂`:'passt nicht, schreibe 0'}`+(last?`. Ergebnis: ${F(a)} : ${F(b)} = ${F(q)} Rest ${F(r)}.`:', nächste Ziffer herunterholen.')});
+    P.n=steps.length;P.res=q;P.rem=r;return P}
+  return P}
+function rLoad(i){R.pi=i;const p=RP[i];if(p.lvl&&APP.lvl<p.lvl)setLvl(p.lvl,true);Object.assign(R,{b:0,play:false},p.s);rClampStep();rTools();rPanel();renderLib('Versuche: Binärrechner',RP,i,rLoad)}
+function rClampStep(){const P=rPlan();R.step=clamp(R.step,0,P.n)}
+function rTools(){TL.innerHTML=`<button class="btn hot" id="rStep">Schritt</button><button class="btn" id="rBack">Zurück</button><button class="btn" id="rAll">Alles</button><button class="btn" id="rReset">Von vorn</button><button class="btn" id="rPlay" aria-pressed="${R.play}">${R.play?'Anhalten':'Abspielen'}</button>`;
+  TL.onclick=e=>{const b=e.target.closest('button');if(!b)return;const P=rPlan();
+    if(b.id==='rStep')R.step=Math.min(P.n,R.step+1);if(b.id==='rBack')R.step=Math.max(0,R.step-1);if(b.id==='rAll')R.step=P.n;if(b.id==='rReset')R.step=0;
+    if(b.id==='rPlay'){R.play=!R.play;if(R.play&&R.step>=P.n)R.step=0;R.acc=0;rTools()}}}
+function rPanel(){const p=RP[R.pi];let h=infoCard(p);
+  h+=`<div class="card"><h3>Rechenart</h3>${seg('ro',ROPS,R.op)}${rUsesN()?'<div class="row"><span>Bits</span></div>'+seg('rn',[['4',4],['8',8],['16',16]],R.n):''}</div>`;
+  const lb=R.op==='shl'||R.op==='shr'?'Schritte':'B';
+  h+=`<div class="card"><h3>Zahlen</h3><div class="fl"><label for="rA" class="ca">A</label><input class="inp" id="rA" inputmode="numeric" autocomplete="off">${rOne()?'':`<label for="rB" class="cb">${lb}</label><input class="inp" id="rB" inputmode="numeric" autocomplete="off">`}</div><div class="small" id="rRange"></div><div class="kv" id="rIn"></div></div>`;
+  h+=`<div class="card"><h3>Ergebnis</h3><div class="kv" id="rKV"></div><div class="res" id="rRes"></div>${R.op==='xor'?'<button class="btn" id="rTake" style="margin-top:8px">Ergebnis als A übernehmen</button>':''}</div>`;
+  if(R.op==='sub')h+=`<div class="card"><h3>Hinweis</h3><p class="small">Hier wird mit dem Ergänzungsverfahren gerechnet wie in der Schule. Ein Computer rechnet A + (−B) mit dem Zweierkomplement, siehe Station „Negative Zahlen“.</p></div>`;
+  PN.innerHTML=h;
+  PN.onclick=e=>{const b=e.target.closest('button');if(!b)return;const P0=rPlan(),full=R.step>=P0.n;
+    if(b.dataset.ro){R.op=b.dataset.ro;if(R.op==='shl'||R.op==='shr')R.b=Math.min(R.b,R.n);if(R.op==='div'&&R.b===0)R.b=1;R.step=full?99:0;rClampStep();rPanel();return}
+    if(b.dataset.rn){R.n=+b.dataset.rn;R.a&=rMask();R.b=R.op==='shl'||R.op==='shr'?Math.min(R.b,R.n):R.b&rMask();if(full)R.step=99;rClampStep();rPanel();return}
+    if(b.id==='rTake'){const P=rPlan();R.a=P.res;if(full)R.step=99;rClampStep()}};
+  PN.oninput=e=>{const id=e.target.id;if(id!=='rA'&&id!=='rB')return;const v=parseNum(e.target.value,10);const mx=rUsesN()?rMask():1023;
+    const hi=id==='rB'&&(R.op==='shl'||R.op==='shr')?R.n:mx;if(v==null||v<0||v>hi){setTxt('rRange',`Bitte eine ganze Zahl von 0 bis ${hi}.`);return}setTxt('rRange','');
+    const P0=rPlan(),full=R.step>=P0.n;R[id==='rA'?'a':'b']=v;if(full)R.step=99;rClampStep()}}
+function rDraw(){bg();view(1000,560);HITS=[];const P=rPlan(),st=R.step;
+  if(P.note){txt(P.note,500,280,cs('no'),'center',26,true);return}
+  const W=P.W,cw=Math.min(54,(840)/W),gx=960-W*cw;
+  const nBig=P.rows.filter(r=>!r.small).length,rh=Math.min(60,410/Math.max(1,nBig)),sh=Math.min(30,rh*.55),fs=Math.min(34,rh*.62,cw*.72);
+  let y=60;const ys=[];P.rows.forEach(r=>{ys.push(y);y+=r.small?sh:rh});const bottom=y;
+  const hc=P.hl[st];if(hc!=null&&st>0)box(gx+hc*cw+2,40,cw-4,bottom-30,8,cs('acc',.12));
+  P.rows.forEach((r,k)=>{const yy=ys[k]+(r.small?sh*.75:rh*.66);
+    if(r.lab)txt(r.lab,gx-16,yy,r.small?cs('c'):cs('ink'),'right',r.small?15:Math.min(26,fs*.8),true);
+    r.cells.forEach(c=>{if(c.s>st)return;const x=gx+c.c*cw+cw/2,col=cs(c.col==='ink'?'ink':c.col);
+      txtn(c.t,x,yy,col,'center',r.small?Math.min(20,fs*.62):fs,true,MONO);
+      if(c.strike)line(x-cw*.32,yy-fs*.7,x+cw*.32,yy+fs*.1,cs('no'),2.5);
+      if(c.bring)line(x-cw*.3,yy+6,x+cw*.3,yy+6,cs('acc'),2.5)})});
+  P.rules.forEach(rl=>{if(rl.s>st)return;const yy=ys[rl.after+1]-2;line(gx-8,yy+(P.rows[rl.after+1]?.small?0:2),960,yy+2,cs('ink'),2)});
+  /* bei Strich unter Ü-Zeile: Linie vor der Ergebniszeile */
+  const ex=P.ex[Math.min(st,P.n)]||'';let fsz=19;while(fsz>13&&tw(ex,fsz,true)>950)fsz--;
+  if(tw(ex,fsz,true)>950){const words=ex.split(' ');let l1='';for(const w of words){if(tw(l1+' '+w,fsz,true)>930)break;l1+=(l1?' ':'')+w}txt(l1,500,505,cs('ink'),'center',fsz,true);txt(ex.slice(l1.length).trim(),500,532,cs('ink'),'center',fsz,true)}
+  else txt(ex,500,520,cs('ink'),'center',fsz,true);
+  if(st<P.n)txtn(`Schritt ${st} von ${P.n}`,40,40,cs('mut'),'left',13,true);else txtn('fertig',40,40,cs('ok'),'left',13,true)}
+function rUpd(){const P=rPlan(),n=R.n;syncVal('rA',R.a);syncVal('rB',R.b);
+  const ib=rUsesN()?n:Math.max(1,bin(Math.max(R.a,R.b)).length);
+  setHTML('rIn',`<span class="ca">A binär</span><b class="mono">${rUsesN()?bstr(R.a,n):bin(R.a)}</b>${rOne()||R.op==='shl'||R.op==='shr'?'':`<span class="cb">B binär</span><b class="mono">${rUsesN()?bstr(R.b,n):bin(R.b)}</b>`}`);
+  if(P.res==null){setHTML('rKV','');setHTML('rRes',P.note);return}
+  const sym={add:'+',sub:'−',mul:'·',div:':',and:'UND',or:'ODER',xor:'XOR',shl:'⇐',shr:'⇒'}[R.op];
+  let txtR=R.op==='not'?`NICHT ${R.a} = ${P.res}`:`${R.a} ${sym} ${R.b} = ${F(P.res)}`+(R.op==='div'?` Rest ${P.rem}`:'');
+  const bs=P.res<0?'−'+bin(-P.res):bin(P.res);
+  setHTML('rKV',`<span>Dezimal</span><b>${F(P.res)}${R.op==='div'?' Rest '+P.rem:''}</b><span>Binär</span><b class="mono">${bs}₂</b>${lvlShow(2)&&P.res>=0?`<span>Hex</span><b class="mono">${P.res.toString(16).toUpperCase()}</b>`:''}${R.op==='or'||R.op==='xor'||R.op==='and'?`<span>als ASCII-Zeichen</span><b>${P.res>=33&&P.res<127?'„'+String.fromCharCode(P.res)+'“':'–'}</b>`:''}`);
+  let warn='';if(R.op==='add'&&P.res>rMask())warn=`Überlauf: ${F(P.res)} passt nicht in ${n} Bit, übrig bleiben ${F(P.res&rMask())}.`;
+  if(R.op==='mul'&&P.res>255)warn=`Das Produkt braucht ${bin(P.res).length} Bit.`;
+  setHTML('rRes',warn?`<span style="color:var(--no)">${warn}</span>`:`<span class="cok">${txtR}</span>`);
+  $('#status').textContent='Schriftliches Rechnen im Zweiersystem. „Schritt“ zeigt die nächste Spalte bzw. Zeile.'}
+MODES.rechner={enter(){if(!R.init){R.init=true;rLoad(0)}else{rTools();rPanel();renderLib('Versuche: Binärrechner',RP,R.pi,rLoad)}},panel:rPanel,
+  frame(dt){if(R.play){R.acc+=dt;if(R.acc>1.1){R.acc=0;const P=rPlan();if(R.step<P.n)R.step++;else{R.play=false;rTools()}}}},
+  draw:rDraw,upd:rUpd,down:tapDown,move(){},up(){},key(k){if(k===' '||k==='ArrowRight'){$('#rStep')?.click();return true}if(k==='ArrowLeft'){$('#rBack')?.click();return true}return false}};
+
+/* =====================================================================
+   Start, Umschalten, Schleife
+   ===================================================================== */
+function fit(){const r=$('#cvw').getBoundingClientRect();DPR=Math.min(2,devicePixelRatio||1);CW=Math.max(50,r.width);CH=Math.max(50,r.height);cv.width=Math.round(CW*DPR);cv.height=Math.round(CH*DPR)}
+const ro=new ResizeObserver(()=>fit());ro.observe($('#cvw'));
+const thObs=new MutationObserver(()=>readCols());thObs.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',readCols)}catch(e){}
+function setMode(m){if(!MODES[m])m='zahlen';if(m===APP.mode)return;APP.mode=m;
+  $$('.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.mode===m)));HITS=[];MODES[m].enter();MODES[m].upd()}
+function setLvl(l,quiet){APP.lvl=l;try{localStorage.setItem('bin-lvl',String(l))}catch(e){}$$('.lvl button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.lvl===l)));if(quiet)return;MODES[APP.mode].panel();MODES[APP.mode].upd()}
+$$('.tabs button').forEach(b=>b.onclick=()=>{location.hash=b.dataset.mode;setMode(b.dataset.mode)});
+$$('.lvl button').forEach(b=>b.onclick=()=>setLvl(+b.dataset.lvl));
+addEventListener('hashchange',()=>setMode(location.hash.slice(1)));
+$('#bFull').onclick=()=>{const d=document;try{if(d.fullscreenElement)d.exitFullscreen();else d.documentElement.requestFullscreen().catch(()=>{})}catch(e){}};
+const pos=e=>{const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top]};
+cv.addEventListener('pointerdown',e=>{try{cv.setPointerCapture(e.pointerId)}catch(_){}MODES[APP.mode].down(...pos(e))});
+cv.addEventListener('pointermove',e=>MODES[APP.mode].move(...pos(e)));
+const up=()=>MODES[APP.mode].up();cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;if(e.key===' '&&e.target.tagName==='BUTTON')return;if(MODES[APP.mode].key(e.key,e))e.preventDefault()});
+let lv=2;try{lv=+localStorage.getItem('bin-lvl')||2;NORM=localStorage.getItem('bin-norm')==='us'?'us':'din'}catch(e){}APP.lvl=clamp(lv,1,3);$$('.lvl button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.lvl===APP.lvl)));
+readCols();fit();setMode(location.hash.slice(1)||'zahlen');
+document.fonts?.ready?.then(()=>{});
+let last=performance.now();
+function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;APP.frame++;const M=MODES[APP.mode];try{M.frame(dt);M.draw();if(APP.frame%6===0)M.upd()}catch(err){console.error(err)}requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
