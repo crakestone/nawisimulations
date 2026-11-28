@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trigonometrielabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday school lab, calm and exact, legible on a projector
+   IDEA the geometry set on the desk: compass circle, set square, graph paper, the calculator display
+   PICTURE the live canvas (unit circle, unrolling curve, right triangle, sine graph, general triangle)
+   COLOUR white ground, dark ink; sine red, cosine blue, tangent violet, angle amber, the same in every station
+   TYPE Atkinson Hyperlegible
+   LAYOUT laptop: experiments | stage | panel; phone: stage, panel, experiments */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#10161b);--ink:light-dark(#14212b,#e6ecf1);--mut:light-dark(#5a6772,#9babb7);--line:light-dark(#dde3e8,#29343d);--pan:light-dark(#f2f5f7,#18212a);--red:light-dark(#df4329,#ff6b4f);--blue:light-dark(#2762c9,#6198ff);--vio:light-dark(#7b3cc4,#bb90ff);--amb:light-dark(#c27a0e,#f2b443);--fld:light-dark(#ffffff,#0c1115);--ok:light-dark(#1f7a4d,#53c98a)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 "Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:clip}
+button,select,input{font:inherit;color:inherit}
+#app{display:grid;grid-template-rows:auto minmax(0,1fr);height:100%}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand svg{flex:none}
+h1{font-size:26px;line-height:1.05;margin:0;letter-spacing:-.02em}
+h1 a{color:inherit;text-decoration:none}
+h1 a:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+.tabs{display:flex;gap:3px;background:var(--pan);padding:4px;border-radius:12px;flex-wrap:wrap}
+.tabs button{border:0;background:none;padding:8px 11px;border-radius:9px;cursor:pointer;font-weight:700;min-height:40px}
+.tabs button[aria-selected=true]{background:var(--ink);color:var(--bg)}
+.btn{border:1px solid var(--line);background:var(--bg);padding:7px 12px;border-radius:9px;cursor:pointer;min-height:38px;white-space:nowrap}
+.btn:hover{border-color:var(--mut)}
+.btn[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.hot{background:var(--red);border-color:var(--red);color:#fff;font-weight:700}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.lvl{display:flex;gap:3px;background:var(--pan);padding:4px;border-radius:12px}
+.lvl button{border:0;background:none;padding:6px 9px;border-radius:8px;cursor:pointer;font-size:14px;min-height:34px}
+.lvl button[aria-pressed=true]{background:var(--bg);box-shadow:0 0 0 1px var(--line);font-weight:700}
+main{display:grid;grid-template-columns:250px minmax(0,1fr) 330px;min-height:0}
+#lib{overflow:auto;border-right:1px solid var(--line);padding:12px}
+#lib h2{font-size:13px;color:var(--mut);margin:14px 4px 6px;font-weight:700}
+#lib h2:first-child{margin-top:2px}
+.pre{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:10px;cursor:pointer;margin-bottom:2px}
+.pre b{display:block;font-size:15px}
+.pre span{display:block;font-size:13px;color:var(--mut);line-height:1.3}
+.pre:hover{background:var(--pan)}
+.pre[aria-current=true]{background:var(--pan);box-shadow:inset 3px 0 0 var(--red)}
+#stage{display:flex;flex-direction:column;min-height:0}
+#tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line);min-height:55px}
+#cvw{position:relative;flex:1;min-height:320px;background:var(--fld)}
+#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+#status{font-size:13px;color:var(--mut);padding:5px 12px;border-top:1px solid var(--line);min-height:28px}
+#panel{overflow:auto;border-left:1px solid var(--line);padding:6px 14px 20px}
+.card{border-bottom:1px solid var(--line);padding:10px 0 12px}
+.card:last-child{border-bottom:0}
+.card h3{font-size:17px;margin:0 0 6px;line-height:1.2}
+.card p{margin:4px 0}
+.obs{background:var(--pan);border-radius:10px;padding:9px 11px;margin:6px 0}
+details summary{cursor:pointer;font-weight:700;margin-top:6px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;align-items:center;margin:8px 0 2px;font-size:14px}
+.row output{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--red);height:26px;margin:0}
+.seg{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
+.seg button{flex:1 1 auto;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:6px 8px;cursor:pointer;min-height:36px;font-size:14px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chk{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px}
+.chk label{display:flex;align-items:center;gap:6px;min-height:32px;cursor:pointer}
+.chk input{width:18px;height:18px;accent-color:var(--red)}
+.kv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;font-size:15px;margin-top:6px}
+.kv b{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.formel{background:var(--pan);border-radius:10px;padding:9px 11px;font-size:15px;line-height:1.7;margin-top:6px;font-variant-numeric:tabular-nums}
+.small{font-size:13px;color:var(--mut)}
+.big{font-size:clamp(30px,4vw,42px);font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums}
+.inp{border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--bg);font-size:16px;min-height:40px;width:9em;flex:1 1 8em}
+.res{font-weight:700;margin-top:6px}
+.res.ok{color:var(--ok)}.res.no{color:var(--red)}
+.s{color:var(--red);font-weight:700}.c{color:var(--blue);font-weight:700}.t{color:var(--vio);font-weight:700}.w{color:var(--amb);font-weight:700}
+#probe{display:none}
+@media(max-width:1150px){main{grid-template-columns:215px minmax(0,1fr) 300px}.tabs button{padding:8px 8px}}
+@media(max-width:900px){
+  html,body,#app{height:auto}
+  main{grid-template-columns:minmax(0,1fr)}
+  #stage{order:1}
+  #cvw{flex:none;height:min(64vh,560px)}
+  #panel{order:2;border:0;border-top:1px solid var(--line);overflow:visible}
+  #lib{order:3;border:0;border-top:1px solid var(--line);overflow:visible}
+  h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div class="brand">
+    <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><circle cx="15" cy="19" r="12" stroke="currentColor" stroke-width="2.6" fill="none"/><path d="M15 19H24" stroke="#2762c9" stroke-width="3.2" stroke-linecap="round"/><path d="M24 19V11" stroke="#df4329" stroke-width="3.2" stroke-linecap="round"/><path d="M15 19L24 11" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+    <h1><a href="../index.html" title="Zur Startseite">Trigonometrielabor</a></h1>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Stationen">
+    <button role="tab" data-mode="kreis">Einheitskreis</button>
+    <button role="tab" data-mode="kurve">Vom Kreis zur Kurve</button>
+    <button role="tab" data-mode="dreieck">Rechtwinkeliges Dreieck</button>
+    <button role="tab" data-mode="funktion">Sinusfunktion</button>
+    <button role="tab" data-mode="saetze">Sinus- &amp; Kosinussatz</button>
+  </nav>
+  <div class="lvl" role="group" aria-label="Niveau"><button data-lvl="1">Einfach</button><button data-lvl="2">Mittel</button><button data-lvl="3">Anspruchsvoll</button></div>
+  <button class="btn" id="bFull">Vollbild</button>
+</header>
+<main>
+  <aside id="lib" aria-label="Versuche"></aside>
+  <section id="stage">
+    <div id="tools"></div>
+    <div id="cvw"><canvas id="cv" aria-label="Simulation"></canvas></div>
+    <div id="status"></div>
+  </section>
+  <aside id="panel" aria-label="Einstellungen"></aside>
+</main>
+</div>
+<div id="probe"></div>
+<script>
+{
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const cv=$('#cv'),ctx=cv.getContext('2d'),PN=$('#panel'),TL=$('#tools');
+let CW=1,CH=1;
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const PI=Math.PI,TAU=PI*2,DEG=PI/180;
+const mod=(x,m)=>((x%m)+m)%m;
+const F=(v,d=2)=>{if(!Number.isFinite(v))return '–';if(Math.abs(v)<.5*10**-d)v=0;return v.toLocaleString('de-AT',{minimumFractionDigits:d,maximumFractionDigits:d}).replace('-','−')};
+const FD=(r,d=0)=>F(r/DEG,d)+'°';
+const FDs=r=>{const d=r/DEG;return (Math.abs(d-Math.round(d))<.05?F(Math.round(d),0):F(d,1))+'°'};
+const nf=v=>{const r=Math.round(v*100)/100;return Number.isInteger(r)?F(r,0):Math.abs(r*10-Math.round(r*10))<1e-9?F(r,1):F(r,2)};
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a}
+function piFmt(v,n=12){const k=Math.round(v/PI*n);if(Math.abs(k*PI/n-v)>1e-6)return null;if(k===0)return '0';const g=gcd(k,n),p=k/g,q=n/g,a=Math.abs(p);return (p<0?'−':'')+(a===1?'':a)+'π'+(q===1?'':'/'+q)}
+const FONT='"Atkinson Hyperlegible",system-ui,sans-serif';
+const MODES={},APP={mode:'',frame:0,lvl:2};
+const lvlShow=n=>APP.lvl>=n;
+const FN={sin:Math.sin,cos:Math.cos,tan:Math.tan},FC={sin:'red',cos:'blue',tan:'vio'};
+
+/* ---------- Farben und Zeichnen ---------- */
+const C={};
+const rgb=s=>{const m=s.match(/[\d.]+/g)||[0,0,0];return [+m[0],+m[1],+m[2]]};
+const cs=(k,a)=>a==null?`rgb(${C[k].join(',')})`:`rgba(${C[k].join(',')},${a})`;
+function readCols(){const pr=$('#probe');for(const k of ['bg','ink','mut','line','pan','red','blue','vio','amb','fld','ok']){pr.style.color=`var(--${k})`;C[k]=rgb(getComputedStyle(pr).color)}}
+function txt(s,x,y,col,al='left',size=13,bold=false){ctx.font=`${bold?'700 ':''}${size}px ${FONT}`;const w=ctx.measureText(s).width,l=al==='left'?x:al==='right'?x-w:x-w/2;if(l<4)x+=4-l;else if(l+w>CW-4)x-=l+w-CW+4;ctx.textAlign=al;ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle=cs('fld',.92);ctx.strokeText(s,x,y);ctx.fillStyle=col;ctx.fillText(s,x,y)}
+function line(x1,y1,x2,y2,col,w=1,dash){ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineCap='round';if(dash)ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();if(dash)ctx.setLineDash([])}
+function dot(x,y,r,col,ring){ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fillStyle=col;ctx.fill();if(ring){ctx.lineWidth=2.5;ctx.strokeStyle=cs('fld');ctx.stroke()}}
+function ringDot(x,y,r,col){ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fillStyle=cs('fld');ctx.fill();ctx.lineWidth=2.2;ctx.strokeStyle=col;ctx.stroke()}
+function bg(){ctx.fillStyle=cs('fld');ctx.fillRect(0,0,CW,CH)}
+function wedge(x,y,r,t1,t2,ccw,col,fill){ctx.beginPath();ctx.moveTo(x,y);ctx.arc(x,y,r,t1,t2,ccw);ctx.closePath();if(fill){ctx.fillStyle=cs(col,fill);ctx.fill()}ctx.beginPath();ctx.arc(x,y,r,t1,t2,ccw);ctx.strokeStyle=cs(col);ctx.lineWidth=2.2;ctx.stroke()}
+function plot(x0,y0,x1,y1,xmin,xmax,ymin,ymax){const sx=(x1-x0)/(xmax-xmin),sy=(y1-y0)/(ymax-ymin);return {x0,y0,x1,y1,xmin,xmax,ymin,ymax,sx,sy,X:x=>x0+(x-xmin)*sx,Y:y=>y1-(y-ymin)*sy,ix:px=>xmin+(px-x0)/sx}}
+function axes(pl,o={}){const {X,Y}=pl,st=PI/2;
+  ctx.save();ctx.beginPath();ctx.rect(pl.x0,pl.y0,pl.x1-pl.x0,pl.y1-pl.y0);ctx.clip();
+  for(let k=Math.ceil(pl.xmin/st-1e-9);k*st<=pl.xmax+1e-9;k++)line(X(k*st),pl.y0,X(k*st),pl.y1,cs('line'),1);
+  for(let y=Math.ceil(pl.ymin);y<=pl.ymax;y++)line(pl.x0,Y(y),pl.x1,Y(y),cs('line'),1);
+  ctx.restore();
+  const y0=clamp(Y(0),pl.y0,pl.y1),x0=clamp(X(0),pl.x0,pl.x1);
+  line(pl.x0,y0,pl.x1,y0,cs('ink'),1.5);line(x0,pl.y0,x0,pl.y1,cs('ink'),1.5);
+  const every=Math.max(1,Math.ceil(44/(st*pl.sx)));
+  for(let k=Math.ceil(pl.xmin/st-1e-9);k*st<=pl.xmax+1e-9;k++){if(k===0||k%every)continue;const v=k*st;txt(o.rad?piFmt(v,12):F(v/DEG,0)+'°',X(v),y0+16,cs('mut'),'center',12)}
+  for(let y=Math.ceil(pl.ymin);y<=pl.ymax;y++){if(y===0)continue;txt(F(y,0),x0-6,Y(y)+4,cs('mut'),'right',12)}
+  txt('x',pl.x1-4,y0-8,cs('mut'),'right',13,true);txt('y',x0+7,pl.y0+12,cs('mut'),'left',13,true)}
+function curve(pl,f,col,w=2.5,a=pl.xmin,b=pl.xmax,dash){if(b<=a)return;ctx.save();ctx.beginPath();ctx.rect(pl.x0,pl.y0-2,pl.x1-pl.x0,pl.y1-pl.y0+4);ctx.clip();
+  ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineJoin='round';ctx.lineCap='round';if(dash)ctx.setLineDash(dash);ctx.beginPath();
+  const N=Math.max(2,Math.ceil((pl.X(b)-pl.X(a))/1.5)),span=pl.ymax-pl.ymin;let pen=false,prev=null;
+  for(let i=0;i<=N;i++){const x=a+(b-a)*i/N,v=f(x);if(!Number.isFinite(v)||Math.abs(v)>60){pen=false;prev=null;continue}
+    if(pen&&prev!==null&&Math.abs(v-prev)>span)pen=false;const px=pl.X(x),py=pl.Y(v);if(pen)ctx.lineTo(px,py);else{ctx.moveTo(px,py);pen=true}prev=v}
+  ctx.stroke();ctx.restore()}
+
+/* ---------- Bedienfeld ---------- */
+const range=(id,label,min,max,step,val)=>`<div class="row"><label for="${id}">${label}</label><output id="${id}-o"></output></div><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}">`;
+const seg=(key,opts,cur)=>`<div class="seg" role="group">${opts.map(([l,v])=>`<button data-${key}="${v}" aria-pressed="${String(v)===String(cur)}">${l}</button>`).join('')}</div>`;
+const chk=(id,label,on)=>`<label><input type="checkbox" id="${id}"${on?' checked':''}> ${label}</label>`;
+const infoCard=p=>`<div class="card"><h3>${p.t}</h3><div class="obs"><b>Beobachte:</b> ${p.obs}</div><details><summary>Was passiert?</summary><p>${p.why}</p></details></div>`;
+const setOut=(id,t)=>{const o=$('#'+id+'-o');if(o)o.textContent=t};
+const setTxt=(id,t)=>{const o=$('#'+id);if(o)o.textContent=t};
+const setHTML=(id,t)=>{const o=$('#'+id);if(o&&o.innerHTML!==t)o.innerHTML=t};
+const syncRange=(id,v)=>{const r=$('#'+id);if(r&&document.activeElement!==r)r.value=v};
+function groupBy(arr){const g=[];for(const p of arr){let x=g.find(q=>q.h===p.g);if(!x)g.push(x={h:p.g,items:[]});x.items.push(p)}return g}
+function renderLib(title,arr,cur,pick){let i=0;
+  $('#lib').innerHTML=`<h2>${title}</h2>`+groupBy(arr).map(g=>`<h2>${g.h}</h2>`+g.items.map(p=>`<button class="pre" data-i="${i++}" aria-current="${i-1===cur}"><b>${p.t}</b><span>${p.d}</span></button>`).join('')).join('');
+  $('#lib').onclick=e=>{const b=e.target.closest('.pre');if(b){pick(+b.dataset.i);if(innerWidth<900)$('#stage').scrollIntoView({behavior:'smooth'})}}}
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+
+/* exakte Werte der besonderen Winkel */
+const EXV={0:['0','1','0'],30:['1/2','√3/2','√3/3'],45:['√2/2','√2/2','1'],60:['√3/2','1/2','√3'],90:['1','0','–']};
+function exact(rad){const d0=rad/DEG,d=Math.round(d0);if(Math.abs(d-d0)>1e-6)return null;const x=mod(d,360);let r;if(x<=90)r=x;else if(x<=180)r=180-x;else if(x<=270)r=x-180;else r=360-x;if(!(r in EXV))return null;
+  const ss=Math.sin(x*DEG),cc=Math.cos(x*DEG),e=EXV[r],wr=(sg,v)=>v==='0'?'0':(sg<0?'−':'')+v;
+  return {s:wr(Math.sign(ss),e[0]),c:wr(Math.sign(cc),e[1]),t:Math.abs(cc)<1e-9?'nicht definiert':wr(Math.sign(ss*cc),e[2])}}
+const ANG={a:37*DEG};
+
+/* =====================================================================
+   STATION 1: EINHEITSKREIS
+   ===================================================================== */
+const K={pi:0,init:false,snap:true,tan:false,sign:false,sym:false,bogen:false,play:false,drag:false,task:null};
+const KP=[
+ {g:'Grundlagen',t:'Sinus und Kosinus am Kreis',d:'Die Koordinaten des Punktes P',s:{a:37},
+  obs:'Ziehe den Punkt P auf dem Kreis. Wie verändern sich die rote und die blaue Strecke? Bei welchem Winkel ist sin α am größten, wann ist cos α null?',
+  why:'Der Einheitskreis hat den Radius 1. Für den Punkt P zum Winkel α gilt: Die x-Koordinate ist cos α, die y-Koordinate ist sin α. Bei 90° liegt P ganz oben, darum ist sin 90° = 1 und cos 90° = 0. Weil P den Kreis nie verlässt, liegen sin α und cos α immer zwischen −1 und 1.'},
+ {g:'Grundlagen',t:'Tangens am Kreis',d:'Die Strecke auf der Tangente',s:{a:40,tan:true},
+  obs:'Drehe α langsam auf 90°. Was passiert mit der violetten Strecke? Und was passiert knapp über 90°?',
+  why:'Verlängert man den Radius bis zur senkrechten Tangente bei x = 1, so ist die Höhe des Schnittpunkts tan α. Nach dem Strahlensatz gilt tan α = sin α : cos α. Bei 90° ist der Radius parallel zur Tangente, es gibt keinen Schnittpunkt: tan 90° ist nicht definiert. Knapp darüber springt der Wert von sehr groß positiv auf sehr groß negativ.'},
+ {g:'Grundlagen',t:'Pythagoras im Einheitskreis',d:'sin² α + cos² α = 1',s:{a:53},
+  obs:'Rote Strecke, blaue Strecke und Radius bilden ein rechtwinkeliges Dreieck. Rechne sin² α + cos² α für verschiedene Winkel nach (Karte „Formeln“ ab Niveau Mittel).',
+  why:'Die Katheten sind |cos α| und |sin α|, die Hypotenuse ist der Radius 1. Nach Pythagoras gilt sin² α + cos² α = 1, und zwar für jeden Winkel. So kann man aus sin α den Kosinus berechnen, bis auf das Vorzeichen.'},
+ {g:'Ganzer Kreis',t:'Vorzeichen in den Quadranten',d:'Wo sind sin, cos, tan negativ?',s:{a:150,sign:true,tan:true},
+  obs:'Drehe P durch alle vier Quadranten. In welchen Quadranten ist der Sinus negativ, in welchen der Kosinus? Wann ist der Tangens positiv?',
+  why:'Links von der y-Achse ist die x-Koordinate negativ, also cos α < 0 (II. und III. Quadrant). Unter der x-Achse ist sin α < 0 (III. und IV. Quadrant). Der Tangens ist positiv, wenn sin α und cos α dasselbe Vorzeichen haben: im I. und III. Quadranten.'},
+ {g:'Ganzer Kreis',t:'Besondere Winkel',d:'30°, 45° und 60° exakt',s:{a:30},
+  obs:'Stelle 30°, 45°, 60° und 90° ein. Ab Niveau Mittel siehst du die exakten Werte. Welche Werte tauchen bei sin und cos „vertauscht“ auf?',
+  why:'Bei 45° entsteht ein halbes Quadrat: sin 45° = cos 45° = √2/2 ≈ 0,707. Bei 30° und 60° entsteht ein halbes gleichseitiges Dreieck: sin 30° = 1/2 und sin 60° = √3/2. Weil sich die beiden Winkel auf 90° ergänzen, gilt sin 30° = cos 60°, allgemein sin α = cos(90° − α).'},
+ {g:'Ganzer Kreis',t:'Gleicher Sinus, zwei Winkel',d:'Symmetrien am Kreis',s:{a:35,sym:true},
+  obs:'Die grauen Punkte haben denselben Sinus, Kosinus oder Tangens wie P. Welcher Punkt liegt genau so hoch wie P? Welcher genau darunter?',
+  why:'Spiegelt man P an der y-Achse, bleibt die Höhe gleich: sin(180° − α) = sin α. Spiegelt man an der x-Achse, bleibt die x-Koordinate gleich: cos(360° − α) = cos α. Der gegenüberliegende Punkt 180° + α hat denselben Tangens. Deshalb hat eine Gleichung wie sin α = 0,5 zwischen 0° und 360° zwei Lösungen: 30° und 150°.'},
+ {g:'Bogenmaß',t:'Grad und Bogenmaß',d:'Der Winkel als Länge des Bogens',s:{a:57,bogen:true,snap:false},
+  obs:'Bei welchem Winkel ist der orange Bogen genau so lang wie der Radius? Wie lang ist der Bogen beim halben Kreis?',
+  why:'Im Bogenmaß misst man einen Winkel durch die Länge des Bogens am Einheitskreis. Der ganze Umfang ist 2π, also gilt 360° = 2π und 180° = π. Der Winkel 1 (ein Radiant) ist etwa 57,3°: Dort ist der Bogen genau so lang wie der Radius.'}
+];
+function kLoad(i){K.pi=i;const s=KP[i].s;Object.assign(K,{snap:true,tan:false,sign:false,sym:false,bogen:false,play:false},s);ANG.a=s.a*DEG;kTools();kPanel();renderLib('Versuche: Einheitskreis',KP,i,kLoad)}
+function kTools(){TL.innerHTML=`<button class="btn hot" id="kPlay" aria-pressed="${K.play}">${K.play?'Anhalten':'Drehen'}</button><button class="btn" data-dd="-15">−15°</button><button class="btn" data-dd="-1">−1°</button><button class="btn" data-dd="1">+1°</button><button class="btn" data-dd="15">+15°</button><button class="btn" data-dd="0">0°</button>`;
+  TL.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='kPlay'){K.play=!K.play;kTools();return}const d=+b.dataset.dd;K.play=false;kTools();ANG.a=d===0?0:mod(Math.round(ANG.a/DEG)+d,360)*DEG};
+  $('#status').textContent='Ziehe den Punkt P oder tippe auf den Kreis. Pfeiltasten: ±1° (mit Umschalt ±15°), Leertaste: drehen.'}
+function kGeo(){const R=Math.max(60,Math.min(CW*.33,CH*.37));return {R,cx:CW/2,cy:CH*.52}}
+function kDraw(){bg();const {R,cx,cy}=kGeo(),a=ANG.a,co=Math.cos(a),si=Math.sin(a),X=u=>cx+u*R,Y=v=>cy-v*R;
+  for(const u of [-1,-.5,.5,1]){line(X(u),Y(-1.12),X(u),Y(1.12),cs('line'),1);line(X(-1.12),Y(u),X(1.12),Y(u),cs('line'),1)}
+  line(8,cy,CW-8,cy,cs('ink'),1.5);line(cx,8,cx,CH-8,cs('ink'),1.5);
+  txt('x',CW-12,cy-8,cs('mut'),'right',13,true);txt('y',cx+8,20,cs('mut'),'left',13,true);
+  txt('1',X(1)+5,cy+16,cs('mut'),'left',12);txt('−1',X(-1)-5,cy+16,cs('mut'),'right',12);txt('1',cx-7,Y(1)-5,cs('mut'),'right',12);txt('−1',cx-7,Y(-1)+16,cs('mut'),'right',12);
+  ctx.strokeStyle=cs('ink');ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,R,0,TAU);ctx.stroke();
+  if(K.snap){for(let d=0;d<360;d+=15){const t=d*DEG,l=d%90===0?10:(d%30===0||d%45===0)?7:4;line(cx+Math.cos(t)*R,cy-Math.sin(t)*R,cx+Math.cos(t)*(R+l),cy-Math.sin(t)*(R+l),cs('mut'),1.5);
+    const near=[a,...(K.sym?[PI-a,TAU-a,PI+a]:[])].some(b=>{const df=Math.abs(mod(t-b+PI,TAU)-PI);return df<16*DEG});
+    if((d%30===0||d%45===0)&&d%90&&(R>110||d%30===0)&&!near){const rr=R+(R>110?22:18);txt(lvlShow(3)?piFmt(t):d+'°',cx+Math.cos(t)*rr,cy-Math.sin(t)*rr+4,cs('mut'),'center',11)}}}
+  if(K.sign){const sg=[['I','+','+','+'],['II','+','−','−'],['III','−','−','+'],['IV','−','+','−']],q=Math.floor(mod(a,TAU)/(PI/2));
+    sg.forEach((g,i)=>{const t=(45+90*i)*DEG,x=cx+Math.cos(t)*R*1.3,y=cy-Math.sin(t)*R*1.3-14,on=i===q&&Math.abs(si)>1e-9&&Math.abs(co)>1e-9;
+      txt(g[0]+'. Quadrant',x,y,cs(on?'ink':'mut'),'center',13,true);txt('sin '+g[1],x,y+16,cs('red',on?1:.65),'center',13,on);txt('cos '+g[2],x,y+31,cs('blue',on?1:.65),'center',13,on);txt('tan '+g[3],x,y+46,cs('vio',on?1:.65),'center',13,on)})}
+  if(K.bogen&&a>1e-6){ctx.strokeStyle=cs('amb',.8);ctx.lineWidth=7;ctx.lineCap='butt';ctx.beginPath();ctx.arc(cx,cy,R,0,-a,true);ctx.stroke();ctx.lineCap='round';
+    const t=a/2;txt('Bogen = '+F(a,2),cx+Math.cos(t)*(R+30),cy-Math.sin(t)*(R+30)+4,cs('amb'),Math.cos(t)>.3?'left':Math.cos(t)<-.3?'right':'center',14,true)}
+  if(a>1e-6){const r0=Math.min(R*.24,42);wedge(cx,cy,r0,0,-a,true,'amb',.16);if(a>.25){const t=a/2;txt('α',cx+Math.cos(t)*(r0+13),cy-Math.sin(t)*(r0+13)+5,cs('amb'),'center',15,true)}}
+  if(K.sym){const pts=[[PI-a,'180° − α','red'],[TAU-a,'360° − α','blue'],[PI+a,'180° + α','vio']];
+    for(const [b,l,c] of pts){const x=X(Math.cos(b)),y=Y(Math.sin(b));line(cx,cy,x,y,cs('mut',.6),1.5,[4,4]);dot(x,y,7,cs('mut'),true);const ox=Math.cos(b),oy=-Math.sin(b);txt(l,x+ox*16,y+oy*16+4,cs('mut'),ox>.2?'left':ox<-.2?'right':'center',13,true)}
+    line(X(co),Y(si),X(-co),Y(si),cs('red',.6),1.5,[3,5]);line(X(co),Y(si),X(co),Y(-si),cs('blue',.6),1.5,[3,5])}
+  if(K.tan){line(X(1),8,X(1),CH-8,cs('vio',.35),1.5,[5,5]);
+    if(Math.abs(co)>.015){const t=si/co,ty=Y(t),tyc=clamp(ty,-30,CH+30);line(X(co),Y(si),X(1),tyc,cs('vio',.7),1.5,[5,4]);line(X(1),cy,X(1),tyc,cs('vio'),5);if(ty>-8&&ty<CH+8)dot(X(1),ty,5,cs('vio'));
+      const ly=clamp((cy+tyc)/2,24,CH-14);txt('tan α'+(ty<0||ty>CH?' = '+F(t,1):''),X(1)+9,ly+4,cs('vio'),'left',14,true)}
+    else txt('tan α nicht definiert',X(1)+9,30,cs('vio'),'left',14,true)}
+  line(cx,cy,X(co),cy,cs('blue'),5);line(X(co),cy,X(co),Y(si),cs('red'),5);
+  line(X(co),Y(si),cx,Y(si),cs('mut',.6),1,[3,4]);line(cx-5,Y(si),cx+5,Y(si),cs('red'),2.5);
+  if(Math.abs(co)>.12)txt('cos α',X(co/2),cy+(si>=0?19:-9),cs('blue'),'center',14,true);
+  if(Math.abs(si)>.12)txt('sin α',X(co)+(co>=0?9:-9),Y(si/2)+5,cs('red'),co>=0?'left':'right',14,true);
+  if(Math.abs(si)>.1&&Math.abs(co)>.1){const q=9,sx=-Math.sign(co),sy=Math.sign(si);ctx.strokeStyle=cs('ink');ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(X(co)+sx*q,cy);ctx.lineTo(X(co)+sx*q,cy-sy*q);ctx.lineTo(X(co),cy-sy*q);ctx.stroke()}
+  line(cx,cy,X(co),Y(si),cs('ink'),2.5);txt('1',(cx+X(co))/2-si*13,(cy+Y(si))/2-co*13+5,cs('ink'),'center',14,true);
+  dot(X(co),Y(si),9,cs('ink'),true);
+  const lx=X(co)+co*22,ly=Y(si)-si*22+5;txt(lvlShow(2)?`P(${F(co,2)} | ${F(si,2)})`:'P',lx,ly,cs('ink'),co>.3?'left':co<-.3?'right':'center',14,true);
+  txt('α = '+FD(a,0),14,28,cs('ink'),'left',20,true);if(lvlShow(2))txt('= '+F(a,3)+' im Bogenmaß',14,48,cs('mut'),'left',13)}
+function kAng(x,y){const {cx,cy}=kGeo();let d=Math.round(mod(Math.atan2(cy-y,x-cx),TAU)/DEG);if(K.snap){const s=Math.round(d/15)*15;if(Math.abs(s-d)<=4)d=s}ANG.a=mod(d,360)*DEG;if(K.play){K.play=false;kTools()}}
+const SPEC=[30,45,60,120,135,150,210,225,240,300,315,330];
+function kNewTask(){const d=pick(SPEC),fn=pick(['sin','cos','tan']),r=d*DEG,v=FN[fn](r),other=fn==='sin'?'cos':'sin',os=Math.sign(FN[other](r)),ex=exact(r);
+  const vs=lvlShow(2)?`${ex[fn[0]]}${/√/.test(ex[fn[0]])?' ≈ '+F(v,2):''}`:F(v,2);
+  const sec=mod(fn==='sin'?180-d:fn==='cos'?360-d:d+180,360);
+  K.task={d,sec,fn,text:`Finde einen Winkel α mit ${fn} α = ${vs} und ${other} α ${os>0?'>':'<'} 0.`,check:a=>Math.abs(FN[fn](a)-v)<(fn==='tan'?.035:.015)&&Math.sign(FN[other](a))===os&&Math.abs(Math.cos(a))>1e-6,solved:false};
+  setTxt('kTask',K.task.text);const r2=$('#kRes');r2.textContent='Ziehe P an die richtige Stelle.';r2.className='res'}
+function kPanel(){const p=KP[K.pi];
+  PN.innerHTML=infoCard(p)+`<div class="card"><h3>Werte</h3><div class="big" id="kA"></div><div class="small" id="kRad"></div>${range('kAr','Winkel α',0,360,1,Math.round(ANG.a/DEG))}
+   <div class="kv" style="margin-top:10px"><span class="s">sin α</span><b id="kS"></b><span class="c">cos α</span><b id="kC"></b><span class="t">tan α</span><b id="kT"></b></div><div id="kEx" class="formel" hidden></div></div>
+   <div class="card"><h3>Anzeigen</h3><div class="chk">${chk('kSnap','Einrasten bei 15°',K.snap)}${chk('kTan','Tangens',K.tan)}${chk('kSign','Vorzeichen',K.sign)}${chk('kSym','Symmetrie',K.sym)}${chk('kBog','Bogenlänge',K.bogen)}</div></div>
+   ${lvlShow(2)?'<div class="card"><h3>Formeln</h3><div class="formel" id="kF"></div></div>':''}
+   <div class="card"><h3>Aufgabe</h3><p id="kTask">${K.task?K.task.text:'Du bekommst einen Wert und suchst den passenden Winkel am Kreis.'}</p><p id="kRes" class="res"></p><div class="seg"><button class="btn" id="kNew">Neue Aufgabe</button><button class="btn" id="kSol">Lösung zeigen</button></div></div>`;
+  PN.oninput=e=>{if(e.target.id==='kAr'){ANG.a=mod(+e.target.value,360)*DEG;if(K.play){K.play=false;kTools()}}};
+  PN.onchange=e=>{const m={kSnap:'snap',kTan:'tan',kSign:'sign',kSym:'sym',kBog:'bogen'}[e.target.id];if(m)K[m]=e.target.checked};
+  PN.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='kNew')kNewTask();else if(b.id==='kSol'&&K.task){ANG.a=K.task.d*DEG;K.play=false;kTools()}}}
+function kUpd(){const a=ANG.a,s=Math.sin(a),c=Math.cos(a),deg=a/DEG,isInt=Math.abs(deg-Math.round(deg))<1e-6;
+  setTxt('kA','α = '+FD(a,0));const pf=isInt?piFmt(a):null;
+  setTxt('kRad',lvlShow(2)||K.bogen?'= '+F(a,3)+' im Bogenmaß'+(pf&&pf!=='0'?' = '+pf:''):'');
+  syncRange('kAr',Math.round(mod(deg,360)));setOut('kAr',FD(a,0));
+  setTxt('kS',F(s,3));setTxt('kC',F(c,3));setTxt('kT',Math.abs(c)<1e-9?'nicht definiert':F(s/c,3));
+  const ex=isInt&&lvlShow(2)?exact(a):null,ke=$('#kEx');if(ke){ke.hidden=!ex;if(ex){const d=Math.round(mod(deg,360));setHTML('kEx',`Exakte Werte:<br><span class="s">sin ${d}° = ${ex.s}</span><br><span class="c">cos ${d}° = ${ex.c}</span><br><span class="t">tan ${d}° = ${ex.t}</span>`)}}
+  if($('#kF')){let h=`sin² α + cos² α = ${F(s*s,3)} + ${F(c*c,3)} = 1`;if(Math.abs(c)>1e-9)h+=`<br>tan α = sin α : cos α = ${F(s,3)} : ${F(c,3)} = ${F(s/c,3)}`;
+    if(lvlShow(3))h+=`<br>sin(180° − α) = sin ${FD(PI-a)} = ${F(Math.sin(PI-a),3)}<br>cos(360° − α) = cos ${FD(TAU-a)} = ${F(Math.cos(TAU-a),3)}<br>sin(90° − α) = cos α = ${F(c,3)}`;setHTML('kF',h)}
+  const T=K.task;if(T&&!T.solved&&T.check(a)){T.solved=true;const r=$('#kRes');r.className='res ok';r.textContent=`Richtig! α = ${Math.round(mod(deg,360))}°. Ohne die Zusatzbedingung gäbe es noch eine zweite Lösung: ${T.sec}°.`}}
+MODES.kreis={enter(){if(!K.init){K.init=true;kLoad(0)}else{kTools();kPanel();renderLib('Versuche: Einheitskreis',KP,K.pi,kLoad)}},panel:kPanel,
+  frame(dt){if(K.play)ANG.a=mod(ANG.a+dt*30*DEG,TAU)},draw:kDraw,upd:kUpd,
+  down(x,y){K.drag=true;kAng(x,y)},move(x,y){if(K.drag)kAng(x,y)},up(){K.drag=false},
+  key(k,sh){if(k===' '){K.play=!K.play;kTools();return true}const d=(k==='ArrowLeft'?-1:1)*(sh?15:1);if(K.play){K.play=false;kTools()}ANG.a=mod(Math.round(ANG.a/DEG)+d,360)*DEG;return true}};
+
+/* =====================================================================
+   STATION 2: VOM KREIS ZUR KURVE
+   ===================================================================== */
+const G={pi:0,init:false,x:0,sin:true,cos:false,tan:false,rad:true,wide:false,play:false,trace:true,feat:false,eq:false,eqf:'sin',k:.5,drag:0,spd:1};
+const GP=[
+ {g:'Graphen',t:'Die Sinuskurve entsteht',d:'Den Kreis abwickeln',s:{sin:true,play:true,x:0},
+  obs:'Starte die Animation. Die Höhe des Punktes P wird nach rechts übertragen. Wo hat die Kurve ihren höchsten Punkt, wo schneidet sie die x-Achse?',
+  why:'Auf der x-Achse wird der Winkel x aufgetragen, nach oben der Wert sin x, also die Höhe von P. Eine volle Umdrehung entspricht 2π (360°). Hochpunkt bei π/2 (90°), Tiefpunkt bei 3π/2 (270°), Nullstellen bei 0, π und 2π.'},
+ {g:'Graphen',t:'Kosinus: verschobener Sinus',d:'Wo beginnt der Kosinus?',s:{sin:true,cos:true,feat:true,x:PI/3},
+  obs:'Vergleiche die rote und die blaue Kurve. Um wie viel musst du die Sinuskurve verschieben, damit sie auf der Kosinuskurve liegt?',
+  why:'Der Kosinus ist die x-Koordinate von P. Seine Kurve hat dieselbe Form wie die Sinuskurve, beginnt aber bei x = 0 im Hochpunkt. Sie ist um π/2 (90°) nach links verschoben: cos x = sin(x + π/2).'},
+ {g:'Graphen',t:'Tangens und Polstellen',d:'Wo der Tangens nicht definiert ist',s:{sin:false,tan:true,wide:true,feat:true,x:PI/4},
+  obs:'Bewege x Richtung π/2. Was passiert mit der violetten Strecke am Kreis und mit der Kurve? Nach welcher Strecke wiederholt sich der Tangens?',
+  why:'Bei π/2 + k·π ist cos x = 0, der Tangens ist dort nicht definiert. Der Graph hat senkrechte Asymptoten (Polstellen). Weil der gegenüberliegende Punkt am Kreis denselben Tangens hat, ist die Periode schon π (180°), nicht 2π.'},
+ {g:'Graphen',t:'Periodisch: immer wieder dasselbe',d:'Mehrere Umdrehungen',s:{sin:true,cos:true,wide:true,feat:true,play:true,x:-TAU},
+  obs:'Im großen Bereich läuft P mehrmals um den Kreis. Woran erkennst du an der Kurve, dass eine neue Umdrehung beginnt?',
+  why:'Nach einer vollen Umdrehung ist P wieder am selben Ort. Darum gilt sin(x + 2π) = sin x und cos(x + 2π) = cos x. Funktionen, die sich so wiederholen, heißen periodisch. Mit ihnen beschreibt man Schwingungen, Wellen, Tageslänge oder Gezeiten.'},
+ {g:'Gleichungen',t:'Gleichung sin x = k',d:'Alle Lösungen finden',s:{sin:true,eq:true,eqf:'sin',k:.5,wide:true,x:PI/6},
+  obs:'Verschiebe die orange Gerade y = k. Wie viele Schnittpunkte gibt es pro Umdrehung? Was passiert bei k = 1 und bei k > 1?',
+  why:'Die Gerade y = k schneidet den Kreis in zwei Punkten mit derselben Höhe: x₁ und x₂ = π − x₁. Wegen der Periode kommen alle Vielfachen von 2π dazu: unendlich viele Lösungen. Bei k = ±1 fallen beide Punkte zusammen, für |k| > 1 gibt es keine Lösung. Der Taschenrechner (sin⁻¹) liefert nur eine davon.'},
+ {g:'Gleichungen',t:'Gleichung cos x = k',d:'Die senkrechte Gerade am Kreis',s:{sin:false,cos:true,eq:true,eqf:'cos',k:-.5,wide:true,x:2*PI/3},
+  obs:'Am Kreis ist cos x die x-Koordinate, deshalb ist die Gerade dort senkrecht. Wie hängen die beiden Lösungen x₁ und x₂ zusammen?',
+  why:'Die senkrechte Gerade x = k schneidet den Kreis in zwei Punkten, die an der x-Achse gespiegelt sind: x₂ = −x₁, bzw. 2π − x₁. Für cos x = −0,5 sind das 2π/3 (120°) und 4π/3 (240°), dazu alle Vielfachen von 2π.'}
+];
+function gDom(){return G.wide?{xmin:-TAU,xmax:2*TAU}:{xmin:0,xmax:TAU}}
+function gLoad(i){G.pi=i;const s=GP[i].s;Object.assign(G,{sin:false,cos:false,tan:false,wide:false,play:false,trace:true,feat:false,eq:false,eqf:'sin',k:.5},s);G.rad=lvlShow(2);ANG.a=mod(G.x,TAU);gTools();gPanel();renderLib('Versuche: Vom Kreis zur Kurve',GP,i,gLoad)}
+function gTools(){TL.innerHTML=`<button class="btn hot" id="gPlay" aria-pressed="${G.play}">${G.play?'Anhalten':'Abspielen'}</button><button class="btn" id="gBack">Von vorn</button>`;
+  TL.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='gPlay')G.play=!G.play;else{G.x=gDom().xmin;G.play=true}gTools()};
+  $('#status').textContent='Ziehe P im Kreis oder fahre im Graphen nach links und rechts. Leertaste: abspielen, Pfeiltasten: ±1°.'}
+function gGeo(){const nar=CW<620,R=Math.max(38,Math.min(CH*.27,CW*(nar?.16:.15))),cx=R+(nar?16:34),cy=CH*.5,top=26,bot=CH-30,{xmin,xmax}=gDom();
+  return {R,cx,cy,pl:plot(cx+R+(nar?26:46),top,CW-14,bot,xmin,xmax,-(bot-cy)/R,(cy-top)/R)}}
+const gLab=x=>G.rad?(piFmt(x,12)||F(x,2)):FDs(x);
+function gSols(){const k=G.k;if(Math.abs(k)>1+1e-9)return [];const kk=clamp(k,-1,1),s0=G.eqf==='sin'?Math.asin(kk):Math.acos(kk),s1=G.eqf==='sin'?PI-s0:-s0,{xmin,xmax}=gDom(),out=[];
+  for(let n=-3;n<=3;n++)for(const s of [s0,s1]){const x=s+n*TAU;if(x>=xmin-1e-9&&x<=xmax+1e-9&&!out.some(o=>Math.abs(o-x)<1e-6))out.push(x)}return out.sort((a,b)=>a-b)}
+function gDraw(){bg();const {R,cx,cy,pl}=gGeo(),{X,Y}=pl,a=mod(G.x,TAU),co=Math.cos(a),si=Math.sin(a),px=cx+co*R,py=cy-si*R;
+  line(cx-R-10,cy,cx+R+10,cy,cs('ink'),1.2);line(cx,cy-R-10,cx,cy+R+10,cs('ink'),1.2);
+  ctx.strokeStyle=cs('ink');ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,R,0,TAU);ctx.stroke();
+  if(a>1e-6)wedge(cx,cy,R*.26,0,-a,true,'amb',.16);
+  if(G.tan)line(cx+R,8,cx+R,CH-8,cs('vio',.3),1.2,[4,4]);
+  if(G.cos)line(cx,cy,px,cy,cs('blue'),4);
+  if(G.sin)line(px,cy,px,py,cs('red'),4);
+  line(cx,cy,px,py,cs('ink'),2);
+  let ty=null;if(G.tan&&Math.abs(co)>.015){ty=cy-si/co*R;const t2=clamp(ty,-40,CH+40);line(px,py,cx+R,t2,cs('vio',.6),1.2,[4,4]);line(cx+R,cy,cx+R,t2,cs('vio'),4)}
+  axes(pl,{rad:G.rad});
+  if(G.tan)for(let k=-6;k<=6;k++){const x=PI/2+k*PI;if(x>pl.xmin&&x<pl.xmax)line(X(x),pl.y0,X(x),pl.y1,cs('vio',.35),1.2,[5,5])}
+  for(const f of ['sin','cos','tan'])if(G[f]){curve(pl,FN[f],cs(FC[f],G.trace?.22:1),2.6);if(G.trace)curve(pl,FN[f],cs(FC[f]),3,pl.xmin,G.x)}
+  if(G.feat){for(const f of ['sin','cos','tan'])if(G[f]){const z0=f==='cos'?PI/2:0,col=cs(FC[f]);
+      for(let x=Math.ceil((pl.xmin-z0)/PI-1e-9)*PI+z0;x<=pl.xmax+1e-9;x+=PI)ringDot(X(x),Y(0),5,col);
+      if(f!=='tan'){const e0=f==='sin'?PI/2:0;for(let x=Math.ceil((pl.xmin-e0)/PI-1e-9)*PI+e0;x<=pl.xmax+1e-9;x+=PI)dot(X(x),Y(FN[f](x)),5,col)}}
+    const f=G.sin?'sin':G.cos?'cos':'tan',p=f==='tan'?PI:TAU,yb=Math.min(pl.ymax-.2,1.32),x0=X(0),x1=X(p),yy=Y(yb),col=cs(FC[f]);
+    line(x0,yy,x1,yy,col,1.6);line(x0,yy-6,x0,yy+6,col,1.6);line(x1,yy-6,x1,yy+6,col,1.6);
+    txt('Periode '+(G.rad?(f==='tan'?'π':'2π'):(f==='tan'?'180°':'360°')),(x0+x1)/2,yy-7,col,'center',13,true)}
+  if(G.eq){const ky=Y(G.k),sols=gSols();line(G.eqf==='sin'&&Math.abs(G.k)<=1?cx-R-8:pl.x0,ky,pl.x1,ky,cs('amb'),2);txt('y = '+F(G.k,2),pl.x1-4,ky+(G.k>0?16:-7),cs('amb'),'right',12,true);
+    let lastX=-1e9;for(const x of sols){const sx=X(x);dot(sx,ky,6,cs('amb'),true);if(sx-lastX>38){txt(gLab(x),sx,ky+(G.k>=0?-11:21),cs('ink'),'center',12,true);lastX=sx}}
+    if(Math.abs(G.k)<=1){const h=Math.sqrt(1-G.k*G.k);if(G.eqf==='sin'){dot(cx-h*R,ky,5,cs('amb'),true);dot(cx+h*R,ky,5,cs('amb'),true)}
+      else{const vx=cx+G.k*R;line(vx,cy-R-8,vx,cy+R+8,cs('amb'),2);dot(vx,cy-h*R,5,cs('amb'),true);dot(vx,cy+h*R,5,cs('amb'),true)}}
+    else txt('keine Lösung',pl.x0+8,ky+(G.k>0?18:-8),cs('amb'),'left',13,true)}
+  line(X(G.x),pl.y0,X(G.x),pl.y1,cs('mut',.6),1,[3,4]);
+  if(G.sin){const gy=Y(si);line(px,py,X(G.x),gy,cs('red',.75),1.3,[5,4]);dot(X(G.x),gy,6,cs('red'),true)}
+  if(G.cos)dot(X(G.x),Y(co),6,cs('blue'),true);
+  if(G.tan&&ty!==null){const v=Math.tan(G.x);if(v<pl.ymax+.5&&v>pl.ymin-.5){line(cx+R,ty,X(G.x),Y(v),cs('vio',.75),1.3,[5,4]);dot(X(G.x),Y(v),6,cs('vio'),true)}}
+  dot(px,py,7,cs('ink'),true);
+  txt('x = '+gLab(G.x),pl.x0+8,pl.y0+14,cs('ink'),'left',15,true)}
+function gSetX(x){const {xmin,xmax}=gDom();G.x=clamp(x,xmin,xmax);ANG.a=mod(G.x,TAU)}
+function gDown(x,y){const {R,cx,cy,pl}=gGeo();if(x>pl.x0-12){G.drag=2}else G.drag=1;if(G.play){G.play=false;gTools()}gMove(x,y)}
+function gMove(x,y){if(!G.drag)return;const {cx,cy,pl}=gGeo();
+  if(G.drag===2){let v=pl.ix(x);const st=PI/12,sn=Math.round(v/st)*st;if(Math.abs(pl.X(sn)-x)<7)v=sn;else v=Math.round(v/DEG)*DEG;gSetX(v)}
+  else{let a=mod(Math.atan2(cy-y,x-cx),TAU);a=Math.round(a/DEG)*DEG;const turn=Math.floor(G.x/TAU)*TAU;gSetX(turn+a)}}
+function gPanel(){const p=GP[G.pi];
+  PN.innerHTML=infoCard(p)+`<div class="card"><h3>Werte</h3><div class="big" id="gX"></div><div class="small" id="gX2"></div>
+    <div class="kv" style="margin-top:8px"><span class="s">sin x</span><b id="gS"></b><span class="c">cos x</span><b id="gC"></b><span class="t">tan x</span><b id="gT"></b></div></div>
+   <div class="card"><h3>Darstellung</h3><div class="chk">${chk('gSin','sin x',G.sin)}${chk('gCos','cos x',G.cos)}${chk('gTan','tan x',G.tan)}</div>
+    <div class="row"><span>x-Achse</span></div>${seg('gu',[['Grad','0'],['Bogenmaß','1']],G.rad?1:0)}
+    <div class="row"><span>Bereich</span></div>${seg('gw',[[G.rad?'0 bis 2π':'0° bis 360°','0'],[G.rad?'−2π bis 4π':'−360° bis 720°','1']],G.wide?1:0)}
+    <div class="chk">${chk('gTr','Spur zeichnen',G.trace)}${chk('gFe','Nullstellen, Extrema, Periode',G.feat)}</div>${range('gSp','Tempo',.25,3,.25,G.spd)}</div>
+   <div class="card"><h3>Gleichung lösen</h3><div class="chk">${chk('gEq','Gerade y = k einblenden',G.eq)}</div>${seg('ge',[['sin x = k','sin'],['cos x = k','cos']],G.eqf)}${range('gK','k',-1.2,1.2,.05,G.k)}<div id="gSol" class="formel"></div></div>`;
+  PN.oninput=e=>{const id=e.target.id;if(id==='gSp')G.spd=+e.target.value;else if(id==='gK')G.k=+e.target.value};
+  PN.onchange=e=>{const m={gSin:'sin',gCos:'cos',gTan:'tan',gTr:'trace',gFe:'feat',gEq:'eq'}[e.target.id];if(m){G[m]=e.target.checked;if(m==='eq'&&G.eq)G[G.eqf]=true;if(m==='eq'||m===G.eqf)gPanel()}};
+  PN.onclick=e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+    if(d.gu!=null){G.rad=d.gu==='1';gPanel()}else if(d.gw!=null){G.wide=d.gw==='1';gSetX(G.x);gPanel()}else if(d.ge!=null){G.eqf=d.ge;G.eq=true;G[G.eqf]=true;gPanel()}}}
+function gUpd(){const x=G.x;setTxt('gX','x = '+gLab(x));setTxt('gX2',G.rad?'= '+FDs(x):lvlShow(2)?'= '+F(x,3)+' im Bogenmaß':'');
+  setTxt('gS',F(Math.sin(x),3));setTxt('gC',F(Math.cos(x),3));setTxt('gT',Math.abs(Math.cos(x))<1e-9?'nicht definiert':F(Math.tan(x),3));
+  syncRange('gK',G.k);setOut('gK',F(G.k,2));setOut('gSp',F(G.spd,2)+'×');
+  if($('#gSol')){let h;const f=G.eqf;if(!G.eq)h='Blende die Gerade ein. Ihre Schnittpunkte mit der Kurve sind die Lösungen.';
+    else if(Math.abs(G.k)>1)h=`Keine Lösung: ${f} x liegt immer zwischen −1 und 1.`;
+    else{const s=gSols();h=`${f} x = ${F(G.k,2)} hat im Bereich ${s.length} Lösung${s.length===1?'':'en'}:<br>`+s.map((x,i)=>`x<sub>${i+1}</sub> = ${gLab(x)}`).join(', ');
+      if(lvlShow(3)){const s0=f==='sin'?Math.asin(G.k):Math.acos(G.k),s1=f==='sin'?PI-s0:-s0,P2=G.rad?'2π':'360°',L=v=>G.rad?(piFmt(v,12)||F(v,3)):FDs(v);
+        h+=Math.abs(Math.abs(G.k)-1)<1e-9?`<br>Allgemein: x = ${L(s0)} + k · ${P2}`:`<br>Allgemein: x = ${L(s0)} + k · ${P2} oder x = ${L(s1)} + k · ${P2} (k ganzzahlig)`}}
+    setHTML('gSol',h)}}
+MODES.kurve={enter(){if(!G.init){G.init=true;gLoad(0)}else{if(Math.abs(mod(G.x,TAU)-ANG.a)>1e-9)gSetX(ANG.a);gTools();gPanel();renderLib('Versuche: Vom Kreis zur Kurve',GP,G.pi,gLoad)}},panel:gPanel,
+  frame(dt){if(G.play){const {xmin,xmax}=gDom();let x=G.x+dt*G.spd*PI/4;if(x>xmax)x=xmin;gSetX(x)}},draw:gDraw,upd:gUpd,
+  down:gDown,move:gMove,up(){G.drag=0},
+  key(k,sh){if(k===' '){G.play=!G.play;gTools();return true}if(G.play){G.play=false;gTools()}gSetX(Math.round(G.x/DEG+(k==='ArrowLeft'?-1:1)*(sh?15:1))*DEG);return true}};
+
+/* =====================================================================
+   STATION 3: RECHTWINKELIGES DREIECK
+   ===================================================================== */
+const D={pi:0,init:false,al:37*DEG,c:5,foc:'a',sim:false,ctx:'',u:'cm',task:null,drag:false};
+const ROLE={leiter:{a:'Höhe an der Wand',b:'Abstand von der Wand',c:'Länge der Leiter',al:'Neigungswinkel'},strasse:{a:'Höhenunterschied',b:'waagrechte Entfernung',c:'Länge der Straße',al:'Steigungswinkel'},baum:{a:'Höhe des Baumes',b:'Länge des Schattens',c:'Länge des Sonnenstrahls',al:'Winkel der Sonnenhöhe'}};
+const ART={leiter:{b:'den'},strasse:{a:'den'}};
+const DP=[
+ {g:'Grundlagen',t:'Katheten und Hypotenuse',d:'Gegenkathete, Ankathete, Hypotenuse',s:{al:37,c:5},
+  obs:'Schalte den Bezugswinkel zwischen α und β um. Welche Seite bleibt immer die Hypotenuse? Welche Seiten tauschen ihre Namen?',
+  why:'Die Hypotenuse liegt dem rechten Winkel gegenüber und ist die längste Seite. Die beiden Katheten heißen je nach Winkel verschieden: Die Gegenkathete liegt dem Winkel gegenüber, die Ankathete liegt am Winkel an. Was für α die Gegenkathete ist, ist für β die Ankathete.'},
+ {g:'Grundlagen',t:'Sinus, Kosinus, Tangens',d:'Winkelfunktionen als Seitenverhältnisse',s:{al:30,c:6},
+  obs:'Ziehe die Ecke B. Vergleiche die Verhältnisse in der Karte „Winkelfunktionen“ mit dem Winkel. Bei welchem Winkel ist die Gegenkathete genau halb so lang wie die Hypotenuse?',
+  why:'Im rechtwinkeligen Dreieck gilt: sin α = Gegenkathete : Hypotenuse, cos α = Ankathete : Hypotenuse und tan α = Gegenkathete : Ankathete. Bei 30° ist die Gegenkathete genau halb so lang wie die Hypotenuse, deshalb ist sin 30° = 0,5.'},
+ {g:'Grundlagen',t:'Ähnliche Dreiecke',d:'Das Verhältnis bleibt gleich',s:{al:37,c:9,sim:true},
+  obs:'Verändere die Hypotenuse c mit dem Schieberegler, lass den Winkel gleich. Was passiert mit den Seitenlängen, was mit dem Verhältnis a : c?',
+  why:'Dreiecke mit denselben Winkeln sind ähnlich: Alle Seiten werden mit demselben Faktor vergrößert. Darum bleibt jedes Seitenverhältnis gleich. Das Verhältnis hängt nur vom Winkel ab, nicht von der Größe des Dreiecks. Genau deshalb kann man es als Funktion des Winkels schreiben: sin α.'},
+ {g:'Anwendungen',t:'Leiter an der Wand',d:'Wie hoch reicht die Leiter?',s:{al:70,c:5,ctx:'leiter'},
+  obs:'Eine 5 m lange Leiter lehnt an der Wand. Wie hoch reicht sie bei 70°? Wie weit muss der Fuß von der Wand weg sein? Löse danach eine „Neue Aufgabe“.',
+  why:'Die Leiter ist die Hypotenuse, die Höhe an der Wand ist die Gegenkathete des Winkels am Boden. Also gilt Höhe = Leiter · sin α und Abstand = Leiter · cos α. Für sicheres Arbeiten empfiehlt man einen Anstellwinkel von etwa 65° bis 75°.'},
+ {g:'Anwendungen',t:'Steigung einer Straße',d:'Prozent und Winkel',s:{al:10,c:6,ctx:'strasse'},
+  obs:'Wie viel Prozent Steigung hat eine Straße mit 10°? Bei welchem Winkel sind es 100 % Steigung?',
+  why:'Die Steigung in Prozent ist Höhenunterschied : waagrechte Entfernung · 100, also tan α · 100. 10° ergeben etwa 17,6 %. 100 % bedeutet 1 m Höhe auf 1 m waagrecht, das ist ein Winkel von 45°, nicht 90°!'},
+ {g:'Anwendungen',t:'Baumhöhe aus dem Schatten',d:'Mit der Sonnenhöhe messen',s:{al:35,c:7,ctx:'baum'},
+  obs:'Die Sonne steht 35° hoch. Aus der Schattenlänge b lässt sich die Höhe des Baumes berechnen. Welche Winkelfunktion verbindet Schatten und Höhe?',
+  why:'Höhe und Schatten sind die beiden Katheten: Höhe = Schatten · tan α. So hat schon Thales von Milet die Höhe der Pyramiden bestimmt, allerdings mit ähnlichen Dreiecken statt mit dem Tangens.'}
+];
+function dLoad(i){D.pi=i;const s=DP[i].s;Object.assign(D,{sim:false,ctx:'',foc:'a',task:null},s);D.al=s.al*DEG;D.u=D.ctx==='strasse'?'km':D.ctx?'m':'cm';dTools();dPanel();renderLib('Versuche: Rechtwinkeliges Dreieck',DP,i,dLoad)}
+function dTools(){TL.innerHTML=`<span class="small">Winkel α:</span>${[30,45,60].map(d=>`<button class="btn" data-da="${d}">${d}°</button>`).join('')}<button class="btn" id="dNew2">Neue Aufgabe</button>`;
+  TL.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='dNew2'){dNewTask();return}D.al=+b.dataset.da*DEG;if(D.task){D.task=null;dPanel()}};
+  $('#status').textContent='Ziehe die Ecke B, um Winkel und Größe zu ändern. Ein Rasterkästchen entspricht 1 '+D.u+'.'}
+function dGeo(){const rm=CW<520?95:125,s=Math.max(12,Math.min((CW-64-rm)/10,(CH-100)/10)),A=[60,CH-58],a=D.c*Math.sin(D.al),b=D.c*Math.cos(D.al),Cc=[A[0]+b*s,A[1]],B=[Cc[0],A[1]-a*s];return {s,A,B,Cc,a,b}}
+function dLab(k){const a=D.c*Math.sin(D.al),b=D.c*Math.cos(D.al),u=' '+D.u,T=D.task;
+  const val={a:F(a,2)+u,b:F(b,2)+u,c:F(D.c,2)+u,al:FDs(D.al),be:FDs(PI/2-D.al)}[k];
+  if(!T||T.rev)return val;if(T.gs[k])return T.gs[k];if(T.u===k)return '?';return ''}
+const lt=(n,k)=>{const v=dLab(k);return v?n+' = '+v:n};
+function dDraw(){bg();const {s,A,B,Cc,a,b}=dGeo(),T=D.task;
+  if(!D.ctx){ctx.save();ctx.strokeStyle=cs('line');ctx.lineWidth=1;ctx.beginPath();for(let i=0;i<=10;i++){ctx.moveTo(A[0]+i*s,A[1]);ctx.lineTo(A[0]+i*s,A[1]-10*s);ctx.moveTo(A[0],A[1]-i*s);ctx.lineTo(A[0]+10*s,A[1]-i*s)}ctx.stroke();ctx.restore()}
+  else{line(10,A[1],CW-10,A[1],cs('mut'),2);for(let x=16;x<CW-10;x+=14)line(x,A[1]+2,x-8,A[1]+10,cs('mut',.5),1)}
+  if(D.ctx==='leiter'){const top=Math.max(14,B[1]-60);ctx.fillStyle=cs('pan');ctx.fillRect(Cc[0],top,16,A[1]-top);ctx.strokeStyle=cs('mut');ctx.lineWidth=1.5;ctx.strokeRect(Cc[0],top,16,A[1]-top);
+    for(let y=A[1]-14;y>top;y-=14)line(Cc[0],y,Cc[0]+16,y,cs('mut',.4),1);
+    const L=Math.hypot(B[0]-A[0],B[1]-A[1]),ux=(B[0]-A[0])/L,uy=(B[1]-A[1])/L,nx=-uy*6,ny=ux*6;
+    line(A[0]+nx,A[1]+ny,B[0]+nx,B[1]+ny,cs('amb',.8),3);line(A[0]-nx,A[1]-ny,B[0]-nx,B[1]-ny,cs('amb',.8),3);for(let t=16;t<L-6;t+=16)line(A[0]+ux*t+nx,A[1]+uy*t+ny,A[0]+ux*t-nx,A[1]+uy*t-ny,cs('amb',.8),2.5)}
+  if(D.ctx==='strasse'){line(A[0],A[1],B[0],B[1],cs('mut',.45),16);line(A[0],A[1],B[0],B[1],cs('fld'),1.5,[8,8])}
+  if(D.ctx==='baum'){line(A[0],A[1]+1,Cc[0],Cc[1]+1,cs('ink',.3),9);const h=A[1]-B[1];line(Cc[0],Cc[1],Cc[0],B[1]+h*.45,'#8a5a2b',7);
+    ctx.beginPath();ctx.ellipse(Cc[0]+Math.max(8,h*.09),B[1]+h*.27,Math.max(9,h*.13),h*.27,0,0,TAU);ctx.fillStyle='rgba(63,143,79,.6)';ctx.fill();
+    const L=Math.hypot(B[0]-A[0],B[1]-A[1]),ux=(B[0]-A[0])/L,uy=(B[1]-A[1])/L,sx=B[0]+ux*70,sy=B[1]+uy*70;
+    if(sx<CW-20&&sy>20){dot(sx,sy,16,'#f3b23a');for(let k=0;k<8;k++){const t=k*PI/4;line(sx+Math.cos(t)*21,sy+Math.sin(t)*21,sx+Math.cos(t)*28,sy+Math.sin(t)*28,'#f3b23a',2.5)}}}
+  if(D.sim)for(const f of [.35,.65]){const c2=[A[0]+b*f*s,A[1]],b2=[c2[0],A[1]-a*f*s];ctx.setLineDash([5,4]);ctx.strokeStyle=cs('mut');ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(...A);ctx.lineTo(...b2);ctx.lineTo(...c2);ctx.stroke();ctx.setLineDash([]);
+    line(...c2,...b2,cs(D.foc==='a'?'red':'blue',.6),3);txt(`${F(a*f,2)} : ${F(D.c*f,2)}`,b2[0]+6,b2[1]-6,cs('mut'),'left',12,true)}
+  ctx.beginPath();ctx.moveTo(...A);ctx.lineTo(...B);ctx.lineTo(...Cc);ctx.closePath();ctx.fillStyle=cs('pan',D.ctx?.35:.75);ctx.fill();
+  const ca=D.foc==='a'?'red':'blue',cb=D.foc==='a'?'blue':'red';
+  line(...Cc,...B,cs(ca),4.5);line(...A,...Cc,cs(cb),4.5);line(...A,...B,cs('ink'),3.5);
+  const q=Math.min(14,a*s*.35,b*s*.35);ctx.strokeStyle=cs('ink');ctx.lineWidth=1.4;ctx.strokeRect(Cc[0]-q,Cc[1]-q,q,q);dot(Cc[0]-q/2,Cc[1]-q/2,1.8,cs('ink'));
+  const rA=Math.min(40,b*s*.45),tB=Math.atan2(A[1]-B[1],A[0]-B[0]),rB=Math.min(32,a*s*.4);
+  wedge(A[0],A[1],rA,0,-D.al,true,D.foc==='a'?'amb':'mut',D.foc==='a'?.22:.08);
+  wedge(B[0],B[1],rB,PI/2,tB,false,D.foc==='b'?'amb':'mut',D.foc==='b'?.22:.08);
+  const ra=rA+10,ta=-D.al/2;txt(lt('α','al'),A[0]+Math.cos(ta)*ra,A[1]+Math.sin(ta)*ra+5,cs(D.foc==='a'?'amb':'mut'),'left',14,true);
+  const tb=(PI/2+tB)/2;txt(lt('β','be'),B[0]+Math.cos(tb)*(rB+14),B[1]+Math.sin(tb)*(rB+14)+5,cs(D.foc==='b'?'amb':'mut'),'right',14,true);
+  const R=D.ctx?ROLE[D.ctx]:{a:D.foc==='a'?'Gegenkathete':'Ankathete',b:D.foc==='a'?'Ankathete':'Gegenkathete',c:'Hypotenuse'},von=D.ctx?'':D.foc==='a'?' von α':' von β';
+  const ay=(Cc[1]+B[1])/2,ax=Cc[0]+(D.ctx==='leiter'?24:D.ctx==='baum'?Math.max(20,(A[1]-B[1])*.22)+8:10);txt(lt('a','a'),ax,ay,cs(ca),'left',14,true);txt(R.a+(D.ctx?'':von),ax,ay+16,cs('mut'),'left',12);
+  txt(lt('b','b'),(A[0]+Cc[0])/2,A[1]+21,cs(cb),'center',14,true);txt(R.b+(D.ctx?'':von),(A[0]+Cc[0])/2,A[1]+37,cs('mut'),'center',12);
+  const L=D.c,nx=-a/L,ny=-b/L,mx=(A[0]+B[0])/2+nx*26,my=(A[1]+B[1])/2+ny*26;txt(lt('c','c'),mx,my,cs('ink'),'right',14,true);txt(R.c,mx,my+16,cs('mut'),'right',12);
+  [['A',A,[-14,6]],['B',B,[0,-12]],['C',Cc,[12,16]]].forEach(([n,p,o])=>txt(n,p[0]+o[0],p[1]+o[1],cs('ink'),'center',15,true));
+  dot(B[0],B[1],8,cs('ink'),true);
+  if(T)txt('Aufgabe: gesucht ist '+(T.u==='al'?'α':T.u),14,24,cs('ink'),'left',15,true)}
+function dSet(x,y){const {s,A}=dGeo();let b=Math.max(.2,(x-A[0])/s),a=Math.max(.2,(A[1]-y)/s),c=Math.hypot(a,b);if(c>10){a*=10/c;b*=10/c;c=10}
+  D.al=clamp(Math.round(Math.atan2(a,b)/DEG),1,89)*DEG;D.c=clamp(Math.round(c*10)/10,1,10);if(D.task){D.task=null;dPanel()}}
+const DT=[['al','c','a'],['al','c','b'],['al','b','a'],['al','b','c'],['al','a','c'],['al','a','b'],['a','c','al'],['b','c','al'],['a','b','al']];
+function dNewTask(){const pool=lvlShow(2)?DT:DT.slice(0,6),[g1,g2,u]=pick(pool),r1=v=>Math.round(v*10)/10;
+  const [lo,hi]=D.ctx==='leiter'?[55,80]:D.ctx==='strasse'?[4,16]:[20,70];let al=(lo+Math.floor(Math.random()*(hi-lo+1)))*DEG,c=r1(3+Math.random()*6),a=c*Math.sin(al),b=c*Math.cos(al);
+  if(g1==='al'&&g2==='b'){b=r1(b);c=b/Math.cos(al);a=b*Math.tan(al)}
+  else if(g1==='al'&&g2==='a'){a=r1(a);c=a/Math.sin(al);b=a/Math.tan(al)}
+  else if(g1==='a'&&g2==='c'){a=r1(a);al=Math.asin(a/c);b=Math.sqrt(c*c-a*a)}
+  else if(g1==='b'&&g2==='c'){b=r1(b);al=Math.acos(b/c);a=Math.sqrt(c*c-b*b)}
+  else if(g1==='a'&&g2==='b'){a=r1(a);b=r1(b);al=Math.atan2(a,b);c=Math.hypot(a,b)}
+  D.al=al;D.c=c;D.foc='a';const V={a,b,c},U=D.u,n=k=>F(V[k],1),gs={};for(const k of [g1,g2])gs[k]=k==='al'?FDs(al):n(k)+' '+U;
+  const sol=u==='al'?al/DEG:V[u],A_=gs.al,key=[g1,g2,u].join(),res=u==='al'?`α ≈ ${F(sol,1)}°`:`${u} ≈ ${F(sol,2)} ${U}`;
+  const W={'al,c,a':['a = c · sin α',`${n('c')} · sin ${A_}`],'al,c,b':['b = c · cos α',`${n('c')} · cos ${A_}`],'al,b,a':['a = b · tan α',`${n('b')} · tan ${A_}`],'al,b,c':['c = b : cos α',`${n('b')} : cos ${A_}`],'al,a,c':['c = a : sin α',`${n('a')} : sin ${A_}`],'al,a,b':['b = a : tan α',`${n('a')} : tan ${A_}`],
+    'a,c,al':['sin α = a : c',`${n('a')} : ${n('c')} ≈ ${F(a/c,3)}`],'b,c,al':['cos α = b : c',`${n('b')} : ${n('c')} ≈ ${F(b/c,3)}`],'a,b,al':['tan α = a : b',`${n('a')} : ${n('b')} ≈ ${F(a/b,3)}`]}[key];
+  const way=u==='al'?`${W[0]} = ${W[1]} → ${res}`:`${W[0]} = ${W[1]} ≈ ${F(sol,2)} ${U}`;
+  const R=D.ctx?ROLE[D.ctx]:null,sym=k=>k==='al'?'α':k,desc=k=>(R?R[k]+' ':'')+sym(k)+' = '+gs[k],name=k=>k==='al'?(R?'den '+R.al+' α':'den Winkel α'):(R?((ART[D.ctx]||{})[k]||'die')+' '+R[k]+' '+k:'die Seite '+k);
+  D.task={g:[g1,g2],u,gs,sol,way,fo:W[0],tries:0,rev:false,text:`Gegeben: ${desc(g1)} und ${desc(g2)}. Berechne ${name(u)}.`};dPanel()}
+function dCheck(){const T=D.task,inp=$('#dIn'),r=$('#dRes');if(!T||!inp)return;const v=parseFloat(String(inp.value).replace(',','.').replace(/[^\d.\-]/g,''));
+  if(!Number.isFinite(v)){r.className='res no';r.textContent='Bitte gib eine Zahl ein.';return}
+  if(Math.abs(v-T.sol)<=Math.max(T.u==='al'?.6:.05,Math.abs(T.sol)*.01)){T.rev=true;r.className='res ok';r.textContent='Richtig! '+T.way}
+  else{T.tries++;r.className='res no';r.textContent=T.tries>=2||!lvlShow(2)?'Noch nicht. Tipp: '+T.fo:'Noch nicht. Tipp: Welche Seiten sind gegeben, vom Winkel α aus gesehen: Gegenkathete, Ankathete oder Hypotenuse?'}}
+function dPanel(){const p=DP[D.pi],T=D.task;
+  PN.innerHTML=infoCard(p)+`<div class="card"><h3>Dreieck</h3>${D.ctx?'':`<div class="row"><span>Bezugswinkel</span></div>${seg('df',[['α','a'],['β','b']],D.foc)}`}${T?'':range('dAl','Winkel α',1,89,1,Math.round(D.al/DEG))+range('dC','Hypotenuse c',1,10,.1,D.c)}<div class="kv" id="dV" style="margin-top:8px"></div></div>
+   <div class="card"><h3>Winkelfunktionen</h3><div class="formel" id="dR"></div></div>
+   ${D.sim?'<div class="card"><h3>Ähnliche Dreiecke</h3><div class="kv" id="dSim"></div></div>':''}
+   ${D.ctx==='strasse'?'<div class="card"><h3>Steigung</h3><div class="big" id="dSt"></div><p class="small">Steigung in Prozent = Höhenunterschied : waagrechte Entfernung · 100 = tan α · 100</p></div>':''}
+   <div class="card"><h3>Aufgabe</h3><p>${T?T.text:'Das Dreieck zeigt die gegebenen Größen, die gesuchte ist mit ? markiert. Rechne mit dem Taschenrechner.'}</p>
+   ${T?`<div style="display:flex;gap:6px;flex-wrap:wrap"><input class="inp" id="dIn" inputmode="decimal" placeholder="${T.u==='al'?'Winkel in °':'Länge in '+D.u}" autocomplete="off" aria-label="Deine Lösung"><button class="btn hot" id="dChk">Prüfen</button></div><p id="dRes" class="res"></p>`:''}
+   <div class="seg"><button class="btn" id="dNew">Neue Aufgabe</button>${T?'<button class="btn" id="dSol">Lösung zeigen</button><button class="btn" id="dEnd">Beenden</button>':''}</div></div>`;
+  PN.oninput=e=>{const id=e.target.id;if(id==='dAl')D.al=+e.target.value*DEG;else if(id==='dC')D.c=+e.target.value};
+  PN.onchange=()=>{};
+  PN.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.df){D.foc=b.dataset.df;dPanel()}else if(b.id==='dNew')dNewTask();else if(b.id==='dChk')dCheck();
+    else if(b.id==='dSol'&&T){T.rev=true;const r=$('#dRes');r.className='res';r.textContent='Lösung: '+T.way}else if(b.id==='dEnd'){D.task=null;dPanel()}};
+  const inp=$('#dIn');if(inp)inp.onkeydown=e=>{if(e.key==='Enter')dCheck()}}
+function dUpd(){const al=D.al,a=D.c*Math.sin(al),b=D.c*Math.cos(al),T=D.task,hid=T&&!T.rev;
+  syncRange('dAl',Math.round(al/DEG));syncRange('dC',D.c);setOut('dAl',FDs(al));setOut('dC',F(D.c,1)+' '+D.u);
+  const v=k=>dLab(k)||'–';setHTML('dV',`<span>Kathete a</span><b>${v('a')}</b><span>Kathete b</span><b>${v('b')}</b><span>Hypotenuse c</span><b>${v('c')}</b><span>Winkel α</span><b>${v('al')}</b><span>Winkel β</span><b>${v('be')}</b>`);
+  const fa=D.foc==='a',W=fa?'α':'β',gk=fa?'a':'b',ak=fa?'b':'a',GK=fa?a:b,AK=fa?b:a,ang=fa?al:PI/2-al;
+  let h;if(hid)h=`<span class="s">sin ${W}</span> = Gegenkathete : Hypotenuse<br><span class="c">cos ${W}</span> = Ankathete : Hypotenuse<br><span class="t">tan ${W}</span> = Gegenkathete : Ankathete`;
+  else{h=`<span class="s">sin ${W}</span> = Gegenkathete : Hypotenuse<br>= ${gk} : c = ${F(GK,2)} : ${F(D.c,2)} = <b>${F(GK/D.c,3)}</b><br><span class="c">cos ${W}</span> = Ankathete : Hypotenuse<br>= ${ak} : c = ${F(AK,2)} : ${F(D.c,2)} = <b>${F(AK/D.c,3)}</b><br><span class="t">tan ${W}</span> = Gegenkathete : Ankathete<br>= ${gk} : ${ak} = ${F(GK,2)} : ${F(AK,2)} = <b>${F(GK/AK,3)}</b>`;
+    if(lvlShow(2))h+=`<br>Umgekehrt: ${W} = sin⁻¹(${F(GK/D.c,3)}) = ${FDs(ang)}`;
+    if(lvlShow(3))h+=`<br>sin α = cos β, weil α + β = 90°<br>Pythagoras: a² + b² = ${F(a*a,2)} + ${F(b*b,2)} = ${F(D.c*D.c,2)} = c²`}
+  setHTML('dR',h);
+  if($('#dSim'))setHTML('dSim',[1,.65,.35].map(f=>`<span>${f===1?'großes Dreieck':'Faktor '+F(f,2)}: ${gk} : c = ${F(GK*f,2)} : ${F(D.c*f,2)}</span><b>${F(GK/D.c,3)}</b>`).join(''));
+  if($('#dSt'))setTxt('dSt',hid?'? %':F(Math.tan(al)*100,1)+' %')}
+MODES.dreieck={enter(){if(!D.init){D.init=true;dLoad(0)}else{dTools();dPanel();renderLib('Versuche: Rechtwinkeliges Dreieck',DP,D.pi,dLoad)}},panel:dPanel,
+  frame(){},draw:dDraw,upd:dUpd,down(x,y){D.drag=true;dSet(x,y)},move(x,y){if(D.drag)dSet(x,y)},up(){D.drag=false},key(){return false}};
+
+/* =====================================================================
+   STATION 4: SINUSFUNKTION  f(x) = a · sin(b · (x − c)) + d
+   ===================================================================== */
+const FU={pi:0,init:false,a:1,b:1,c:0,d:0,fn:'sin',ref:true,feat:true,target:null,puz:false,solved:false};
+const FP=[
+ {g:'Parameter',t:'Amplitude a',d:'Streckung in y-Richtung',s:{a:2},
+  obs:'Verändere a. Wie hoch steigt die Kurve jetzt? Was passiert bei a = 0,5 und bei a = −1?',
+  why:'Der Faktor a streckt die Kurve in y-Richtung: Sie schwingt zwischen −|a| und |a|. |a| heißt Amplitude. Ist a negativ, wird die Kurve zusätzlich an der x-Achse gespiegelt: Sie beginnt mit einem Tal statt mit einem Berg.'},
+ {g:'Parameter',t:'Periode und b',d:'Stauchung in x-Richtung',s:{b:2},
+  obs:'Verändere b. Wie viele volle Schwingungen passen zwischen 0 und 2π? Wie lang ist eine Periode bei b = 2, bei b = 0,5?',
+  why:'Der Faktor b staucht die Kurve in x-Richtung. Die Periode ist p = 2π : b. Bei b = 2 passen zwei Schwingungen in 2π, eine Periode ist π lang. Bei b = 0,5 wird die Kurve doppelt so breit, die Periode ist 4π.'},
+ {g:'Parameter',t:'Verschiebung nach rechts: c',d:'Phasenverschiebung',s:{c:PI/4},
+  obs:'Verändere c. In welche Richtung wandert die Kurve, wenn c größer wird? Achte auf das Vorzeichen in der Funktionsgleichung.',
+  why:'Bei f(x) = sin(x − c) wird die Kurve um c nach rechts verschoben. Das wirkt verkehrt, ist aber logisch: Den Wert, den sin x bei x = 0 hat, erreicht sin(x − c) erst bei x = c. Bei sin(x + c) geht es nach links. Mit b ≠ 1 bleibt die Verschiebung c, weil die Klammer b · (x − c) lautet.'},
+ {g:'Parameter',t:'Verschiebung nach oben: d',d:'Die Mittellinie',s:{d:1},
+  obs:'Verändere d. Was passiert mit der Mittellinie und mit der Wertemenge?',
+  why:'Der Summand d verschiebt die ganze Kurve nach oben oder unten. Sie schwingt dann um die Mittellinie y = d. Die Wertemenge ist [d − |a|; d + |a|]. So beschreibt man etwa die Tageslänge im Jahresverlauf: Sie schwankt um etwa 12 Stunden.'},
+ {g:'Zusammenhänge',t:'Kosinus = verschobener Sinus',d:'Sinus auf den Kosinus legen',s:{target:{fn:'cos',a:1,b:1,c:0,d:0}},
+  obs:'Die violette, gestrichelte Kurve ist cos x. Verschiebe die Sinuskurve mit c so, dass sie genau darauf liegt. Welches c brauchst du?',
+  why:'Mit c = −π/2 gilt sin(x + π/2) = cos x. Der Kosinus ist also eine um π/2 (90°) nach links verschobene Sinuskurve. Es geht auch mit c = 3π/2, wegen der Periode 2π.'},
+ {g:'Zusammenhänge',t:'Schwingung und Ton',d:'Sinus hören',s:{a:1,b:1},
+  obs:'Tippe auf „Anhören“. Verdopple dann b und höre noch einmal. Was ändert sich, wenn du a veränderst? Hörst du einen Unterschied, wenn du c verschiebst?',
+  why:'Eine reine Sinusschwingung klingt als einfacher Ton (hier 220 Hz · b). b gibt an, wie schnell die Schwingung ist: doppeltes b heißt doppelte Frequenz, der Ton klingt eine Oktave höher. a ist die Amplitude, also die Lautstärke. Die Verschiebungen c und d hört man bei einem einzelnen Ton nicht. In der Physik schreibt man y(t) = A · sin(ω · t).'},
+ {g:'Üben',t:'Graph nachbauen',d:'Rätsel mit vier Parametern',s:{puz:true},
+  obs:'Stelle a, b, c und d so ein, dass deine Kurve auf der violetten, gestrichelten Kurve liegt. Lies zuerst Mittellinie und Amplitude ab, dann die Periode, zuletzt die Verschiebung.',
+  why:'Strategie: Die Mittellinie liegt in der Mitte zwischen Hoch- und Tiefpunkt, das ergibt d. Der Abstand von der Mittellinie zum Hochpunkt ist |a|. Aus der Periode p folgt b = 2π : p. Zuletzt schaust du, wo eine Periode „aufwärts“ durch die Mittellinie beginnt, das ist c. Oft gibt es mehrere richtige Lösungen.'}
+];
+function fF(o){const g=o.fn==='cos'?Math.cos:Math.sin;return x=>o.a*g(o.b*(x-o.c))+o.d}
+const cLab=c=>piFmt(c,12)||nf(c);
+function fFormula(o){if(Math.abs(o.a)<1e-9)return 'f(x) = '+nf(o.d);const inner=Math.abs(o.c)>1e-9?`x ${o.c>0?'−':'+'} ${cLab(Math.abs(o.c))}`:'x';
+  const arg=Math.abs(o.b-1)<1e-9?inner:Math.abs(o.c)>1e-9?`${nf(o.b)} · (${inner})`:`${nf(o.b)}x`,ap=Math.abs(Math.abs(o.a)-1)<1e-9?(o.a<0?'−':''):nf(o.a)+' · ';
+  return `f(x) = ${ap}${o.fn}(${arg})${o.d>1e-9?' + '+nf(o.d):o.d<-1e-9?' − '+nf(-o.d):''}`}
+function fNewPuzzle(){FU.target={fn:pick(['sin','cos']),a:pick([-2,-1.5,-1,-.5,.5,1,1.5,2,2.5]),b:pick([.5,1,1.5,2,3]),c:pick([-4,-3,-2,-1,1,2,3,4,0])*PI/6,d:pick([-1,-.5,0,.5,1])};
+  Object.assign(FU,{a:1,b:1,c:0,d:0,fn:'sin',puz:true,solved:false});fPanel()}
+function fLoad(i){FU.pi=i;const s=FP[i].s;Object.assign(FU,{a:1,b:1,c:0,d:0,fn:'sin',target:null,puz:false,solved:false},s);fTools();if(FU.puz)fNewPuzzle();else fPanel();renderLib('Versuche: Sinusfunktion',FP,i,fLoad)}
+let AC=null;
+function tone(f,g,dur=1.3){try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume().catch(()=>{});
+  const t=AC.currentTime+.03,o=AC.createOscillator(),v=AC.createGain();o.frequency.value=f;v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(g,t+.04);v.gain.setValueAtTime(g,t+dur-.12);v.gain.linearRampToValueAtTime(0,t+dur);o.connect(v);v.connect(AC.destination);o.start(t);o.stop(t+dur+.05)}catch(e){}}
+const hear=()=>{if(Math.abs(FU.a)>1e-9)tone(220*FU.b,.32*Math.abs(FU.a)/3)};
+function fTools(){TL.innerHTML=`<button class="btn hot" id="fH1">Anhören</button><button class="btn" id="fH0">Zurücksetzen</button><button class="btn" id="fPz1">Neues Rätsel</button>`;
+  TL.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='fH1')hear();else if(b.id==='fH0'){Object.assign(FU,{a:1,b:1,c:0,d:0});fPanel()}else fNewPuzzle()};
+  $('#status').textContent='Die Schieberegler verändern a, b, c und d. Grau gestrichelt: die Grundfunktion. Ein Ton hat 220 Hz · b.'}
+function fPl(){const nar=CW<520;return plot(nar?30:44,18,CW-12,CH-28,-PI,3*PI,-4.2,4.2)}
+function fDraw(){bg();const pl=fPl(),{X,Y}=pl,o=FU,col=cs(o.fn==='cos'?'blue':'red');axes(pl,{rad:true});
+  if(o.ref)curve(pl,FN[o.fn],cs('mut',.85),1.8,undefined,undefined,[6,5]);
+  if(o.target)curve(pl,fF(o.target),cs('vio',o.solved?.95:.6),5,undefined,undefined,[10,7]);
+  if(o.feat&&Math.abs(o.a)>1e-9){const p=TAU/o.b;line(pl.x0,Y(o.d),pl.x1,Y(o.d),cs('amb',.8),1.5,[7,5]);
+    let xm=o.c+(o.fn==='sin'?PI/(2*o.b):0);while(xm<0)xm+=p;while(xm-p>=0)xm-=p;
+    const ytop=Y(o.d+o.a);line(X(xm),Y(o.d),X(xm),ytop,cs('amb'),2.2);line(X(xm)-6,ytop,X(xm)+6,ytop,cs('amb'),2.2);
+    txt('|a| = '+nf(Math.abs(o.a)),X(xm)+8,(Y(o.d)+ytop)/2+4,cs('amb'),'left',13,true);
+    const yb=Y(o.d+Math.abs(o.a)+.45),x1=xm+p;if(X(x1)<pl.x1+2){line(X(xm),yb,X(x1),yb,col,1.6);line(X(xm),yb-6,X(xm),yb+6,col,1.6);line(X(x1),yb-6,X(x1),yb+6,col,1.6);txt('Periode = '+(piFmt(p,60)||nf(p)),(X(xm)+X(x1))/2,yb-7,col,'center',13,true)}
+    if(Math.abs(o.c)>1e-9){const y=Y(o.d)+(o.a>0?16:-16),xa=X(0),xb=X(o.c),dir=Math.sign(xb-xa);line(xa,y,xb,y,cs('ink'),1.8);line(xb,y,xb-dir*7,y-5,cs('ink'),1.8);line(xb,y,xb-dir*7,y+5,cs('ink'),1.8);
+      txt('c = '+cLab(o.c),(xa+xb)/2,y+(o.a>0?16:-7),cs('ink'),'center',13,true)}}
+  curve(pl,fF(o),col,3.4);
+  txt(fFormula(o),pl.x0+10,pl.y0+18,cs('ink'),'left',17,true);if(o.target&&!o.solved&&o.puz)txt('Ziel: violette Kurve',pl.x0+10,pl.y0+38,cs('vio'),'left',13,true)}
+function fPanel(){const p=FP[FU.pi],o=FU;
+  PN.innerHTML=infoCard(p)+`<div class="card"><h3>Funktion</h3><div class="formel" id="fFo" style="font-size:17px;font-weight:700"></div>${seg('ff',[['Sinus','sin'],['Kosinus','cos']],o.fn)}
+    ${range('fa','a · Amplitude',-3,3,.1,o.a)}${range('fb','b · Stauchung',.25,4,.25,o.b)}${range('fc','c · Verschiebung nach rechts',-PI,PI,PI/12,o.c)}${range('fd','d · Verschiebung nach oben',-1.5,1.5,.1,o.d)}
+    <div class="chk">${chk('fRef','Grundfunktion '+o.fn+' x',o.ref)}${chk('fFe','Hilfslinien',o.feat)}</div></div>
+   <div class="card"><h3>Eigenschaften</h3><div class="kv" id="fK"></div></div>
+   <div class="card"><h3>Anhören</h3><p class="small">Ton mit 220 Hz · b, Lautstärke nach |a|. Doppeltes b ergibt eine Oktave.</p><div class="seg"><button class="btn hot" id="fHear">Anhören</button><button class="btn" id="fHear0">Vergleich: sin x</button></div></div>
+   <div class="card"><h3>Rätsel: Graph nachbauen</h3><p id="fPz" class="res"></p><div class="seg"><button class="btn" id="fNew">Neues Rätsel</button>${o.target&&o.puz?'<button class="btn" id="fShow">Lösung zeigen</button>':''}</div></div>`;
+  PN.oninput=e=>{const m={fa:'a',fb:'b',fc:'c',fd:'d'}[e.target.id];if(m)FU[m]=+e.target.value};
+  PN.onchange=e=>{if(e.target.id==='fRef')FU.ref=e.target.checked;else if(e.target.id==='fFe')FU.feat=e.target.checked};
+  PN.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.ff){FU.fn=b.dataset.ff;fPanel()}else if(b.id==='fHear')hear();else if(b.id==='fHear0')tone(220,.11);else if(b.id==='fNew')fNewPuzzle();
+    else if(b.id==='fShow'&&FU.target){Object.assign(FU,FU.target);fPanel()}}}
+function fUpd(){const o=FU;syncRange('fa',o.a);syncRange('fb',o.b);syncRange('fc',o.c);syncRange('fd',o.d);
+  setOut('fa',nf(o.a));setOut('fb',nf(o.b));setOut('fc',cLab(o.c));setOut('fd',nf(o.d));setTxt('fFo',fFormula(o));
+  const p=TAU/o.b,A=Math.abs(o.a);let h=`<span>Amplitude |a|</span><b>${nf(A)}</b><span>Periode 2π : b</span><b>${piFmt(p,60)||nf(p)}${lvlShow(2)?' = '+F(p/DEG,0)+'°':''}</b><span>Verschiebung</span><b>${Math.abs(o.c)<1e-9?'keine':cLab(Math.abs(o.c))+(o.c>0?' nach rechts':' nach links')}</b><span>Mittellinie</span><b>y = ${nf(o.d)}</b><span>Wertemenge</span><b>[${nf(o.d-A)}; ${nf(o.d+A)}]</b>`;
+  if(lvlShow(3))h+=`<span>Frequenz b : 2π</span><b>${F(o.b/TAU,3)}</b><span>Ton</span><b>${F(220*o.b,0)} Hz</b>`;setHTML('fK',h);
+  const pz=$('#fPz');if(pz){if(!o.target){pz.className='res';pz.textContent='Tippe auf „Neues Rätsel“. Dann erscheint eine violette Zielkurve.'}
+    else{const f1=fF(o),f2=fF(o.target);let mx=0;for(let i=0;i<=120;i++){const x=-PI+4*PI*i/120;mx=Math.max(mx,Math.abs(f1(x)-f2(x)))}
+      if(mx<.07&&!o.solved){o.solved=true}
+      if(o.solved){pz.className='res ok';const same=fFormula(o)===fFormula(o.target);pz.textContent=o.puz?'Geschafft! '+(same?fFormula(o):`Deine Lösung ${fFormula(o)} beschreibt denselben Graphen wie ${fFormula(o.target)}.`):'Genau! '+fFormula(o)+' liegt auf cos x.'}
+      else{pz.className='res';pz.textContent=o.puz?'Bringe deine Kurve auf die violette Kurve.':'Verschiebe mit c, bis deine Kurve auf der violetten liegt.'}}}}
+MODES.funktion={enter(){if(!FU.init){FU.init=true;fLoad(0)}else{fTools();fPanel();renderLib('Versuche: Sinusfunktion',FP,FU.pi,fLoad)}},panel:fPanel,
+  frame(){},draw:fDraw,upd:fUpd,down(){},move(){},up(){},key(){return false}};
+
+/* =====================================================================
+   STATION 5: SINUS- UND KOSINUSSATZ
+   ===================================================================== */
+const S={pi:0,init:false,P:[[1,1],[9,1],[4,6]],snap:true,um:false,h:false,ctx:'',drag:-1};
+const SP=[
+ {g:'Grundlagen',t:'Winkelsumme',d:'α + β + γ = 180°',s:{P:[[1,1],[9,1],[4,6]]},
+  obs:'Ziehe die Ecken A, B und C. Kannst du die Winkelsumme verändern? Welcher Winkel liegt der längsten Seite gegenüber?',
+  why:'In jedem Dreieck ist α + β + γ = 180°. Wird ein Winkel größer, werden die anderen zusammen kleiner. Der größte Winkel liegt immer der längsten Seite gegenüber. Seite a liegt dem Winkel α gegenüber, b dem Winkel β und c dem Winkel γ, darum haben sie hier dieselbe Farbe.'},
+ {g:'Sinussatz',t:'Sinussatz',d:'a : sin α = b : sin β = c : sin γ',s:{P:[[1,1],[10,1],[6.5,6.5]],h:true},
+  obs:'Vergleiche die drei Quotienten in der Karte „Sinussatz“ (ab Niveau Mittel). Ziehe eine Ecke: Sind die drei Werte immer gleich groß?',
+  why:'Die Höhe h_c kann man auf zwei Arten berechnen: h_c = b · sin α = a · sin β. Daraus folgt a : sin α = b : sin β, und genauso für die dritte Seite. Mit dem Sinussatz rechnet man, wenn eine Seite und der gegenüberliegende Winkel bekannt sind.'},
+ {g:'Sinussatz',t:'Sinussatz und Umkreis',d:'Der gemeinsame Wert ist 2r',s:{P:[[2,1],[10,1],[3,6]],um:true},
+  obs:'Vergleiche den Durchmesser 2r des Umkreises mit den Quotienten a : sin α. Wo liegt der Mittelpunkt M bei einem stumpfwinkeligen Dreieck?',
+  why:'Alle drei Quotienten sind gleich dem Durchmesser des Umkreises: a : sin α = 2r. Das folgt aus dem Umfangswinkelsatz. Bei einem stumpfwinkeligen Dreieck liegt M außerhalb, bei einem rechtwinkeligen genau auf der Hypotenuse (Thaleskreis).'},
+ {g:'Kosinussatz',t:'Kosinussatz',d:'Pythagoras für jedes Dreieck',s:{P:[[2,1],[10,1],[4,5]]},
+  obs:'Ziehe C nach (6 | 5), dort ist γ = 90°. Was passiert mit dem Zusatzglied −2ab · cos γ? Und was passiert bei einem stumpfen γ?',
+  why:'Der Kosinussatz c² = a² + b² − 2ab · cos γ verallgemeinert den Satz des Pythagoras. Bei γ = 90° ist cos γ = 0, es bleibt c² = a² + b². Bei spitzem γ ist c² kleiner als a² + b². Bei stumpfem γ ist cos γ negativ und c² größer. Man braucht ihn, wenn zwei Seiten und der eingeschlossene Winkel oder alle drei Seiten bekannt sind.'},
+ {g:'Anwendungen',t:'Flächeninhalt',d:'A = ½ · a · b · sin γ',s:{P:[[1,1],[9,1],[3,5.5]],h:true},
+  obs:'Vergleiche die Formeln für den Flächeninhalt (die zweite ab Niveau Mittel). Warum braucht die zweite Formel keine Höhe?',
+  why:'Die Fläche ist A = c · h_c : 2. Weil h_c = b · sin α ist, gilt auch A = ½ · b · c · sin α, ebenso A = ½ · a · b · sin γ. So berechnet man die Fläche aus zwei Seiten und dem eingeschlossenen Winkel, zum Beispiel bei Grundstücken.'},
+ {g:'Anwendungen',t:'Vermessung: Breite eines Flusses',d:'Standlinie und zwei Winkel',s:{P:[[2,1],[9,1],[5,7]],ctx:'fluss'},
+  obs:'A und B stehen am Ufer, C ist ein Baum am anderen Ufer. Gemessen werden nur die Standlinie c und die Winkel α und β. Verschiebe den Baum und verfolge die Rechnung.',
+  why:'Aus α und β folgt γ = 180° − α − β. Der Sinussatz liefert b = c · sin β : sin γ. Der Abstand des Baumes von der Standlinie ist dann h = b · sin α. So vermisst man Strecken, die man nicht direkt abmessen kann: über Flüsse und Täler oder bis zu Berggipfeln (Triangulation).'}
+];
+const SU=()=>S.ctx==='fluss'?{k:10,u:'m'}:{k:1,u:'cm'};
+function sLoad(i){S.pi=i;const s=SP[i].s;Object.assign(S,{um:false,h:false,ctx:'',snap:true},s);S.P=s.P.map(p=>p.slice());sTools();sPanel();renderLib('Versuche: Sinus- und Kosinussatz',SP,i,sLoad)}
+function sTools(){TL.innerHTML=`<span class="small">Dreieck:</span><button class="btn" data-sp="0">spitzwinkelig</button><button class="btn" data-sp="1">rechtwinkelig</button><button class="btn" data-sp="2">stumpfwinkelig</button><button class="btn" data-sp="3">gleichseitig</button>`;
+  TL.onclick=e=>{const b=e.target.closest('button');if(!b)return;const L=[[[1,1],[9,1],[5.5,6]],[[2,1],[10,1],[6,5]],[[1,1],[10,1],[2.5,4]],[[2,1],[10,1],[6,1+4*Math.sqrt(3)]]];S.P=L[+b.dataset.sp].map(p=>p.slice())};
+  $('#status').textContent='Ziehe die Ecken A, B und C. Ein Rasterkästchen entspricht '+(S.ctx==='fluss'?'10 m.':'1 cm.')}
+function sGeo(){const s=Math.min((CW-40)/12,(CH-44)/8.5),ox=(CW-12*s)/2,oy=CH-(CH-8.5*s)/2;return {s,X:u=>ox+u*s,Y:v=>oy-v*s,iu:x=>(x-ox)/s,iv:y=>(oy-y)/s}}
+function tri(){const [A,B,Cc]=S.P,d=(p,q)=>Math.hypot(p[0]-q[0],p[1]-q[1]),a=d(B,Cc),b=d(A,Cc),c=d(A,B),ang=(x,y,z)=>Math.acos(clamp((y*y+z*z-x*x)/(2*y*z),-1,1));
+  const al=ang(a,b,c),be=ang(b,a,c),ga=PI-al-be,area=Math.abs((B[0]-A[0])*(Cc[1]-A[1])-(Cc[0]-A[0])*(B[1]-A[1]))/2;return {a,b,c,al,be,ga,area,r:a/(2*Math.sin(al)),hc:2*area/c,ok:area>.05&&a>.05&&b>.05&&c>.05}}
+function circum(A,B,Cc){const d=2*(A[0]*(B[1]-Cc[1])+B[0]*(Cc[1]-A[1])+Cc[0]*(A[1]-B[1]));if(Math.abs(d)<1e-9)return null;const a2=A[0]**2+A[1]**2,b2=B[0]**2+B[1]**2,c2=Cc[0]**2+Cc[1]**2;
+  return [(a2*(B[1]-Cc[1])+b2*(Cc[1]-A[1])+c2*(A[1]-B[1]))/d,(a2*(Cc[0]-B[0])+b2*(A[0]-Cc[0])+c2*(B[0]-A[0]))/d]}
+function sDraw(){bg();const {s,X,Y}=sGeo(),T=tri(),[A,B,Cc]=S.P,sc=p=>[X(p[0]),Y(p[1])],pA=sc(A),pB=sc(B),pC=sc(Cc),U=SU();
+  ctx.save();ctx.strokeStyle=cs('line');ctx.lineWidth=1;ctx.beginPath();for(let u=0;u<=12;u++){ctx.moveTo(X(u),Y(0));ctx.lineTo(X(u),Y(8.5))}for(let v=0;v<=8;v++){ctx.moveTo(X(0),Y(v));ctx.lineTo(X(12),Y(v))}ctx.stroke();ctx.restore();
+  if(S.ctx==='fluss'){ctx.fillStyle=cs('blue',.14);ctx.fillRect(X(0),Y(6),12*s,4*s);for(let v=2.8;v<6;v+=1){ctx.beginPath();for(let u=0;u<=12;u+=.1){const x=X(u),y=Y(v)+Math.sin(u*3)*3;u?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.strokeStyle=cs('blue',.3);ctx.lineWidth=1.3;ctx.stroke()}
+    line(X(0),Y(2),X(12),Y(2),cs('mut'),2);line(X(0),Y(6),X(12),Y(6),cs('mut'),2);txt('Fluss',X(.3),Y(4)+5,cs('blue'),'left',14,true);
+    line(pC[0]+22,pC[1],pC[0]+22,pC[1]-10,'#8a5a2b',4);dot(pC[0]+22,pC[1]-18,11,'rgba(63,143,79,.85)')}
+  const M=circum(A,B,Cc);if(S.um&&M&&T.ok&&T.r<40){ctx.setLineDash([6,5]);ctx.strokeStyle=cs('vio',.8);ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(X(M[0]),Y(M[1]),T.r*s,0,TAU);ctx.stroke();ctx.setLineDash([]);
+    line(X(M[0]),Y(M[1]),pA[0],pA[1],cs('vio',.7),1.3);dot(X(M[0]),Y(M[1]),4,cs('vio'));txt('M',X(M[0])+7,Y(M[1])-6,cs('vio'),'left',13,true);txt('r',(X(M[0])+pA[0])/2+6,(Y(M[1])+pA[1])/2-4,cs('vio'),'left',13,true)}
+  ctx.beginPath();ctx.moveTo(...pA);ctx.lineTo(...pB);ctx.lineTo(...pC);ctx.closePath();ctx.fillStyle=cs('pan',.75);ctx.fill();
+  if(S.h&&T.ok){const dx=B[0]-A[0],dy=B[1]-A[1],t=((Cc[0]-A[0])*dx+(Cc[1]-A[1])*dy)/(dx*dx+dy*dy),Fp=[A[0]+t*dx,A[1]+t*dy],pF=sc(Fp);
+    if(t<0)line(...pA,...pF,cs('mut'),1.3,[4,4]);if(t>1)line(...pB,...pF,cs('mut'),1.3,[4,4]);line(...pC,...pF,cs('amb'),2.2,[6,4]);
+    const L=Math.hypot(pB[0]-pA[0],pB[1]-pA[1]),ux=(pB[0]-pA[0])/L,uy=(pB[1]-pA[1])/L,Lc=Math.hypot(pC[0]-pF[0],pC[1]-pF[1])||1,vx=(pC[0]-pF[0])/Lc,vy=(pC[1]-pF[1])/Lc,q=9;
+    ctx.strokeStyle=cs('amb');ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(pF[0]+ux*q,pF[1]+uy*q);ctx.lineTo(pF[0]+ux*q+vx*q,pF[1]+uy*q+vy*q);ctx.lineTo(pF[0]+vx*q,pF[1]+vy*q);ctx.stroke();
+    txt((S.ctx==='fluss'?'h':'h_c')+' = '+F(T.hc*U.k,2)+' '+U.u,(pC[0]+pF[0])/2+8,(pC[1]+pF[1])/2+4,cs('amb'),'left',13,true)}
+  const sides=[[pB,pC,'a',T.a,'red'],[pC,pA,'b',T.b,'blue'],[pA,pB,'c',T.c,'vio']],g=[(pA[0]+pB[0]+pC[0])/3,(pA[1]+pB[1]+pC[1])/3];
+  for(const [p,q,n,v,col] of sides){line(...p,...q,cs(col),3.5);const m=[(p[0]+q[0])/2,(p[1]+q[1])/2];let dx=m[0]-g[0],dy=m[1]-g[1];const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;
+    txt(n+' = '+F(v*U.k,2)+' '+U.u,m[0]+dx*20,m[1]+dy*20+5,cs(col),Math.abs(dx)<.35?'center':dx>0?'left':'right',14,true)}
+  const ver=[[pA,pB,pC,'A','α',T.al,'red'],[pB,pC,pA,'B','β',T.be,'blue'],[pC,pA,pB,'C','γ',T.ga,'vio']];
+  for(const [p,q1,q2,n,gr,v,col] of ver){const t1=Math.atan2(q1[1]-p[1],q1[0]-p[0]),t2=Math.atan2(q2[1]-p[1],q2[0]-p[0]);let a1=t1,df=mod(t2-t1,TAU);if(df>PI){a1=t2;df=TAU-df}
+    const r=Math.max(10,Math.min(28,Math.hypot(q1[0]-p[0],q1[1]-p[1])*.3,Math.hypot(q2[0]-p[0],q2[1]-p[1])*.3));
+    if(T.ok){if(Math.abs(v-PI/2)<.004){const u1=[Math.cos(a1),Math.sin(a1)],u2=[Math.cos(a1+df),Math.sin(a1+df)],q=r*.6;ctx.beginPath();ctx.moveTo(p[0]+u1[0]*q,p[1]+u1[1]*q);ctx.lineTo(p[0]+(u1[0]+u2[0])*q,p[1]+(u1[1]+u2[1])*q);ctx.lineTo(p[0]+u2[0]*q,p[1]+u2[1]*q);ctx.strokeStyle=cs(col);ctx.lineWidth=2;ctx.stroke();dot(p[0]+(u1[0]+u2[0])*q*.5,p[1]+(u1[1]+u2[1])*q*.5,2,cs(col))}
+      else wedge(p[0],p[1],r,a1,a1+df,false,col,.18);
+      const bi=a1+df/2,rr=r+(df<.6?46:df<1.2?36:28);txt(gr+' = '+F(v/DEG,lvlShow(2)?1:0)+'°',p[0]+Math.cos(bi)*rr,p[1]+Math.sin(bi)*rr+5,cs(col),'center',13,true)}
+    let dx=p[0]-g[0],dy=p[1]-g[1];const l=Math.hypot(dx,dy)||1;dot(...p,8,cs('ink'),true);txt(n,p[0]+dx/l*20,p[1]+dy/l*20+5,cs('ink'),'center',15,true)}
+  if(!T.ok)txt('Die drei Punkte liegen auf einer Geraden: kein Dreieck.',X(6),Y(8.5)+18,cs('red'),'center',14,true)}
+function sDown(x,y){const {X,Y}=sGeo();let best=-1,bd=34;S.P.forEach((p,i)=>{const d=Math.hypot(X(p[0])-x,Y(p[1])-y);if(d<bd){bd=d;best=i}});S.drag=best;sMove(x,y)}
+function sMove(x,y){if(S.drag<0)return;const {iu,iv}=sGeo();let u=clamp(iu(x),0,12),v=clamp(iv(y),0,8.5);if(S.snap){u=Math.round(u*2)/2;v=Math.round(v*2)/2}S.P[S.drag]=[u,v]}
+function sPanel(){const p=SP[S.pi];
+  PN.innerHTML=infoCard(p)+`<div class="card"><h3>Seiten und Winkel</h3><div class="kv" id="sV"></div><div class="formel" id="sW"></div></div>
+   <div class="card"><h3>Anzeigen</h3><div class="chk">${chk('sSn','Einrasten (halbes Kästchen)',S.snap)}${chk('sUm','Umkreis',S.um)}${chk('sH','Höhe h_c',S.h)}</div></div>
+   ${lvlShow(2)?'<div class="card"><h3>Sinussatz</h3><div class="formel" id="sSin"></div></div><div class="card"><h3>Kosinussatz</h3><div class="formel" id="sCos"></div></div>':''}
+   <div class="card"><h3>Flächeninhalt</h3><div class="formel" id="sA"></div></div>
+   ${S.ctx==='fluss'?'<div class="card"><h3>Vermessung</h3><div class="formel" id="sFl"></div></div>':''}`;
+  PN.oninput=()=>{};PN.onclick=()=>{};
+  PN.onchange=e=>{const m={sSn:'snap',sUm:'um',sH:'h'}[e.target.id];if(m)S[m]=e.target.checked}}
+function sUpd(){const T=tri(),U=SU(),k=U.k,u=' '+U.u,L=v=>F(v*k,2),G1=v=>F(v/DEG,1)+'°';
+  if(!T.ok){setHTML('sV','<span>Kein Dreieck</span><b>–</b>');setHTML('sW','Ziehe eine Ecke von der Geraden weg.');['sSin','sCos','sA','sFl'].forEach(i=>setHTML(i,'–'));return}
+  setHTML('sV',`<span class="s">a</span><b>${L(T.a)+u}</b><span class="c">b</span><b>${L(T.b)+u}</b><span class="t">c</span><b>${L(T.c)+u}</b><span class="s">α</span><b>${G1(T.al)}</b><span class="c">β</span><b>${G1(T.be)}</b><span class="t">γ</span><b>${G1(T.ga)}</b>`);
+  setHTML('sW',`α + β + γ = ${G1(T.al)} + ${G1(T.be)} + ${G1(T.ga)} = 180°`);
+  if($('#sSin')){let h=`<span class="s">a : sin α</span> = ${L(T.a)} : ${F(Math.sin(T.al),3)} = ${F(T.a*k/Math.sin(T.al),2)}<br><span class="c">b : sin β</span> = ${L(T.b)} : ${F(Math.sin(T.be),3)} = ${F(T.b*k/Math.sin(T.be),2)}<br><span class="t">c : sin γ</span> = ${L(T.c)} : ${F(Math.sin(T.ga),3)} = ${F(T.c*k/Math.sin(T.ga),2)}`;
+    if(lvlShow(3))h+=`<br>Durchmesser des Umkreises: 2r = ${F(2*T.r*k,2)}`;setHTML('sSin',h)}
+  if($('#sCos')){const cg=Math.cos(T.ga);let h=`c² = a² + b² − 2ab · cos γ<br>${F((T.c*k)**2,2)} = ${F((T.a*k)**2,2)} + ${F((T.b*k)**2,2)} − 2 · ${L(T.a)} · ${L(T.b)} · ${F(cg,3)}<br>`;
+    h+=Math.abs(cg)<.004?'γ = 90°: cos γ = 0, es bleibt der Satz des Pythagoras.':cg<0?'γ ist stumpf: cos γ < 0, also ist c² größer als a² + b².':'γ ist spitz: cos γ > 0, also ist c² kleiner als a² + b².';
+    if(lvlShow(3))h+=`<br>Umgekehrt: cos γ = (a² + b² − c²) : (2ab) → γ = ${G1(T.ga)}`;setHTML('sCos',h)}
+  let h=`A = c · h<sub>c</sub> : 2 = ${L(T.c)} · ${L(T.hc)} : 2 = ${F(T.area*k*k,2)} ${U.u}²`;if(lvlShow(2))h+=`<br>A = ½ · a · b · sin γ = ½ · ${L(T.a)} · ${L(T.b)} · ${F(Math.sin(T.ga),3)} = ${F(.5*T.a*T.b*Math.sin(T.ga)*k*k,2)} ${U.u}²`;setHTML('sA',h);
+  if($('#sFl')){const b=T.c*Math.sin(T.be)/Math.sin(T.ga);setHTML('sFl',`Gemessen: c = ${L(T.c)} m, α = ${G1(T.al)}, β = ${G1(T.be)}<br>γ = 180° − α − β = ${G1(T.ga)}<br>b = c · sin β : sin γ = ${F(b*k,2)} m<br>Abstand h = b · sin α = ${F(b*Math.sin(T.al)*k,2)} m`)}}
+MODES.saetze={enter(){if(!S.init){S.init=true;sLoad(0)}else{sTools();sPanel();renderLib('Versuche: Sinus- und Kosinussatz',SP,S.pi,sLoad)}},panel:sPanel,
+  frame(){},draw:sDraw,upd:sUpd,down:sDown,move:sMove,up(){S.drag=-1},key(){return false}};
+
+/* =====================================================================
+   Start, Umschalten, Schleife
+   ===================================================================== */
+function fit(){const r=$('#cvw').getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1);CW=Math.max(50,r.width);CH=Math.max(50,r.height);cv.width=Math.round(CW*d);cv.height=Math.round(CH*d);ctx.setTransform(d,0,0,d,0,0)}
+const ro=new ResizeObserver(()=>fit());ro.observe($('#cvw'));
+const thObs=new MutationObserver(()=>readCols());thObs.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',readCols)}catch(e){}
+function setMode(m){if(!MODES[m])m='kreis';if(m===APP.mode)return;APP.mode=m;
+  $$('.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.mode===m)));MODES[m].enter();MODES[m].upd()}
+function setLvl(l){APP.lvl=l;try{localStorage.setItem('trig-lvl',String(l))}catch(e){}$$('.lvl button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.lvl===l)));MODES[APP.mode].panel();MODES[APP.mode].upd()}
+$$('.tabs button').forEach(b=>b.onclick=()=>{location.hash=b.dataset.mode;setMode(b.dataset.mode)});
+$$('.lvl button').forEach(b=>b.onclick=()=>setLvl(+b.dataset.lvl));
+addEventListener('hashchange',()=>setMode(location.hash.slice(1)));
+$('#bFull').onclick=()=>{const d=document;try{if(d.fullscreenElement)d.exitFullscreen();else d.documentElement.requestFullscreen().catch(()=>{})}catch(e){}};
+const pos=e=>{const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top]};
+cv.addEventListener('pointerdown',e=>{try{cv.setPointerCapture(e.pointerId)}catch(_){}MODES[APP.mode].down(...pos(e))});
+cv.addEventListener('pointermove',e=>MODES[APP.mode].move(...pos(e)));
+const up=()=>MODES[APP.mode].up();cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;const M=MODES[APP.mode];
+  if(e.key===' '&&e.target.tagName==='BUTTON')return;if(e.key===' '||e.key==='ArrowLeft'||e.key==='ArrowRight'){if(M.key(e.key,e.shiftKey))e.preventDefault()}});
+let lv=2;try{lv=+localStorage.getItem('trig-lvl')||2}catch(e){}APP.lvl=clamp(lv,1,3);$$('.lvl button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.lvl===APP.lvl)));
+readCols();fit();setMode(location.hash.slice(1)||'kreis');
+let last=performance.now();
+function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;APP.frame++;const M=MODES[APP.mode];try{M.frame(dt);M.draw();if(APP.frame%6===0)M.upd()}catch(err){console.error(err)}requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>

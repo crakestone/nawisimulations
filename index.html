@@ -154,7 +154,8 @@ const TOPICS = [
   { id:'akustik',    subject:'physik', name:'Schwingungen & Akustik',  color:'#df4329' },
   { id:'waerme',     subject:'physik', name:'Wärmelehre',              color:'#c2410c' },
   { id:'stoffwechsel', subject:'biologie', name:'Stoffwechsel & Enzyme', color:'#16a34a' },
-  { id:'zelle', subject:'biologie', name:'Zelle & Vererbung', color:'#db2777' }
+  { id:'zelle', subject:'biologie', name:'Zelle & Vererbung', color:'#db2777' },
+  { id:'trigo', subject:'mathematik', name:'Trigonometrie', color:'#8b5cf6' }
 ];
 /* Liste der Simulationen – neue Simulationen hier eintragen.
    subject = Fach (Pflicht), topic = Themengebiet innerhalb des Fachs (optional). */
@@ -190,6 +191,14 @@ const SIMS = [
     text:'Photoeffekt, Spektren, Doppelspalt mit einzelnen Photonen und Elektronen sowie ein Interferometer mit Quantenradierer.',
     tags:['Photoeffekt','Spektrallinien','Zeigermodell','Mach-Zehnder','3 Niveaustufen'],
     thumb:'quant'
+  },
+  {
+    subject:'physik', topic:'quanten',
+    title:'Schrödinger-Labor',
+    file:'Quantenphysik/Schroedingerlabor.html',
+    text:'Lösungen der Schrödinger-Gleichung: Teilchen im Kasten, Schießverfahren, eigene Potentiale, Wellenpaket mit Tunneln, Überlagerung, Kristall, Orbitale in 3D und Stern-Gerlach.',
+    tags:['Wellenfunktion','Energieniveaus','Tunneleffekt','Orbitale','Spin','3 Niveaustufen'],
+    thumb:'schroed'
   },
   {
     subject:'physik', topic:'halbleiter',
@@ -310,11 +319,51 @@ const SIMS = [
     text:'Mendels Erbsen nachzüchten, Kreuzungsschemata selbst ausfüllen, Zufall und Chi-Quadrat, eigene Fantasiewesen züchten, Detektiv-Rätsel und Stammbäume deuten.',
     tags:['Mendelsche Regeln','Kreuzungsschema','Blutgruppen','Zuchtauftrag','Stammbaum','3 Niveaustufen'],
     thumb:'erbe'
+  },
+  {
+    subject:'mathematik', topic:'trigo',
+    title:'Trigonometrielabor',
+    file:'Mathematik/Trigonometrielabor.html',
+    text:'Einheitskreis, Sinus, Kosinus und Tangens, vom Kreis zur Kurve, rechtwinkeliges Dreieck mit Sachaufgaben, Sinusfunktion mit Parametern sowie Sinus- und Kosinussatz.',
+    tags:['Einheitskreis','Bogenmaß','sin x = k','a · sin(b(x − c)) + d','Sinussatz','3 Niveaustufen'],
+    thumb:'trig'
   }
 ];
 
 /* --- Vorschaubilder als SVG --- */
 const THUMBS = {
+  schroed: (() => {
+    /* Energieniveaus im Kasten mit Wellenfunktionen ψ₁ … ψ₄ */
+    const X0 = 104, X1 = 266, lev = [150, 122, 86, 42];
+    let p = '';
+    lev.forEach((y, i) => { const n = i + 1; let d = '';
+      for (let k = 0; k <= 60; k++){ const u = k/60; d += `${k ? 'L' : 'M'}${(X0 + u*(X1 - X0)).toFixed(1)} ${(y - 11*Math.sin(n*Math.PI*u)).toFixed(1)}`; }
+      p += `<line x1="${X0}" y1="${y}" x2="${X1}" y2="${y}" stroke="#cbd5e1" stroke-dasharray="4 4"/><path d="${d}" fill="none" stroke="${['#2563eb','#7c3aed','#db2777','#ea580c'][i]}" stroke-width="3" stroke-linecap="round"/><text x="${X1 + 22}" y="${y + 4}" font-size="12" fill="#475569" font-family="system-ui">n = ${n}</text>`; });
+    return `<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice">
+      <rect width="400" height="170" fill="#f5f3ff"/>
+      <rect x="${X0 - 14}" y="4" width="14" height="162" fill="#334155"/><rect x="${X1}" y="4" width="14" height="162" fill="#334155"/>
+      ${p}
+    </svg>`;
+  })(),
+  trig: (() => {
+    /* Einheitskreis, der sich zur Sinuskurve abwickelt */
+    const cx = 98, cy = 92, R = 50, a = 0.85, px = cx + R*Math.cos(a), py = cy - R*Math.sin(a);
+    let d = '';
+    for (let k = 0; k <= 80; k++){ const t = k/80*2*Math.PI; d += `${k ? 'L' : 'M'}${(176 + t*30).toFixed(1)} ${(cy - R*Math.sin(t)).toFixed(1)}`; }
+    const gx = 176 + a*30;
+    return `<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice">
+      <rect width="400" height="170" fill="#faf5ff"/>
+      <line x1="16" y1="${cy}" x2="392" y2="${cy}" stroke="#94a3b8"/><line x1="${cx}" y1="24" x2="${cx}" y2="152" stroke="#94a3b8"/><line x1="176" y1="24" x2="176" y2="152" stroke="#94a3b8"/>
+      <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#1e293b" stroke-width="2.5"/>
+      <path d="${d}" fill="none" stroke="#df4329" stroke-width="3.5" stroke-linecap="round" opacity=".9"/>
+      <path d="M${cx + 16} ${cy} A16 16 0 0 0 ${(cx + 16*Math.cos(a)).toFixed(1)} ${(cy - 16*Math.sin(a)).toFixed(1)}" fill="none" stroke="#c27a0e" stroke-width="2.5"/>
+      <line x1="${cx}" y1="${cy}" x2="${px.toFixed(1)}" y2="${cy}" stroke="#2762c9" stroke-width="5" stroke-linecap="round"/>
+      <line x1="${px.toFixed(1)}" y1="${cy}" x2="${px.toFixed(1)}" y2="${py.toFixed(1)}" stroke="#df4329" stroke-width="5" stroke-linecap="round"/>
+      <line x1="${cx}" y1="${cy}" x2="${px.toFixed(1)}" y2="${py.toFixed(1)}" stroke="#1e293b" stroke-width="2.5"/>
+      <line x1="${px.toFixed(1)}" y1="${py.toFixed(1)}" x2="${gx.toFixed(1)}" y2="${py.toFixed(1)}" stroke="#df4329" stroke-dasharray="5 4" stroke-width="1.6"/>
+      <circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="5.5" fill="#1e293b"/><circle cx="${gx.toFixed(1)}" cy="${py.toFixed(1)}" r="5" fill="#df4329"/>
+    </svg>`;
+  })(),
   erbe: `<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice">
       <rect width="400" height="170" fill="#f4effb"/>
       <g transform="translate(70,70)"><g fill="#8a4fc0"><ellipse cx="0" cy="-14" rx="12" ry="9"/><ellipse cx="13" cy="-3" rx="12" ry="9"/><ellipse cx="8" cy="12" rx="12" ry="9"/><ellipse cx="-8" cy="12" rx="12" ry="9"/><ellipse cx="-13" cy="-3" rx="12" ry="9"/></g><circle r="5" fill="#f3c94a"/><path d="M0 18 L0 60" stroke="#4f9a3c" stroke-width="4"/></g>

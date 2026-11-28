@@ -28,6 +28,7 @@ Schlagwörter. Ist nicht klar, in welches Fach eine neue Simulation gehört: nac
 | `Bandstruktur/` | `Bandstrukturlabor.html` | Freies Elektron, reziproker Raum und Brillouin-Zonen, Kronig-Penney, Bragg-Reflexion, Tight-Binding, Bänder füllen, Si und GaAs |
 | `Halbleiter/` | `Halbleiterlabor.html` | Bändermodell, Dotierung, innerer und äußerer Photoeffekt, pn-Übergang, Solarzelle, LED |
 | `Quantenphysik/` | `Quantenlabor.html` | Photoeffekt, Spektren, Doppelspalt mit Einzelobjekten (mit Zeigermodell) und Mach-Zehnder-Interferometer mit Quantenradierer |
+| `Quantenphysik/` | `Schroedingerlabor.html` | Lösungen der Schrödinger-Gleichung: Kasten (Messungen, Farbstoffe, Unschärfe), Schießverfahren, Potential-Baukasten, Wellenpaket (Tunneln, Resonanz), Überlagerung, Kristall (Bänder), 2D-Kasten und Wasserstoff-Orbitale in 3D, Stern-Gerlach |
 | `Schall/` | `Schalllabor.html` | Schallwelle im Rohr (Teilchen, Druck, λ), 2D-Raum mit Reflexion, Absorption, Echo, Echolot, Beugung, Interferenz, Doppler; Nachhall nach Sabine mit Hörbeispielen |
 | `Klang/` | `Klanglabor.html` | Saite (Monochord, Flageolett), Pfeife (offen/gedackt, Panflöte), Klangfarbe aus Teiltönen, Schwebung & Intervalle, Resonanz (Weinglas), Spektrum und Stimmgerät |
 | `Wärme/` | `Waermetransportlabor.html` | Drei Wege der Wärme (Lagerfeuer, Quiz), Teilchen & Temperatur (Mischtemperatur), Wärmeleitung (Wachskugeln, Metall oder Holz anfassen), Wärmeströmung (2D-Strömung: Kochtopf, Zimmer, Kerze, Land-Seewind, Kühlschrank, See im Winter), Wärmestrahlung (Wärmebild, Planck-Spektrum), Absorption/Reflexion/Transmission (Dosen unter der Lampe, Glashaube), Treibhauseffekt, Thermoskanne und Hauswand |
@@ -41,6 +42,7 @@ Schlagwörter. Ist nicht klar, in welches Fach eine neue Simulation gehört: nac
 | `Stoffwechsel/` | `Stoffwechsellabor.html` | **Biologie:** Photosynthese im Chloroplasten (Lichtreaktion, Calvin-Zyklus, ¹⁸O-Markierung), Wasserpest-Versuch (begrenzende Faktoren), Engelmann-Versuch mit Absorptions- und Wirkungsspektrum, Zellatmung als Wasserkraftwerk (Gärung, Cyanid, Entkoppler), Hefe-Ballon-Versuch, Glasglocke nach Priestley |
 | `Zellteilung/` | `Zellteilungslabor.html` | **Biologie:** Mitose und Meiose Schritt für Schritt (auch selbst ordnen und trennen), Vergleich, Vielfalt der Keimzellen und Geschwister, Nondisjunktion und Karyogramm-Rätsel, Zwiebelwurzelspitze mit Mitoseindex |
 | `Vererbung/` | `Vererbungslabor.html` | **Biologie:** Erbsengarten (P, F1, F2, Rückkreuzung, Klassenstatistik), Kreuzungsschema zum Selbstausfüllen (ein/zwei Merkmale, Blutgruppen), Zufall und Chi-Quadrat, Fantasiewesen züchten mit Zuchtauftrag und Testkreuzung, Detektiv-Rätsel, Stammbaumanalyse |
+| `Mathematik/` | `Trigonometrielabor.html` | **Mathematik:** Einheitskreis (sin, cos, tan, Vorzeichen, Symmetrien, Bogenmaß, exakte Werte), vom Kreis zur Kurve (Gleichungen sin x = k), rechtwinkeliges Dreieck mit Sachaufgaben und Aufgabengenerator, Sinusfunktion a · sin(b(x − c)) + d mit Rätsel und Ton, Sinus- und Kosinussatz mit Vermessung |
 
 ## Stoßprozesse – Stoss-Simulation.html
 
@@ -418,4 +420,36 @@ Modelle: Photosynthese mit Pools für ATP und NADPH (Lichtreaktion 3 ATP + 2 NAD
 - **Wesen züchten:** „Flauschis“ mit drei Genen (Fellfarbe, Hörner, Schwanz); Dominanz je Gen tauschen oder auf intermediär stellen; Eltern wählen, 4–32 Nachkommen, Nachkommen als neue Eltern, Testkreuzung, Zuchtauftrag (reinerbiges Wesen mit Zielaussehen).
 - **Detektiv:** Eltern und 40 Nachkommen sichtbar, Genotypen gesucht; ein oder zwei Gene; Prüfung über die erwarteten Verhältnisse.
 - **Stammbaum:** zufällig erzeugte, eindeutige Stammbäume (autosomal-dominant, autosomal-rezessiv, X-chromosomal-rezessiv) über drei Generationen; Antwort mit Begründung; ab *Mittel* Genotypen und Überträger:innen.
+
+## Quantenphysik – Schroedingerlabor.html
+
+Acht Stationen (auch direkt über `#kasten`, `#schiessen`, `#baukasten`, `#paket`, `#ueberlagerung`, `#kristall`, `#atom`, `#spin`),
+jeweils mit Aufträgen, Erklärungen, drei Niveaustufen und CSV-Export (Strichpunkt, Dezimalkomma):
+
+- **Kasten:** unendlich oder endlich tief, ψ und |ψ|² auf den Energieniveaus, Ortsmessungen mit Histogramm, klassischer Vergleich,
+  Elektronen einfüllen (Farbstoffmoleküle), Photon beim Übergang, Unschärfe, Eindringtiefe.
+- **Schießverfahren:** Numerov-Integration, ψ explodiert außer bei Eigenwerten, Eigenwertsuche per Bisektion.
+- **Potential-Baukasten:** Oszillator, Doppelmulde, Morse, endlicher Topf oder selbst gemaltes Potential; Erwartungswerte, Virialsatz.
+- **Wellenpaket:** Zerfließen, Tunneln, Stufe, Doppelbarriere (Resonanz), Bragg-Reflexion, kohärenter Zustand; Ortsmessung mit Kollaps, T(E).
+- **Überlagerung:** bis zu sechs Zustände, Wiederkehr, Quantenteppich.
+- **Kristall:** Kette aus 1–12 Töpfen, Aufspaltung in Bänder, Störstelle, E(k).
+- **2D & Atom:** 2D-Kasten mit Knotenlinien; Wasserstoff-Orbitale bis n = 4 als Schnitt und als drehbare 3D-Punktwolke.
+- **Spin:** Stern-Gerlach mit bis zu drei Magneten, P = cos²(Δθ/2).
+
+Modell: Einheiten nm, eV, fs (ħ²/2mₑ = 0,0381 eV·nm²); Eigenzustände über finite Differenzen, Zeitentwicklung mit Crank-Nicolson.
+
+## Mathematik – Trigonometrielabor.html
+
+Fünf Stationen (auch direkt über `#kreis`, `#kurve`, `#dreieck`, `#funktion`, `#saetze`), drei Niveaustufen.
+Gleiche Farben überall: Sinus rot, Kosinus blau, Tangens violett, Winkel orange.
+
+- **Einheitskreis:** Punkt P ziehen, sin und cos als Strecken, tan auf der Tangente, Vorzeichen in den Quadranten, Symmetrien
+  (180° − α, 360° − α, 180° + α), Bogenlänge, exakte Werte; Aufgaben „finde α mit sin α = … und cos α < 0“.
+- **Vom Kreis zur Kurve:** Kreis und Graph im selben Maßstab, sin, cos, tan, Grad oder Bogenmaß, Nullstellen, Extrema, Periode,
+  Polstellen; Gleichungen sin x = k und cos x = k mit allen Lösungen.
+- **Rechtwinkeliges Dreieck:** Gegenkathete, Ankathete, Hypotenuse für α oder β, ähnliche Dreiecke, Leiter, Straßensteigung,
+  Baumhöhe; Aufgabengenerator mit Prüfen, Tipp und Lösungsweg.
+- **Sinusfunktion:** f(x) = a · sin(b · (x − c)) + d mit Hilfslinien, Eigenschaften, Ton (220 Hz · b) und Rätsel „Graph nachbauen“.
+- **Sinus- und Kosinussatz:** Dreieck mit ziehbaren Ecken, Winkelsumme, Sinussatz mit Umkreis, Kosinussatz, Flächenformeln,
+  Vermessung einer Flussbreite.
 

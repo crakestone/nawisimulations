@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Schrödinger-Labor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE school lab for quantum mechanics, legible on a projector, rigorous enough for first-year students
+   IDEA a physics bench where wave functions are drawn on their energy levels, like the figures in a textbook, but alive
+   PICTURE the live canvas: potentials, energy levels, ψ and |ψ|², wave packets, orbitals
+   COLOUR white ground, dark ink, blue for Re ψ, red for Im ψ, violet for |ψ|², amber for energies (same family as the other labs)
+   TYPE Atkinson Hyperlegible
+   LAYOUT laptop: tasks | stage | panel; phone: stage, panel, tasks */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#10161b);--ink:light-dark(#14212b,#e6ecf1);--mut:light-dark(#5a6772,#9babb7);--line:light-dark(#dde3e8,#29343d);--pan:light-dark(#f2f5f7,#18212a);--red:light-dark(#df4329,#ff6b4f);--blue:light-dark(#2762c9,#6198ff);--vio:light-dark(#7b3cc4,#bb90ff);--fld:light-dark(#ffffff,#0c1115);--ok:light-dark(#1f7a4d,#53c98a);--amb:light-dark(#c47a00,#f0b24a);--pot:light-dark(#e9edf1,#1f2a33)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 "Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:clip}
+button,select,input{font:inherit;color:inherit}
+#app{display:grid;grid-template-rows:auto minmax(0,1fr);height:100%}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand svg{flex:none}
+h1{font-size:26px;line-height:1.05;margin:0;letter-spacing:-.02em}
+h1 a{color:inherit;text-decoration:none}
+h1 a:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+.tabs{display:flex;gap:3px;background:var(--pan);padding:4px;border-radius:12px;flex-wrap:wrap}
+.tabs button{border:0;background:none;padding:8px 9px;border-radius:9px;cursor:pointer;font-weight:700;min-height:40px;font-size:14px}
+.tabs button[aria-selected=true]{background:var(--ink);color:var(--bg)}
+.btn{border:1px solid var(--line);background:var(--bg);padding:7px 12px;border-radius:9px;cursor:pointer;min-height:38px;white-space:nowrap}
+.btn:hover{border-color:var(--mut)}
+.btn[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.hot{background:var(--red);border-color:var(--red);color:#fff;font-weight:700}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.lvl{display:flex;gap:3px;background:var(--pan);padding:4px;border-radius:12px}
+.lvl button{border:0;background:none;padding:6px 9px;border-radius:8px;cursor:pointer;font-size:14px;min-height:34px}
+.lvl button[aria-pressed=true]{background:var(--bg);box-shadow:0 0 0 1px var(--line);font-weight:700}
+main{display:grid;grid-template-columns:250px minmax(0,1fr) 330px;min-height:0}
+#lib{overflow:auto;border-right:1px solid var(--line);padding:12px}
+#lib h2{font-size:13px;color:var(--mut);margin:14px 4px 6px;font-weight:700}
+#lib h2:first-child{margin-top:2px}
+.pre{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:10px;cursor:pointer;margin-bottom:2px}
+.pre b{display:block;font-size:15px}
+.pre span{display:block;font-size:13px;color:var(--mut);line-height:1.3}
+.pre:hover{background:var(--pan)}
+.pre[aria-current=true]{background:var(--pan);box-shadow:inset 3px 0 0 var(--vio)}
+#stage{display:flex;flex-direction:column;min-height:0}
+#tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line);min-height:55px}
+#tools .sep{width:1px;height:26px;background:var(--line);margin:0 4px}
+#cvw{position:relative;flex:1;min-height:320px;background:var(--fld)}
+#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+#status{font-size:13px;color:var(--mut);padding:5px 12px;border-top:1px solid var(--line);min-height:28px}
+#panel{overflow:auto;border-left:1px solid var(--line);padding:6px 14px 20px}
+.card{border-bottom:1px solid var(--line);padding:10px 0 12px}
+.card:last-child{border-bottom:0}
+.card h3{font-size:17px;margin:0 0 6px;line-height:1.2}
+.card p{margin:4px 0}
+.obs{background:var(--pan);border-radius:10px;padding:9px 11px;margin:6px 0}
+details summary{cursor:pointer;font-weight:700;margin-top:6px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;align-items:center;margin:8px 0 2px;font-size:14px}
+.row output{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--vio);height:26px;margin:0}
+.seg{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
+.seg button{flex:1 1 auto;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:6px 8px;cursor:pointer;min-height:36px;font-size:14px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chk{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px;margin:6px 0}
+.chk label{display:flex;align-items:center;gap:6px;min-height:32px;cursor:pointer}
+.chk input{width:18px;height:18px;accent-color:var(--vio)}
+select.full{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px;background:var(--bg);font-size:15px;min-height:40px}
+.kv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;font-size:14px;margin-top:6px}
+.kv b{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.formel{background:var(--pan);border-radius:10px;padding:9px 11px;font-size:15px;line-height:1.6;margin-top:6px}
+.small{font-size:13px;color:var(--mut)}
+.lab{font-size:13px;color:var(--mut);font-weight:700;margin:10px 0 0}
+.sw{display:inline-block;width:1.1em;height:1.1em;border-radius:4px;vertical-align:-.2em;border:1px solid var(--line);margin-right:4px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+#probe{display:none}
+#dlg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9;padding:16px}#dlg[hidden]{display:none}
+.dbox{background:var(--bg);border-radius:14px;padding:16px 18px;width:min(640px,100%);max-height:90vh;display:flex;flex-direction:column;gap:6px;box-shadow:0 10px 40px rgba(0,0,0,.3)}.dbox h3{margin:0;font-size:18px}
+#csvT{width:100%;min-height:240px;flex:1;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;border:1px solid var(--line);border-radius:9px;padding:8px;background:var(--pan);color:var(--ink)}
+@media(max-width:1520px){.tabs button{padding:8px 7px;font-size:13.5px}h1{font-size:23px}}
+@media(max-width:1200px){main{grid-template-columns:215px minmax(0,1fr) 300px}.tabs button{padding:8px 6px;font-size:13.5px}h1{font-size:22px}}
+@media(max-width:900px){
+  html,body,#app{height:auto}
+  main{grid-template-columns:minmax(0,1fr)}
+  #stage{order:1}
+  #cvw{flex:none;height:min(66vh,580px)}
+  #panel{order:2;border:0;border-top:1px solid var(--line);overflow:visible}
+  #lib{order:3;border:0;border-top:1px solid var(--line);overflow:visible}
+  h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div class="brand">
+    <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><path d="M3 30V6M31 30V6" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M3 28h28" stroke="currentColor" stroke-width="2" opacity=".35"/><path d="M5 24q12-26 24 0" stroke="#7b3cc4" stroke-width="2.8" fill="none" stroke-linecap="round"/><path d="M5 14q6-12 12 0t12 0" stroke="#2762c9" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".8"/></svg>
+    <h1><a href="../index.html" title="Zur Startseite">Schrödinger-Labor</a></h1>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Stationen">
+    <button role="tab" data-mode="kasten">Kasten</button>
+    <button role="tab" data-mode="schiessen">Schießverfahren</button>
+    <button role="tab" data-mode="baukasten">Potential-Baukasten</button>
+    <button role="tab" data-mode="paket">Wellenpaket</button>
+    <button role="tab" data-mode="ueberlagerung">Überlagerung</button>
+    <button role="tab" data-mode="kristall">Kristall</button>
+    <button role="tab" data-mode="atom">2D & Atom</button>
+    <button role="tab" data-mode="spin">Spin</button>
+  </nav>
+  <div class="lvl" role="group" aria-label="Niveau"><button data-lvl="1">Einfach</button><button data-lvl="2">Mittel</button><button data-lvl="3">Anspruchsvoll</button></div>
+  <button class="btn" id="bCsv" title="Messwerte als CSV">CSV</button>
+  <button class="btn" id="bFull" title="Vollbild" aria-label="Vollbild">⛶</button>
+</header>
+<main>
+  <aside id="lib" aria-label="Aufträge"></aside>
+  <section id="stage">
+    <div id="tools"></div>
+    <div id="cvw"><canvas id="cv" aria-label="Simulation"></canvas></div>
+    <div id="status"></div>
+  </section>
+  <aside id="panel" aria-label="Einstellungen"></aside>
+</main>
+</div>
+<div id="probe"></div>
+<div id="dlg" hidden><div class="dbox" role="dialog" aria-modal="true" aria-labelledby="dlgT"><h3 id="dlgT">Messwerte als CSV</h3><p class="small">Trennzeichen Strichpunkt, Dezimalkomma – passt direkt für Excel (de-AT). Für GeoGebra „Kopieren“ und in die Tabelle einfügen.</p><textarea id="csvT" readonly spellcheck="false"></textarea><div class="seg"><button class="btn hot" id="cCopy">Kopieren</button><button class="btn" id="cDown">Herunterladen</button><button class="btn" id="cClose">Schließen</button></div><p class="small" id="cMsg"></p></div></div>
+<script>
+{
+/* ---------- Numerik-Kern (Einheiten: nm, eV, fs, Masse in m_e) ---------- */
+const HB=0.6582119569, C0=0.0380998212, HC=1239.84198; // ħ in eV·fs, ħ²/2mₑ in eV·nm², h·c in eV·nm
+/* Tridiagonale Matrix H = −c∂² + V auf Gitter (Dirichlet). Eigenwerte per Sturm-Bisektion, Vektoren per inverser Iteration */
+function eigTri(V,dx,c,k){
+  const N=V.length,o=-c/(dx*dx),d=new Float64Array(N);let lo=Infinity,hi=-Infinity;
+  for(let i=0;i<N;i++){d[i]=2*c/(dx*dx)+V[i];if(V[i]<lo)lo=V[i];if(d[i]-2*o>hi)hi=d[i]-2*o}
+  const e2=o*o;
+  const cnt=x=>{let q=d[0]-x,n=q<0?1:0;for(let i=1;i<N;i++){q=d[i]-x-e2/(q===0?1e-300:q);if(q<0)n++}return n};
+  const E=[],P=[];k=Math.min(k,N);let a0=lo;
+  for(let j=0;j<k;j++){let a=a0,b=hi;
+    for(let it=0;it<64&&b-a>1e-13*(1+Math.abs(a));it++){const m=(a+b)/2;if(cnt(m)>j)b=m;else a=m}
+    const lam=(a+b)/2;E.push(lam);a0=a}
+  for(const lam of E)P.push(invIt(d,o,lam,dx));
+  return {E,P};
+}
+function thomasR(d,o,s,b){const N=d.length,cp=new Float64Array(N),x=new Float64Array(N);
+  let den=d[0]-s;if(Math.abs(den)<1e-300)den=1e-300;cp[0]=o/den;x[0]=b[0]/den;
+  for(let i=1;i<N;i++){den=d[i]-s-o*cp[i-1];if(Math.abs(den)<1e-300)den=1e-300;cp[i]=o/den;x[i]=(b[i]-o*x[i-1])/den}
+  for(let i=N-2;i>=0;i--)x[i]-=cp[i]*x[i+1];return x}
+function invIt(d,o,lam,dx){const N=d.length;let x=new Float64Array(N);for(let i=0;i<N;i++)x[i]=1+.5*Math.sin(i*1.7)+.3*Math.cos(i*.37);
+  for(let it=0;it<4;it++){x=thomasR(d,o,lam,x);let s=0;for(let i=0;i<N;i++)s+=x[i]*x[i];s=Math.sqrt(s*dx)||1;for(let i=0;i<N;i++)x[i]/=s}
+  let mx=0;for(let i=0;i<N;i++)mx=Math.max(mx,Math.abs(x[i]));
+  for(let i=0;i<N;i++)if(Math.abs(x[i])>.05*mx){if(x[i]<0)for(let j=0;j<N;j++)x[j]=-x[j];break}
+  return x}
+/* Numerov-Integration von links: ψ'' = −(E−V)/c · ψ, ψ(0)=0 */
+function numerov(V,dx,c,E,out){const N=V.length,h=dx*dx/12;out=out||new Float64Array(N);
+  const k2=i=>(E-V[i])/c;out[0]=0;out[1]=1e-4;
+  for(let i=1;i<N-1;i++){out[i+1]=(2*(1-5*h*k2(i))*out[i]-(1+h*k2(i-1))*out[i-1])/(1+h*k2(i+1));
+    if(!Number.isFinite(out[i+1])||Math.abs(out[i+1])>1e250){for(let j=i+1;j<N;j++)out[j]=Math.sign(out[i])*1e250;break}}
+  return out}
+/* Crank-Nicolson-Zeitschritt, komplex. Potential V, Absorber W (≥0). */
+function makeCN(V,W,dx,c,dt){
+  const N=V.length,al=dt/(2*HB),be=al*c/(dx*dx);
+  // A = 1 + iα(H − iW): diag ar+i·ai, off = −iβ
+  const cpr=new Float64Array(N),cpi=new Float64Array(N),idr=new Float64Array(N),idi=new Float64Array(N);
+  const br=new Float64Array(N),bi=new Float64Array(N);
+  let pr=0,pi=0;
+  for(let i=0;i<N;i++){
+    const ar=1+al*W[i],ai=al*(2*c/(dx*dx)+V[i]);
+    br[i]=1-al*W[i];bi[i]=-ai;
+    // den = a − o·cp(i−1),  o = −iβ  → o·cp = −iβ(pr+i pi) = β·pi − iβ·pr
+    let dr=ar,di=ai;if(i>0){dr-=be*pi;di+=be*pr}
+    const m=dr*dr+di*di;idr[i]=dr/m;idi[i]=-di/m;
+    // cp = o/den = −iβ·(idr+i·idi) = β·idi − iβ·idr
+    pr=be*idi[i];pi=-be*idr[i];cpr[i]=pr;cpi[i]=pi}
+  const rr=new Float64Array(N),ri=new Float64Array(N);
+  return function step(re,im){
+    // r = Bψ, B off = +iβ
+    for(let i=0;i<N;i++){let xr=br[i]*re[i]-bi[i]*im[i],xi=br[i]*im[i]+bi[i]*re[i];
+      const sr=(i>0?re[i-1]:0)+(i<N-1?re[i+1]:0),si=(i>0?im[i-1]:0)+(i<N-1?im[i+1]:0);
+      xr+=-be*si;xi+=be*sr;rr[i]=xr;ri[i]=xi}
+    // Vorwärts: y_i = (r_i − o·y_{i−1})/den ; o·y = −iβ(yr+i yi) = β·yi − iβ·yr
+    let yr=0,yi=0;
+    for(let i=0;i<N;i++){let tr=rr[i],ti=ri[i];if(i>0){tr-=be*yi;ti+=be*yr}
+      yr=tr*idr[i]-ti*idi[i];yi=tr*idi[i]+ti*idr[i];re[i]=yr;im[i]=yi}
+    for(let i=N-2;i>=0;i--){const xr=re[i+1],xi=im[i+1];re[i]-=cpr[i]*xr-cpi[i]*xi;im[i]-=cpr[i]*xi+cpi[i]*xr}
+  }}
+/* harmonischer Oszillator: normierte Funktionen φ_n(x), x0 = √(2c/ħω) */
+function hoFuncs(nmax,xs,x0){const out=[];for(let n=0;n<=nmax;n++)out.push(new Float64Array(xs.length));
+  const nf=1/Math.sqrt(x0)/Math.PI**.25;
+  xs.forEach((x,j)=>{const q=x/x0;let p0=nf*Math.exp(-q*q/2),p1=Math.SQRT2*q*p0;out[0][j]=p0;if(nmax>0)out[1][j]=p1;
+    for(let n=2;n<=nmax;n++){const p2=Math.sqrt(2/n)*q*p1-Math.sqrt((n-1)/n)*p0;out[n][j]=p2;p0=p1;p1=p2}});return out}
+/* Wasserstoff (r in a₀) */
+function fact(n){let f=1;for(let i=2;i<=n;i++)f*=i;return f}
+function Rnl(n,l,r){const x=2*r/n,a=2*l+1,k=n-l-1;let L0=1,L1=1+a-x,L=k===0?1:L1;
+  for(let j=1;j<k;j++){const L2=((2*j+1+a-x)*L1-(j+a)*L0)/(j+1);L0=L1;L1=L2;L=L2}
+  const N=Math.sqrt((2/n)**3*fact(k)/(2*n*fact(n+l)));return N*x**l*Math.exp(-x/2)*L}
+function Plm(l,m,x){let pmm=1;const s=Math.sqrt(Math.max(0,1-x*x));for(let i=1;i<=m;i++)pmm*=-(2*i-1)*s;if(l===m)return pmm;
+  let p1=x*(2*m+1)*pmm;if(l===m+1)return p1;let p2=0;for(let ll=m+2;ll<=l;ll++){p2=((2*ll-1)*x*p1-(ll+m-1)*pmm)/(ll-m);pmm=p1;p1=p2}return p2}
+function Ylm(l,m,ct,ph){const am=Math.abs(m),K=Math.sqrt((2*l+1)/(4*Math.PI)*fact(l-am)/fact(l+am)),P=Plm(l,am,ct);
+  return m===0?K*P:m>0?Math.SQRT2*K*P*Math.cos(am*ph):Math.SQRT2*K*P*Math.sin(am*ph)}
+/* Transmission einer Rechteckbarriere (analytisch) */
+function Tbar(E,V0,a,c){if(E<=0)return 0;const k=Math.sqrt(E/c);
+  if(Math.abs(E-V0)<1e-9)E+=1e-9;
+  if(E<V0){const q=Math.sqrt((V0-E)/c),s=Math.sinh(q*a);return 1/(1+V0*V0*s*s/(4*E*(V0-E)))}
+  const q=Math.sqrt((E-V0)/c),s=Math.sin(q*a);return 1/(1+V0*V0*s*s/(4*E*(E-V0)))}
+/* ---------- Grundgerüst ---------- */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const cv=$('#cv'),ctx=cv.getContext('2d');
+let CW=1,CH=1;
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const fmt=(v,d=0)=>Number.isFinite(v)?v.toLocaleString('de-AT',{minimumFractionDigits:d,maximumFractionDigits:d}):'–';
+const fmtS=(v,s=3)=>{if(!Number.isFinite(v))return '–';if(v===0)return '0';const d=Math.max(0,s-1-Math.floor(Math.log10(Math.abs(v))));return fmt(v,Math.min(d,6))};
+const nice=x=>{const p=10**Math.floor(Math.log10(x)),m=x/p;return (m<1.5?1:m<3.5?2:m<7.5?5:10)*p};
+const FONT='"Atkinson Hyperlegible",system-ui,sans-serif';
+const MODES={},APP={mode:'',lvl:2,run:true};
+const TAU=Math.PI*2;
+const lvl=n=>APP.lvl>=n;
+const C={};
+const rgb=s=>{const m=s.match(/[\d.]+/g)||[0,0,0];return [+m[0],+m[1],+m[2]]};
+const cs=(k,a)=>a==null?`rgb(${C[k].join(',')})`:`rgba(${C[k].join(',')},${a})`;
+function readCols(){const pr=$('#probe');for(const k of ['bg','ink','mut','line','pan','red','blue','vio','fld','ok','amb','pot']){pr.style.color=`var(--${k})`;C[k]=rgb(getComputedStyle(pr).color)}}
+function txt(s,x,y,col,al='left',size=13,bold=false,base='alphabetic'){ctx.font=`${bold?'700 ':''}${size}px ${FONT}`;ctx.textAlign=al;ctx.textBaseline=base;ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle=cs('fld',.9);ctx.strokeText(s,x,y);ctx.fillStyle=col;ctx.fillText(s,x,y);ctx.textBaseline='alphabetic'}
+function line(x1,y1,x2,y2,col,w=1,dash){ctx.strokeStyle=col;ctx.lineWidth=w;if(dash)ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();if(dash)ctx.setLineDash([])}
+function arrow(x1,y1,x2,y2,col,w=2){line(x1,y1,x2,y2,col,w);const a=Math.atan2(y2-y1,x2-x1),h=8;ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-h*Math.cos(a-.4),y2-h*Math.sin(a-.4));ctx.lineTo(x2-h*Math.cos(a+.4),y2-h*Math.sin(a+.4));ctx.fill()}
+/* Koordinatenrahmen */
+function frame(x,y,w,h,xa,xb,ya,yb){return {x,y,w,h,xa,xb,ya,yb,X:v=>x+(v-xa)/(xb-xa)*w,Y:v=>y+h-(v-ya)/(yb-ya)*h,iX:p=>xa+(p-x)/w*(xb-xa),iY:p=>ya+(y+h-p)/h*(yb-ya)}}
+function axes(F,o={}){
+  const xs=nice((F.xb-F.xa)/Math.max(2,F.w/90)),ys=nice((F.yb-F.ya)/Math.max(2,F.h/55)),dec=s=>Math.max(0,-Math.floor(Math.log10(s)+1e-9));
+  ctx.save();ctx.beginPath();ctx.rect(F.x,F.y,F.w,F.h);ctx.clip();
+  if(o.grid!==false){for(let v=Math.ceil(F.ya/ys)*ys;v<=F.yb+1e-9;v+=ys)line(F.x,F.Y(v),F.x+F.w,F.Y(v),cs('line',.55))}
+  ctx.restore();
+  line(F.x,F.y+F.h,F.x+F.w,F.y+F.h,cs('mut'));line(F.x,F.y,F.x,F.y+F.h,cs('mut'));
+  if(o.noX!==true)for(let v=Math.ceil(F.xa/xs)*xs;v<=F.xb+1e-9;v+=xs){const X=F.X(v);line(X,F.y+F.h,X,F.y+F.h+4,cs('mut'));if(F.w>200||Math.round(v/xs)%2===0)txt(fmt(Math.abs(v)<1e-12?0:v,dec(xs)),X,F.y+F.h+16,cs('mut'),'center',12)}
+  if(o.noY!==true)for(let v=Math.ceil(F.ya/ys)*ys;v<=F.yb+1e-9;v+=ys){const Y=F.Y(v);line(F.x-4,Y,F.x,Y,cs('mut'));txt(fmt(Math.abs(v)<1e-12?0:v,dec(ys)),F.x-7,Y+4,cs('mut'),'right',12)}
+  if(o.xl)txt(o.xl,F.x+F.w,F.y+F.h+31,cs('mut'),'right',12,true);
+  if(o.yl)txt(o.yl,F.x+4,F.y-8,cs('mut'),'left',12,true);
+}
+function clipF(F){ctx.save();ctx.beginPath();ctx.rect(F.x,F.y-2,F.w,F.h+4);ctx.clip()}
+/* Kurve aus Gitterwerten; yfn(i) liefert Pixel-y */
+function path(n,xfn,yfn){ctx.beginPath();for(let i=0;i<n;i++){const X=xfn(i),Y=yfn(i);i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)}}
+function curve(n,xfn,yfn,col,w=2){path(n,xfn,yfn);ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineJoin='round';ctx.stroke()}
+function fillC(n,xfn,yfn,base,col){path(n,xfn,yfn);ctx.lineTo(xfn(n-1),base);ctx.lineTo(xfn(0),base);ctx.closePath();ctx.fillStyle=col;ctx.fill()}
+/* Potential zeichnen (gefüllt bis oben) */
+function drawPot(F,n,xfn,V,cut){ctx.save();clipF(F);const bot=F.y+F.h+10,top=F.y-20,yv=i=>clamp(F.Y(Math.min(V[i],cut??1e9)),top,bot);
+  ctx.beginPath();ctx.moveTo(xfn(0),bot);for(let i=0;i<n;i++)ctx.lineTo(xfn(i),yv(i));ctx.lineTo(xfn(n-1),bot);ctx.closePath();ctx.fillStyle=cs('pot');ctx.fill();
+  curve(n,xfn,yv,cs('ink',.75),2);ctx.restore()}
+/* Wellenlänge → Farbe */
+function wlRGB(l){let r=0,g=0,b=0;if(l>=380&&l<440){r=(440-l)/60;b=1}else if(l<490){g=(l-440)/50;b=1}else if(l<510){g=1;b=(510-l)/20}else if(l<580){r=(l-510)/70;g=1}else if(l<645){r=1;g=(645-l)/65}else if(l<=780){r=1}
+  let f=l<380||l>780?0:l<420?.3+.7*(l-380)/40:l>700?.3+.7*(780-l)/80:1;return [r,g,b].map(v=>Math.round(255*(v*f)**.8))}
+const wlCol=l=>{const c=wlRGB(l);return `rgb(${c.join(',')})`};
+function wlName(l){return l<380?'UV':l<430?'violett':l<490?'blau':l<510?'blaugrün':l<565?'grün':l<590?'gelb':l<625?'orange':l<=780?'rot':'IR'}
+const COMPL={violett:'gelbgrün',blau:'gelb bis orange',blaugrün:'rot',grün:'purpur',gelb:'blau',orange:'blau bis türkis',rot:'blaugrün'};
+/* Phasenfarbe */
+function hueCol(ph,a=1){const h=((ph/TAU)%1+1)%1*360;return `hsla(${h},80%,50%,${a})`}
+/* Panel-Bausteine */
+const FMT={};
+function rng(S,k,label,min,max,step,f){FMT[k]=f||(v=>fmt(v,2));return `<div class="row"><label for="r-${k}">${label}</label><output id="o-${k}">${FMT[k](S[k])}</output></div><input type="range" id="r-${k}" data-k="${k}" min="${min}" max="${max}" step="${step}" value="${S[k]}">`}
+const seg=(S,k,opts)=>`<div class="seg" role="group">${opts.map(([l,v])=>`<button data-seg="${k}" data-v="${v}" aria-pressed="${String(S[k])===String(v)}">${l}</button>`).join('')}</div>`;
+const chk=(S,k,l)=>`<label><input type="checkbox" data-k="${k}" ${S[k]?'checked':''}> ${l}</label>`;
+const sel=(S,k,opts)=>`<select class="full" data-k="${k}">${opts.map(([l,v])=>`<option value="${v}" ${String(S[k])===String(v)?'selected':''}>${l}</option>`).join('')}</select>`;
+const kv=rows=>`<div class="kv">${rows.filter(Boolean).map(([a,b])=>`<span>${a}</span><b>${b}</b>`).join('')}</div>`;
+const card=(h,body)=>`<div class="card">${h?`<h3>${h}</h3>`:''}${body}</div>`;
+function infoCard(p){return p?`<div class="card"><h3>${p.t}</h3><div class="obs"><b>Auftrag:</b> ${p.obs}</div><details><summary>Erklärung zeigen</summary><p>${p.why}</p></details></div>`:''}
+function groupBy(arr){const g=[];arr.forEach((p,i)=>{let x=g.find(q=>q.h===p.g);if(!x)g.push(x={h:p.g,items:[]});x.items.push([p,i])});return g}
+/* Erwartungswerte eines reellen Zustands auf Gitter */
+function expect(psi,xs,V,dx,E){let n=0,mx=0,mx2=0,mv=0;for(let i=0;i<psi.length;i++){const p=psi[i]*psi[i];n+=p;mx+=p*xs[i];mx2+=p*xs[i]*xs[i];mv+=p*V[i]}
+  n=n||1;mx/=n;mx2/=n;mv/=n;const dX=Math.sqrt(Math.max(0,mx2-mx*mx)),T=E-mv;return {x:mx,dx:dX,V:mv,T,dp:Math.sqrt(Math.max(0,T/C0))}}
+function forbidden(psi,V,E){let s=0,t=0;for(let i=0;i<psi.length;i++){const p=psi[i]*psi[i];t+=p;if(V[i]>E)s+=p}return t?s/t:0}
+function nodes(psi){let m=0;for(const v of psi)m=Math.max(m,Math.abs(v));let n=0,s=0;for(const v of psi){if(Math.abs(v)<.02*m)continue;const g=Math.sign(v);if(s&&g!==s)n++;s=g}return n}
+function sampler(xs,p){const cdf=new Float64Array(p.length);let s=0;for(let i=0;i<p.length;i++){s+=p[i];cdf[i]=s}const d=xs[1]-xs[0];
+  return ()=>{const u=Math.random()*s;let a=0,b=p.length-1;while(a<b){const m=(a+b)>>1;if(cdf[m]<u)a=m+1;else b=m}return xs[a]+(Math.random()-.5)*d}}
+/* Niveauschema: Potential, Energieniveaus, Wellenfunktionen auf ihrer Energie */
+function levelPlot(F,o){ // o: xs,P,E,V(function x→V),sel,view,show(list of indices),wellX:[a,b]|null,labels
+  const vx=Float64Array.from({length:500},(_,i)=>F.xa+i/499*(F.xb-F.xa));const vv=vx.map(o.Vf);
+  drawPot(F,500,i=>F.X(vx[i]),vv,F.yb*3+10);
+  const sh=o.show;let gap=1e9;const Es=sh.map(i=>o.E[i]).sort((a,b)=>a-b);for(let i=1;i<Es.length;i++)gap=Math.min(gap,F.Y(Es[i-1])-F.Y(Es[i]));
+  if(Es.length<2)gap=Math.min(F.h*.3,F.Y(F.ya)-F.Y(Es[0]||0));
+  const amp=clamp(gap*.46,16,o.big?F.h*.3:70);
+  let mp=0,mq=0;for(const i of sh)for(const v of o.P[i]){mp=Math.max(mp,Math.abs(v));mq=Math.max(mq,v*v)}
+  const n=o.xs.length,xf=j=>F.X(o.xs[j]);
+  clipF(F);
+  for(const i of sh){const E=o.E[i],Y=F.Y(E),on=i===o.sel,p=o.P[i];
+    // Energieniveau: durchgezogen im erlaubten Bereich, gestrichelt im verbotenen
+    let j0=null;for(let j=0;j<=500;j++){const ok=j<500&&vv[j]<=E;if(ok&&j0===null)j0=j;if(!ok&&j0!==null){line(F.X(vx[j0]),Y,F.X(vx[j-1]),Y,cs('amb',on?1:.75),on?2.5:1.5);j0=null}}
+    line(F.x,Y,F.x+F.w,Y,cs('amb',.35),1,[3,4]);
+    if(o.view!=='psi'){fillC(n,xf,j=>Y-amp*p[j]*p[j]/mq,Y,cs('vio',on?.45:.18));if(on)curve(n,xf,j=>Y-amp*p[j]*p[j]/mq,cs('vio'),1.6)}
+    if(o.view!=='prob')curve(n,xf,j=>Y-amp*p[j]/mp,cs('blue',on?1:.38),on?2.6:1.5);
+  }
+  ctx.restore();
+  if(o.lab){let last=-1e9;for(const i of [...sh].sort((a,b)=>o.E[a]-o.E[b])){const Y=F.Y(o.E[i]);if(Y<F.y+6||Y>F.y+F.h)continue;if(Math.abs(Y-last)<15&&i!==o.sel)continue;last=Y;
+    const l=o.lab(i);txt(l[0],F.x+6,Y-5,cs(i===o.sel?'ink':'mut'),'left',13,i===o.sel);if(l[1])txt(l[1],F.x+F.w-6,Y-5,cs(i===o.sel?'amb':'mut'),'right',12,i===o.sel)}}
+  return {amp,mp,mq};
+}
+/* =====================================================================
+   STATION 1: KASTEN (unendlich und endlich tiefer Potentialtopf)
+   ===================================================================== */
+MODES.kasten=(()=>{
+const S={pi:0,L:1,wand:'inf',V0:2,n:1,view:'psi',ne:0,ph:false,n1:1,n2:2,klass:false,hits:[]};
+let cache=null,F=null,shown=[];
+function calc(){const key=[S.L,S.wand,S.V0].join();if(cache&&cache.key===key)return cache;
+  const L=S.L,m=.35*L+.5;let xs,V,E=[],P=[],dx;
+  if(S.wand==='inf'){const N=500;dx=L/(N-1);xs=Float64Array.from({length:N},(_,i)=>i*dx);V=new Float64Array(N);const a=Math.sqrt(2/L);
+    for(let n=1;n<=30;n++){E.push(C0*(n*Math.PI/L)**2);P.push(xs.map(x=>a*Math.sin(n*Math.PI*x/L)))}}
+  else{const N=800,xa=-m,xb=L+m;dx=(xb-xa)/(N+1);xs=Float64Array.from({length:N},(_,i)=>xa+(i+1)*dx);V=xs.map(x=>x<0||x>L?S.V0:0);
+    const r=eigTri(V,dx,C0,30);r.E.forEach((e,i)=>{if(e<S.V0){E.push(e);P.push(r.P[i])}})}
+  S.hits=[];return cache={key,xs,V,E,P,dx}}
+const Einf=n=>C0*(n*Math.PI/S.L)**2;
+const homo=()=>Math.ceil(S.ne/2);
+const P=[
+ {g:'Grundlagen',t:'Elektron im Kasten',d:'Welche Energien sind erlaubt?',s:{wand:'inf',L:1,n:1,view:'psi',ne:0,ph:false,klass:false},
+  obs:'Tippe nacheinander die Energieniveaus an. Wie sieht ψ für n = 1, 2, 3 aus? Zähle die Nullstellen (Knoten) im Inneren. Wie wachsen die Abstände der Niveaus?',
+  why:'Im Kasten muss ψ an beiden Wänden null sein – genau wie bei einer eingespannten Saite. Es passen nur ganze halbe Wellenlängen hinein: L = n·λ/2. Mit de Broglie (λ = h/p) folgt p = n·h/(2L) und E = p²/(2m) = n²·h²/(8mL²). Die Energie ist gequantelt und wächst mit n²; der Zustand n hat n − 1 Knoten. Auch der Grundzustand hat E₁ > 0: Ein eingesperrtes Teilchen ist nie in Ruhe (Nullpunktsenergie).'},
+ {g:'Grundlagen',t:'Kastenbreite ändern',d:'Kleiner Kasten – große Energie',s:{wand:'inf',L:.5,n:1,view:'psi',ne:0,ph:false},
+  obs:'Verändere die Breite L. Halbiere L: Um welchen Faktor ändert sich E₁? Warum leuchten kleine Quantenpunkte blau und große rot?',
+  why:'E ∝ 1/L²: Halbe Breite ergibt die vierfache Energie. Quantenpunkte sind Halbleiter-Nanokristalle von wenigen Nanometern; Elektronen darin verhalten sich ungefähr wie im Kasten. Je kleiner der Kristall, desto größer der Abstand der Niveaus und desto kürzer die Wellenlänge des ausgesandten Lichts. Das nutzen QLED-Bildschirme (Nobelpreis Chemie 2023).'},
+ {g:'Grundlagen',t:'Wo ist das Elektron?',d:'|ψ|² und viele Ortsmessungen',s:{wand:'inf',L:1,n:2,view:'prob',ne:0,ph:false,klass:true},
+  obs:'Starte Ortsmessungen (oben „100 Messungen“). Wo findest du das Elektron im Zustand n = 2 nie? Vergleiche mit der gestrichelten Linie: So wäre es bei einer Kugel, die klassisch hin und her fliegt.',
+  why:'|ψ(x)|² ist die Wahrscheinlichkeitsdichte (Born’sche Regel). Jede einzelne Messung liefert einen zufälligen Ort; erst viele Messungen ergeben die Verteilung. An einem Knoten ist die Wahrscheinlichkeit null – obwohl das Elektron links und rechts davon gefunden wird. Das ist mit der Vorstellung einer kleinen Kugel auf einer Bahn nicht vereinbar.'},
+ {g:'Grundlagen',t:'Große Quantenzahl',d:'Wird es klassisch?',lvl:2,s:{wand:'inf',L:1,n:20,view:'prob',ne:0,ph:false,klass:true},
+  obs:'Stelle n = 20 oder mehr ein und messe oft. Vergleiche das Histogramm mit der klassischen Gleichverteilung.',
+  why:'Bei großem n liegen die Maxima so dicht, dass jedes Messgerät mit endlicher Auflösung über viele davon mittelt: Die Verteilung wird gleichmäßig wie bei einem klassischen Teilchen. Bohrs Korrespondenzprinzip: Für große Quantenzahlen geht die Quantenmechanik in die klassische Physik über.'},
+ {g:'Wände',t:'Endlich tiefer Topf',d:'ψ dringt in die Wand ein',lvl:2,s:{wand:'fin',L:1,V0:2,n:1,view:'psi',ne:0,ph:false},
+  obs:'Was macht ψ an der Wand? Wie viele gebundene Zustände gibt es? Mache den Topf flacher (V₀) und beobachte, wie Zustände verschwinden. Vergleiche E₁ mit dem unendlich tiefen Kasten (rechts unten).',
+  why:'Wo V > E ist, ist die kinetische Energie klassisch negativ – das Gebiet ist klassisch verboten. Die Schrödinger-Gleichung erlaubt dort aber eine exponentiell abfallende Lösung ψ ∝ e^(−κx) mit κ = √(2m(V₀ − E))/ħ. Weil die Welle so „mehr Platz“ hat, ist ihre Wellenlänge größer und die Energie kleiner als im unendlich tiefen Kasten. Es gibt nur endlich viele gebundene Zustände – in einer Dimension aber immer mindestens einen.'},
+ {g:'Anwendungen',t:'Farbstoffmoleküle',d:'Cyanine als Kasten für π-Elektronen',lvl:2,s:{wand:'inf',L:1.05,n:3,view:'psi',ne:6,ph:false},
+  obs:'In Cyaninfarbstoffen bewegen sich die π-Elektronen fast frei entlang der Kette zwischen zwei Stickstoffatomen. Jedes Niveau nimmt 2 Elektronen auf (Pauli-Prinzip). Der rote Farbstoff 1,1′-Diethyl-2,2′-cyanin (N = 6) absorbiert bei etwa 520 nm. Stelle L so ein, dass der Übergang HOMO → LUMO passt. Wiederhole mit N = 8 (605 nm, violett) und N = 10 (710 nm, blaugrün). Um wie viel wächst L pro Schritt?',
+  why:'Die Absorption hebt ein Elektron vom höchsten besetzten (HOMO, n = N/2) ins niedrigste freie Niveau (LUMO). ΔE = h²(N + 1)/(8mL²), also λ = 8mcL²/(h(N + 1)). Man erhält L ≈ 1,05 nm, 1,29 nm und 1,53 nm: Pro Schritt wächst L um etwa 0,24 nm – das sind zwei Bindungslängen (je ≈ 0,12–0,14 nm), also genau eine zusätzliche CH=CH-Einheit. Wir sehen die Komplementärfarbe des absorbierten Lichts.'},
+ {g:'Anwendungen',t:'Photon beim Übergang',d:'Licht aus dem Kasten',lvl:2,s:{wand:'inf',L:1.2,n:2,view:'psi',ne:0,ph:true,n1:3,n2:2},
+  obs:'Ein Elektron springt von n = 3 auf n = 2 und sendet ein Photon aus. Welche Wellenlänge hat es? Stelle L so ein, dass sichtbares Licht entsteht.',
+  why:'Die Photonenergie ist genau die Differenz der Niveaus: h·f = E₃ − E₂. Mit λ = h·c/ΔE (h·c = 1240 eV·nm) ergibt sich die Wellenlänge. So entstehen die Linienspektren der Atome – nur die Niveaus sind dort anders angeordnet.'},
+ {g:'Für Fortgeschrittene',t:'Unschärferelation',d:'Δx · Δp für jedes n',lvl:3,s:{wand:'inf',L:1,n:1,view:'prob',ne:0,ph:false},
+  obs:'Lies Δx, Δp und das Produkt Δx·Δp/ħ für n = 1 bis 6 ab. Ist Δx·Δp ≥ ħ/2 erfüllt? Wann ist das Produkt am kleinsten? Was passiert mit Δp, wenn du den Kasten schmäler machst?',
+  why:'Für den Kasten gilt Δx = L·√(1/12 − 1/(2n²π²)) und Δp = nπħ/L, also Δx·Δp/ħ = nπ·√(1/12 − 1/(2n²π²)) – unabhängig von L. Das Minimum 0,568 > 0,5 liegt bei n = 1. Ein kleiner Kasten (kleines Δx) erzwingt ein großes Δp und damit eine große kinetische Energie ⟨p²⟩/2m: Die Nullpunktsenergie ist eine direkte Folge der Unschärferelation.'},
+ {g:'Für Fortgeschrittene',t:'Eindringtiefe',d:'Wie weit tunnelt ψ in die Wand?',lvl:3,s:{wand:'fin',L:1,V0:1.2,n:2,view:'prob',ne:0,ph:false},
+  obs:'Vergleiche die Wahrscheinlichkeit außerhalb des Topfs für n = 1 und n = 2. Erhöhe V₀. Prüfe: Die Eindringtiefe ist 1/κ = ħ/√(2m(V₀ − E)).',
+  why:'Je näher E an V₀ liegt, desto kleiner ist κ und desto weiter reicht ψ in die Wand. Das obere Niveau ist darum „lockerer“ gebunden; Elektronen in schwach gebundenen Zuständen sind räumlich weit ausgedehnt – dasselbe gilt für Donatorelektronen in Halbleitern.'},
+];
+function view(){const c=calc(),L=S.L;
+  const nb=c.E.length;let nShow=Math.min(nb,Math.max(lvl(2)?6:4,S.ne?homo()+1:0,S.ph?Math.max(S.n1,S.n2):0));
+  const only=S.n>nShow;const sel=Math.min(S.n,nb)-1;
+  let top=S.wand==='inf'?c.E[nShow-1]*1.2:Math.min(S.V0*1.18,Math.max(c.E[nShow-1]*1.3,c.E[0]*3));
+  if(only)top=c.E[sel]*1.25;
+  if(S.wand==='fin'&&S.V0<top*1.05)top=Math.max(top,S.V0*1.12);
+  shown=only?[sel]:[...Array(nShow).keys()];
+  return {c,nShow,only,sel,top}}
+const xa=()=>S.wand==='inf'?-.18*S.L:-.35*S.L-.15, xb=()=>S.L-xa();
+return {S,P,
+ tools(){return `<button class="btn" data-act="m1">1 Messung</button><button class="btn" data-act="m100">100 Messungen</button><button class="btn" data-act="mclr">Messungen löschen</button>`},
+ act(a){const c=calc(),i=Math.min(S.n,c.E.length)-1;if(a==='mclr'){S.hits=[];return}
+   const sm=sampler(c.xs,c.P[i].map(v=>v*v));const k=a==='m1'?1:100;for(let j=0;j<k;j++)S.hits.push([sm(),Math.random()]);if(S.hits.length>5000)S.hits.splice(0,S.hits.length-5000)},
+ changed(k){if(k==='n'||k==='L'||k==='V0'||k==='wand')S.hits=[];const nb=calc().E.length;if(S.n>nb)S.n=nb;if(S.wand==='fin'&&(k==='L'||k==='V0'))return 'panel'},
+ panel(){const c=calc(),nb=c.E.length;let h=card('Kasten',
+   (lvl(2)?seg(S,'wand',[['unendlich tief','inf'],['endlich tief','fin']]):'')+
+   rng(S,'L','Breite L',.3,3,.01,v=>fmt(v,2)+' nm')+
+   (S.wand==='fin'?rng(S,'V0','Tiefe V₀',.2,10,.05,v=>fmt(v,2)+' eV'):'')+
+   rng(S,'n','Zustand n',1,Math.min(30,nb),1,v=>String(v))+
+   seg(S,'view',[['ψ','psi'],['|ψ|²','prob'],['beides','both']])+
+   `<div class="chk">${chk(S,'klass','klassisch zum Vergleich')}</div>`);
+   if(lvl(2))h+=card('Elektronen einfüllen',rng(S,'ne','Anzahl Elektronen N',0,14,1,v=>v?String(v):'aus')+`<p class="small">Je Niveau 2 Elektronen (Spin ↑↓, Pauli-Prinzip).</p>`);
+   if(lvl(2))h+=card('Photon beim Übergang',`<div class="chk">${chk(S,'ph','Übergang zeigen')}</div>`+(S.ph?`<div class="grid2"><div><div class="lab">von n =</div>${sel(S,'n1',[...Array(Math.min(8,nb)).keys()].map(i=>[i+1,i+1]))}</div><div><div class="lab">nach n =</div>${sel(S,'n2',[...Array(Math.min(8,nb)).keys()].map(i=>[i+1,i+1]))}</div></div>`:''));
+   return h+`<div id="ro"></div>`},
+ ro(){const c=calc(),i=Math.min(S.n,c.E.length)-1,E=c.E[i];const L=S.L;const e=expect(c.P[i],c.xs,c.V,c.dx,E);
+   const rows=[['Energie E'+S.n,fmt(E,3)+' eV'],lvl(2)&&S.wand==='inf'&&['de-Broglie-Wellenlänge λ = 2L/n',fmt(2*L/S.n,3)+' nm'],
+     ['Knoten im Inneren',String(S.n-1)],
+     S.wand==='fin'&&lvl(2)&&['gebundene Zustände',String(c.E.length)],
+     S.wand==='fin'&&lvl(2)&&['E'+S.n+' im unendl. Kasten',fmt(Einf(S.n),3)+' eV'],
+     S.wand==='fin'&&['außerhalb des Topfs',fmt(100*forbidden(c.P[i],c.V,E),1)+' %'],
+     S.wand==='fin'&&lvl(3)&&['Eindringtiefe 1/κ',fmt(Math.sqrt(C0/(S.V0-E)),3)+' nm'],
+     lvl(3)&&['Δx',fmt(e.dx,3)+' nm'],lvl(3)&&['Δp/ħ',fmt(e.dp,2)+' nm⁻¹'],lvl(3)&&['Δx·Δp/ħ (≥ 0,5)',fmt(e.dx*e.dp,3)]];
+   let h=card('Messwerte',kv(rows)+(lvl(2)&&S.wand==='inf'?`<div class="formel">E<sub>n</sub> = n²·h²/(8mL²) = n² · ${fmt(Einf(1),3)} eV</div>`:''));
+   if(S.ne>0){const H=homo(),dE=c.E[H]-c.E[H-1],l=HC/dE,nm=wlName(l);h+=card('Farbstoff-Modell',kv([['HOMO → LUMO','n = '+H+' → '+(H+1)],['ΔE',fmt(dE,3)+' eV'],['absorbierte Wellenlänge',fmt(l,0)+' nm']])+
+     `<p><span class="sw" style="background:${l>=380&&l<=780?wlCol(l):'transparent'}"></span>absorbiert: ${nm}${COMPL[nm]?` · wir sehen etwa: <b>${COMPL[nm]}</b>`:''}</p>`)}
+   if(S.ph){const a=Math.min(S.n1,c.E.length)-1,b=Math.min(S.n2,c.E.length)-1,dE=c.E[a]-c.E[b],l=HC/Math.abs(dE);
+     h+=card('Photon',dE===0?'<p>Gleiches Niveau – kein Übergang.</p>':kv([[dE>0?'Emission':'Absorption',fmt(Math.abs(dE),3)+' eV'],['Wellenlänge λ = hc/ΔE',fmt(l,0)+' nm'],['Bereich',wlName(l)]])+(l>=380&&l<=780?`<p><span class="sw" style="background:${wlCol(l)}"></span> Farbe des Photons</p>`:''))}
+   return h},
+ status(){const c=calc(),i=Math.min(S.n,c.E.length)-1;return `Zustand n = ${S.n} · E = ${fmt(c.E[i],3)} eV · Tippe ein Niveau an, um es auszuwählen.`+(S.hits.length?` · ${S.hits.length} Ortsmessungen`:'')},
+ down(x,y){if(!F)return;let best=-1,bd=16;for(const i of shown){const d=Math.abs(F.Y(calc().E[i])-y);if(d<bd){bd=d;best=i}}if(best>=0){S.n=best+1;S.hits=[];return 'panel'}},
+ csv(){const c=calc(),r=[['n','E in eV']];c.E.slice(0,12).forEach((e,i)=>r.push([i+1,e]));r.push([],['Ortsmessung Nr.','x in nm (Zustand n = '+S.n+')']);S.hits.forEach((h,i)=>r.push([i+1,h[0]]));return r},
+ draw(){const v=view(),c=v.c,L=S.L,hasH=S.hits.length>0;const bot=hasH?118:42;
+   F=frame(58,28,CW-76,CH-28-bot,xa(),xb(),0,v.top);
+   axes(F,{xl:'x in nm',yl:'E in eV',noY:!lvl(2)&&false});
+   const Vf=x=>x<0||x>L?(S.wand==='inf'?1e9:S.V0):0;
+   const r=levelPlot(F,{xs:c.xs,P:c.P,E:c.E,Vf,sel:v.sel,view:S.view,show:shown,big:v.only,
+     lab:i=>['n = '+(i+1),lvl(2)?fmt(c.E[i],2)+' eV':'']});
+   if(S.wand==='fin')txt('V₀ = '+fmt(S.V0,2)+' eV',F.X(xb())-6,F.Y(S.V0)-6,cs('mut'),'right',12);
+   // klassisch: Gleichverteilung 1/L
+   if(S.klass&&S.view!=='psi'){const Y=F.Y(c.E[v.sel]),h=r.amp*(1/L)/r.mq;line(F.X(0),Y-h,F.X(L),Y-h,cs('ink',.7),1.5,[6,4]);txt('klassisch',F.X(L)-4,Y-h-5,cs('ink',.8),'right',12)}
+   // Elektronen
+   if(S.ne>0){for(let k=1;k<=homo()+1&&k<=c.E.length;k++){const occ=clamp(S.ne-2*(k-1),0,2),Y=F.Y(c.E[k-1]),X=F.X(L*.88);
+       for(let s=0;s<occ;s++){const xx=X+(s?9:-9);arrow(xx,Y+(s?-11:11),xx,Y+(s?11:-11),cs('red'),2)}}
+     const H=homo();if(H<c.E.length){const y1=F.Y(c.E[H-1]),y2=F.Y(c.E[H]),X=F.X(L*.7),l=HC/(c.E[H]-c.E[H-1]);arrow(X,y1,X,y2+3,l>=380&&l<=780?wlCol(l):cs('amb'),3);txt(fmt(l,0)+' nm',X-8,(y1+y2)/2+4,cs('ink'),'right',13,true)}}
+   if(S.ph){const a=Math.min(S.n1,c.E.length)-1,b=Math.min(S.n2,c.E.length)-1;if(a!==b){const y1=F.Y(c.E[a]),y2=F.Y(c.E[b]),X=F.X(L*.6),l=HC/Math.abs(c.E[a]-c.E[b]),col=l>=380&&l<=780?wlCol(l):cs('amb');
+     arrow(X,y1,X,y2+(y2>y1?-3:3),col,3);
+     ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();for(let k=0;k<=40;k++){const xx=X+12+k*1.6,yy=(y1+y2)/2+6*Math.sin(k*.75);k?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy)}ctx.stroke();
+     txt(fmt(l,0)+' nm',X+80,(y1+y2)/2+4,cs('ink'),'left',13,true)}}
+   // Ortsmessungen
+   if(hasH){const y0=F.y+F.h+40,hh=62,nb=60,bins=new Array(nb).fill(0),bw=(F.xb-F.xa)/nb;
+     for(const [x] of S.hits){const b=Math.floor((x-F.xa)/bw);if(b>=0&&b<nb)bins[b]++}
+     const p=c.P[v.sel],mxE=Math.max(...p.map(q=>q*q))*bw*S.hits.length,mx=Math.max(1,...bins,mxE);
+     ctx.fillStyle=cs('pan');ctx.fillRect(F.x,y0,F.w,hh);
+     bins.forEach((b,i)=>{const h=b/mx*(hh-4);ctx.fillStyle=cs('vio',.55);ctx.fillRect(F.X(F.xa+i*bw)+1,y0+hh-h,F.w/nb-2,h)});
+     curve(c.xs.length,j=>F.X(c.xs[j]),j=>y0+hh-p[j]*p[j]*bw*S.hits.length/mx*(hh-4),cs('ink',.8),1.5);
+     ctx.fillStyle=cs('ink');for(const [x,r] of S.hits.slice(-400))ctx.fillRect(F.X(x)-1,y0+3+r*(hh*.35),2.5,2.5);
+     txt('Ortsmessungen: '+S.hits.length+(S.hits.length<30?' – noch kein Muster?':''),F.x+4,y0-6,cs('mut'),'left',12,true)}
+ }};
+})();
+/* =====================================================================
+   STATION 2: SCHIESSVERFAHREN (Numerov von links, Randbedingung rechts)
+   ===================================================================== */
+MODES.schiessen=(()=>{
+const S={pi:0,pot:'oszi',E:.6,show:false,curve:true};
+const POT={
+ oszi:{n:'Harmonischer Oszillator',a:-2.4,b:2.4,E:[0,3.6],V:x=>(.5*.5)/(4*C0)*x*x}, // ħω = 0,5 eV
+ kasten:{n:'Kasten (unendlich tief)',a:0,b:1,E:[0,6.5],V:()=>0},
+ topf:{n:'Endlich tiefer Topf',a:-1.6,b:1.6,E:[0,2.2],V:x=>Math.abs(x)<.5?0:1.5,V0:1.5},
+ doppel:{n:'Doppelmulde',a:-1.7,b:1.7,E:[0,2],V:x=>.8*((x/.55)**2-1)**2},
+ dreieck:{n:'V-förmig (linear)',a:-2.2,b:2.2,E:[0,3.2],V:x=>2*Math.abs(x)}};
+let cache=null,F=null,F2=null,auto=null,drag=false;
+function calc(){if(cache&&cache.key===S.pot)return cache;const p=POT[S.pot],N=1001,dx=(p.b-p.a)/(N-1);
+  const xs=Float64Array.from({length:N},(_,i)=>p.a+i*dx),V=xs.map(p.V);
+  const r=eigTri(V.slice(1,N-1),dx,C0,12);const ev=r.E.filter(e=>e<p.E[1]);
+  const scan=[],ns=500,buf=new Float64Array(N);for(let k=0;k<=ns;k++){const E=p.E[0]+k/ns*(p.E[1]-p.E[0]);numerov(V,dx,C0,E,buf);scan.push([E,endVal(buf,V,E)])}
+  return cache={key:S.pot,xs,V,dx,N,ev,scan,buf:new Float64Array(N)}}
+function amax(psi,V,E){let m=0,any=false;for(let i=0;i<psi.length;i++)if(V[i]<E){any=true;m=Math.max(m,Math.abs(psi[i]))}if(!any)for(let i=0;i<psi.length/2;i++)m=Math.max(m,Math.abs(psi[i]));return m||1}
+function endVal(psi,V,E){return psi[psi.length-1]/amax(psi,V,E)}
+const sq=v=>2/Math.PI*Math.atan(v/2);
+function cur(){const c=calc();numerov(c.V,c.dx,C0,S.E,c.buf);const am=amax(c.buf,c.V,S.E),ev=c.buf[c.N-1]/am;
+  let last=0;for(let i=0;i<c.N;i++)if(c.V[i]<S.E)last=i;
+  const nd=nodes(c.buf.slice(0,Math.min(c.N,last+3)));const near=c.ev.reduce((b,e)=>Math.abs(e-S.E)<Math.abs(b-S.E)?e:b,c.ev[0]??NaN);
+  const free=POT[S.pot].V0!=null&&S.E>POT[S.pot].V0;
+  const d=8e-4,tmp=new Float64Array(c.N);numerov(c.V,c.dx,C0,S.E-d,tmp);const s1=Math.sign(tmp[c.N-1]);numerov(c.V,c.dx,C0,S.E+d,tmp);const s2=Math.sign(tmp[c.N-1]);
+  const ok=!free&&s1!==s2;let cut=c.N;if(ok&&last<c.N-3){let mi=last,mv=1e300;for(let i=last;i<c.N;i++){const a=Math.abs(c.buf[i]);if(a<mv){mv=a;mi=i}}cut=mi}
+  return {c,am,ev,nd,near,ok,free,cut}}
+const P=[
+ {g:'Quantisierung',t:'Warum nur bestimmte Energien?',d:'ψ explodiert – fast immer',s:{pot:'oszi',E:.6,show:false,curve:false},
+  obs:'Die Schrödinger-Gleichung wird hier Schritt für Schritt von links nach rechts gelöst. Ziehe die Energielinie (orange) mit der Maus oder dem Finger nach oben und unten. Für fast alle Energien läuft ψ rechts nach +∞ oder −∞. Finde Energien, bei denen ψ rechts sauber auf null zurückgeht.',
+  why:'Die Gleichung ψ″ = (2m/ħ²)·(V − E)·ψ sagt: Wo E > V ist (klassisch erlaubt), krümmt sich ψ zur Achse hin und schwingt. Wo V > E ist (verboten), krümmt sich ψ von der Achse weg und wächst exponentiell. Für eine beliebige Energie explodiert ψ deshalb am Rand – so eine Funktion lässt sich nicht normieren und beschreibt kein Teilchen. Nur bei ganz bestimmten Energien verschwindet der wachsende Anteil. Die Quantisierung wird also nicht vorausgesetzt: Sie folgt aus der Bedingung, dass ψ am Rand gegen null geht.'},
+ {g:'Quantisierung',t:'Knotenregel',d:'Vorzeichenwechsel beim Überschreiten',s:{pot:'oszi',E:.2,show:false,curve:true},
+  obs:'Finde die ersten vier erlaubten Energien (Knopf „Eigenwert suchen“ hilft beim Feinjustieren). Zähle jeweils die Knoten. Beobachte die untere Kurve: Was passiert mit dem Vorzeichen am rechten Rand, wenn du eine erlaubte Energie überschreitest?',
+  why:'Der n-te Zustand hat n − 1 Knoten (Knotensatz von Sturm). Jedes Mal, wenn E einen Eigenwert überschreitet, wandert ein neuer Knoten von rechts herein und das Vorzeichen der Divergenz wechselt. Darum liegen zwischen zwei Vorzeichenwechseln der Randwert-Kurve genau die Eigenwerte. Beim harmonischen Oszillator sind sie gleichabständig: E = ħω·(n + ½) mit ħω = 0,5 eV.'},
+ {g:'Quantisierung',t:'Den Kasten nachrechnen',d:'Randbedingung ψ(L) = 0',s:{pot:'kasten',E:.2,show:false,curve:true},
+  obs:'Hier gibt es keinen verbotenen Bereich; die Bedingung lautet ψ(L) = 0 an der rechten Wand. Finde E₁, E₂, E₃ und vergleiche mit n² · 0,376 eV.',
+  why:'Im Kasten ist ψ = sin(kx) mit k = √(2mE)/ħ. ψ(L) = 0 verlangt kL = nπ – das ist dieselbe Bedingung wie bei der Saite. Das Schießverfahren findet diese Werte, ohne die Lösung zu kennen; es funktioniert für jedes Potential.'},
+ {g:'Mehr Potentiale',t:'Endlicher Topf',d:'Gebunden und ungebunden',lvl:2,s:{pot:'topf',E:.1,show:false,curve:true},
+  obs:'Wie viele erlaubte Energien gibt es unterhalb von V₀ = 1,5 eV? Gehe dann mit der Energie über V₀. Explodiert ψ noch?',
+  why:'Unterhalb von V₀ gibt es nur drei gebundene Zustände mit diskreten Energien. Oberhalb von V₀ ist auch außen alles erlaubt: ψ schwingt überall und explodiert nie. Jede Energie ist möglich – das Spektrum ist kontinuierlich. Das sind ungebundene Streuzustände, etwa ein Elektron, das an einem Atom vorbeifliegt.'},
+ {g:'Mehr Potentiale',t:'Doppelmulde',d:'Fast gleiche Energien',lvl:2,s:{pot:'doppel',E:.2,show:true,curve:true},
+  obs:'Finde die beiden tiefsten Energien. Sie liegen sehr dicht beisammen. Wie unterscheiden sich die beiden Wellenfunktionen?',
+  why:'Jede Mulde allein hätte einen Grundzustand. Weil ψ durch die Barriere tunneln kann, koppeln die beiden: Es entsteht eine symmetrische (ohne Knoten, etwas tiefer) und eine antisymmetrische Kombination (ein Knoten in der Mitte). Die Aufspaltung ist umso kleiner, je höher und breiter die Barriere ist. Beim Ammoniakmolekül klappt das N-Atom so durch die H-Ebene; die Aufspaltung entspricht 24 GHz (Ammoniak-Maser, erste Atomuhren).'},
+ {g:'Mehr Potentiale',t:'Linearer Anstieg',d:'Abstände werden kleiner',lvl:3,s:{pot:'dreieck',E:.5,show:true,curve:true},
+  obs:'V = F·|x| steigt linear an. Bestimme die ersten fünf Energien. Wie ändern sich die Abstände? Vergleiche mit Kasten (wachsend) und Oszillator (konstant).',
+  why:'Die Abstände der Niveaus hängen davon ab, wie schnell die Wände auseinanderlaufen: Kasten E ∝ n², Oszillator E ∝ n, lineares Potential E ∝ n^(2/3) (WKB-Näherung; exakt Nullstellen der Airy-Funktion). Lineare Potentiale beschreiben Elektronen in einem elektrischen Feld vor einer Grenzfläche (z. B. im Kanal eines Transistors) oder Quarks, die durch ein „Gluonenband“ zusammengehalten werden.'},
+];
+return {S,P,
+ tools(){return `<button class="btn" data-act="dn2">E − 0,01</button><button class="btn" data-act="dn1">− 0,001</button><button class="btn" data-act="up1">+ 0,001</button><button class="btn" data-act="up2">+ 0,01</button><span class="sep"></span><button class="btn hot" data-act="find">Eigenwert suchen</button>`},
+ act(a){const r=POT[S.pot].E;const d={dn2:-.01,dn1:-.001,up1:.001,up2:.01}[a];if(d){S.E=clamp(+(S.E+d).toFixed(6),r[0],r[1]);auto=null;return 'out'}
+   if(a==='find'){const c=calc(),V0=POT[S.pot].V0??1e9;let best=null;for(let k=1;k<c.scan.length;k++){const [e0,v0]=c.scan[k-1],[e1,v1]=c.scan[k];
+       if(e1<V0&&Math.sign(v0)!==Math.sign(v1)){const m=(e0+e1)/2;if(!best||Math.abs(m-S.E)<Math.abs((best[0]+best[1])/2-S.E))best=[e0,e1,v0]}}
+     if(best)auto={a:best[0],b:best[1],sa:Math.sign(best[2]),k:0,t:0}}},
+ changed(k){if(k==='pot'){const r=POT[S.pot].E;S.E=clamp(S.E,r[0],r[1]);auto=null}if(k==='E')auto=null},
+ panel(){const r=POT[S.pot].E;return card('Potential',sel(S,'pot',Object.entries(POT).filter(([k])=>lvl(2)||['oszi','kasten'].includes(k)||k===S.pot).map(([k,p])=>[p.n,k]))+
+   rng(S,'E','Energie E',r[0],r[1],.0005,v=>fmt(v,4)+' eV')+
+   `<div class="chk">${lvl(2)?chk(S,'curve','Randwert-Kurve'):''}${chk(S,'show','Lösungen verraten')}</div>`)+
+   (lvl(3)?card('So rechnet das Programm',`<div class="formel">ψ″(x) = (2m/ħ²)·(V(x) − E)·ψ(x)<br>Start links: ψ = 0, kleine Steigung.<br>Numerov-Schritt (Fehler ∝ Δx⁶):<br>(1 + Δx²k²<sub>i+1</sub>/12)ψ<sub>i+1</sub> = 2(1 − 5Δx²k²<sub>i</sub>/12)ψ<sub>i</sub> − (1 + Δx²k²<sub>i−1</sub>/12)ψ<sub>i−1</sub>, k² = 2m(E − V)/ħ²</div><p class="small">Eigenwert-Suche: Bisektion zwischen zwei Energien mit entgegengesetztem Vorzeichen am rechten Rand.</p>`):'')+`<div id="ro"></div>`},
+ ro(){const u=cur(),c=u.c;return card('Ergebnis',kv([['Energie',fmt(S.E,4)+' eV'],['Knoten',String(u.nd)],
+   ['rechter Rand',u.free?'endlich (Streuzustand)':u.ok?'ψ → 0 ✓':(u.ev>0?'ψ → +∞':'ψ → −∞')],
+   S.show&&['nächster Eigenwert',fmt(u.near,4)+' eV'],
+   S.show&&lvl(2)&&['alle Eigenwerte',c.ev.slice(0,6).map(e=>fmt(e,3)).join(' · ')]]))},
+ status(){const u=cur();return u.free?'E liegt über V₀: ψ bleibt überall endlich – jede Energie ist möglich (kontinuierliches Spektrum).':u.ok?`Treffer: Bei E = ${fmt(S.E,4)} eV geht ψ am rechten Rand gegen null – ein erlaubter Zustand mit ${u.nd} Knoten.`:'Ziehe die orange Energielinie. ψ explodiert am rechten Rand – diese Energie ist nicht erlaubt.'},
+ down(x,y){if(F&&x>=F.x&&x<=F.x+F.w&&y>=F.y-10&&y<=F.y+F.h+10){drag=true;auto=null;S.E=clamp(F.iY(y),F.ya,F.yb);return 'out'}
+   if(F2&&x>=F2.x&&x<=F2.x+F2.w&&y>=F2.y&&y<=F2.y+F2.h){drag='e2';auto=null;S.E=clamp(F2.iX(x),F2.xa,F2.xb);return 'out'}},
+ move(x,y){if(drag===true){S.E=clamp(F.iY(y),F.ya,F.yb);return 'out'}if(drag==='e2'){S.E=clamp(F2.iX(x),F2.xa,F2.xb);return 'out'}},
+ up(){drag=false},
+ csv(){const c=calc(),r=[['Potential',POT[S.pot].n],['Eigenwerte (Matrixmethode) in eV',...c.ev]];r.push([],['E in eV','Randwert ψ(rechts)/ψ_max']);c.scan.forEach(([e,v])=>r.push([e,v]));return r},
+ draw(){const p=POT[S.pot],c=calc();
+   if(auto){auto.t++;if(auto.t%5===0){const m=(auto.a+auto.b)/2;numerov(c.V,c.dx,C0,m,c.buf);const v=endVal(c.buf,c.V,m);if(Math.sign(v)===auto.sa)auto.a=m;else auto.b=m;S.E=m;auto.k++;
+     if(auto.k>30||auto.b-auto.a<1e-7)auto=null;syncOut()}}
+   const u=cur(),sc=lvl(2)&&S.curve,h2=sc?Math.min(150,CH*.26):0;
+   F=frame(58,26,CW-80,CH-26-48-(sc?h2+44:0),p.a-(p.b-p.a)*.04,p.b+(p.b-p.a)*.04,p.E[0],p.E[1]);
+   axes(F,{xl:'x in nm',yl:'E in eV'});
+   const xs=c.xs,n=c.N,xf=i=>F.X(xs[i]);
+   const vx=Float64Array.from({length:400},(_,i)=>F.xa+i/399*(F.xb-F.xa)),vv=vx.map(x=>x<p.a||x>p.b?1e9:p.V(x));
+   drawPot(F,400,i=>F.X(vx[i]),vv,1e9);
+   if(S.show)for(const e of c.ev)line(F.x,F.Y(e),F.x+F.w,F.Y(e),cs('ok',.6),1.2,[5,4]);
+   const Y=F.Y(S.E),A=Math.min(F.h*.28,90);
+   line(F.x,Y,F.x+F.w,Y,cs('amb'),2.5);
+   txt('E = '+fmt(S.E,4)+' eV',F.x+F.w-6,Y-7,cs('amb'),'right',13,true);
+   clipF(F);
+   // verbotene Bereiche schattieren
+   ctx.fillStyle=cs('red',.07);for(let i=0;i<n;i+=2)if(c.V[i]>S.E)ctx.fillRect(xf(i),F.y,F.w/n*2+1,F.h);
+   const d=j=>j>=u.cut?0:clamp(c.buf[j]/u.am,-2.2,2.2);
+   curve(n,xf,j=>Y-A*d(j),cs(u.ok?'ok':'blue'),2.6);
+   ctx.restore();
+   // Pfeil am rechten Rand
+   const X=F.X(xs[n-1]);
+   if(u.free)txt('ψ endlich',X-6,Y-A-8,cs('mut'),'right',13,true);
+   else if(u.ok)txt('ψ → 0 ✓',X-6,Y-A*.5,cs('ok'),'right',15,true);
+   else{const up=u.ev>0,ya=up?F.y+70:F.y+F.h-70,yb=up?F.y+12:F.y+F.h-12;arrow(X-14,ya,X-14,yb,cs('red'),3);txt(up?'ψ → +∞':'ψ → −∞',X-24,(ya+yb)/2+5,cs('red'),'right',15,true)}
+   txt('Start: ψ = 0',F.X(xs[0])+6,F.y+F.h-8,cs('mut'),'left',12);
+   F2=null;
+   if(sc){F2=frame(58,F.y+F.h+46,CW-80,h2,p.E[0],p.E[1],-1,1);
+     ctx.fillStyle=cs('pan');ctx.fillRect(F2.x,F2.y,F2.w,F2.h);
+     line(F2.x,F2.Y(0),F2.x+F2.w,F2.Y(0),cs('mut'),1);
+     clipF(F2);let prev=null;ctx.strokeStyle=cs('vio');ctx.lineWidth=2;ctx.beginPath();
+     c.scan.forEach(([e,v],k)=>{const X=F2.X(e),Yv=F2.Y(sq(v));if(prev&&Math.abs(sq(v)-prev)>1.2)ctx.moveTo(X,Yv);else k?ctx.lineTo(X,Yv):ctx.moveTo(X,Yv);prev=sq(v)});ctx.stroke();
+     if(S.show)for(const e of c.ev){ctx.fillStyle=cs('ok');ctx.beginPath();ctx.arc(F2.X(e),F2.Y(0),4,0,TAU);ctx.fill()}
+     line(F2.X(S.E),F2.y,F2.X(S.E),F2.y+F2.h,cs('amb'),2);ctx.restore();
+     txt('Wert von ψ am rechten Rand, abhängig von E (Nullstellen = erlaubte Energien)',F2.x+4,F2.y-7,cs('mut'),'left',12,true);
+     for(let v=Math.ceil(p.E[0]);v<=p.E[1];v+=p.E[1]>4?1:.5)txt(fmt(v,1),F2.X(v),F2.y+F2.h+15,cs('mut'),'center',12);
+     txt('E in eV',F2.x+F2.w,F2.y+F2.h+30,cs('mut'),'right',12,true)}
+ }};
+})();
+/* =====================================================================
+   STATION 3: POTENTIAL-BAUKASTEN (Eigenzustände beliebiger Potentiale)
+   ===================================================================== */
+MODES.baukasten=(()=>{
+const XA=-2,XB=2,NG=600,DX=(XB-XA)/(NG+1),XS=Float64Array.from({length:NG},(_,i)=>XA+(i+1)*DX),VMAX=6;
+const S={pi:0,pot:'oszi',hw:.5,Vb:.8,b:.6,st:.2,Fk:2,D:2.5,a:2,V0:3,w:1.6,k:6,view:'psi',sel:0,only:false,pen:true};
+let custom=null,cache=null,F=null,shown=[],drag=false,lastI=null;
+const POT={oszi:'Harmonischer Oszillator',doppel:'Doppelmulde',asym:'Ungleiche Mulden',topf:'Endlicher Topf',dreieck:'V-förmig (linear)',morse:'Molekül (Morse)',eigen:'Eigenes Potential zeichnen'};
+function Vof(x){switch(S.pot){
+  case 'oszi':return S.hw*S.hw/(4*C0)*x*x;
+  case 'doppel':return S.Vb*((x/S.b)**2-1)**2;
+  case 'asym':return Math.abs(x)>1.3?4:(x>0?S.st:0)+(Math.abs(x)<.12?1.2:0);
+  case 'topf':return Math.abs(x)<S.w/2?0:S.V0;
+  case 'dreieck':return S.Fk*Math.abs(x);
+  case 'morse':return S.D*(1-Math.exp(-S.a*(x+1)))**2;
+  case 'eigen':{if(!custom)return 0;const j=clamp(Math.round((x-XA)/DX-1),0,NG-1);return custom[j]}}}
+function calc(){const key=JSON.stringify([S.pot,S.hw,S.Vb,S.b,S.st,S.Fk,S.D,S.a,S.V0,S.w,S.k,S.pot==='eigen'?Array.from(custom||[]).join():'']);
+  if(cache&&cache.key===key)return cache;const V=XS.map(x=>Math.min(Vof(x),40));const r=eigTri(V,DX,C0,S.k);
+  if(S.sel>=r.E.length)S.sel=r.E.length-1;return cache={key,V,E:r.E,P:r.P}}
+const P=[
+ {g:'Klassiker',t:'Harmonischer Oszillator',d:'Gleiche Abstände',s:{pot:'oszi',hw:.5,k:6,view:'psi',sel:0,only:false},
+  obs:'Wie groß sind die Abstände zwischen benachbarten Niveaus? Verändere ħω (ein steileres Potential entspricht einer härteren Feder). Wie groß ist die tiefste Energie im Vergleich zum Abstand?',
+  why:'Für V = ½mω²x² gilt exakt E = ħω·(n + ½): Die Niveaus sind gleichabständig, und auch der Grundzustand hat die Nullpunktsenergie ½ħω. So schwingen Atome in Molekülen und Kristallen. Moleküle wie CO₂ oder H₂O nehmen darum nur ganz bestimmte Infrarot-Energien auf – die Grundlage des Treibhauseffekts und der IR-Spektroskopie.'},
+ {g:'Klassiker',t:'Doppelmulde',d:'Tunnelaufspaltung',s:{pot:'doppel',Vb:.8,b:.6,k:6,view:'psi',sel:0,only:false},
+  obs:'Die Niveaus treten paarweise auf. Erhöhe die Barriere Vb oder rücke die Mulden auseinander (b). Was passiert mit dem Abstand der beiden untersten Niveaus? Vergleiche die Form der beiden Wellenfunktionen.',
+  why:'Die Zustände eines Paares sind die symmetrische und die antisymmetrische Mischung der Mulden-Zustände. Ihr Energieabstand kommt nur vom Tunneln durch die Barriere und sinkt exponentiell mit Höhe und Breite der Barriere. Genauso entstehen bindende und antibindende Molekülorbitale, etwa beim H₂⁺-Ion.'},
+ {g:'Klassiker',t:'Ungleiche Mulden',d:'Wo sitzt das Elektron?',s:{pot:'asym',st:0,k:6,view:'prob',sel:0,only:false},
+  obs:'Zwei Mulden, getrennt durch eine schmale Barriere. Erhöhe den Boden der rechten Mulde langsam von 0 aus. Wo hält sich das Elektron im Grundzustand auf?',
+  why:'Sind die Mulden gleich, ist der Grundzustand auf beide verteilt. Schon eine kleine Asymmetrie, die größer ist als die Tunnelaufspaltung, schiebt den Grundzustand fast ganz in die tiefere Mulde. So steuert man in Doppel-Quantenpunkten, wo ein Elektron sitzt – ein Weg zu Qubits.'},
+ {g:'Klassiker',t:'Zeichne dein Potential',d:'Mit dem Stift malen',s:{pot:'eigen',k:6,view:'psi',sel:0,only:false,pen:true},
+  obs:'Male mit der Maus oder dem Finger ein Potential auf die Fläche. Die Zustände werden sofort neu berechnet. Probiere: einen Topf mit einer Stufe im Boden, zwei verschieden breite Mulden, eine Treppe.',
+  why:'Das Programm löst die zeitunabhängige Schrödinger-Gleichung −ħ²/(2m)·ψ″ + V·ψ = E·ψ für dein Potential numerisch: Es teilt die Strecke in 600 Punkte, schreibt die Gleichung als Matrix und sucht deren Eigenwerte. Allgemeine Regeln, die du überprüfen kannst: Der n-te Zustand hat n − 1 Knoten; wo V hoch ist, ist ψ klein und langwelliger; in breiteren Bereichen liegen die Niveaus dichter.'},
+ {g:'Moleküle',t:'Molekülschwingung',d:'Morse-Potential',lvl:2,s:{pot:'morse',D:2.5,a:2,k:10,view:'psi',sel:0,only:false},
+  obs:'Das Morse-Potential beschreibt eine chemische Bindung: links stoßen sich die Atome ab, rechts reißt die Bindung. Vergleiche die Abstände der Niveaus mit dem Oszillator. Gibt es unendlich viele gebundene Zustände?',
+  why:'Für kleine Auslenkungen sieht das Potential wie eine Parabel aus, darum ähneln die unteren Niveaus dem Oszillator. Nach oben werden die Abstände kleiner (Anharmonizität), und es gibt nur endlich viele Schwingungszustände unterhalb der Bindungsenergie D. Darüber zerfällt das Molekül (Dissoziation). Darum sieht man in IR-Spektren schwache Obertöne bei knapp weniger als dem doppelten Grundton.'},
+ {g:'Für Fortgeschrittene',t:'Klassisch verboten',d:'Wahrscheinlichkeit jenseits der Umkehrpunkte',lvl:3,s:{pot:'oszi',hw:.5,k:6,view:'prob',sel:0,only:true},
+  obs:'Rot schattiert ist der Bereich, in dem V > E ist. Wie groß ist die Wahrscheinlichkeit, das Teilchen dort zu finden? Vergleiche den Grundzustand mit höheren Zuständen.',
+  why:'Für den Oszillator-Grundzustand ist P(|x| > Umkehrpunkt) = erfc(1) ≈ 15,7 %. Mit wachsendem n nimmt der Anteil ab: Das Teilchen verhält sich zunehmend klassisch. Ein Teilchen, das man dort findet, hat bei der Messung Energie aufgenommen – es gibt keinen Widerspruch zum Energiesatz.'},
+ {g:'Für Fortgeschrittene',t:'Virialsatz',d:'⟨T⟩ und ⟨V⟩ vergleichen',lvl:3,s:{pot:'dreieck',Fk:2,k:6,view:'psi',sel:0,only:false},
+  obs:'Lies ⟨T⟩ und ⟨V⟩ für mehrere Zustände ab – beim V-förmigen Potential und beim Oszillator. Welcher Zusammenhang gilt?',
+  why:'Für Potentiale V ∝ |x|^s gilt der Virialsatz 2⟨T⟩ = s·⟨V⟩. Beim Oszillator (s = 2) ist ⟨T⟩ = ⟨V⟩, beim linearen Potential (s = 1) ist ⟨V⟩ = 2⟨T⟩. Beim Coulomb-Potential des Wasserstoffatoms (s = −1) folgt E = −⟨T⟩ – das erklärt, warum die Bindungsenergie gleich der kinetischen Energie ist.'},
+];
+function params(){switch(S.pot){
+  case 'oszi':return rng(S,'hw','ħω',.2,1,.01,v=>fmt(v,2)+' eV');
+  case 'doppel':return rng(S,'Vb','Barrierenhöhe Vb',.05,2.5,.01,v=>fmt(v,2)+' eV')+rng(S,'b','Abstand Mulde–Mitte b',.3,1.1,.01,v=>fmt(v,2)+' nm');
+  case 'asym':return rng(S,'st','Boden rechte Mulde',0,1,.005,v=>fmt(v,3)+' eV');
+  case 'topf':return rng(S,'V0','Tiefe V₀',.2,5,.05,v=>fmt(v,2)+' eV')+rng(S,'w','Breite',.3,3.6,.02,v=>fmt(v,2)+' nm');
+  case 'dreieck':return rng(S,'Fk','Steigung F',.5,4,.05,v=>fmt(v,2)+' eV/nm');
+  case 'morse':return rng(S,'D','Bindungsenergie D',1,4,.05,v=>fmt(v,2)+' eV')+rng(S,'a','Steifigkeit a',1,4,.05,v=>fmt(v,2)+' nm⁻¹');
+  case 'eigen':return `<p class="small">Male mit dem Stift auf die Fläche (Höhe = Potential, 0 bis ${VMAX} eV).</p>`}}
+return {S,P,
+ tools(){return S.pot==='eigen'?`<button class="btn" data-act="pen" aria-pressed="${S.pen}">Stift</button><button class="btn" data-act="smooth">Glätten</button><button class="btn" data-act="flat">Leeren</button><button class="btn" data-act="box">Kasten</button>`:`<button class="btn" data-act="copy">Als eigenes Potential bearbeiten</button>`},
+ act(a){if(a==='copy'){custom=Float64Array.from(XS,x=>clamp(Vof(x),0,VMAX));S.pot='eigen';S.pen=true;return 'all'}
+   if(a==='pen'){S.pen=!S.pen;return 'tools'}
+   if(a==='flat')custom=new Float64Array(NG).fill(0);
+   if(a==='box')custom=Float64Array.from(XS,x=>Math.abs(x)<1.2?0:3);
+   if(a==='smooth'){const c=custom.slice();for(let k=0;k<6;k++)for(let i=1;i<NG-1;i++)custom[i]=(c[i-1]+2*c[i]+c[i+1])/4,c[i]=custom[i]}},
+ applied(){if(S.pot==='eigen'&&!custom)custom=Float64Array.from(XS,x=>Math.abs(x)<1.2?0:3)},
+ changed(k){if(k==='pot'&&S.pot==='eigen'&&!custom)custom=Float64Array.from(XS,x=>Math.abs(x)<1.2?0:3);if(k==='pot')return 'tools'},
+ panel(){return card('Potential',sel(S,'pot',Object.entries(POT).filter(([k])=>lvl(2)||k!=='morse'||S.pot==='morse').map(([k,n])=>[n,k]))+params()+
+   rng(S,'k','Anzahl Zustände',1,12,1,v=>String(v))+seg(S,'view',[['ψ','psi'],['|ψ|²','prob'],['beides','both']])+
+   `<div class="chk">${chk(S,'only','nur ausgewählter Zustand')}</div><p class="small">Tippe ein Niveau an, um es auszuwählen.</p>`)+`<div id="ro"></div>`},
+ ro(){const c=calc(),i=S.sel,E=c.E[i],e=expect(c.P[i],XS,c.V,DX,E);
+   const gaps=c.E.slice(1).map((v,j)=>v-c.E[j]);
+   return card('Zustand n = '+(i+1),kv([['Energie',fmt(E,4)+' eV'],['Knoten',String(nodes(c.P[i]))],
+     lvl(2)&&['⟨x⟩',fmt(e.x,3)+' nm'],lvl(2)&&['Δx',fmt(e.dx,3)+' nm'],
+     lvl(2)&&['klassisch verboten',fmt(100*forbidden(c.P[i],c.V,E),1)+' %'],
+     lvl(3)&&['⟨T⟩ kinetisch',fmt(e.T,4)+' eV'],lvl(3)&&['⟨V⟩ potentiell',fmt(e.V,4)+' eV'],lvl(3)&&['Δx·Δp/ħ',fmt(e.dx*e.dp,3)]]))+
+     (lvl(2)&&gaps.length?card('Abstände der Niveaus',`<p class="small">${gaps.slice(0,8).map((g,j)=>`E${j+2}−E${j+1} = ${fmt(g,3)}`).join(' · ')} eV</p>`):'')},
+ status(){return S.pot==='eigen'?(S.pen?'Stift aktiv: Ziehe über die Fläche, um das Potential zu malen. Schalte den Stift aus, um Niveaus anzutippen.':'Tippe ein Niveau an.'):'Tippe ein Niveau an, um seine Wellenfunktion hervorzuheben.'},
+ down(x,y){if(!F)return;if(S.pot==='eigen'&&S.pen){drag=true;lastI=null;this.move(x,y);return}
+   let best=-1,bd=16;const c=calc();for(const i of shown){const d=Math.abs(F.Y(c.E[i])-y);if(d<bd){bd=d;best=i}}if(best>=0){S.sel=best;return 'panel'}},
+ move(x,y){if(!drag||!F)return;const xv=F.iX(x),v=clamp(F.iY(y),0,VMAX),j=clamp(Math.round((xv-XA)/DX-1),0,NG-1);
+   if(lastI==null)custom[j]=v;else{const a=Math.min(lastI[0],j),b=Math.max(lastI[0],j);for(let k=a;k<=b;k++)custom[k]=b===a?v:lastI[1]+(v-lastI[1])*(k-lastI[0])/(j-lastI[0])}
+   lastI=[j,v]},
+ up(){drag=false},
+ csv(){const c=calc(),r=[['n','E in eV','Knoten','<x> in nm','Δx in nm','<T> in eV','<V> in eV','klassisch verboten']];c.E.forEach((E,i)=>{const e=expect(c.P[i],XS,c.V,DX,E);r.push([i+1,E,nodes(c.P[i]),e.x,e.dx,e.T,e.V,forbidden(c.P[i],c.V,E)])});return r},
+ draw(){const c=calc();shown=S.only?[S.sel]:[...c.E.keys()];
+   const Emax=c.E[c.E.length-1],top=S.pot==='eigen'?VMAX:clamp(Math.max(Emax*1.15,c.E[0]*2.2,.3),.3,VMAX);
+   F=frame(58,26,CW-80,CH-26-46,XA,XB,Math.min(0,...c.V)-.02,top);axes(F,{xl:'x in nm',yl:'E in eV'});
+   levelPlot(F,{xs:XS,P:c.P,E:c.E,Vf:Vof,sel:S.sel,view:S.view,show:shown,big:S.only,lab:i=>['n = '+(i+1),lvl(2)?fmt(c.E[i],3)+' eV':'']});
+   if(lvl(3)||S.pi===5){const E=c.E[S.sel];clipF(F);ctx.fillStyle=cs('red',.1);for(let j=0;j<NG;j++)if(c.V[j]>E){const X=F.X(XS[j]);ctx.fillRect(X-F.w/NG/2,F.y,F.w/NG+.6,F.h)}ctx.restore()}
+   if(S.pot==='eigen'&&S.pen)txt('✎ Stift',F.x+F.w-8,F.y+18,cs('vio'),'right',14,true)}
+ };
+})();
+/* =====================================================================
+   STATION 4: WELLENPAKET (zeitabhängige Schrödinger-Gleichung, Crank-Nicolson)
+   ===================================================================== */
+/* Transfermatrix für stückweise konstante Potentiale: segs = [[x_start, V], …], erstes Segment ab −∞ */
+function transT(E,segs){
+  const cm=(a,b)=>[a[0]*b[0]-a[1]*b[1],a[0]*b[1]+a[1]*b[0]],ca=(a,b)=>[a[0]+b[0],a[1]+b[1]],cd=(a,b)=>{const m=b[0]*b[0]+b[1]*b[1];return [(a[0]*b[0]+a[1]*b[1])/m,(a[1]*b[0]-a[0]*b[1])/m]};
+  const kk=V=>{const d=(E-V)/C0;return d>=0?[Math.sqrt(d),0]:[0,Math.sqrt(-d)]};
+  const ex=(k,x)=>{const r=Math.exp(-k[1]*x);return [r*Math.cos(k[0]*x),r*Math.sin(k[0]*x)]}; // e^{ikx}
+  const n=segs.length;let A=[1,0],B=[0,0];// im letzten Segment: nur auslaufend
+  const kl=kk(segs[n-1][1]);if(kl[0]===0)return 0;
+  for(let j=n-1;j>0;j--){const x=segs[j][0],k2=kk(segs[j][1]),k1=kk(segs[j-1][1]);
+    const p=ex(k2,x),m=ex([-k2[0],-k2[1]],x);const psi=ca(cm(A,p),cm(B,m)),dps=cm([-k2[1],k2[0]],ca(cm(A,p),cm([-B[0],-B[1]],m)));
+    // in Segment j−1: A1 e^{ik1x}+B1 e^{−ik1x} mit gleichem ψ und ψ′
+    const e1=ex(k1,x),e2=ex([-k1[0],-k1[1]],x),ik1=[-k1[1],k1[0]];
+    const t=cd(dps,ik1);A=cd(ca(psi,t),[2*e1[0],2*e1[1]]);B=cd(ca(psi,[-t[0],-t[1]]),[2*e2[0],2*e2[1]])}
+  const k0=kk(segs[0][1]);return (kl[0]/k0[0])/(A[0]*A[0]+A[1]*A[1])}
+MODES.paket=(()=>{
+const XL=90,DXp=.05,NP=Math.round(XL/DXp),XC=45,DT=.05,CAPW=8,W0=.6,HWO=.05;
+const XSp=Float64Array.from({length:NP},(_,i)=>i*DXp);
+const S={pi:0,pot:'barriere',E0:.3,sig:3,V0:.4,w:.5,view:'prob',speed:6,cells:15};
+let mst={L:0,R:0,k:''},log=[];let re=new Float64Array(NP),im=new Float64Array(NP),V=new Float64Array(NP),W=new Float64Array(NP),step=null,t=0,absL=0,absR=0,peak0=1,run=false,potKey='',lastMeas=null,E0m=0,traj=[];
+const POT={frei:'frei (kein Potential)',barriere:'Barriere',stufe:'Potentialstufe',topf:'Potentialtopf',doppelb:'Doppelbarriere',kristall:'Kristall (viele Barrieren)',oszi:'Parabel (Oszillator)'};
+const scat=()=>S.pot!=='frei'&&S.pot!=='oszi';
+function segs(){const w=S.w,V0=S.V0;switch(S.pot){
+  case 'barriere':return [[0,0],[XC,V0],[XC+w,0]];
+  case 'stufe':return [[0,0],[XC,V0]];
+  case 'topf':return [[0,0],[XC,-V0],[XC+w,0]];
+  case 'doppelb':return [[0,0],[XC,V0],[XC+w,0],[XC+w+2,V0],[XC+2*w+2,0]];
+  case 'kristall':{const s=[[0,0]];for(let j=0;j<S.cells;j++){s.push([XC+j,V0]);s.push([XC+j+w,0])}return s}}return [[0,0]]}
+function region(){switch(S.pot){case 'barriere':case 'topf':return [XC,XC+S.w];case 'stufe':return [XC,XC];case 'doppelb':return [XC,XC+2*S.w+2];case 'kristall':return [XC,XC+S.cells-1+S.w];default:return [XC,XC]}}
+function buildV(){const sg=segs();for(let i=0;i<NP;i++){const x=XSp[i];let v=0;
+    if(S.pot==='oszi')v=HWO*HWO/(4*C0)*(x-XC)**2;else for(const [a,vv] of sg)if(x>=a-1e-9)v=vv;V[i]=v;
+    const d=Math.max(CAPW-x,x-(XL-CAPW),0);W[i]=S.pot==='oszi'?0:W0*(d/CAPW)**2}
+  step=makeCN(V,W,DXp,C0,DT)}
+function reset(){buildV();const k0=S.pot==='oszi'?0:Math.sqrt(S.E0/C0),sg=S.sig;
+  const x0=S.pot==='oszi'?XC-Math.sqrt(S.E0/(HWO*HWO/(4*C0))):Math.min(XC-3*sg-1.5,XC-8);let n=0;
+  for(let i=0;i<NP;i++){const x=XSp[i],g=Math.exp(-((x-x0)**2)/(4*sg*sg));re[i]=g*Math.cos(k0*(x-x0));im[i]=g*Math.sin(k0*(x-x0));n+=g*g}
+  n=Math.sqrt(n*DXp);peak0=0;for(let i=0;i<NP;i++){re[i]/=n;im[i]/=n;peak0=Math.max(peak0,re[i]**2+im[i]**2)}
+  t=0;absL=absR=0;lastMeas=null;traj=[];log=[];
+  let e=0;for(let i=1;i<NP-1;i++){const lr=(re[i+1]-2*re[i]+re[i-1])/(DXp*DXp),li=(im[i+1]-2*im[i]+im[i-1])/(DXp*DXp);e+=(-C0*(re[i]*lr+im[i]*li)+V[i]*(re[i]**2+im[i]**2))*DXp}E0m=e;
+  potKey=key()}
+const key=()=>[S.pot,S.E0,S.sig,S.V0,S.w,S.cells].join();
+function probs(){const [a,b]=region();let L=0,M=0,R=0,mx=0,mx2=0,n=0;for(let i=0;i<NP;i++){const p=(re[i]**2+im[i]**2)*DXp,x=XSp[i];n+=p;mx+=p*x;mx2+=p*x*x;if(x<a)L+=p;else if(x>b)R+=p;else M+=p}
+  const m=mx/(n||1);return {L:L+absL,M,R:R+absR,x:m,dx:Math.sqrt(Math.max(0,mx2/(n||1)-m*m)),n}}
+function Tavg(){if(!scat())return NaN;const k0=Math.sqrt(S.E0/C0),sk=1/(2*S.sig);let s=0,w=0;for(let j=-40;j<=40;j++){const k=k0+j/10*sk;if(k<=0)continue;const g=Math.exp(-((k-k0)**2)/(2*sk*sk));s+=g*transT(C0*k*k,segs());w+=g}return s/w}
+function resE(){let best=.22,bt=0;for(let E=.12;E<Math.min(.35,S.V0);E+=.0005){const T=transT(E,segs());if(T>bt){bt=T;best=E}}return best}
+const P=[
+ {g:'Bewegung',t:'Freies Wellenpaket',d:'Es zerfließt',s:{pot:'frei',E0:.3,sig:1,view:'prob'},
+  obs:'Starte. Was passiert mit der Breite des Pakets und mit seiner Höhe? Vergleiche ein schmales (σ = 0,5 nm) mit einem breiten Paket (σ = 3 nm). Welches zerfließt schneller?',
+  why:'Ein Wellenpaket ist eine Überlagerung vieler Wellen mit verschiedenen Wellenlängen. Weil kürzere Wellen schneller laufen (v = ħk/m), läuft das Paket auseinander. Ein schmales Paket enthält besonders viele verschiedene Wellenlängen (Unschärferelation Δx·Δp ≥ ħ/2) und zerfließt darum schneller: σ(t) = σ·√(1 + (ħt/(2mσ²))²). Die Fläche unter |ψ|² bleibt immer 1 – das Elektron geht nicht verloren.'},
+ {g:'Barrieren',t:'Tunneleffekt',d:'Durch die Wand, obwohl E < V₀',s:{pot:'barriere',E0:.3,sig:3,V0:.4,w:.5,view:'prob'},
+  obs:'Die mittlere Energie (orange Linie) liegt unter der Barriere. Ein klassisches Teilchen würde immer zurückprallen. Wie viel Wahrscheinlichkeit kommt durch? Mache die Barriere doppelt so breit: Wie stark sinkt der durchgelassene Anteil?',
+  why:'Hinter der Barriere taucht ein Teil des Pakets auf, obwohl seine Energie nicht reicht. Im Inneren fällt ψ exponentiell ab; ist die Barriere dünn, bleibt am Ende noch etwas übrig. Für dicke Barrieren gilt T ≈ 16E(V₀ − E)/V₀² · e^(−2κw) mit κ = √(2m(V₀ − E))/ħ: Doppelte Breite heißt etwa das Quadrat des Faktors. Anwendungen: Rastertunnelmikroskop (Abstand auf 0,01 nm genau), Flash-Speicher, Alpha-Zerfall, Kernfusion in der Sonne.'},
+ {g:'Barrieren',t:'Über die Barriere',d:'Reflexion trotz genug Energie',s:{pot:'barriere',E0:.6,sig:3,V0:.4,w:1,view:'prob'},
+  obs:'Jetzt ist E > V₀. Klassisch käme alles durch. Wird trotzdem etwas reflektiert? Verändere die Breite w (ab Niveau „Mittel“ siehst du den berechneten Wert T).',
+  why:'Auch über der Barriere wird ein Teil der Welle reflektiert, weil sich die Wellenlänge an den Kanten plötzlich ändert – wie Licht an einer Glasplatte. Die Reflexe an Vorder- und Rückseite interferieren; passt eine ganze Zahl halber Wellenlängen in die Barriere, löschen sie sich aus und T = 1 (wie bei einer Antireflexschicht).'},
+ {g:'Barrieren',t:'Potentialstufe',d:'Wellenlänge ändert sich',s:{pot:'stufe',E0:.5,sig:3,V0:.3,view:'reim'},
+  obs:'Beobachte Re ψ: Wie ändert sich die Wellenlänge hinter der Stufe? Welcher Anteil wird reflektiert? Probiere auch E₀ < V₀.',
+  why:'Hinter der Stufe ist die kinetische Energie kleiner, also der Impuls kleiner und die de-Broglie-Wellenlänge größer. Für E > V₀ wird der Anteil R = ((k₁ − k₂)/(k₁ + k₂))² reflektiert. Für E < V₀ wird alles reflektiert, aber ψ dringt ein Stück in die Stufe ein.'},
+ {g:'Messen',t:'Messung und Kollaps',d:'Links oder rechts?',lvl:2,s:{pot:'barriere',E0:.35,sig:3,V0:.4,w:.35,view:'prob'},
+  obs:'Lass das Paket an der Barriere aufspalten. Drücke dann „Ort messen“. Was passiert mit dem Teil auf der anderen Seite? Wiederhole es oft (Neu → Start → Ort messen, wenn das Paket aufgeteilt ist): Wie oft wird das Elektron rechts gefunden? Vergleiche mit T(E₀).',
+  why:'Vor der Messung ist das Elektron weder links noch rechts, sondern in einer Überlagerung beider Möglichkeiten. Die Messung liefert einen Ort; danach ist die Wellenfunktion dort konzentriert (Kollaps) und der andere Teil verschwindet sofort. Über viele Wiederholungen wird das Elektron mit der Wahrscheinlichkeit T rechts gefunden. Weil der Ort danach sehr genau bekannt ist, ist der Impuls sehr unscharf – das neue Paket zerfließt rasch.'},
+ {g:'Messen',t:'Resonantes Tunneln',d:'Zwei Barrieren lassen mehr durch',lvl:2,s:{pot:'doppelb',E0:'res',sig:6,V0:.5,w:.4,view:'prob'},
+  obs:'Zwei Barrieren mit 2 nm Abstand. Eigentlich sollte jetzt noch weniger durchkommen. Die Energie ist auf die Resonanz eingestellt. Vergleiche mit E₀ = 0,15 eV. Was passiert zwischen den Barrieren?',
+  why:'Zwischen den Barrieren gibt es einen fast gebundenen Zustand (wie im Kasten). Trifft die Energie genau diesen Zustand, schaukeln sich die Wellen dazwischen auf, und die Reflexe beider Barrieren löschen sich aus – T kann fast 1 werden (Analogie: Fabry-Pérot-Interferometer). Resonanztunneldioden nutzen das und sind die schnellsten elektronischen Oszillatoren (bis über 1 THz).'},
+ {g:'Kristall',t:'Bragg-Reflexion',d:'Warum es Bandlücken gibt',lvl:2,s:{pot:'kristall',E0:.44,sig:6,V0:.3,w:.2,cells:15,view:'prob'},
+  obs:'Eine Reihe von 15 gleichen Barrieren im Abstand a = 1 nm – ein eindimensionaler Kristall. Schicke Pakete mit E₀ = 0,25 eV, 0,44 eV und 0,65 eV hinein. Welches wird fast vollständig reflektiert?',
+  why:'Bei λ ≈ 2a (also k = π/a, E ≈ 0,38 eV plus mittleres Potential) sind die Reflexe aller Barrieren in Phase und verstärken sich: Bragg-Reflexion wie bei Röntgenstrahlen. Für diese Energien kann sich das Elektron im Kristall nicht ausbreiten – das ist die Energielücke zwischen zwei Bändern. Mehr dazu im Bandstrukturlabor.'},
+ {g:'Für Fortgeschrittene',t:'Kohärenter Zustand',d:'Ein Paket, das nicht zerfließt',lvl:3,s:{pot:'oszi',E0:.4,sig:.873,view:'prob'},
+  obs:'Im Parabelpotential (ħω = 0,05 eV) pendelt das Paket. Mit σ = x₀/√2 ≈ 0,87 nm bleibt seine Form erhalten. Stelle σ = 0,4 nm und σ = 2 nm ein: Was passiert jetzt? Miss die Periode.',
+  why:'Der kohärente Zustand ist eine Überlagerung vieler Oszillator-Zustände, deren Phasen sich wegen der gleichen Abstände (ħω) perfekt im Takt drehen. Er bewegt sich wie ein klassisches Pendel mit T = 2π/ω = h/(ħω) ≈ 82,7 fs, unabhängig von der Amplitude, und hat immer die minimale Unschärfe. Andere Breiten „atmen“ (gequetschte Zustände). Laserlicht ist ein kohärenter Zustand des Lichtfelds.'},
+ {g:'Für Fortgeschrittene',t:'Die Phase sichtbar machen',d:'Farbe = Phase von ψ',lvl:3,s:{pot:'barriere',E0:.3,sig:3,V0:.4,w:.5,view:'phase'},
+  obs:'Die Farbe zeigt die komplexe Phase von ψ, die Höhe |ψ|². Wie oft wiederholen sich die Farben auf einem Nanometer? Was passiert mit der Farbabfolge beim reflektierten Teil? Woher kommen die Streifen vor der Barriere?',
+  why:'Die Phase ändert sich entlang des Pakets um k pro Längeneinheit; ihr Gefälle ist der Impuls p = ħk. Der reflektierte Teil läuft zurück, seine Farben laufen in die andere Richtung. Vor der Barriere überlagern sich einlaufende und reflektierte Welle: Die Streifen in |ψ|² mit Abstand λ/2 sind eine stehende Welle.'},
+];
+return {S,P,
+ tools(){return `<button class="btn hot" data-act="run">${run?'Pause':'▶ Start'}</button><button class="btn" data-act="reset">Neu</button><button class="btn" data-act="meas">Ort messen</button>`+(lvl(2)?`<span class="sep"></span><label class="small" for="sp">Tempo</label><input id="sp" type="range" min="1" max="40" step="1" value="${S.speed}" style="width:110px">`:'')},
+ bindTools(){const s=$('#sp');if(s)s.oninput=()=>{S.speed=+s.value}},
+ act(a){if(a==='run'){if(key()!==potKey)reset();run=!run;return 'tools'}
+   if(a==='reset'){reset();run=false;return 'tools'}
+   if(a==='meas'){if(key()!==potKey)reset();let n=0;for(let i=0;i<NP;i++)n+=re[i]**2+im[i]**2;let u=Math.random()*n,j=0;for(;j<NP-1;j++){u-=re[j]**2+im[j]**2;if(u<=0)break}
+     const x=XSp[j],s=.4;let m=0;for(let i=0;i<NP;i++){const g=Math.exp(-((XSp[i]-x)**2)/(4*s*s));re[i]=g;im[i]=0;m+=g*g}m=Math.sqrt(m*DXp);for(let i=0;i<NP;i++)re[i]/=m;absL=absR=0;lastMeas={x,t};if(mst.k!==key())mst={L:0,R:0,k:key()};if(scat()){if(x>region()[1])mst.R++;else if(x<region()[0])mst.L++}return}},
+ applied(){if(S.E0==='res')S.E0=+resE().toFixed(3);reset();run=false},
+ changed(k){if(['pot','E0','sig','V0','w','cells'].includes(k)){if(k==='pot'&&S.pot==='oszi'){S.sig=.873;S.E0=Math.min(S.E0,1)}reset();run=false;return 'tools'}},
+ panel(){const o=S.pot==='oszi';return card('Aufbau',sel(S,'pot',Object.entries(POT).filter(([k])=>lvl(2)||!['doppelb','kristall','oszi'].includes(k)||k===S.pot).map(([k,n])=>[n,k]))+
+   rng(S,'E0',o?'Auslenkungsenergie':'Energie E₀',.02,o?1:1.5,.005,v=>fmt(v,3)+' eV')+rng(S,"sig","Breite σ",.3,6,.01,v=>fmt(v,2)+' nm')+
+   (scat()&&S.pot!=='kristall'||S.pot==='kristall'?rng(S,'V0',S.pot==='topf'?'Tiefe V₀':'Höhe V₀',.05,1.5,.01,v=>fmt(v,2)+' eV'):'')+
+   (['barriere','topf','doppelb','kristall'].includes(S.pot)?rng(S,'w','Breite w',.1,S.pot==='topf'?6:S.pot==='kristall'?.8:2.5,.01,v=>fmt(v,2)+' nm'):'')+
+   (S.pot==='kristall'?rng(S,'cells','Anzahl Barrieren',2,25,1,v=>String(v)):'')+
+   seg(S,'view',[['|ψ|²','prob']].concat(lvl(2)?[['Re, Im','reim']]:[],lvl(3)?[['Phase','phase']]:[]))+
+   `<p class="small">Grau am Rand: Absorber – dort verlässt die Welle das Bild.</p>`)+`<div id="ro"></div>`},
+ ro(){const p=probs(),[a,b]=region();const T=scat()?transT(S.E0,segs()):NaN,Ta=lvl(3)?Tavg():NaN;
+   const lb=S.pot==='kristall'?'vor dem Kristall':S.pot==='stufe'?'vor der Stufe':'links',rb=S.pot==='kristall'?'hinter dem Kristall':S.pot==='stufe'?'auf der Stufe':'rechts';
+   const sigT=S.sig*Math.sqrt(1+(C0*t/(HB*S.sig*S.sig))**2);
+   return card('Messwerte',kv([['Zeit t',fmt(t,1)+' fs'],
+     scat()&&['Wahrscheinlichkeit '+lb,fmt(100*p.L,1)+' %'],scat()&&b-a>.01&&['im Bereich dazwischen',fmt(100*p.M,1)+' %'],scat()&&['Wahrscheinlichkeit '+rb,fmt(100*p.R,1)+' %'],
+     lvl(2)&&['⟨x⟩',fmt(p.x,2)+' nm'],lvl(2)&&['Δx',fmt(p.dx,2)+' nm'],
+     lvl(3)&&S.pot==='frei'&&['Theorie σ(t)',fmt(sigT,2)+' nm'],
+     lvl(2)&&['mittlere Energie ⟨E⟩',fmt(E0m,3)+' eV'],
+     lvl(2)&&scat()&&['T(E₀) berechnet',fmt(100*T,1)+' %'],
+     lvl(3)&&scat()&&['T über Paket gemittelt',fmt(100*Ta,1)+' %'],
+     lastMeas&&['zuletzt gemessen bei',fmt(lastMeas.x,1)+' nm'],
+     mst.k===key()&&mst.L+mst.R>0&&['Messungen: rechts / gesamt',mst.R+' / '+(mst.L+mst.R)+' = '+fmt(100*mst.R/(mst.L+mst.R),0)+' %']]))+
+     (lvl(3)&&scat()?card('Transmission T(E)','<canvas id="tE" width="300" height="150" style="width:100%;height:150px"></canvas><p class="small">Violett: Energieverteilung des Pakets. Rote Linie: Höhe V₀.</p>'):'')},
+ afterRo(){const c=$('#tE');if(!c)return;const g=c.getContext('2d'),w=c.clientWidth||300,h=150,d=devicePixelRatio||1;c.width=w*d;c.height=h*d;g.setTransform(d,0,0,d,0,0);
+   const Em=Math.max(1.2,S.E0*2,S.V0*2),sg=segs(),k0=Math.sqrt(S.E0/C0),sk=1/(2*S.sig);
+   g.strokeStyle=cs('line');g.strokeRect(30,8,w-38,h-30);g.fillStyle=cs('vio',.25);g.beginPath();g.moveTo(30,h-22);
+   for(let i=0;i<=200;i++){const E=i/200*Em,k=Math.sqrt(E/C0),q=Math.exp(-((k-k0)**2)/(2*sk*sk));g.lineTo(30+i/200*(w-38),h-22-q*(h-34))}g.lineTo(w-8,h-22);g.fill();
+   g.strokeStyle=cs('blue');g.lineWidth=2;g.beginPath();for(let i=1;i<=300;i++){const E=i/300*Em,T=transT(E,sg),X=30+i/300*(w-38),Y=h-22-T*(h-34);i>1?g.lineTo(X,Y):g.moveTo(X,Y)}g.stroke();
+   const xv=30+S.V0/Em*(w-38);g.strokeStyle=cs('red');g.setLineDash([4,3]);g.beginPath();g.moveTo(xv,8);g.lineTo(xv,h-22);g.stroke();g.setLineDash([]);
+   g.fillStyle=cs('mut');g.font='12px '+FONT;g.textAlign='center';g.fillText('E in eV (0 bis '+fmt(Em,1)+')',w/2,h-6);g.textAlign='left';g.fillText('T = 1',2,16);g.fillText('0',18,h-22)},
+ roKey(){return Math.round(t*2)+'|'+lvl(3)},
+ status(){if(lastMeas)return `Messung bei t = ${fmt(lastMeas.t,1)} fs: Elektron bei x = ${fmt(lastMeas.x,1)} nm gefunden – die Wellenfunktion ist dort kollabiert.`;
+   return run?`t = ${fmt(t,1)} fs · ${fmt(S.speed*DT,2)} fs pro Bild`:'Drücke „Start“. Das Paket läuft von links nach rechts.'},
+ csv(){const r=[['Potential',POT[S.pot]],['E0 in eV',S.E0],['σ in nm',S.sig],['V0 in eV',S.V0],['w in nm',S.w],[],['t in fs','P links','P Mitte','P rechts','<x> in nm','Δx in nm']];log.forEach(q=>r.push(q));if(mst.L+mst.R)r.push([],['Messungen links','Messungen rechts'],[mst.L,mst.R]);return r},
+ draw(){if(key()!==potKey)reset();
+   if(run){for(let s=0;s<S.speed;s++){step(re,im);let aL=0,aR=0;for(let i=0;i<NP;i++)if(W[i]>0){const q=W[i]*(re[i]**2+im[i]**2);if(i<NP/2)aL+=q;else aR+=q}absL+=2/HB*aL*DXp*DT;absR+=2/HB*aR*DXp*DT;t+=DT}
+     {const p=probs();if(!log.length||t-log[log.length-1][0]>=.499)log.push([+t.toFixed(2),p.L,p.M,p.R,p.x,p.dx]);if(log.length>4000)log.shift();if(S.pot==='oszi'){traj.push([t,p.x]);if(traj.length>600)traj.shift()}}}
+   const vmin=Math.min(0,...V.filter((_,i)=>W[i]===0||S.pot==='oszi')),vlo=S.pot==='topf'?-S.V0:0;
+   const top=Math.max(S.E0*2,S.pot==='oszi'?S.E0*1.6:(scat()?S.V0*1.5:0),.4);
+   const o=S.pot==='oszi';F=frame(58,26,CW-80,CH-26-46,o?XC-13:0,o?XC+13:XL,Math.min(vlo,vmin)-top*.05,top);axes(F,{xl:'x in nm',yl:'E in eV'});
+   const xf=i=>F.X(XSp[i]);drawPot(F,NP,xf,V,top*3);
+   if(!o){ctx.fillStyle=cs('mut',.12);ctx.fillRect(F.x,F.y,F.X(CAPW)-F.x,F.h);ctx.fillRect(F.X(XL-CAPW),F.y,F.x+F.w-F.X(XL-CAPW),F.h)}
+   const Eb=S.pot==='oszi'?S.E0:S.E0,Yb=F.Y(Eb),A=Math.min(F.h*.55,(Yb-F.y)*.95);
+   line(F.x,Yb,F.x+F.w,Yb,cs('amb',.9),1.5,[6,4]);txt((S.pot==='oszi'?'E = ':'E₀ = ')+fmt(Eb,2)+' eV',F.x+F.w-6,Yb+15,cs('amb'),'right',12,true);
+   clipF(F);
+   const pr=i=>(re[i]**2+im[i]**2)/peak0;
+   if(S.view==='phase'){for(let i=0;i<NP;i++){const h=pr(i)*A;if(h<.4)continue;ctx.fillStyle=hueCol(Math.atan2(im[i],re[i]));ctx.fillRect(xf(i)-.6,Yb-h,F.w/NP+1.2,h)}}
+   else if(S.view==='reim'){const s=A*.5/Math.sqrt(peak0);curve(NP,xf,i=>Yb-s*im[i],cs('red',.85),1.4);curve(NP,xf,i=>Yb-s*re[i],cs('blue'),1.6);fillC(NP,xf,i=>Yb-A*.5*pr(i),Yb,cs('vio',.18))}
+   else{fillC(NP,xf,i=>Yb-A*pr(i),Yb,cs('vio',.4));curve(NP,xf,i=>Yb-A*pr(i),cs('vio'),2)}
+   ctx.restore();
+   if(lastMeas){const X=F.X(lastMeas.x);line(X,F.y,X,F.y+F.h,cs('ok'),1.5,[3,3]);txt('Messung',X+4,F.y+14,cs('ok'),'left',12,true)}
+   if(scat()){const p=probs(),[a,b]=region();txt(fmt(100*p.L,0)+' %',F.X(a)-12,F.y+18,cs('ink'),'right',16,true);txt(fmt(100*p.R,0)+' %',F.X(b)+12,F.y+18,cs('ink'),'left',16,true)}
+   txt('t = '+fmt(t,1)+' fs',F.x+8,F.y+18,cs('mut'),'left',13,true);
+   if(S.pot==='oszi'&&traj.length>2&&lvl(2)){const x0=F.x+F.w-190,y0=F.y+30,w=180,h=70;ctx.fillStyle=cs('pan',.9);ctx.fillRect(x0,y0,w,h);const t0=traj[0][0],t1=traj[traj.length-1][0]||1;
+     curve(traj.length,i=>x0+(traj[i][0]-t0)/Math.max(1,t1-t0)*w,i=>y0+h/2-(traj[i][1]-XC)/15*h/2,cs('blue'),1.5);txt('⟨x⟩(t)',x0+4,y0+14,cs('mut'),'left',12,true)}
+ }};
+})();
+/* =====================================================================
+   STATION 5: ÜBERLAGERUNG (Superposition stationärer Zustände, analytische Zeitentwicklung)
+   ===================================================================== */
+MODES.ueberlagerung=(()=>{
+const NM=6;
+const S={pi:0,sys:'kasten',mode:'hand',c:[1,0,0,0,0,0],ph:[0,0,0,0,0,0],view:'prob',speed:1,carpet:false};
+let basis=null,t=0,run=true,trace=[],carpet=null,ckey='';
+function build(){const key=S.sys+S.mode;if(basis&&basis.key===key)return basis;let xs,phi,E,c,ph;
+  if(S.sys==='kasten'){const L=1,N=500,nb=S.mode==='paket'?60:NM;xs=Float64Array.from({length:N},(_,i)=>i/(N-1)*L);E=[];phi=[];
+    for(let n=1;n<=nb;n++){E.push(C0*(n*Math.PI/L)**2);phi.push(xs.map(x=>Math.SQRT2*Math.sin(n*Math.PI*x)))}}
+  else{const x0=Math.sqrt(2*C0/.5),N=500,nb=S.mode==='paket'?24:NM;xs=Float64Array.from({length:N},(_,i)=>-2.4+i/(N-1)*4.8);phi=hoFuncs(nb-1,xs,x0);E=[...Array(nb).keys()].map(n=>.5*(n+.5))}
+  if(S.mode==='paket'){const dx=xs[1]-xs[0];c=[];ph=[];
+    if(S.sys==='kasten'){const g=xs.map(x=>Math.exp(-((x-.3)**2)/(4*.05**2))),k0=30;
+      for(const f of phi){let r=0,i=0;for(let j=0;j<xs.length;j++){r+=f[j]*g[j]*Math.cos(k0*xs[j])*dx;i+=f[j]*g[j]*Math.sin(k0*xs[j])*dx}c.push(Math.hypot(r,i));ph.push(Math.atan2(i,r))}}
+    else{const al=2.2;for(let n=0;n<phi.length;n++){c.push(Math.exp(-al*al/2)*al**n/Math.sqrt(fact(n)));ph.push(0)}}
+    const s=Math.sqrt(c.reduce((a,v)=>a+v*v,0));c=c.map(v=>v/s)}
+  carpet=null;return basis={key,xs,phi,E,c,ph}}
+function coeff(){const b=build();if(S.mode==='paket')return [b.c,b.ph];const s=Math.sqrt(S.c.reduce((a,v)=>a+v*v,0))||1;return [S.c.map(v=>v/s),S.ph]}
+function psiAt(tt,out){const b=build(),[c,ph]=coeff(),N=b.xs.length;out=out||{re:new Float64Array(N),im:new Float64Array(N)};out.re.fill(0);out.im.fill(0);
+  for(let n=0;n<c.length;n++){if(!c[n])continue;const a=-b.E[n]*tt/HB+ph[n],cr=c[n]*Math.cos(a),ci=c[n]*Math.sin(a),f=b.phi[n];for(let j=0;j<N;j++){out.re[j]+=cr*f[j];out.im[j]+=ci*f[j]}}return out}
+let buf=null;
+const Trev=()=>S.sys==='kasten'?2*Math.PI*HB/build().E[0]:2*Math.PI*HB/.5;
+function makeCarpet(){const b=build(),key=b.key+coeff()[0].join()+coeff()[1].join();if(carpet&&ckey===key)return carpet;ckey=key;
+  const NX=260,NT=300,T=Trev(),img=new Float64Array(NX*NT),o={re:new Float64Array(b.xs.length),im:new Float64Array(b.xs.length)};let mx=0;
+  for(let k=0;k<NT;k++){psiAt(k/(NT-1)*T,o);for(let i=0;i<NX;i++){const j=Math.round(i/(NX-1)*(b.xs.length-1)),p=o.re[j]**2+o.im[j]**2;img[k*NX+i]=p;if(p>mx)mx=p}}
+  const cvs=document.createElement('canvas');cvs.width=NX;cvs.height=NT;const g=cvs.getContext('2d'),id=g.createImageData(NX,NT);const v=C.vio,bg=C.fld;
+  for(let q=0;q<NX*NT;q++){const a=Math.sqrt(img[q]/mx);for(let ch=0;ch<3;ch++)id.data[q*4+ch]=bg[ch]+(v[ch]-bg[ch])*a;id.data[q*4+3]=255}
+  g.putImageData(id,0,0);return carpet=cvs}
+const P=[
+ {g:'Grundidee',t:'Stationärer Zustand',d:'Was „stationär“ bedeutet',s:{sys:'kasten',mode:'hand',c:[1,0,0,0,0,0],ph:[0,0,0,0,0,0],view:'reim',speed:1},
+  obs:'Nur ein einziger Zustand (n = 1). Beobachte Re ψ (blau) und Im ψ (rot). Bewegt sich |ψ|²?',
+  why:'Ein Eigenzustand entwickelt sich wie ψ(x, t) = φ(x)·e^(−iEt/ħ): Nur die komplexe Phase dreht sich, mit der Frequenz f = E/h. Real- und Imaginärteil schwingen, |ψ|² bleibt aber genau gleich. Darum heißen diese Zustände stationär – und darum strahlt ein Atom in einem stationären Zustand nicht, anders als ein kreisendes Elektron in der klassischen Physik.'},
+ {g:'Grundidee',t:'Zwei Zustände: es schwappt',d:'Woher die Lichtfrequenz kommt',s:{sys:'kasten',mode:'hand',c:[1,1,0,0,0,0],ph:[0,0,0,0,0,0],view:'prob',speed:1},
+  obs:'Gleich viel n = 1 und n = 2. Wie lange dauert ein Hin und Her? Vergleiche mit T = h/(E₂ − E₁) rechts. Ändere die Anteile.',
+  why:'|ψ|² enthält jetzt einen Mischterm 2·c₁c₂·φ₁φ₂·cos((E₂ − E₁)t/ħ), der mit der Frequenz f = (E₂ − E₁)/h schwingt. Das Elektron schwappt hin und her – eine schwingende Ladung sendet Licht genau dieser Frequenz aus. So erklärt die Quantenmechanik Bohrs Frequenzbedingung h·f = E₂ − E₁. Gemessen wird trotzdem immer nur E₁ oder E₂, mit den Wahrscheinlichkeiten |c₁|² und |c₂|².'},
+ {g:'Grundidee',t:'Phase der Koeffizienten',d:'Nicht nur die Anteile zählen',lvl:3,s:{sys:'kasten',mode:'hand',c:[1,1,0,0,0,0],ph:[0,0,0,0,0,0],view:'prob',speed:.5},
+  obs:'Ändere die Phase φ₂ des zweiten Zustands. Wo startet das Maximum? Was passiert bei φ₂ = π?',
+  why:'Die Anteile |cₙ|² sind gleich geblieben, trotzdem sieht der Zustand anders aus: Die relative Phase bestimmt, wo die Wellen sich verstärken. φ₂ = π spiegelt den Zustand; φ₂ = π/2 entspricht einer Zeitverschiebung um eine Viertelperiode. Information steckt also auch in den Phasen – das nutzen Quantencomputer.'},
+ {g:'Wellenpakete',t:'Wellenpaket im Kasten',d:'Es zerläuft – und kommt zurück',s:{sys:'kasten',mode:'paket',view:'prob',speed:1.5,carpet:false},
+  obs:'Ein Paket aus 60 Zuständen läuft hin und her und zerfließt. Warte: Nach etwa 11 fs ist es plötzlich wieder da! Halte bei der halben Zeit an. Was siehst du bei einem Viertel?',
+  why:'Weil Eₙ = n²·E₁ ist, sind alle Phasen e^(−iEₙt/ħ) nach T = h/E₁ (hier 11,0 fs) gleichzeitig wieder 1: Das Paket entsteht neu (Quanten-Wiederkehr, „quantum revival“). Bei T/2 erscheint es gespiegelt, bei T/4 als zwei kleinere Kopien gleichzeitig an verschiedenen Orten. Das wurde mit Elektronen in Atomen und mit Molekülen gemessen.'},
+ {g:'Wellenpakete',t:'Quantenteppich',d:'|ψ(x, t)|² über eine ganze Periode',lvl:3,s:{sys:'kasten',mode:'paket',view:'prob',speed:1.5,carpet:true},
+  obs:'Der Teppich unten zeigt |ψ|² für alle Zeiten von 0 bis T (nach unten). Findest du die gespiegelten und die geteilten Pakete? Welche Linien laufen schräg, welche senkrecht?',
+  why:'Die Muster heißen Quantenteppiche. Die schrägen Linien sind die hin und her laufenden Teilpakete, die senkrechten „Kanäle“ entstehen durch Interferenz bei gebrochenen Teilen von T (T/2, T/3, T/4 …). Es ist dieselbe Mathematik wie beim optischen Talbot-Effekt hinter einem Gitter.'},
+ {g:'Wellenpakete',t:'Kohärenter Zustand',d:'Ein Paket, das nie zerfließt',lvl:2,s:{sys:'oszi',mode:'paket',view:'prob',speed:1},
+  obs:'Im harmonischen Oszillator pendelt das Paket ohne zu zerfließen. Sieh dir rechts die Verteilung der Anteile |cₙ|² an. Wie groß ist die Periode?',
+  why:'Die Niveaus des Oszillators sind gleichabständig, darum laufen alle Phasen im Takt: Nach T = h/(ħω) = 8,3 fs ist der Zustand exakt wieder da, und dazwischen bleibt die Form erhalten. Die |cₙ|² folgen einer Poisson-Verteilung. Im Kasten werden die Abstände nach oben größer, darum zerfließt das Paket dort.'},
+ {g:'Wellenpakete',t:'Oszillator: zwei Zustände',d:'Dipol-Schwingung',lvl:2,s:{sys:'oszi',mode:'hand',c:[1,1,0,0,0,0],ph:[0,0,0,0,0,0],view:'prob',speed:1},
+  obs:'Mische n = 0 und n = 1 im Oszillator. Wie sieht ⟨x⟩(t) aus? Mische danach n = 0 und n = 2. Was ändert sich?',
+  why:'Mit n = 0 und 1 schwingt ⟨x⟩ sinusförmig mit f = ω/2π – ein schwingender Dipol, der Licht der Energie ħω aussendet. Mit n = 0 und 2 bleibt ⟨x⟩ = 0, das Paket „atmet“ nur: Dieser Übergang strahlt (in Dipol-Näherung) nicht. Das ist der Ursprung der Auswahlregel Δn = ±1.'},
+];
+return {S,P,
+ tools(){return `<button class="btn hot" data-act="run">${run?'Pause':'▶ Weiter'}</button><button class="btn" data-act="t0">t = 0</button>`+(lvl(2)?`<span class="sep"></span><label class="small" for="sp5">Tempo</label><input id="sp5" type="range" min=".1" max="5" step=".1" value="${S.speed}" style="width:110px">`:'')},
+ bindTools(){const s=$('#sp5');if(s)s.oninput=()=>{S.speed=+s.value}},
+ act(a){if(a==='run'){run=!run;return 'tools'}if(a==='t0'){t=0;trace=[]}},
+ applied(){t=0;trace=[];run=true},
+ retheme(){carpet=null;ckey=''},
+ changed(k){if(k==='sys'||k==='mode'){t=0;trace=[];if(S.mode==='hand'&&S.c.every(v=>!v))S.c[0]=1}if(k.startsWith('c')||k.startsWith('p'))trace=[]},
+ panel(){const lab=S.sys==='kasten'?n=>n+1:n=>n;let h=card('System',seg(S,'sys',[['Kasten','kasten'],['Oszillator','oszi']])+seg(S,'mode',[['Zustände mischen','hand'],[S.sys==='kasten'?'Gauß-Paket':'kohärenter Zustand','paket']])+
+   seg(S,'view',[['|ψ|²','prob'],['Re, Im','reim']].concat(lvl(3)?[['Phase','phase']]:[]))+(lvl(3)&&S.sys==='kasten'&&S.mode==='paket'?`<div class="chk">${chk(S,'carpet','Quantenteppich')}</div>`:''));
+   if(S.mode==='hand'){h+=card('Anteile',[...Array(NM).keys()].map(n=>{FMT['c'+n]=v=>fmt(v,2);FMT['p'+n]=v=>fmt(v/Math.PI,2)+' π';return `<div class="row"><label for="r-c${n}">c für n = ${lab(n)}</label><output id="o-c${n}">${fmt(S.c[n],2)}</output></div><input type="range" id="r-c${n}" data-arr="c" data-i="${n}" min="0" max="1" step=".01" value="${S.c[n]}">`+
+     (lvl(3)?`<div class="row"><label for="r-p${n}">Phase φ</label><output id="o-p${n}">${fmt(S.ph[n]/Math.PI,2)} π</output></div><input type="range" id="r-p${n}" data-arr="ph" data-i="${n}" min="0" max="${TAU}" step=".01" value="${S.ph[n]}">`:'')}).join('')+`<p class="small">Die Anteile werden automatisch normiert (Σ|cₙ|² = 1).</p>`)}
+   return h+`<div id="ro"></div>`},
+ ro(){const b=build(),[c]=coeff(),Em=c.reduce((a,v,n)=>a+v*v*b.E[n],0),E2=c.reduce((a,v,n)=>a+v*v*b.E[n]**2,0),dE=Math.sqrt(Math.max(0,E2-Em*Em));
+   const act=c.map((v,n)=>v>1e-3?n:-1).filter(n=>n>=0),two=act.length===2;const lab=S.sys==='kasten'?n=>n+1:n=>n;
+   const rows=[['Zeit t',fmt(t,2)+' fs'],['mittlere Energie ⟨E⟩',fmt(Em,3)+' eV'],lvl(2)&&['Energieunschärfe ΔE',fmt(dE,3)+' eV'],
+     two&&['Periode h/ΔE (n = '+lab(act[0])+', '+lab(act[1])+')',fmt(2*Math.PI*HB/Math.abs(b.E[act[1]]-b.E[act[0]]),2)+' fs'],
+     two&&lvl(2)&&['Photon hc/ΔE',fmt(HC/Math.abs(b.E[act[1]]-b.E[act[0]]),0)+' nm'],
+     act.length>1&&['Wiederkehrzeit',fmt(Trev(),2)+' fs']];
+   return card('Messwerte',kv(rows))},
+ roKey(){return Math.round(t*10)},
+ status(){return `t = ${fmt(t,2)} fs · Energien: `+(S.sys==='kasten'?'Eₙ = n² · 0,376 eV':'Eₙ = (n + ½) · 0,5 eV')},
+ csv(){const b=build(),[c,ph]=coeff(),r=[['n','E in eV','|c|²','Phase in rad']];c.forEach((v,n)=>{if(v*v>1e-6)r.push([S.sys==='kasten'?n+1:n,b.E[n],v*v,ph[n]])});r.push([],['t in fs','<x> in nm']);trace.forEach(q=>r.push(q));return r},
+ draw(dt){const b=build(),[c]=coeff();if(run){t+=dt*S.speed;}
+   buf=psiAt(t,buf);const N=b.xs.length;let mx=0,xm=0,nn=0;for(let j=0;j<N;j++){const p=buf.re[j]**2+buf.im[j]**2;nn+=p;xm+=p*b.xs[j]}xm/=nn||1;
+   if(run){trace.push([t,xm]);if(trace.length>900)trace.shift()}
+   // Skala aus dem Maximum über die Zeit (grob: Maximum aus Anfang)
+   if(!b.pmax){let m=0;const o=psiAt(0);for(let k=0;k<12;k++){psiAt(k*Trev()/12,o);for(let j=0;j<N;j++)m=Math.max(m,o.re[j]**2+o.im[j]**2)}b.pmax=m}
+   if(S.mode==='hand'&&b.pk!==S.c.join()+S.ph.join()){b.pk=S.c.join()+S.ph.join();let m=0;const o=psiAt(0);for(let k=0;k<24;k++){psiAt(k*Trev()/24,o);for(let j=0;j<N;j++)m=Math.max(m,o.re[j]**2+o.im[j]**2)}b.pmax=m}
+   const sideW=Math.min(200,CW*.26),showCarpet=S.carpet&&lvl(3)&&S.sys==='kasten'&&S.mode==='paket',bh=showCarpet?Math.min(CH*.42,260):(lvl(2)?Math.min(110,CH*.2):0);
+   const F=frame(58,26,CW-80-sideW-16,CH-26-46-(bh?bh+34:0),b.xs[0]-(S.sys==='kasten'?.12:0),b.xs[N-1]+(S.sys==='kasten'?.12:0),0,1);
+   axes(F,{xl:'x in nm',noY:true,grid:false});
+   if(S.sys==='kasten'){ctx.fillStyle=cs('pot');ctx.fillRect(F.x,F.y,F.X(0)-F.x,F.h);ctx.fillRect(F.X(1),F.y,F.x+F.w-F.X(1),F.h);line(F.X(0),F.y,F.X(0),F.y+F.h,cs('ink',.7),2);line(F.X(1),F.y,F.X(1),F.y+F.h,cs('ink',.7),2)}
+   else{const vx=b.xs.map(x=>(.25/(4*C0))*x*x/3);clipF(F);curve(N,j=>F.X(b.xs[j]),j=>F.y+F.h-vx[j]*F.h,cs('ink',.5),1.5);ctx.restore()}
+   const xf=j=>F.X(b.xs[j]),base=F.y+F.h-4,A=(F.h-14)/b.pmax;
+   clipF(F);
+   if(S.view==='phase'){for(let j=0;j<N;j++){const p=buf.re[j]**2+buf.im[j]**2,h=p*A;if(h<.5)continue;ctx.fillStyle=hueCol(Math.atan2(buf.im[j],buf.re[j]));ctx.fillRect(xf(j)-.6,base-h,F.w/N+1.2,h)}}
+   else if(S.view==='reim'){const mid=F.y+F.h/2,s=(F.h*.45)/Math.sqrt(b.pmax);line(F.x,mid,F.x+F.w,mid,cs('line'));curve(N,xf,j=>mid-s*buf.im[j],cs('red',.85),1.6);curve(N,xf,j=>mid-s*buf.re[j],cs('blue'),2);fillC(N,xf,j=>mid-(buf.re[j]**2+buf.im[j]**2)*A*.45,mid,cs('vio',.18))}
+   else{fillC(N,xf,j=>base-(buf.re[j]**2+buf.im[j]**2)*A,base,cs('vio',.4));curve(N,xf,j=>base-(buf.re[j]**2+buf.im[j]**2)*A,cs('vio'),2)}
+   ctx.restore();
+   if(lvl(2)){const X=F.X(xm);line(X,F.y,X,F.y+F.h,cs('ok'),1.5,[4,3]);txt('⟨x⟩',X+4,F.y+14,cs('ok'),'left',12,true)}
+   txt('t = '+fmt(t,2)+' fs',F.x+8,F.y+16,cs('mut'),'left',13,true);
+   txt(S.view==='reim'?'Re ψ (blau), Im ψ (rot)':'|ψ(x, t)|²',F.x+F.w-6,F.y+16,cs('mut'),'right',12,true);
+   // Energiespektrum rechts
+   let ymax=S.mode==='paket'?Math.max(...b.E.filter((e,n)=>c[n]*c[n]>2e-4))*1.08:(S.sys==='kasten'?b.E[5]*1.1:b.E[b.E.length-1]*1.08);const G=frame(F.x+F.w+40,F.y,sideW-30,F.h,0,1,0,ymax);
+   line(G.x,G.y,G.x,G.y+G.h,cs('mut'));txt('Anteile |cₙ|²',G.x,G.y-8,cs('mut'),'left',12,true);
+   const cm=Math.max(...c.map(v=>v*v));c.forEach((v,n)=>{const Y=G.Y(b.E[n]);if(Y<G.y)return;line(G.x,Y,G.x+G.w,Y,cs('amb',.35),1);if(v*v>1e-5){ctx.fillStyle=cs('vio',.8);ctx.fillRect(G.x,Y-2,v*v/cm*G.w,4)}
+     if(S.mode==='hand'||n%5===(S.sys==='kasten'?4:0))txt('n = '+(S.sys==='kasten'?n+1:n),G.x-4,Y+4,cs('mut'),'right',11)});
+   // unten: Spur ⟨x⟩(t) oder Teppich
+   if(showCarpet){const cp=makeCarpet(),H=frame(F.x,F.y+F.h+40,F.w,bh,F.xa,F.xb,0,1);const x0=F.X(0),x1=F.X(1);ctx.imageSmoothingEnabled=true;ctx.drawImage(cp,x0,H.y,x1-x0,bh);
+     const tt=(t%Trev())/Trev();line(x0-6,H.y+tt*bh,x1+6,H.y+tt*bh,cs('amb'),2);txt('Zeit ↓ 0 … '+fmt(Trev(),1)+' fs',x1+10,H.y+14,cs('mut'),'left',12,true);
+     for(const [f,l] of [[.25,'T/4'],[.5,'T/2'],[.75,'3T/4']])txt(l,x0-8,H.y+f*bh+4,cs('mut'),'right',11)}
+   else if(bh){const H=frame(F.x,F.y+F.h+40,F.w,bh,0,1,0,1);ctx.fillStyle=cs('pan');ctx.fillRect(H.x,H.y,H.w,H.h);
+     if(trace.length>1){const t0=trace[0][0],t1=Math.max(trace[trace.length-1][0],t0+.1);curve(trace.length,i=>H.x+(trace[i][0]-t0)/(t1-t0)*H.w,i=>H.y+H.h-(trace[i][1]-F.xa)/(F.xb-F.xa)*H.h,cs('ok'),2)}
+     txt('⟨x⟩ im Lauf der Zeit',H.x+4,H.y+14,cs('mut'),'left',12,true)}
+ }};
+})();
+/* =====================================================================
+   STATION 6: KRISTALL (Kette aus N Töpfen → Bänder, Bloch-Zustände, Störstelle)
+   ===================================================================== */
+MODES.kristall=(()=>{
+const DXk=.012,MG=1;
+const S={pi:0,N:6,w:.6,b:.25,V0:4,sel:0,view:'psi',def:0,side:'split',env:false};
+let cache=null,split=null,F=null,G=null;
+const a=()=>S.w+S.b;
+function chain(N,def){const L=N*a()-S.b,xa=-MG,xb=L+MG,NG=Math.round((xb-xa)/DXk)-1,xs=Float64Array.from({length:NG},(_,i)=>xa+(i+1)*DXk);const mid=Math.floor((N-1)/2);
+  const V=xs.map(x=>{if(x<0||x>L)return S.V0;const j=Math.floor(x/a()),r=x-j*a();return r<S.w?(def&&j===mid?-def:0):S.V0});
+  const r=eigTri(V,DXk,C0,Math.min(3*N+2,40));const E=[],P=[];r.E.forEach((e,i)=>{if(e<S.V0){E.push(e);P.push(r.P[i])}});return {xs,V,E,P,L,mid}}
+function calc(){const key=[S.N,S.w,S.b,S.V0,S.def].join();if(cache&&cache.key===key)return cache;const c=chain(S.N,S.def);c.key=key;
+  // Bänder nach Anzahl gruppieren; lokalisierte Störstellen-Zustände erkennen
+  const A=a(),mc=c.mid*A+S.w/2;c.loc=c.P.map(p=>{if(S.def<=0||S.N<3)return false;let s=0,t=0;for(let i=0;i<p.length;i++){const q=p[i]*p[i];t+=q;if(Math.abs(c.xs[i]-mc)<A*.75)s+=q}return s/t>.45});
+  c.band=c.E.map((_,i)=>Math.floor(i/S.N));c.bands=[];for(let j=0;j*S.N<c.E.length;j++){const idx=c.E.map((_,i)=>i).filter(i=>c.band[i]===j&&!c.loc[i]);if(idx.length)c.bands.push({j,lo:c.E[idx[0]],hi:c.E[idx[idx.length-1]],n:c.E.filter((_,i)=>c.band[i]===j).length})}
+  if(S.sel>=c.E.length)S.sel=Math.max(0,c.E.length-1);return cache=c}
+function calcSplit(){const key=[S.N,S.w,S.b,S.V0].join();if(split&&split.key===key)return split;split={key,cols:[]};for(let n=1;n<=S.N;n++)split.cols.push(chain(n,0).E);return split}
+function centers(c){const A=a();return [...Array(S.N).keys()].map(j=>{const x=j*A+S.w*.3,i=clamp(Math.round((x-c.xs[0])/DXk),0,c.xs.length-1);return c.P[S.sel][i]})}
+function kOf(c,i){const j=c.band[i],m=i-j*S.N+1;const me=j%2===0?m:S.N+1-m;return me*Math.PI/((S.N+1)*a())}
+const P=[
+ {g:'Vom Atom zum Kristall',t:'Niveaus spalten auf',d:'Ein Topf, zwei, drei … zwölf',s:{N:1,w:.6,b:.25,V0:4,sel:0,def:0,side:'split',env:false},
+  obs:'Beginne mit einem einzigen Topf – das ist ein „Atom“ mit zwei Energieniveaus. Erhöhe die Zahl der Töpfe N Schritt für Schritt. Was passiert mit jedem Niveau? Wie viele Zustände entstehen aus einem Niveau?',
+  why:'Sind die Töpfe nahe beisammen, kann das Elektron von Topf zu Topf tunneln. Dadurch koppeln die Zustände – wie gekoppelte Pendel – und jedes Niveau spaltet in genau N Niveaus auf. In einem echten Kristall mit etwa 10²³ Atomen liegen die Niveaus so dicht, dass ein durchgehendes Energieband entsteht. Zwischen den Bändern bleiben verbotene Bereiche: die Bandlücken.'},
+ {g:'Vom Atom zum Kristall',t:'Zustände in einem Band',d:'Bindend bis antibindend',s:{N:8,w:.6,b:.25,V0:4,sel:0,def:0,side:'split',env:false},
+  obs:'Tippe nacheinander die 8 Zustände des untersten Bandes an. Achte auf das Vorzeichen von ψ in den einzelnen Töpfen. Wie oft wechselt es von Topf zu Topf beim tiefsten und beim höchsten Zustand des Bandes?',
+  why:'Im tiefsten Zustand hat ψ in allen Töpfen dasselbe Vorzeichen (vollständig bindend), im höchsten wechselt es von Topf zu Topf (antibindend). Dazwischen bilden die Vorzeichen eine langsame „Einhüllende“ – eine stehende Welle über den ganzen Kristall. Das sind Bloch-Zustände: eine atomare Funktion, moduliert mit einer Welle e^(ikx). Im zweiten Band ist es umgekehrt, weil die Atomfunktion selbst schon einen Knoten hat.'},
+ {g:'Vom Atom zum Kristall',t:'Abstand der Atome',d:'Breite und schmale Bänder',s:{N:8,w:.6,b:.25,V0:4,sel:0,def:0,side:'split',env:false},
+  obs:'Verändere den Abstand b zwischen den Töpfen. Wann sind die Bänder breit, wann schmal? Welches Band reagiert stärker – das untere oder das obere?',
+  why:'Die Bandbreite kommt vom Tunneln zwischen Nachbartöpfen und sinkt exponentiell mit dem Abstand. Das obere Band liegt näher an der Barrierenoberkante, ψ reicht weiter hinaus, deshalb ist es viel breiter. In echten Festkörpern sind die inneren Elektronen (Rumpfelektronen) fast nicht gekoppelt, die äußeren bilden breite Bänder – sie sind für Leitfähigkeit und Bindung verantwortlich. Unter hohem Druck werden Bänder breiter; manche Isolatoren werden dabei zu Metallen.'},
+ {g:'Halbleiter',t:'Bandlücke',d:'Kein Zustand dazwischen',lvl:2,s:{N:10,w:.6,b:.25,V0:4,sel:9,def:0,side:'split',env:false},
+  obs:'Lies die Breite der Lücke zwischen Band 1 und Band 2 ab. Wie verändert sie sich, wenn die Töpfe breiter (w) oder die Barrieren höher (V₀) werden?',
+  why:'In der Lücke gibt es keinen erlaubten Zustand – egal wie viele Töpfe man nimmt. Wenn ein Band voll besetzt ist und das nächste leer, kann ein Elektron nur über die Lücke hinweg angeregt werden: Das ist der Unterschied zwischen Isolator (große Lücke), Halbleiter (Silizium: 1,12 eV) und Metall (teilweise gefülltes Band). Mehr im Halbleiter- und im Bandstrukturlabor.'},
+ {g:'Halbleiter',t:'Störstelle',d:'Ein Fremdatom im Kristall',lvl:2,s:{N:11,w:.6,b:.25,V0:4,sel:0,def:.35,side:'split',env:false},
+  obs:'Der mittlere Topf ist etwas tiefer – wie ein Fremdatom im Kristall. Wo findest du einen Zustand, der zu keinem Band gehört (grün)? Wie sieht seine Wellenfunktion aus? Verändere die Tiefe der Störstelle.',
+  why:'Unter jedem Band löst sich ein Zustand ab und rutscht in die Lücke. Er ist um die Störstelle lokalisiert und fällt zu den Nachbartöpfen hin exponentiell ab. Genau so entstehen die Donator- und Akzeptorniveaus beim Dotieren von Halbleitern und die Farbzentren in Kristallen (etwa bei manchen Edelsteinen).'},
+ {g:'Für Fortgeschrittene',t:'E(k) aus den Zuständen',d:'Die Bandstruktur entsteht',lvl:3,s:{N:12,w:.6,b:.25,V0:4,sel:0,def:0,side:'ek',env:true},
+  obs:'Rechts ist jeder Zustand bei seiner Wellenzahl k = mπ/((N + 1)a) eingetragen (m = Zahl der Bäuche der grün gestrichelten Einhüllenden). Liegen die Punkte auf der Kurve E = E₀ − 2t·cos(ka)? Vergleiche die Krümmung von Band 1 und Band 2 (effektive Masse).',
+  why:'In der Tight-Binding-Näherung koppelt jeder Topf nur an seine Nachbarn mit dem Tunnelmatrixelement t. Daraus folgt E(k) = E₀ − 2t·cos(ka), die Bandbreite ist 4t. Am Bandminimum ist E ≈ const + ħ²k²/(2m*), mit der effektiven Masse m* = ħ²/(2ta²): Schmale Bänder bedeuten schwere Elektronen. Für N → ∞ füllen die Punkte die Kurve lückenlos – die Bandstruktur des Kristalls. Im zweiten Band ist t negativ: das Minimum liegt bei k = π/a.'},
+];
+return {S,P,
+ tools(){return `<button class="btn" data-act="prev">◀ Zustand</button><button class="btn" data-act="next">Zustand ▶</button>`},
+ act(x){const c=calc();if(x==='prev')S.sel=Math.max(0,S.sel-1);if(x==='next')S.sel=Math.min(c.E.length-1,S.sel+1);return 'ro'},
+ changed(k){},
+ panel(){return card('Kette aus Potentialtöpfen',rng(S,'N','Anzahl Töpfe N',1,12,1,v=>String(v))+rng(S,'w','Topfbreite w',.3,1,.01,v=>fmt(v,2)+' nm')+rng(S,'b','Barrierenbreite b',.05,.8,.01,v=>fmt(v,2)+' nm')+rng(S,'V0','Barrierenhöhe V₀',1,8,.05,v=>fmt(v,2)+' eV')+
+   (lvl(2)?rng(S,'def','Störstelle: mittlerer Topf tiefer um',0,1.5,.01,v=>v?fmt(v,2)+' eV':'aus'):'')+seg(S,'view',[['ψ','psi'],['|ψ|²','prob']])+
+   (lvl(3)?seg(S,'side',[['Aufspaltung','split'],['E(k)','ek']])+`<div class="chk">${chk(S,'env','Einhüllende zeigen')}</div>`:'')+`<p class="small">Tippe ein Niveau an oder blättere oben mit ◀ ▶.</p>`)+`<div id="ro"></div>`},
+ ro(){const c=calc(),i=S.sel,cen=centers(c);let sc=0;for(let j=1;j<cen.length;j++)if(Math.sign(cen[j])!==Math.sign(cen[j-1])&&Math.abs(cen[j])>1e-6)sc++;
+   const bd=c.bands;const rows=[['Zustand',(i+1)+' von '+c.E.length+(c.loc[i]?' (Störstelle)':' · Band '+(c.band[i]+1))],['Energie',fmt(c.E[i],3)+' eV'],
+     S.N>1&&['Vorzeichenwechsel von Topf zu Topf',String(sc)],lvl(2)&&['Gitterabstand a = w + b',fmt(a(),2)+' nm']];
+   bd.forEach((b,j)=>{rows.push(['Band '+(j+1)+(lvl(2)?' Breite':''),lvl(2)?fmt(b.hi-b.lo,3)+' eV':fmt(b.lo,2)+' … '+fmt(b.hi,2)+' eV']);if(bd[j+1])rows.push(['Lücke '+(j+1)+'–'+(j+2),fmt(bd[j+1].lo-b.hi,3)+' eV'])});
+   if(lvl(3)&&bd.length&&S.N>2){const t=(bd[0].hi-bd[0].lo)/4/Math.cos(Math.PI/(S.N+1));rows.push(['Tunnelkopplung t (Band 1)',fmt(t*1000,1)+' meV']);rows.push(['effektive Masse m*/mₑ',fmt(C0/(t*a()*a()),2)])}
+   return card('Messwerte',kv(rows))},
+ status(){const c=calc();return `${S.N} Töpfe · ${c.E.length} gebundene Zustände · aus jedem Niveau eines Topfs werden ${S.N} Niveaus.`},
+ down(x,y){const c=calc();if(F&&x>=F.x&&x<=F.x+F.w){let best=-1,bd=14;c.E.forEach((e,i)=>{const d=Math.abs(F.Y(e)-y);if(d<bd){bd=d;best=i}});if(best>=0){S.sel=best;return 'ro'}}
+   if(G&&S.side==='ek'&&x>=G.x){let best=-1,bd=14;c.E.forEach((e,i)=>{if(c.loc[i])return;const d=Math.hypot(G.X(kOf(c,i))-x,G.Y(e)-y);if(d<bd){bd=d;best=i}});if(best>=0){S.sel=best;return 'ro'}}},
+ csv(){const c=calc(),r=[['Zustand','Band','E in eV','k in 1/nm','Störstelle']];c.E.forEach((e,i)=>r.push([i+1,c.band[i]+1,e,c.loc[i]?'':kOf(c,i),c.loc[i]?'ja':'']));return r},
+ draw(){const c=calc(),A=a(),sw=Math.min(240,CW*.3);
+   const Et=S.V0*1.08,Eb=S.def>0?-S.def-.1:-.08;
+   F=frame(58,26,CW-80-sw-30,CH-26-46,-MG*.6,c.L+MG*.6,Eb,Et);axes(F,{xl:'x in nm',yl:'E in eV'});
+   const Vf=x=>{if(x<0||x>c.L)return S.V0;const j=Math.floor(x/A),r=x-j*A;return r<S.w?(S.def&&j===c.mid?-S.def:0):S.V0};
+   const vx=Float64Array.from({length:900},(_,i)=>F.xa+i/899*(F.xb-F.xa));drawPot(F,900,i=>F.X(vx[i]),vx.map(Vf),1e9);
+   clipF(F);
+   for(const b of c.bands){ctx.fillStyle=cs('amb',.12);ctx.fillRect(F.X(0)-4,F.Y(b.hi)-2,F.X(c.L)-F.X(0)+8,F.Y(b.lo)-F.Y(b.hi)+4)}
+   c.E.forEach((e,i)=>{const on=i===S.sel;line(F.X(-.15),F.Y(e),F.X(c.L+.15),F.Y(e),c.loc[i]?cs('ok'):cs('amb',on?1:.6),on?2.5:1.2)});
+   const p=c.P[S.sel],Y=F.Y(c.E[S.sel]),n=c.xs.length;let mp=0;for(const v of p)mp=Math.max(mp,S.view==='prob'?v*v:Math.abs(v));const amp=Math.min(F.h*.14,70);
+   if(S.view==='prob'){fillC(n,j=>F.X(c.xs[j]),j=>Y-amp*p[j]*p[j]/mp,Y,cs('vio',.4));curve(n,j=>F.X(c.xs[j]),j=>Y-amp*p[j]*p[j]/mp,cs('vio'),1.8)}
+   else curve(n,j=>F.X(c.xs[j]),j=>Y-amp*p[j]/mp,cs('blue'),2.4);
+   if(S.env&&lvl(3)&&!c.loc[S.sel]&&S.view==='psi'){const k=kOf(c,S.sel),x0=-A+S.w*.3,cen=centers(c);let me=0;for(const v of cen)me=Math.max(me,Math.abs(v));const s=Math.sign(cen[0])||1;
+     curve(240,j=>F.X(j/239*c.L),j=>Y-amp*s*Math.sin(k*(j/239*c.L-x0))*me/mp,cs('ok'),1.6);
+     cen.forEach((v,j)=>{ctx.fillStyle=cs('ok');ctx.beginPath();ctx.arc(F.X(j*A+S.w*.3),Y-amp*v/mp,3,0,TAU);ctx.fill()})}
+   ctx.restore();
+   c.bands.forEach((b,j)=>{txt('Band '+(j+1),F.x+F.w-6,F.Y(b.hi)-6,cs('amb'),'right',12,true);if(c.bands[j+1]&&lvl(2)){const ym=(F.Y(b.hi)+F.Y(c.bands[j+1].lo))/2;txt('Lücke '+fmt(c.bands[j+1].lo-b.hi,2)+' eV',F.x+F.w-6,ym+4,cs('mut'),'right',12)}});
+   // rechte Spalte
+   G=null;const gx=F.x+F.w+30;
+   if(S.side==='ek'&&lvl(3)){G=frame(gx,F.y,sw,F.h,0,Math.PI/A,Eb,Et);axes(G,{noY:true,noX:true,grid:false});txt('E(k)',G.x+4,G.y-8,cs('mut'),'left',12,true);txt('0',G.x,G.y+G.h+16,cs('mut'),'center',12);txt('π/a',G.x+G.w,G.y+G.h+16,cs('mut'),'center',12);txt('k',G.x+G.w/2,G.y+G.h+16,cs('mut'),'center',12,true);
+     clipF(G);for(const b of c.bands){const t=(b.hi-b.lo)/4/Math.cos(Math.PI/(S.N+1)),E0=(b.hi+b.lo)/2,sg=b.j%2===0?1:-1;curve(100,j=>G.X(j/99*Math.PI/A),j=>G.Y(E0-sg*2*t*Math.cos(j/99*Math.PI)),cs('blue',.6),1.5)}
+     c.E.forEach((e,i)=>{if(c.loc[i])return;ctx.fillStyle=i===S.sel?cs('red'):cs('amb');ctx.beginPath();ctx.arc(G.X(kOf(c,i)),G.Y(e),i===S.sel?5:3.5,0,TAU);ctx.fill()});ctx.restore()}
+   else{const sp=calcSplit();G=frame(gx,F.y,sw,F.h,.5,S.N+.5,Eb,Et);axes(G,{noY:true,grid:false,noX:true});txt('Aufspaltung',G.x+4,G.y-8,cs('mut'),'left',12,true);
+     const cw=G.w/S.N;sp.cols.forEach((E,k)=>{const X=G.X(k+1);for(const e of E)line(X-cw*.32,G.Y(e),X+cw*.32,G.Y(e),cs('amb',k===S.N-1?1:.7),1.4);if(S.N<=8||(k+1)%2===0||k===0)txt(String(k+1),X,G.y+G.h+16,cs('mut'),'center',12)});
+     txt('Anzahl Töpfe',G.x+G.w,G.y+G.h+31,cs('mut'),'right',12,true)}
+ }};
+})();
+/* =====================================================================
+   STATION 7: 2D-KASTEN & WASSERSTOFFATOM
+   ===================================================================== */
+MODES.atom=(()=>{
+const S={pi:0,auto3:true,sub:'h',n:2,l:1,m:0,plane:'xz',view:'psi',nx:1,ny:2,Lx:1,Ly:1,sup:false,nx2:2,ny2:1,veff:false};
+let img=null,ikey='',pts=null,t=0,F=null,G=null,list2=[],cl3=null,k3='',rot={yaw:.7,pitch:.35},drag3=null,box3=null;
+const RES=170;
+const ORB={'0,0':'s','1,0':'p_z','1,1':'p_x','1,-1':'p_y','2,0':'d_z²','2,1':'d_xz','2,-1':'d_yz','2,2':'d_x²−y²','2,-2':'d_xy','3,0':'f_z³','3,1':'f_xz²','3,-1':'f_yz²','3,2':'f_z(x²−y²)','3,-2':'f_xyz','3,3':'f_x(x²−3y²)','3,-3':'f_y(3x²−y²)'};
+const orbName=()=>S.n+(ORB[S.l+','+S.m]||'');
+const ext=()=>2.2*S.n*S.n+4;
+function hval(u,v){let x,y,z;if(S.plane==='xz'){x=u;y=0;z=v}else{x=u;y=v;z=0}const r=Math.hypot(x,y,z)||1e-9;return Rnl(S.n,S.l,r)*Ylm(S.l,S.m,z/r,Math.atan2(y,x))}
+function e2(nx,ny){return C0*Math.PI**2*(nx*nx/S.Lx**2+ny*ny/S.Ly**2)}
+function d2(nx,ny,u,v){return 2/Math.sqrt(S.Lx*S.Ly)*Math.sin(nx*Math.PI*u/S.Lx)*Math.sin(ny*Math.PI*v/S.Ly)}
+function build(tt){const key=S.sub==='h'?['h',S.n,S.l,S.m,S.plane,S.view].join():['b',S.nx,S.ny,S.Lx,S.Ly,S.view,S.sup,S.nx2,S.ny2,S.sup?tt.toFixed(3):''].join();
+  if(img&&ikey===key)return img;ikey=key;const val=new Float64Array(RES*RES),im2=new Float64Array(RES*RES);let mx=0;
+  if(S.sub==='h'){const R=ext();for(let j=0;j<RES;j++)for(let i=0;i<RES;i++){const u=-R+(i+.5)/RES*2*R,v=R-(j+.5)/RES*2*R,q=hval(u,v);val[j*RES+i]=q;mx=Math.max(mx,S.view==='psi'?Math.abs(q):q*q)}}
+  else{const E1=e2(S.nx,S.ny),E2=e2(S.nx2,S.ny2);for(let j=0;j<RES;j++)for(let i=0;i<RES;i++){const u=(i+.5)/RES*S.Lx,v=(1-(j+.5)/RES)*S.Ly;let a=d2(S.nx,S.ny,u,v),b=0;
+      if(S.sup){const f=d2(S.nx2,S.ny2,u,v),p1=-E1*tt/HB,p2=-E2*tt/HB;b=(a*Math.sin(p1)+f*Math.sin(p2))/Math.SQRT2;a=(a*Math.cos(p1)+f*Math.cos(p2))/Math.SQRT2}
+      val[j*RES+i]=a;im2[j*RES+i]=b;mx=Math.max(mx,S.view==='psi'&&!S.sup?Math.abs(a):a*a+b*b)}}
+  const cvs=document.createElement('canvas');cvs.width=cvs.height=RES;const g=cvs.getContext('2d'),id=g.createImageData(RES,RES),bg=C.fld,rd=C.red,bl=C.blue,vi=C.vio;
+  for(let q=0;q<RES*RES;q++){const v=val[q];let col,al;
+    if(S.view==='psi'&&!(S.sub==='b'&&S.sup)){al=Math.sqrt(Math.abs(v)/mx);col=v>=0?rd:bl}else{al=Math.sqrt((v*v+im2[q]**2)/mx);col=vi}
+    if(S.view==='punkte'){al=0}
+    for(let ch=0;ch<3;ch++)id.data[q*4+ch]=bg[ch]+(col[ch]-bg[ch])*al;id.data[q*4+3]=255}
+  g.putImageData(id,0,0);
+  if(S.view==='punkte'){const w=val.map(v=>v*v);let s=0;const cdf=new Float64Array(w.length);w.forEach((v,i)=>{s+=v;cdf[i]=s});pts=[];
+    for(let k=0;k<6000;k++){const u=Math.random()*s;let a=0,b=w.length-1;while(a<b){const m=(a+b)>>1;if(cdf[m]<u)a=m+1;else b=m}pts.push([(a%RES+Math.random())/RES,(Math.floor(a/RES)+Math.random())/RES])}}
+  return img=cvs}
+function cloud3(){const key=[S.n,S.l,S.m].join();if(cl3&&k3===key)return cl3;k3=key;const R=ext(),G3=34,w=new Float64Array(G3**3),sg=new Int8Array(G3**3);let s=0;
+  for(let a=0;a<G3;a++)for(let b=0;b<G3;b++)for(let c=0;c<G3;c++){const x=-R+(a+.5)/G3*2*R,y=-R+(b+.5)/G3*2*R,z=-R+(c+.5)/G3*2*R,r=Math.hypot(x,y,z)||1e-9,q=Rnl(S.n,S.l,r)*Ylm(S.l,S.m,z/r,Math.atan2(y,x)),i=(a*G3+b)*G3+c;w[i]=q*q;sg[i]=q>=0?1:-1;s+=q*q}
+  const cdf=new Float64Array(w.length);let acc=0;for(let i=0;i<w.length;i++){acc+=w[i];cdf[i]=acc}
+  const P=[];for(let k=0;k<9000;k++){const u=Math.random()*s;let lo=0,hi=w.length-1;while(lo<hi){const m=(lo+hi)>>1;if(cdf[m]<u)lo=m+1;else hi=m}
+    const a=Math.floor(lo/(G3*G3)),b=Math.floor(lo/G3)%G3,c=lo%G3;P.push([-R+(a+Math.random())/G3*2*R,-R+(b+Math.random())/G3*2*R,-R+(c+Math.random())/G3*2*R,sg[lo]])}
+  return cl3=P}
+function draw3d(x0,y0,w,h){const R=ext(),P=cloud3(),cx=x0+w/2,cy=y0+h/2,sc=w/(2.3*R),D=4*R,cy_=Math.cos(rot.yaw),sy=Math.sin(rot.yaw),cp=Math.cos(rot.pitch),sp=Math.sin(rot.pitch);
+  const prj=(x,y,z)=>{const x1=x*cy_-y*sy,y1=x*sy+y*cy_;const y2=y1*cp+z*sp,z2=-y1*sp+z*cp;const f=D/(D+y2);return [cx+x1*sc*f,cy-z2*sc*f,f,y2]};
+  ctx.fillStyle=cs('pan',.5);ctx.fillRect(x0,y0,w,h);
+  for(const [ax,lab] of [[[1,0,0],'x'],[[0,1,0],'y'],[[0,0,1],'z']]){const a=prj(-R*ax[0],-R*ax[1],-R*ax[2]),b=prj(R*ax[0],R*ax[1],R*ax[2]);line(a[0],a[1],b[0],b[1],cs('mut',.6),1.2,[4,4]);txt(lab,b[0]+4,b[1]-4,cs('mut'),'left',13,true)}
+  const Q=P.map(p=>prj(p[0],p[1],p[2]).concat(p[3])).sort((a,b)=>b[3]-a[3]);
+  for(const q of Q){ctx.fillStyle=S.view3==='dichte'?cs('vio',.5):(q[4]>0?cs('red',.5):cs('blue',.5));const r=1.4*q[2];ctx.fillRect(q[0]-r,q[1]-r,2*r,2*r)}
+  const k=prj(0,0,0);ctx.fillStyle=cs('ink');ctx.beginPath();ctx.arc(k[0],k[1],3,0,TAU);ctx.fill();box3=[x0,y0,w,h]}
+const P=[
+ {g:'Zweidimensionaler Kasten',t:'Knotenlinien',d:'Stehende Wellen in der Fläche',s:{sub:'b',nx:2,ny:3,Lx:1,Ly:1,view:'psi',sup:false},
+  obs:'Wähle verschiedene Paare (nₓ, n_y). Wie viele Knotenlinien gibt es in jeder Richtung? Wie hängt die Energie von nₓ und n_y ab? Rot und blau zeigen das Vorzeichen von ψ.',
+  why:'Im Rechteck ist ψ = sin(nₓπx/Lₓ)·sin(n_yπy/L_y) das Produkt zweier Kasten-Lösungen, E = (h²/8m)·(nₓ²/Lₓ² + n_y²/L_y²). Es gibt nₓ − 1 senkrechte und n_y − 1 waagrechte Knotenlinien – wie bei den Chladni’schen Klangfiguren einer schwingenden Platte.'},
+ {g:'Zweidimensionaler Kasten',t:'Entartung',d:'Gleiche Energie, andere Form',s:{sub:'b',nx:1,ny:2,Lx:1,Ly:1,view:'psi',sup:false},
+  obs:'Im quadratischen Kasten haben (1, 2) und (2, 1) dieselbe Energie – rechts siehst du, welche Zustände zusammenfallen. Mache den Kasten jetzt etwas rechteckig (Lₓ ≠ L_y). Was passiert?',
+  why:'Gleiche Energie bei verschiedenen Zuständen heißt Entartung. Sie hat eine Ursache in der Symmetrie: Das Quadrat sieht nach einer Drehung um 90° gleich aus. Wird die Symmetrie gebrochen, spaltet das Niveau auf. Genauso sind im Atom p_x, p_y, p_z entartet; ein äußeres Magnetfeld hebt das auf (Zeeman-Effekt).'},
+ {g:'Zweidimensionaler Kasten',t:'Überlagerung in 2D',d:'Das Elektron kreist',lvl:2,s:{sub:'b',nx:1,ny:1,Lx:1,Ly:1,view:'prob',sup:true,nx2:2,ny2:1},
+  obs:'Zwei Zustände mit verschiedener Energie sind überlagert. Beobachte |ψ|². Wähle als zweiten Zustand (1, 2) statt (2, 1). Was bleibt bei zwei entarteten Zuständen?',
+  why:'Wie in einer Dimension schwingt |ψ|² mit f = ΔE/h. Sind beide Zustände entartet (ΔE = 0), steht das Bild still – auch eine Überlagerung entarteter Zustände ist stationär.'},
+ {g:'Wasserstoffatom',t:'Orbitale',d:'1s, 2s, 2p, 3d …',s:{sub:'h',n:2,l:1,m:0,plane:'xz',view:'psi'},
+  obs:'Sieh dir 1s, 2s, 2p, 3s, 3p und 3d an. Rot und blau zeigen das Vorzeichen von ψ. Zähle die Knotenflächen (im Schnitt: Knotenlinien und -kreise). Wie hängt ihre Zahl von n und l ab?',
+  why:'Die Schrödinger-Gleichung für das Coulomb-Potential hat die Lösungen ψ = R_nl(r)·Y_lm(θ, φ). Es gibt insgesamt n − 1 Knotenflächen: l davon gehen durch den Kern (Ebenen oder Kegel, aus Y_lm), n − l − 1 sind Kugelschalen (aus R_nl). Ein Orbital ist keine Bahn, sondern eine Wahrscheinlichkeitswolke. Das Vorzeichen ist für chemische Bindungen entscheidend: Gleiche Vorzeichen überlappen bindend.'},
+ {g:'Wasserstoffatom',t:'Radiale Verteilung',d:'Wo ist das Elektron am wahrscheinlichsten?',s:{sub:'h',n:1,l:0,m:0,plane:'xz',view:'prob'},
+  obs:'Im 1s-Orbital ist |ψ|² am Kern am größten. Rechts siehst du die Wahrscheinlichkeit, das Elektron in einem bestimmten Abstand r zu finden. Wo hat sie ihr Maximum? Vergleiche 2p und 3d mit n² · a₀.',
+  why:'Die Wahrscheinlichkeit für den Abstand r enthält die Fläche der Kugelschale: P(r) = r²·|R(r)|². Sie ist für 1s genau beim Bohr-Radius a₀ = 0,0529 nm am größten – Bohrs Radius taucht wieder auf, aber nur als wahrscheinlichster Abstand. Für l = n − 1 liegt das Maximum bei n²·a₀ wie im Bohr-Modell; der Mittelwert ist ⟨r⟩ = (3n² − l(l + 1))/2 · a₀.'},
+ {g:'Wasserstoffatom',t:'Energie und Entartung',d:'Warum 2s und 2p gleich sind',lvl:2,s:{sub:'h',n:3,l:2,m:0,plane:'xz',view:'psi'},
+  obs:'Die Energie hängt nur von n ab (Diagramm rechts unten). Wie viele verschiedene Orbitale (l, m) gibt es zu n = 1, 2, 3? Wie viele Elektronen passen mit dem Spin hinein?',
+  why:'Für das reine 1/r-Potential gilt Eₙ = −13,6 eV/n², unabhängig von l und m. Zu jedem n gibt es n² Orbitale, mit Spin 2n² Plätze: 2, 8, 18 – die Schalen des Periodensystems. In Atomen mit mehreren Elektronen schirmen die inneren Elektronen den Kern ab; dann liegen s-Orbitale tiefer als p und d, und z. B. 4s wird vor 3d gefüllt.'},
+ {g:'Wasserstoffatom',t:'Punktwolke',d:'Viele einzelne Messungen',lvl:2,s:{sub:'h',n:3,l:1,m:0,plane:'xz',view:'punkte'},
+  obs:'Jeder Punkt ist ein möglicher Messort des Elektrons in der gezeigten Schnittebene. Wo häufen sich die Punkte? Wo gibt es keine?',
+  why:'Die Punkte sind zufällig nach |ψ|² verteilt: Dichte Bereiche sind wahrscheinlich, Knotenflächen bleiben leer. Ein einzelnes Elektron hinterlässt bei jeder Messung genau einen Punkt; das Orbitalbild entsteht erst aus vielen Messungen – wie beim Doppelspalt.'},
+ {g:'Wasserstoffatom',t:'Orbitale in 3D',d:'Die Wolke von allen Seiten',s:{sub:'h',n:3,l:2,m:0,plane:'xz',view:'3d',auto3:true},
+  obs:'Drehe die Elektronenwolke mit Maus oder Finger. Vergleiche 2p_x, 2p_y und 2p_z: Worin unterscheiden sie sich? Wie sieht 3d_z² räumlich aus, wie 3d_xy? Wo liegen bei 3s die Knotenflächen?',
+  why:'Jeder Punkt ist ein möglicher Messort, zufällig verteilt nach |ψ|². Die drei p-Orbitale sind gleich geformt, nur in verschiedene Richtungen ausgerichtet – darum haben sie dieselbe Energie. 3d_z² hat zwei Keulen entlang z und einen Ring in der x-y-Ebene, die anderen d-Orbitale vier Keulen. Kugelförmige Knotenflächen (bei 2s, 3s, 3p) sieht man in 3D als leere Schalen. Die Schnittbilder der anderen Ansichten sind Scheiben durch diese Wolke.'},
+ {g:'Wasserstoffatom',t:'Radialgleichung',d:'Effektives Potential',lvl:3,s:{sub:'h',n:3,l:2,m:0,plane:'xz',view:'prob',veff:true},
+  obs:'Rechts ist das effektive Potential der Radialgleichung eingezeichnet. Wie verändert es sich mit l? Warum ist ψ für l > 0 am Kern null?',
+  why:'Mit u(r) = r·R(r) wird die 3D-Gleichung eindimensional: −ħ²/(2m)·u″ + V_eff·u = E·u, V_eff = −e²/(4πε₀r) + ħ²l(l + 1)/(2mr²). Der zweite Term ist die Zentrifugalbarriere: Für l > 0 hält sie das Elektron vom Kern fern, darum beginnt R ∝ r^l. Nur s-Elektronen sind am Kern – das zeigt sich in der Hyperfeinstruktur und beim Elektroneneinfang.'},
+];
+function lev2(){const a=[];for(let i=1;i<=6;i++)for(let j=1;j<=6;j++)a.push([e2(i,j),i,j]);a.sort((p,q)=>p[0]-q[0]);return a.slice(0,14)}
+return {S,P,
+ tools(){return seg(S,'sub',[['2D-Kasten','b'],['Wasserstoff','h']]).replace('class="seg"','class="seg" style="margin:0"')},
+ act(){},
+ changed(k){if(k==='n'){S.l=Math.min(S.l,S.n-1);S.m=clamp(S.m,-S.l,S.l);return 'panel'}if(k==='l'){S.m=clamp(S.m,-S.l,S.l);return 'panel'}if(k==='sub'){if(S.sub==='b'&&S.view==='3d')S.view='psi';return 'all'}},
+ retheme(){ikey=''},
+ applied(){t=0},
+ panel(){if(S.sub==='b')return card('Rechteckiger Kasten',rng(S,'nx','nₓ',1,6,1,String)+rng(S,'ny','n_y',1,6,1,String)+rng(S,'Lx','Breite Lₓ',.5,2,.01,v=>fmt(v,2)+' nm')+rng(S,'Ly','Höhe L_y',.5,2,.01,v=>fmt(v,2)+' nm')+seg(S,'view',[['ψ','psi'],['|ψ|²','prob']])+
+     (lvl(2)?`<div class="chk">${chk(S,'sup','mit zweitem Zustand überlagern')}</div>`+(S.sup?`<div class="grid2"><div><div class="lab">nₓ (2. Zustand)</div>${sel(S,'nx2',[1,2,3,4].map(v=>[v,v]))}</div><div><div class="lab">n_y (2. Zustand)</div>${sel(S,'ny2',[1,2,3,4].map(v=>[v,v]))}</div></div>`:''):'')+`<p class="small">Rechts: Energieniveaus, antippen zum Auswählen.</p>`)+`<div id="ro"></div>`;
+   return card('Orbital',rng(S,'n','Hauptquantenzahl n',1,4,1,String)+rng(S,'l','Drehimpuls l',0,S.n-1,1,v=>v+' ('+'spdf'[v]+')')+rng(S,'m','Magnetquantenzahl m',-S.l,S.l,1,String)+
+     `<div class="lab">Schnittebene</div>`+seg(S,'plane',[['x-z-Ebene','xz'],['x-y-Ebene','xy']])+seg(S,'view',[['ψ (Vorzeichen)','psi'],['|ψ|²','prob']].concat(lvl(2)?[['Punktwolke','punkte']]:[],[['3D drehbar','3d']]))+(S.view==='3d'?`<div class="chk">${chk(S,'auto3','dreht sich von selbst')}</div><p class="small">Ziehen dreht die Wolke. 9000 Punkte, verteilt nach |ψ|²; rot/blau = Vorzeichen von ψ.</p>`:'')+
+     (lvl(3)?`<div class="chk">${chk(S,'veff','effektives Potential')}</div>`:'')+`<p class="small">Reelle Orbitale (Kombinationen von ±m), wie in der Chemie üblich.</p>`)+`<div id="ro"></div>`},
+ ro(){if(S.sub==='b'){const E=e2(S.nx,S.ny),deg=lev2().filter(q=>Math.abs(q[0]-E)<1e-9).length;return card('Zustand ('+S.nx+', '+S.ny+')',kv([['Energie',fmt(E,3)+' eV'],['Knotenlinien senkrecht / waagrecht',(S.nx-1)+' / '+(S.ny-1)],['Entartung',deg>1?deg+'-fach':'keine'],
+     S.sup&&['Schwingungsdauer h/ΔE',Math.abs(e2(S.nx2,S.ny2)-E)>1e-9?fmt(2*Math.PI*HB/Math.abs(e2(S.nx2,S.ny2)-E),2)+' fs':'∞ (entartet)']]))}
+   const En=-13.6057/(S.n*S.n);return card('Orbital '+orbName(),kv([['Energie Eₙ = −13,6 eV/n²',fmt(En,3)+' eV'],['Knotenflächen gesamt n − 1',String(S.n-1)],['davon durch den Kern (l)',String(S.l)],['Kugelschalen (n − l − 1)',String(S.n-S.l-1)],
+     lvl(2)&&['⟨r⟩',fmt((3*S.n*S.n-S.l*(S.l+1))/2,2)+' a₀ = '+fmt(.0529*(3*S.n*S.n-S.l*(S.l+1))/2,3)+' nm'],lvl(2)&&['Orbitale mit diesem n',S.n*S.n+' (mit Spin '+2*S.n*S.n+' Plätze)'],
+     lvl(2)&&S.n>1&&['Photon n → 1',fmt(HC/(13.6057*(1-1/S.n**2)),1)+' nm (Lyman)'],lvl(2)&&S.n>2&&['Photon n → 2',fmt(HC/(13.6057*(1/4-1/S.n**2)),1)+' nm (Balmer)']]))},
+ status(){return S.sub==='h'&&S.view==='3d'?`Orbital ${orbName()} · 3D-Punktwolke: ziehen zum Drehen`:S.sub==='h'?`Orbital ${orbName()} · Schnitt durch die ${S.plane==='xz'?'x-z':'x-y'}-Ebene · Bildbreite ${fmt(2*ext(),0)} a₀ = ${fmt(2*ext()*.0529,2)} nm`:`Zustand (${S.nx}, ${S.ny}) im Kasten ${fmt(S.Lx,2)} nm × ${fmt(S.Ly,2)} nm`},
+ down(x,y){if(S.sub==='h'&&S.view==='3d'&&box3&&x>=box3[0]&&x<=box3[0]+box3[2]&&y>=box3[1]&&y<=box3[1]+box3[3]){drag3={x,y,yaw:rot.yaw,pitch:rot.pitch};return}if(S.sub==='b'&&G){let best=null,bd=12;for(const [e,i,j,yy] of list2){const d=Math.abs(yy-y);if(d<bd&&x>G.x-10){bd=d;best=[i,j]}}if(best){S.nx=best[0];S.ny=best[1];return 'panel'}}},
+ move(x,y){if(drag3){rot.yaw=drag3.yaw+(x-drag3.x)*.01;rot.pitch=clamp(drag3.pitch+(y-drag3.y)*.01,-1.5,1.5)}},
+ up(){drag3=null},
+ csv(){if(S.sub==='b')return [['nx','ny','E in eV']].concat(lev2().map(q=>[q[1],q[2],q[0]]));const R=ext(),r=[['Orbital',orbName()],[],['r in a0','P(r) = r²R²']];for(let i=0;i<=200;i++){const x=i/200*R;r.push([x,x*x*Rnl(S.n,S.l,x)**2])}return r},
+ draw(dt){t+=dt*.6;if(S.auto3&&!drag3)rot.yaw+=dt*.35;const im=build(t);const side=Math.min(260,CW*.34),sz=Math.max(120,Math.min(CH-70,CW-side-110));
+   const x0=58,y0=Math.max(26,(CH-sz)/2-10);let w=sz,h=sz;
+   if(S.sub==='b'){const r=S.Lx/S.Ly;if(r>1)h=sz/r;else w=sz*r}
+   if(S.sub==='h'&&S.view==='3d')draw3d(x0,y0,w,h);else{ctx.imageSmoothingEnabled=true;ctx.drawImage(im,x0,y0,w,h);ctx.strokeStyle=cs('ink',.7);ctx.lineWidth=2;ctx.strokeRect(x0,y0,w,h)}
+   if(S.view==='punkte'&&S.sub==='h'&&pts){ctx.fillStyle=cs('vio',.75);for(const [u,v] of pts)ctx.fillRect(x0+u*w-1,y0+v*h-1,2,2)}
+   if(S.sub==='h'&&S.view==='3d')txt(orbName(),x0+8,y0+22,cs('ink'),'left',18,true);
+   else if(S.sub==='h'){const R=ext();line(x0+w/2-6,y0+h/2,x0+w/2+6,y0+h/2,cs('ink'),1.5);line(x0+w/2,y0+h/2-6,x0+w/2,y0+h/2+6,cs('ink'),1.5);
+     txt(S.plane==='xz'?'z':'y',x0+w/2+8,y0+14,cs('mut'),'left',13,true);txt('x',x0+w-12,y0+h/2-8,cs('mut'),'left',13,true);
+     txt('± '+fmt(R,0)+' a₀',x0+w,y0+h+16,cs('mut'),'right',12);txt(orbName(),x0+8,y0+22,cs('ink'),'left',18,true)}
+   else{txt('('+S.nx+', '+S.ny+')'+(S.sup?' + ('+S.nx2+', '+S.ny2+')':''),x0+8,y0+22,cs('ink'),'left',16,true);txt(fmt(S.Lx,2)+' nm',x0+w/2,y0+h+16,cs('mut'),'center',12)}
+   if((S.view==='psi'||S.view==='3d'&&S.sub==='h')&&!(S.sub==='b'&&S.sup)){txt('■ ψ > 0',x0,y0-8,cs('red'),'left',12,true);txt('■ ψ < 0',x0+70,y0-8,cs('blue'),'left',12,true)}
+   const gx=x0+w+56,gw=CW-gx-24;
+   if(S.sub==='b'){const L=lev2();G=frame(gx,y0,gw,h,0,1,0,L[L.length-1][0]*1.05);line(G.x,G.y,G.x,G.y+G.h,cs('mut'));txt('E in eV',G.x,G.y-8,cs('mut'),'left',12,true);list2=[];
+     const E1=e2(S.nx,S.ny);let lastY=1e9;const grp={};L.forEach(q=>{const k=q[0].toFixed(6);(grp[k]=grp[k]||[]).push(q)});
+     Object.values(grp).forEach(g=>{const Y=G.Y(g[0][0]);g.forEach((q,k)=>{const on=q[1]===S.nx&&q[2]===S.ny,X0=G.x+8+k*46;line(X0,Y,X0+38,Y,cs('amb',on?1:.6),on?3:1.5);list2.push([q[0],q[1],q[2],Y]);if(Math.abs(Y-lastY)>13||on)txt('('+q[1]+','+q[2]+')',X0+19,Y-4,cs(on?'ink':'mut'),'center',11,on)});lastY=Y;
+       if(g.length>1&&lvl(1))txt(g.length+'×',G.x+8+g.length*46,Y+4,cs('vio'),'left',12,true)})}
+   else{G=null;const R=ext(),ph=Math.min(h*.55,220),F2=frame(gx,y0,gw,ph,0,R,0,1);let mx=0;const pr=[];for(let i=0;i<=200;i++){const r=i/200*R,p=r*r*Rnl(S.n,S.l,r)**2;pr.push(p);mx=Math.max(mx,p)}
+     axes(F2,{noY:true,grid:false,xl:'r in a₀'});fillC(201,i=>F2.X(i/200*R),i=>F2.Y(pr[i]/mx*.92),F2.Y(0),cs('vio',.3));curve(201,i=>F2.X(i/200*R),i=>F2.Y(pr[i]/mx*.92),cs('vio'),2);
+     txt('P(r) = r²·|R(r)|²',F2.x+F2.w,F2.y-8,cs('mut'),'right',12,true);const rm=(3*S.n*S.n-S.l*(S.l+1))/2;if(lvl(2)){line(F2.X(rm),F2.y,F2.X(rm),F2.y+F2.h,cs('ok'),1.5,[4,3]);txt('⟨r⟩',F2.X(rm)+4,F2.y+12,cs('ok'),'left',12,true)}
+     if(S.veff&&lvl(3)){const Vm=1/(S.n*S.n);clipF(F2);curve(200,i=>F2.X((i+1)/200*R),i=>{const r=(i+1)/200*R,v=-2/r+S.l*(S.l+1)/(r*r);return F2.Y(.5+v/(4*Vm)*.45)},cs('ink',.8),1.6);line(F2.x,F2.Y(.5-.45/4),F2.x+F2.w,F2.Y(.5-.45/4),cs('amb'),1.5,[5,3]);ctx.restore();txt('V_eff (schematisch) und Eₙ',F2.x+4,F2.y+F2.h-6,cs('ink',.8),'left',11)}
+     // Energieschema
+     const ey=F2.y+F2.h+50,eh=h-(ey-y0);if(eh>90){const F3=frame(gx,ey,gw,eh,0,1,-14.5,0);txt('Energieniveaus (eV)',F3.x,F3.y-8,cs('mut'),'left',12,true);
+       let lastY=1e9;for(let n=1;n<=5;n++){const Y=F3.Y(-13.6057/n/n),on=n===S.n;line(F3.x+36,Y,F3.x+F3.w,Y,cs('amb',on?1:.55),on?3:1.4);if((Math.abs(lastY-Y)>14||on)&&(lastY=Y))txt('n = '+n,F3.x+30,Y+4,cs(on?'ink':'mut'),'right',12,on);if(n<=3)txt(fmt(-13.6057/n/n,2),F3.x+F3.w,Y-4,cs('mut'),'right',11)}
+       if(lvl(2))for(let l=0;l<S.n;l++)txt('spdf'[l],F3.x+44+l*14,F3.Y(-13.6057/S.n/S.n)-6,cs(l===S.l?'vio':'mut'),'left',12,l===S.l)}}
+ }};
+})();
+/* =====================================================================
+   STATION 8: SPIN (Stern-Gerlach-Versuch, hintereinander geschaltet)
+   ===================================================================== */
+MODES.spin=(()=>{
+const S={pi:0,ns:1,t0:0,t1:90,t2:0,p0:'+',p1:'+',src:'unpol',klass:false,rate:8,fast:false};
+let atoms=[],hits=[],cnt=null,acc=0,ckey='',Fgeo=null;
+const th=i=>S['t'+i]*Math.PI/180;
+const ckeyNow=()=>[S.ns,S.t0,S.t1,S.t2,S.p0,S.p1,S.src,S.klass].join();
+function reset(){atoms=[];hits=[];cnt={blk:[0,0,0],up:0,dn:0,em:0};ckey=ckeyNow()}
+function axisName(d){d=((d%360)+360)%360;return d===0?'z':d===180?'−z':d===90?'x':d===270?'−x':d+'°'}
+/* Schicksal eines Atoms: Zustand als Winkel φ auf dem Bloch-Kreis (x-z-Ebene) */
+function fate(){let ph=S.src==='unpol'?(Math.random()<.5?0:Math.PI):0;const out=[];
+  for(let i=0;i<S.ns;i++){const p=Math.cos((th(i)-ph)/2)**2,up=Math.random()<p;out.push(up?1:-1);ph=up?th(i):th(i)+Math.PI;
+    if(i<S.ns-1&&(up?'+':'-')!==S['p'+i])return {out,blocked:i}}
+  return {out,blocked:-1}}
+function theory(){let pu=0,pd=0,pass=1;const st=S.src==='unpol'?[[0,.5],[Math.PI,.5]]:[[0,1]];
+  for(const [ph0,w] of st){let ph=ph0,wt=w;for(let i=0;i<S.ns;i++){const p=Math.cos((th(i)-ph)/2)**2;if(i<S.ns-1){const up=S['p'+i]==='+';wt*=up?p:1-p;ph=up?th(i):th(i)+Math.PI}else{pu+=wt*p;pd+=wt*(1-p)}}}
+  const tot=pu+pd;return {up:tot?pu/tot:0,dn:tot?pd/tot:0,arrive:tot}}
+function geo(){const x0=70,x1=CW-140,n=S.ns,seg=(x1-x0)/n,bw=Math.min(110,seg*.42),cy=CH*.46,dy=Math.min(70,CH*.13);
+  return {x0,x1,seg,bw,cy,dy,box:i=>x0+seg*i+seg*.22,scr:x1+30}}
+function yAt(a,x,g){// Bahn eines Atoms
+  let y=g.cy;for(let i=0;i<S.ns;i++){const bx=g.box(i),e=bx+g.bw,s=a.f.out[i];if(i>=a.f.out.length)break;
+    if(x<bx)return y;
+    const last=i===S.ns-1;
+    if(x<=e){const u=(x-bx)/g.bw;return g.cy-s*g.dy*u*u}
+    if(last){return g.cy-s*g.dy*(1+(x-e)/(g.scr-e)*1.2)+ (a.k??0)}
+    const nb=g.box(i+1),u=Math.min(1,(x-e)/(nb-e));if(a.f.blocked===i)return g.cy-s*g.dy;
+    y=g.cy-s*g.dy*(1-(3*u*u-2*u*u*u));if(x<nb)return y}
+  return y}
+const P=[
+ {g:'Stern-Gerlach',t:'Klassisch oder quantisiert?',d:'Ein Magnet, ein Schirm',s:{ns:1,t0:0,src:'unpol',klass:true,rate:8},
+  obs:'Silberatome fliegen durch ein inhomogenes Magnetfeld. Klassisch (Schalter rechts ein) wären die kleinen Magnete der Atome beliebig ausgerichtet. Was erwartest du dann auf dem Schirm? Schalte „klassisch“ aus: Was sieht man tatsächlich?',
+  why:'Klassisch würde jede Ausrichtung eine andere Ablenkung ergeben: ein durchgehender Streifen. Otto Stern und Walther Gerlach fanden 1922 in Frankfurt aber genau zwei Flecken. Der Eigendrehimpuls des Elektrons (Spin) kann bei der Messung entlang einer Richtung nur zwei Werte annehmen: +ħ/2 („oben“) oder −ħ/2 („unten“). Das war einer der direktesten Beweise für die Quantisierung.'},
+ {g:'Stern-Gerlach',t:'Zweimal dieselbe Richtung',d:'Ist das Ergebnis stabil?',s:{ns:2,t0:0,t1:0,p0:'+',src:'unpol',klass:false,rate:8},
+  obs:'Der erste Magnet (z) lässt nur die oberen Atome weiter, der zweite misst wieder in z-Richtung. Was zeigt der Schirm?',
+  why:'Alle Atome landen oben. Nach der ersten Messung ist der Zustand „Spin oben in z“ festgelegt; eine Wiederholung derselben Messung liefert sicher dasselbe Ergebnis. Die Messung hat den Zustand präpariert.'},
+ {g:'Stern-Gerlach',t:'Erst z, dann x',d:'Eine andere Frage',s:{ns:2,t0:0,t1:90,p0:'+',src:'unpol',klass:false,rate:8},
+  obs:'Jetzt misst der zweite Magnet waagrecht (x-Richtung). Die Atome sind sicher „oben in z“. Wie verteilen sie sich in x?',
+  why:'50 % zu 50 %. Ein Atom mit Spin oben in z hat keinen festen Wert in x-Richtung. Die beiden Messungen schließen einander aus wie Ort und Impuls (nicht vertauschbare Größen). Der Zufall ist hier echt, nicht Unwissen.'},
+ {g:'Stern-Gerlach',t:'Das Gedächtnis wird gelöscht',d:'z, dann x, dann wieder z',s:{ns:3,t0:0,t1:90,t2:0,p0:'+',p1:'+',src:'unpol',klass:false,rate:10},
+  obs:'Drei Magnete: z (nur oben weiter), x (nur rechts weiter), wieder z. Am Anfang waren alle Atome sicher „oben in z“. Wie viele landen am Ende unten?',
+  why:'Wieder 50 % unten! Die x-Messung hat die z-Information vollständig gelöscht. Klassisch wäre das unverständlich, denn wir haben die „unten“-Atome ja am Anfang aussortiert. In der Quantenmechanik ändert jede Messung den Zustand. Nimmt man den mittleren Magneten weg (2 Stufen), kommen wieder alle oben an.'},
+ {g:'Für Fortgeschrittene',t:'Schräger Magnet',d:'P = cos²(θ/2)',lvl:2,s:{ns:2,t0:0,t1:60,p0:'+',src:'unpol',klass:false,rate:10},
+  obs:'Der zweite Magnet ist um θ = 60° gekippt. Welcher Anteil landet oben? Miss für 0°, 30°, 60°, 90°, 120°, 180° und vergleiche mit cos²(θ/2). Exportiere die Zählwerte als CSV.',
+  why:'Für einen Spin, der in z-Richtung zeigt, ist die Wahrscheinlichkeit für „oben“ entlang einer um θ gekippten Richtung P = cos²(θ/2). Es steht θ/2, nicht θ: Bei 180° (Gegenrichtung) ist P = 0, bei 90° genau ½. Das Bild ist der Bloch-Kreis: Ein Spin ½ dreht sich bei einer Messrichtungsänderung „nur halb so schnell“.'},
+ {g:'Für Fortgeschrittene',t:'Spin als Zustandsvektor',d:'Spinor und Bloch-Kreis',lvl:3,s:{ns:3,t0:0,t1:45,t2:90,p0:'+',p1:'+',src:'unpol',klass:false,rate:10},
+  obs:'Drei Magnete mit 0°, 45° und 90°. Berechne mit cos²(θ/2), welcher Anteil nach dem dritten Magneten oben ankommt, und prüfe mit der Zählung. Vergleiche mit nur zwei Magneten (0° und 90°): Wo kommen mehr Atome oben an?',
+  why:'Der Spin-Zustand ist ein Vektor (Spinor) |ψ⟩ = cos(θ/2)|↑⟩ + sin(θ/2)|↓⟩. Nach jeder Messung zeigt er in die gemessene Richtung. Mit Zwischenschritten: 0° → 45° → 90° ergibt cos²(22,5°)·cos²(22,5°) ≈ 73 % der Atome nach Stufe 1 kommen oben an, direkt 0° → 90° nur 50 %. Viele kleine Messungen „ziehen“ den Zustand mit (verwandt mit dem Quanten-Zeno-Effekt). Auf demselben Prinzip beruhen Polarisationsfilter für Photonen und die Quantenkryptographie (BB84).'},
+];
+return {S,P,
+ tools(){return `<button class="btn" data-act="clr">Zähler zurücksetzen</button><button class="btn" data-act="burst">1000 Atome sofort</button>`},
+ act(a){if(a==='clr')reset();if(a==='burst'){for(let k=0;k<1000;k++){const f=fate();cnt.em++;if(f.blocked>=0)cnt.blk[f.blocked]++;else if(S.klass&&S.ns===1){const c=Math.random()*2-1;hits.push(c);c>0?cnt.up++:cnt.dn++}else{f.out[S.ns-1]>0?cnt.up++:cnt.dn++;hits.push(f.out[S.ns-1]*(1+(Math.random()-.5)*.25))}}if(hits.length>3000)hits.splice(0,hits.length-3000)}},
+ applied(){reset()},
+ changed(k){if(['ns','src','klass','p0','p1'].includes(k)){reset();return 'panel'}if(k.startsWith('t'))reset()},
+ panel(){const stg=i=>rng(S,'t'+i,'Magnet '+(i+1)+': Richtung θ',0,360,5,v=>v+'° ('+axisName(v)+')')+(i<S.ns-1?`<div class="row"><span>weiter lassen</span></div>`+seg(S,'p'+i,[['oben (+)','+'],['unten (−)','-']]):'');
+   return card('Aufbau',rng(S,'ns','Anzahl Magnete',1,3,1,String)+[...Array(S.ns).keys()].map(stg).join('')+
+     `<div class="lab">Quelle</div>`+seg(S,'src',[['Ofen (unpolarisiert)','unpol'],['nur Spin ↑z','z']])+
+     (S.ns===1?`<div class="chk">${chk(S,'klass','klassische Erwartung zeigen')}</div>`:'')+rng(S,'rate','Atome pro Sekunde',1,60,1,String))+`<div id="ro"></div>`},
+ ro(){const tot=cnt.up+cnt.dn,T=theory();const rows=[['ausgesandt',String(cnt.em)],...[...Array(S.ns-1).keys()].map(i=>['ausgeblendet nach Magnet '+(i+1),String(cnt.blk[i])]),
+     ['am Schirm angekommen',String(tot)],['oben (+)',cnt.up+(tot?' = '+fmt(100*cnt.up/tot,1)+' %':'')],['unten (−)',cnt.dn+(tot?' = '+fmt(100*cnt.dn/tot,1)+' %':'')],
+     !S.klass&&lvl(2)&&['Theorie oben / unten',fmt(100*T.up,1)+' % / '+fmt(100*T.dn,1)+' %'],!S.klass&&lvl(2)&&S.ns>1&&['Theorie: Anteil, der den Schirm erreicht',fmt(100*T.arrive,1)+' %']];
+   let h=card('Zählung',kv(rows));
+   if(lvl(3)&&!S.klass){const a=S.ns>1?th(S.ns-2)+(S['p'+(S.ns-2)]==='+'?0:Math.PI):null;h+=card('Rechnung',`<div class="formel">P(+) = cos²((θ<sub>Magnet</sub> − θ<sub>Spin</sub>)/2)<br>${a!=null?`Spin vor dem letzten Magneten: θ = ${fmt(a*180/Math.PI%360,0)}°<br>|ψ⟩ = ${fmt(Math.cos(a/2),3)}|↑⟩ + ${fmt(Math.sin(a/2),3)}|↓⟩ (bezogen auf z)`:'Quelle: Mischung aus ↑ und ↓ (je 50 %)'}</div>`)}
+   return h},
+ roKey(){return cnt.em},
+ status(){return S.klass?'Klassische Erwartung: Die Magnete der Atome sind beliebig ausgerichtet – die Ablenkung ist kontinuierlich.':'Silberatome (ein ungepaartes Elektron) fliegen von links durch die Magnete. Jedes Atom landet einzeln auf dem Schirm.'},
+ csv(){return [['Magnet','Richtung in Grad','weiter'],...[...Array(S.ns).keys()].map(i=>[i+1,S['t'+i],i<S.ns-1?S['p'+i]:'Schirm']),[],['ausgesandt','oben','unten',...[...Array(S.ns-1).keys()].map(i=>'ausgeblendet '+(i+1))],[cnt.em,cnt.up,cnt.dn,...cnt.blk.slice(0,S.ns-1)]]},
+ draw(dt){if(!cnt||ckey!==ckeyNow())reset();const g=geo(),v=(g.scr-g.x0)/1.6;
+   acc+=dt*S.rate;while(acc>=1){acc--;atoms.push({x:g.x0-20,f:fate(),c:S.klass?Math.random()*2-1:null,k:(Math.random()-.5)*g.dy*.12});cnt.em++}
+   // Quelle
+   ctx.fillStyle=cs('pot');ctx.fillRect(g.x0-60,g.cy-26,44,52);ctx.strokeStyle=cs('ink',.7);ctx.lineWidth=1.5;ctx.strokeRect(g.x0-60,g.cy-26,44,52);txt('Ofen',g.x0-38,g.cy+44,cs('mut'),'center',12,true);txt('Ag',g.x0-38,g.cy+5,cs('ink'),'center',14,true);
+   line(g.x0-16,g.cy,g.scr,g.cy,cs('line'),1,[3,4]);
+   for(let i=0;i<S.ns;i++){const bx=g.box(i);ctx.fillStyle=cs('pot');ctx.fillRect(bx,g.cy-g.dy*1.5,g.bw,g.dy*3);ctx.strokeStyle=cs('ink',.6);ctx.strokeRect(bx,g.cy-g.dy*1.5,g.bw,g.dy*3);
+     // Polschuhe: N oben, S unten, gedreht angedeutet durch Zeiger
+     const cx=bx+g.bw/2,cy=g.cy+g.dy*2.2,r=18,a=th(i);ctx.strokeStyle=cs('mut');ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(cx,cy,r,0,TAU);ctx.stroke();arrow(cx-Math.sin(a)*r*.2,cy+Math.cos(a)*r*.2,cx+Math.sin(a)*r,cy-Math.cos(a)*r,cs('vio'),2.5);
+     txt('Magnet '+(i+1),cx,g.cy-g.dy*1.5-8,cs('ink'),'center',13,true);txt('θ = '+S['t'+i]+'° ('+axisName(S['t'+i])+')',cx,cy+r+16,cs('mut'),'center',12,true);
+     if(i<S.ns-1){const e=bx+g.bw,blockUp=S['p'+i]==='-',yb=g.cy+(blockUp?-g.dy:g.dy);ctx.fillStyle=cs('ink');ctx.fillRect(e+14,yb-12,7,24);txt('Blende',e+18,yb+(blockUp?-18:30),cs('mut'),'center',11)}
+     if(lvl(2)){txt('+',bx+g.bw+6,g.cy-g.dy+4,cs('red'),'left',14,true);txt('−',bx+g.bw+6,g.cy+g.dy+4,cs('blue'),'left',14,true)}}
+   // Schirm
+   const sx=g.scr;ctx.fillStyle=cs('pan');ctx.fillRect(sx,g.cy-g.dy*3.2,22,g.dy*6.4);ctx.strokeStyle=cs('ink',.6);ctx.strokeRect(sx,g.cy-g.dy*3.2,22,g.dy*6.4);txt('Schirm',sx+11,g.cy+g.dy*3.2+18,cs('mut'),'center',12,true);
+   const ys=c=>g.cy-c*g.dy*2.2;
+   ctx.fillStyle=cs('vio',.55);for(const c of hits.slice(-1500))ctx.fillRect(sx+3+Math.abs(Math.sin(c*997))*16,ys(c)-1,2.5,2.5);
+   // Atome bewegen
+   const keep=[];for(const a of atoms){a.x+=v*dt*(S.fast?3:1);const lastE=g.box(S.ns-1)+g.bw;
+     if(a.f.blocked>=0&&a.x>g.box(a.f.blocked)+g.bw+14){cnt.blk[a.f.blocked]++;continue}
+     if(a.x>=sx){if(a.c!=null){hits.push(a.c);a.c>0?cnt.up++:cnt.dn++}else{const s=a.f.out[S.ns-1];hits.push(s*(1+(Math.random()-.5)*.25));s>0?cnt.up++:cnt.dn++}if(hits.length>3000)hits.shift();continue}
+     let y;if(a.c!=null){const bx=g.box(0);y=a.x<bx?g.cy:a.x<lastE?g.cy-a.c*g.dy*((a.x-bx)/g.bw)**2:g.cy-a.c*g.dy*(1+(a.x-lastE)/(sx-lastE)*1.2)}else y=yAt(a,a.x,g);
+     ctx.fillStyle=cs('ink');ctx.beginPath();ctx.arc(a.x,y,3,0,TAU);ctx.fill();keep.push(a)}
+   atoms=keep;
+   const tot=cnt.up+cnt.dn;if(tot&&!S.klass){txt(fmt(100*cnt.up/tot,0)+' %',sx+30,ys(1)+5,cs('red'),'left',16,true);txt(fmt(100*cnt.dn/tot,0)+' %',sx+30,ys(-1)+5,cs('blue'),'left',16,true)}
+ }};
+})();
+/* =====================================================================
+   STEUERUNG
+   ===================================================================== */
+const cur=()=>MODES[APP.mode];
+const inited={};
+let deferPanel=false;
+function handle(r){if(!r)return;if(r==='panel')renderPanel();else if(r==='tools')renderTools();else if(r==='all'){renderTools();renderPanel()}else if(r==='out')syncOut();else if(r==='ro')updateRo(true)}
+function renderLib(){const m=cur(),S=m.S;const list=m.P.map((p,i)=>[p,i]).filter(([p])=>(p.lvl||1)<=APP.lvl);
+  const groups=[];for(const [p,i] of list){let g=groups.find(q=>q.h===p.g);if(!g)groups.push(g={h:p.g,items:[]});g.items.push([p,i])}
+  $('#lib').innerHTML='<h2>Aufträge</h2>'+groups.map(g=>`<h2>${g.h}</h2>`+g.items.map(([p,i])=>`<button class="pre" data-i="${i}" aria-current="${i===S.pi}"><b>${p.t}</b><span>${p.d}</span></button>`).join('')).join('');
+  $('#lib').onclick=e=>{const b=e.target.closest('.pre');if(!b)return;applyPreset(+b.dataset.i);if(innerWidth<900)$('#stage').scrollIntoView({behavior:'smooth'})}}
+function applyPreset(i){const m=cur(),p=m.P[i];Object.assign(m.S,JSON.parse(JSON.stringify(p.s)));m.S.pi=i;m.applied?.();renderLib();renderTools();renderPanel()}
+function bindControls(root){const m=cur(),S=m.S;
+  root.querySelectorAll('input[type=range][data-k]').forEach(el=>{const k=el.dataset.k;
+    el.oninput=()=>{S[k]=+el.value;const o=$('#o-'+k);if(o&&FMT[k])o.textContent=FMT[k](S[k]);const r=m.changed?.(k);if(r==='panel')deferPanel=true;else handle(r)};
+    el.onchange=()=>{if(deferPanel){deferPanel=false;renderPanel()}}});
+  root.querySelectorAll('input[type=range][data-arr]').forEach(el=>{const a=el.dataset.arr,i=+el.dataset.i,k=(a==='c'?'c':'p')+i;
+    el.oninput=()=>{S[a][i]=+el.value;const o=$('#o-'+k);if(o&&FMT[k])o.textContent=FMT[k](S[a][i]);handle(m.changed?.(k))}});
+  root.querySelectorAll('[data-seg]').forEach(b=>b.onclick=()=>{const k=b.dataset.seg;let v=b.dataset.v;if(v!==''&&!isNaN(+v))v=+v;S[k]=v;const r=m.changed?.(k);renderTools();renderPanel();handle(r==='panel'||r==='tools'?null:r)});
+  root.querySelectorAll('input[type=checkbox][data-k]').forEach(el=>el.onchange=()=>{S[el.dataset.k]=el.checked;const r=m.changed?.(el.dataset.k);renderPanel();handle(r==='panel'?null:r)});
+  root.querySelectorAll('select[data-k]').forEach(el=>el.onchange=()=>{let v=el.value;if(v!==''&&!isNaN(+v))v=+v;S[el.dataset.k]=v;const r=m.changed?.(el.dataset.k);renderPanel();handle(r==='panel'?null:r)});
+  root.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>handle(m.act?.(b.dataset.act)))}
+function renderTools(){const m=cur();$('#tools').innerHTML=m.tools?.()||'';bindControls($('#tools'));m.bindTools?.()}
+let lastRo='';
+function renderPanel(){const m=cur();$('#panel').innerHTML=infoCard(m.P[m.S.pi])+m.panel();bindControls($('#panel'));lastRo='';updateRo(true)}
+function syncOut(){const S=cur().S;$$('#panel input[type=range][data-k]').forEach(el=>{const k=el.dataset.k;el.value=S[k];const o=$('#o-'+k);if(o&&FMT[k])o.textContent=FMT[k](S[k])})}
+function updateRo(force){const m=cur(),ro=$('#ro');if(!ro||!m.ro)return;const h=m.ro();if(force||h!==lastRo){if(h!==lastRo){ro.innerHTML=h;lastRo=h;m.afterRo?.()}}}
+function setMode(k){if(!MODES[k])k='kasten';APP.mode=k;$$('.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.mode===k)));
+  try{history.replaceState(null,'','#'+k)}catch(e){}
+  if(!inited[k]){inited[k]=true;applyPreset(0)}else{renderLib();renderTools();renderPanel()}}
+function setLvl(n){APP.lvl=n;try{localStorage.setItem('sl-lvl',String(n))}catch(e){}$$('.lvl button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.lvl===n)));if(APP.mode){renderLib();renderTools();renderPanel()}}
+$$('.tabs button').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+$$('.lvl button').forEach(b=>b.onclick=()=>setLvl(+b.dataset.lvl));
+$('#bFull').onclick=()=>{try{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen().catch(()=>{})}catch(e){}};
+/* CSV-Export */
+const csvStr=rows=>rows.map(r=>r.map(v=>typeof v==='number'?(Number.isFinite(v)?String(Math.abs(v)<1e-12?0:+v.toPrecision(7)).replace('.',','):''):'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\r\n');
+$('#bCsv').onclick=()=>{const m=cur();let rows=[['Keine Messwerte in dieser Station']];try{if(m.csv)rows=m.csv()}catch(e){console.error(e)}
+  $('#csvT').value='Schrödinger-Labor – '+$('.tabs button[aria-selected=true]').textContent+'\r\n'+csvStr(rows);$('#cMsg').textContent='';$('#dlg').hidden=false;$('#cCopy').focus()};
+$('#cClose').onclick=()=>{$('#dlg').hidden=true};$('#dlg').onclick=e=>{if(e.target.id==='dlg')$('#dlg').hidden=true};
+addEventListener('keydown',e=>{if(e.key==='Escape')$('#dlg').hidden=true});
+const selCopy=()=>{const t=$('#csvT');t.focus();t.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}$('#cMsg').textContent=ok?'Kopiert.':'Text ist markiert – mit Strg+C (Mac: ⌘+C) kopieren.'};
+$('#cCopy').onclick=()=>{const t=$('#csvT').value;try{navigator.clipboard.writeText(t).then(()=>{$('#cMsg').textContent='Kopiert – jetzt in Excel oder GeoGebra einfügen.'},selCopy)}catch(e){selCopy()}};
+let DL=null;try{if(window.claude&&window.claude.use)window.claude.use('downloads').then(d=>{DL=d},()=>{})}catch(e){}
+$('#cDown').onclick=async()=>{const txt='\ufeff'+$('#csvT').value,name='schroedinger-'+APP.mode+'.csv';
+  if(DL){try{await DL.save({filename:name,data:new Blob([txt],{type:'text/csv'})});$('#cMsg').textContent='Gespeichert als '+name+'.'}catch(e){$('#cMsg').textContent='Speichern abgebrochen oder nicht erlaubt – „Kopieren“ geht immer.'}return}
+  try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/csv'}));a.download=name;document.body.appendChild(a);a.click();a.remove();$('#cMsg').textContent='Download gestartet ('+name+').'}catch(e){$('#cMsg').textContent='Download hier nicht möglich – bitte „Kopieren“ verwenden.'}};
+/* Zeichenfläche */
+function resize(){const r=$('#cvw').getBoundingClientRect(),d=devicePixelRatio||1;CW=Math.max(1,r.width);CH=Math.max(1,r.height);cv.width=Math.round(CW*d);cv.height=Math.round(CH*d);ctx.setTransform(d,0,0,d,0,0)}
+const ro=new ResizeObserver(resize);ro.observe($('#cvw'));
+const pos=e=>{const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top]};
+cv.addEventListener('pointerdown',e=>{try{cv.setPointerCapture(e.pointerId)}catch(_){}const [x,y]=pos(e);handle(cur().down?.(x,y))});
+cv.addEventListener('pointermove',e=>{if(!e.buttons&&e.pointerType==='mouse')return;const [x,y]=pos(e);handle(cur().move?.(x,y))});
+cv.addEventListener('pointerup',()=>cur().up?.());cv.addEventListener('pointercancel',()=>cur().up?.());
+/* Farben bei Themenwechsel neu lesen */
+const reTheme=()=>{readCols();for(const m of Object.values(MODES))m.retheme?.()};
+new MutationObserver(reTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',reTheme)}catch(e){}
+/* Schleife */
+let last=performance.now(),fr=0,errShown=false;
+function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;fr++;
+  ctx.clearRect(0,0,CW,CH);ctx.fillStyle=cs('fld');ctx.fillRect(0,0,CW,CH);
+  try{cur().draw(dt)}catch(err){if(!errShown){errShown=true;console.error(err)}}
+  if(fr%6===0){try{updateRo();const s=cur().status?.()||'';if($('#status').textContent!==s)$('#status').textContent=s}catch(err){console.error(err)}}
+  requestAnimationFrame(loop)}
+readCols();resize();
+let L0=2;try{L0=+(localStorage.getItem('sl-lvl')||2)||2}catch(e){}
+setLvl(L0);
+setMode((location.hash||'').slice(1)||'kasten');
+addEventListener('hashchange',()=>{const k=location.hash.slice(1);if(MODES[k]&&k!==APP.mode)setMode(k)});
+requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
